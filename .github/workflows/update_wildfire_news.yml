@@ -1,0 +1,48 @@
+
+name: Update Wildfire News & NIFC to GCS
+
+on:
+  schedule:
+    - cron: "45 5,11,17,23 * * *" # 05:45, 11:45, 17:45, 23:45 UTC
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-wildfire-news-nifc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Authenticate to Google Cloud
+        run: |
+          echo "$GCS_SERVICE_ACCOUNT_KEY" > gcs-key.json
+        env:
+          GCS_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_PMO3SMOKETOOL }}
+
+      - name: Run news collector
+        run: python scripts/fetch_wildfire_news.py
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: gcs-key.json
+          GCS_BUCKET_NAME: smokelyze_bucket
+          
+      - name: Run NIFC collector
+        run: python scripts/fetch_wildfire_nifc.py
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: gcs-key.json
+          GCS_BUCKET_NAME: smokelyze_bucket
+
+      - name: Clean up credentials
+        if: always()
+        run: rm gcs-key.json
+

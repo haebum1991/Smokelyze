@@ -1,0 +1,13 @@
+name: 2025-02-10-03-r-shiny-hide-show-login-page
+title: 2025-02-10-03-r-shiny-hide-show-login-page
+username: leestory
+account: leestory
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13959804
+bundleId: 9778533
+url: https://leestory.shinyapps.io/2025-02-10-03-r-shiny-hide-show-login-page/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: 01_Shiny_hide_show_login_page.png|index.html|index.Rmd

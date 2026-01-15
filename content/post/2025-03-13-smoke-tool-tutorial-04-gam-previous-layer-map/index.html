@@ -1,0 +1,143 @@
+---
+title: 'Smoke tool tutorial [04]: GAM previous - Layer map'
+author: Haebum Lee
+date: '2025-03-13'
+slug: smoke-tool-tutorial-04-gam-previous-layer-map
+featuredImage: "01_SmokeTool_tutorial_gam_previous_layer_map.webp"
+categories:
+  - SmokeTool-tutorial
+tags: []
+---
+
+
+
+<style>
+pre code {
+    font-size: 14px;
+}
+</style>
+<p>This tutorial is for the “PM2.5 and O3 smoke tool” app, available at (<a href="https://westar.shinyapps.io/PMO3smokeTool/" target="_blank">https://westar.shinyapps.io/PMO3smokeTool/</a>).</p>
+<p>The <code>[GAM previous]</code> tab allows users to explore and understand previously developed GAMs for O3 prediction and related air quality analyses. It includes two main sub-tabs: <code>[Overview]</code> and <code>[Layer map]</code>.
+Additionally, users can compare not only our GAM results but also findings from other studies on smoke contributions to O3 and PM2.5, derived using different methods.</p>
+<p>In this post, we introduce how to use <code>[Layer map]</code> sub-tab in <code>[GAM previous]</code> tab.
+In the <code>[Layer map]</code> sub-tab, users can load data for analysis and customize data visualization by choosing point, raster, or HMS layers.
+This functionality helps users assess the performance of various GAM models and compare different approaches to understanding air quality dynamics, particularly in the context of wildfires.</p>
+<hr>
+<ol style="list-style-type: decimal">
+<li>Go to <code>[GAM previous]</code> &gt; <code>[Layer map]</code> tab.</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="01_SmokeTool_tutorial_gam_previous_layer_map.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="2" style="list-style-type: decimal">
+<li><code>Layer map</code> configuration:</li>
+</ol>
+<ul>
+<li><code>Pane (1)</code>: Displays the interactive map with air quality and smoke-related data.
+<ul>
+<li>Displays the interactive map with various layers related to air quality and smoke data.</li>
+<li>Users can navigate, zoom, and search for specific locations.</li>
+<li>The top tabs allow users to switch between different analysis plots:
+<ul>
+<li><code>[Comparison by state]</code></li>
+<li><code>[Exceedance day by state]</code></li>
+<li><code>[Comparison by AQS sites]</code></li>
+<li><code>[Comparison by AQS scatter plots]</code></li>
+</ul></li>
+</ul></li>
+<li><code>Pane (2)</code>: Allows users to choose datasets and adjust the analysis date.
+<ul>
+<li>Dataset Selection: Users can choose from different datasets, e.g., <code>GAM v1</code>, <code>GAM v3</code>, etc.</li>
+<li>Date Selection: Users can select a specific date for analysis.
+<ul>
+<li>Predefined buttons allow quick shifts in dates (<code>-1y</code>, <code>-1m</code>, <code>-7d</code>, <code>+1d</code>, <code>+7d</code>, <code>+1m</code>, <code>+1y</code>).</li>
+</ul></li>
+</ul></li>
+<li><code>Pane (3)</code>: Enables users to toggle different layers (point, raster, smoke data).
+<ul>
+<li>Users can toggle different layers to visualize specific data types.</li>
+<li>Layer categories:
+<ul>
+<li><code>Point layers</code>: Observed &amp; predicted <code>MDA8 O3</code>, <code>PM2.5</code>, <code>SMO</code>, <code>Residuals</code>, <code>R2</code>, etc.</li>
+<li><code>Raster layers</code>: Spatial interpolated versions of the point data.</li>
+<li><code>HMS layers</code>: Smoke plume and fire point data from NOAA-HMS.</li>
+<li><code>Mark options</code>: Special markers for smoke events and statistical thresholds.</li>
+</ul></li>
+</ul></li>
+<li><code>Pane (4)</code>: Provides a button to download the displayed dataset for further use.
+<ul>
+<li>Provides an <code>Export data</code> button, allowing users to download the displayed dataset.</li>
+</ul></li>
+<li><code>Pane (5)</code>: Parameter descriptions.
+<ul>
+<li>Lists detailed explanations of each variable used in the visualization.</li>
+<li>This descriptions vary depending on the dataset provided in Pane (2).</li>
+</ul></li>
+</ul>
+<div style="text-align: center;">
+<p><img src="02_SmokeTool_tutorial_gam_previous_layer_map.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="3" style="list-style-type: decimal">
+<li>Let’s setup configurations as follows (red arrows in Figure):</li>
+</ol>
+<ul>
+<li>Select dataset: <code>GAM v1</code></li>
+<li>Select date: <code>2023-06-08</code></li>
+<li>Point layers: <code>SMO</code></li>
+<li>Raster layers: <code>SMO</code></li>
+</ul>
+<p>Then, <code>point</code> and <code>raster</code> layer plots will be displayed on the interactive map.
+To view detailed information, simply hover your mouse over a site (green arrow).
+The legend for the <code>point layer</code> is always displayed on the left,
+while the legend for the <code>raster layer</code> is always displayed on the right (red rectangles).
+To download data for the selected dataset (e.g., <code>GAM v1</code>) and date (e.g., <code>2023-06-08</code>),
+click the <code>Export data</code> button (blue rectangle).
+For explanations of each parameter, refer to <code>Parameter descriptions</code> (green rectangle).</p>
+<div style="text-align: center;">
+<p><img src="03_SmokeTool_tutorial_gam_previous_layer_map.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="4" style="list-style-type: decimal">
+<li>Depending on selected dataset and date, you can explore the results as follows:</li>
+</ol>
+<ul>
+<li><code>[Comparison by state]</code>: Comparison of <code>Observed MDA8</code>, <code>Predicted MDA8</code>, <code>Observed PM2.5</code>, and other parameters by state.
+Since values are calculated by state, either the average or the sum is displayed.</li>
+<li><code>[Exceedance day by state]</code>: Annual exceedance days (&gt; 70 ppb) for the <code>GAM v1</code>, <code>GAM v3</code>, <code>GAM v3 EDM</code>, and <code>EPA EMBER</code>,
+and annual days with &gt; 9 ug m-3 for the <code>Smoke PM2.5</code> data by state.</li>
+<li><code>[Comparison by AQS]</code>: Comparison of <code>Observed MDA8</code>, <code>Predicted MDA8</code>, <code>Observed PM2.5</code>, and other parameters by state.
+Since values are calculated by AQS site.</li>
+<li><code>[Comparison by AQS:scat]</code>: A scatter plot of <code>Observed</code> and <code>Predicted MDA8</code> for the <code>GAM v1</code>, <code>GAM v3</code>, <code>GAM v3 EDM</code>, and <code>EPA EMBER</code> data. In the <code>Smoke PM2.5</code> data, this plot is not supported.</li>
+</ul>
+<p>All plots have a download feature. If you want to download, click the <code>download icon</code> in the upper right corner in each plot.</p>
+<div style="text-align: center;">
+<p><img src="04_1_SmokeTool_tutorial_gam_previous_layer_map.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<div style="text-align: center;">
+<p><img src="04_2_SmokeTool_tutorial_gam_previous_layer_map.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<div style="text-align: center;">
+<p><img src="04_3_SmokeTool_tutorial_gam_previous_layer_map.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<div style="text-align: center;">
+<p><img src="04_4_SmokeTool_tutorial_gam_previous_layer_map.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="5" style="list-style-type: decimal">
+<li>When switching to sub-tabs (red rectangles) <code>[Comparison by state]</code>, <code>[Exceedance day by state]</code>, <code>[Comparison by AQS]</code>, or <code>[Comparison by AQS:scat]</code>, <code>layers</code> options (blue rectangle) will be deactivated.
+Additionally, changing the dataset or date allows for immediate result comparison.</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="05_SmokeTool_tutorial_gam_previous_layer_map.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<p>So far, we have introduced how to explore previously developed GAMs for O3 prediction and related air quality analyses spatially.
+In the <code>[Layer Map]</code> sub-tab, users can load data for analysis and customize visualization by selecting point, raster, or HMS layers.
+This functionality enables users to assess the performance of various GAM models and compare different approaches to understanding air quality dynamics, particularly in the context of wildfires.</p>
+<p>All the tutorials are complete. Now explore our app!</p>
+<div id="imgModal" class="modal" onclick="closeModal(event)">
+<p><span class="close" onclick="closeModal(event)">×</span>
+<img class="modal-content" id="modalImg" onclick="toggleZoom(event)"></p>
+</div>

@@ -1,0 +1,56 @@
+
+name: Update NOAA HMS Data to GCS
+
+on:
+  schedule:
+    - cron: "0 13,18 * * *" # 13:00 18:00 UTC
+  workflow_dispatch: # Allow manual trigger
+    inputs:
+      target_date:
+        description: "Target date (YYYY-MM-DD)"
+        required: false
+        default: ""
+
+jobs:
+  update-hms:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgdal-dev
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Authenticate to Google Cloud
+        run: |
+          echo "$GCS_SERVICE_ACCOUNT_KEY" > gcs-key.json
+        env:
+          GCS_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_PMO3SMOKETOOL }}
+
+      - name: Run HMS processor
+        run: |
+          if [ "${{ github.event.inputs.target_date }}" != "" ]; then
+            python scripts/fetch_noaa_hms.py ${{ github.event.inputs.target_date }}
+          else
+            python scripts/fetch_noaa_hms.py
+          fi
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: gcs-key.json
+
+      - name: Clean up credentials
+        if: always()
+        run: rm gcs-key.json
+

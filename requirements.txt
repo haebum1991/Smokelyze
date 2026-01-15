@@ -1,0 +1,8 @@
+
+requests
+geopandas
+shapely
+pyogrio
+google-cloud-storage
+feedparser
+

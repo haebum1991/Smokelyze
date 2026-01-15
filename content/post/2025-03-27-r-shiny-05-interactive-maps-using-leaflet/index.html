@@ -1,0 +1,144 @@
+---
+title: 'R shiny [05]: Interactive maps using Leaflet'
+author: Haebum Lee
+date: '2025-03-27'
+slug: r-shiny-05-interactive-maps-using-leaflet
+featuredImage: "02_SmokeTool_tutorial_interactive_map.webp"
+categories:
+  - R-shiny
+tags: []
+---
+
+
+
+<style>
+pre code {
+    font-size: 14px;
+}
+</style>
+<div id="leaflet" class="section level2">
+<h2>Leaflet</h2>
+<p>The <strong>Leaflet</strong> package in R is a powerful tool for creating interactive web maps directly from R code, leveraging the popular open-source <strong>JavaScript library Leaflet.js</strong>
+(<a href="https://leafletjs.com/" target="_blank">here</a>).
+It allows users to overlay data points, polygons, raster images, and other geospatial data on customizable basemaps, supporting features like zooming, panning, popups, color scales, and layer controls. Leaflet integrates seamlessly with spatial objects in R (e.g., <code>sf</code>, <code>sp</code>, <code>raster</code>, <code>terra</code>), making it especially useful for visualizing spatial data in R Shiny apps, reports, and dashboards.</p>
+<p>This post shows how to create an interactive map in R shiny.</p>
+<hr>
+</div>
+<div id="install-and-import-required-pacakges" class="section level2">
+<h2>Install and import required pacakges</h2>
+<p>First, make sure you have the necessary packages installed:</p>
+<pre class="r"><code># Please install these packages before import them.
+# Load packages
+library(shiny)
+library(leaflet)
+library(leaflet.providers)
+library(leaflet.extras)</code></pre>
+<ul>
+<li><code>leaflet.providers</code>: enriches the Leaflet mapping experience in R by offering easy access to a wide variety of pre-configured basemap tile providers, such as OpenStreetMap, Esri, and CartoDB, allowing users to customize the visual style of their maps effortlessly.</li>
+<li><code>leaflet.extras</code>” extends the functionality of the Leaflet package in R by providing additional interactive features like drawing tools, search boxes, heatmaps, minimaps, and reset buttons, enhancing the usability and interactivity of web maps.</li>
+</ul>
+<hr>
+</div>
+<div id="define-ui-and-server-logic" class="section level2">
+<h2>Define UI and Server Logic</h2>
+<pre class="r"><code>ui &lt;- fluidPage(
+  leaflet::leafletOutput(outputId = &quot;interactive_map&quot;)
+)
+
+server &lt;- function(input, output, session) {
+  output$interactive_map &lt;- renderLeaflet(
+    leaflet() %&gt;%
+      leaflet::addProviderTiles(providers$OpenTopoMap,
+                                options = providerTileOptions(opacity = 0.5)) %&gt;%
+      leaflet::setView(lng = -95.5,
+                       lat = 39.5,
+                       zoom = 4)
+  )
+}
+
+shiny::shinyApp(ui = ui, server = server)</code></pre>
+<ul>
+<li><code>renderLeaflet()</code> tells Shiny how to build the map.</li>
+<li><code>addProviderTiles(providers$OpenTopoMap)</code>: Adds a custom basemap from OpenTopoMap with 50% transparency.</li>
+<li><code>leaflet()</code> creates a blank map.</li>
+<li><code>setView()</code> sets the map’s center and zoom level.</li>
+</ul>
+<p>Here, the map is centered roughly in the central United States.
+When the app runs, a basic interactive map will appear in your browser.
+You can pan (drag) and zoom the map using your mouse.</p>
+<div style="text-align: center;">
+<p><img src="01_SmokeTool_tutorial_interactive_map.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+</div>
+<div id="advanced-leaflet-map-in-shiny-layers-tools-and-custom-controls" class="section level2">
+<h2>Advanced Leaflet Map in Shiny: Layers, Tools, and Custom Controls</h2>
+<p>We’ll build a more advanced interactive map using Shiny and Leaflet in R. You’ll learn how to add custom map tiles, draw polygon layers, include measurement tools, add a reset button, and even handle tile loading errors gracefully.</p>
+<p>You’ll also need a spatial dataset like <code>state boundaries</code>, which should be an <code>sf</code> or <code>sp</code> object representing US state borders. You can use your own or download one from a public source like the US Census TIGER/Line files. This tutorial shows how to import <code>state boundaries</code> using <code>geojsonio</code> package.</p>
+<pre class="r"><code>library(geojsonio)
+
+state_boundaries &lt;- 
+  geojsonio::geojson_read(&quot;https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json&quot;, 
+                          what = &quot;sp&quot;)</code></pre>
+<p>Let’s define advanced <code>Leaflet</code> interactive map.</p>
+<pre class="r"><code>ui &lt;- fluidPage(
+  leaflet::leafletOutput(outputId = &quot;interactive_map&quot;)
+)
+
+server &lt;- function(input, output, session) {
+  output$interactive_map &lt;- renderLeaflet(
+  leaflet() %&gt;%
+    leaflet::addProviderTiles(providers$OpenTopoMap,
+                              options = providerTileOptions(opacity = 0.5)) %&gt;%
+    leaflet::setView(lng = -95.5,
+                     lat = 39.5,
+                     zoom = 4) %&gt;%
+    leaflet::addPolygons(data = state_boundaries,
+                         color = &quot;dimgrey&quot;,
+                         weight = 1,
+                         opacity = 0.7,
+                         fill = F) %&gt;%
+    leaflet::addMeasure(
+      position = &quot;topright&quot;,
+      primaryLengthUnit = &quot;kilometers&quot;,
+      secondaryLengthUnit = &quot;meters&quot;,
+      primaryAreaUnit = &quot;sqmeters&quot;,
+      activeColor = &quot;orange&quot;,
+      completedColor = &quot;black&quot;
+    ) %&gt;%
+    leaflet::addEasyButton(
+      easyButton(
+        position = &quot;topright&quot;,
+        icon = &quot;fa-undo&quot;,
+        title = &quot;Reset to Initial View&quot;,
+        onClick = JS(&quot;
+        function(btn, map){
+          map.setView([39.5, -95.5], 4);
+        }
+      &quot;)
+      )
+    )
+  )
+}
+
+shiny::shinyApp(ui = ui, server = server)</code></pre>
+<ul>
+<li><code>addProviderTiles(providers$OpenTopoMap)</code>: Adds a custom basemap from OpenTopoMap with 50% transparency.</li>
+<li><code>setView()</code>: Centers the map at latitude 39.5 and longitude -95.5 (USA) with zoom level 4.</li>
+<li><code>addPolygons()</code>: Adds a boundary layer (like US state borders) with grey lines. fill = FALSE makes it transparent inside.</li>
+<li><code>addMeasure()</code>: Adds a measurement tool to the top-right corner for measuring distances (km/m) and areas (square meters).
+<ul>
+<li><code>activeColor</code>: is the color of the tool while drawing.</li>
+<li><code>completedColor</code>: is the final color after finishing the measurement.</li>
+</ul></li>
+<li><code>addEasyButton()</code>: Adds a simple reset button with an undo icon. When clicked, it resets the map view to the original center and zoom.</li>
+</ul>
+<p>The final result is as follows (screenshot):</p>
+<div style="text-align: center;">
+<p><img src="02_SmokeTool_tutorial_interactive_map.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<div id="imgModal" class="modal" onclick="closeModal(event)">
+<p><span class="close" onclick="closeModal(event)">×</span>
+<img class="modal-content" id="modalImg" onclick="toggleZoom(event)"></p>
+</div>
+</div>

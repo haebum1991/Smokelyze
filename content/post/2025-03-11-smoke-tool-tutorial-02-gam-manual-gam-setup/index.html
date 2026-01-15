@@ -1,0 +1,118 @@
+---
+title: 'Smoke tool tutorial [02]: GAM manual - GAM setup'
+author: Haebum Lee
+date: '2025-03-11'
+slug: smoke-tool-tutorial-02-gam-manual-gam-setup
+featuredImage: "01_SmokeTool_tutorial_gam_manual_gam_setup.webp"
+categories:
+  - SmokeTool-tutorial
+tags: []
+---
+
+
+
+<style>
+pre code {
+    font-size: 14px;
+}
+</style>
+<p>This tutorial is for the “PM2.5 and O3 smoke tool” app, available at (<a href="https://westar.shinyapps.io/PMO3smokeTool/" target="_blank">https://westar.shinyapps.io/PMO3smokeTool/</a>).</p>
+<p>The <code>[GAM manual]</code> tab is designed to provide users with comprehensive tools to manually manage data collection and loading processes for building GAMs.
+It includes two main sub-tabs: <code>[Data collection]</code>, <code>[Load dataset]</code>, <code>[GAM setup]</code>, and <code>[GAM results]</code>.
+Please note that <code>[GAM setup]</code> and <code>[GAM results]</code> are normally hidden unless you run <code>[Load datset]</code>.</p>
+<p>In this post, we introduce how to use <code>[GAM setup]</code> sub-tab in <code>[GAM manual]</code> tab.</p>
+<hr>
+<ol style="list-style-type: decimal">
+<li>Go to <code>[GAM manual]</code> &gt; <code>[Load dataset]</code> tab.</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="01_SmokeTool_tutorial_gam_manual_gam_setup.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="2" style="list-style-type: decimal">
+<li>There are several buttons as given below:</li>
+</ol>
+<ul>
+<li><code>Browse...</code> (blue rectangle) : Used to import data prepared on your PC.</li>
+<li><code>Load data from [Data collection: Merge data]</code> (in the red rectangle): Used to import data derived from <code>Merge data</code> in <code>[Data collection]</code> tab.
+Please refer to the previous post <code>Smoke tool tutorial [01]: GAM manual - Data collection</code>.</li>
+<li><code>Load sample data</code> (in the red rectangle): Used to import the sample data embedded in this app.</li>
+<li><code>Clear all</code> (in the red rectangle): Used to clear the loaded data.</li>
+</ul>
+<p>In this post, we will explain using the sample data.
+So, click the <code>Load sample data</code> button, then, the data will be displayed in the table below (green rectangle).
+The sample data is from one of the sites analyzed in GAM v1.
+This data includes various parameters such as meteorological data, MDA8 concentration, PM2.5 concentration, etc.</p>
+<p>
+<span style="color: red;">
+Note that when you import the data, <code>[GAM setup]</code> sub-tab is activated
+</span>
+(black rectangle).
+</p>
+<div style="text-align: center;">
+<p><img src="02_SmokeTool_tutorial_gam_manual_gam_setup.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="3" style="list-style-type: decimal">
+<li>Once you import the data, then, go to <code>[GAM setup]</code> sub-tab,
+As you can see the below screenshot,<br />
+<code>[GAM setup]</code> sub-tab consists of two parts, such as <code>Variables</code> and <code>GAM parameter &amp; formula</code>.</li>
+</ol>
+<ul>
+<li><code>Variables</code>: In this box, you can set up the response variable (y) and predictors (x) for GAM (red rectangle).
+Additionally, if you want to train the GAM for a specific category, you can configure this option as shown in the green rectangle.</li>
+<li><code>GAM parameter &amp; formula</code> (blue rectangle): This box displays the GAM setup status based on your selections,
+and allows you to control the GAM options and hyper-parameters such as <code>family</code>, <code>link</code>, <code>method</code>, etc.
+For more details, refer to the <code>mgcv</code> package
+(<a href="https://CRAN.R-project.org/package=mgcv" target="_blank">Wood, 2023</a>).</li>
+</ul>
+<div style="text-align: center;">
+<p><img src="03_SmokeTool_tutorial_gam_manual_gam_setup.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="4" style="list-style-type: decimal">
+<li>Let’s build a simple GAM to predict <code>MDA8O3</code> including an interaction smooth term.</li>
+</ol>
+<ul>
+<li>Check the box for <code>MDA8O3</code> in the Response (y), and <code>DOY</code>, <code>SRAD</code>, <code>TMAX</code>, and <code>RH</code> as Predictors (x) (red arrows).</li>
+<li>Click the <code>Add interaction</code>, then set the variables as <code>DOY</code> (x1) and <code>TAMX</code> (x2) (red rectangle).</li>
+</ul>
+<p>As you set up the variables, the <code>GAM parameter &amp; formula section</code> will dynamically display the corresponding equation in real time. Additionally, a panel will be provided for configuring detailed options for each smooth term.</p>
+<p style="color: red;">
+Note that this post does not provide a detailed explanation of these options.
+Therefore, it is recommended that you familiarize yourself with the <code>mgcv</code> package
+(<a href="https://CRAN.R-project.org/package=mgcv" target="_blank">Wood, 2023</a>)
+before using them.
+</p>
+<p>Once all settings are complete, click the <code>Run GAM</code> button (green rectangle).
+Modeling begins the moment you click, and can take anywhere from a few seconds to a few minutes depending on the amount of data.</p>
+<div style="text-align: center;">
+<p><img src="04_SmokeTool_tutorial_gam_manual_gam_setup.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="5" style="list-style-type: decimal">
+<li>After running the GAM, the <code>GAM results</code> sub-tab will be activated (red rectangle).
+This tab consists of several results including <code>GAM summary</code>, <code>GAM check</code>, <code>GAM smooth plots</code>, and <code>Data table</code> (results).</li>
+</ol>
+<ul>
+<li><code>GAM summary</code> (blue rectangle): Displays a summary of the fitted GAM model, including coefficients, significance, and model statistics.</li>
+<li><code>GAM check</code> (green rectangle): Provides diagnostic plots to assess the model’s assumptions and fit quality.</li>
+<li><code>GAM smooth plots</code> (black rectangle): Visualizes the smooth functions estimated for each predictor in the model.</li>
+<li><code>Data table</code>: Shows the finalized data used for model training and predictions including predicted values, residuals, etc.
+If you want to download the data, you just click the <code>Save data</code> button in the data table box.</li>
+</ul>
+<div style="text-align: center;">
+<p><img src="05_SmokeTool_tutorial_gam_manual_gam_setup.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<div style="text-align: center;">
+<p><img src="06_SmokeTool_tutorial_gam_manual_gam_setup.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<p>So far, we have introduced how to build a GAM using a sample data in the <code>[GAM setup]</code> sub-tab.
+The GAM provided in this app may be more limited compared to running it directly in R.
+It is recommended to use it as a reference, while performing more extensive analyses directly in R.</p>
+<p>In the next post, we will introduce how to explore and understand previously developed GAMs for O3 prediction and related air quality analyses in the <code>[GAM previous]</code> tab.</p>
+<div id="imgModal" class="modal" onclick="closeModal(event)">
+<p><span class="close" onclick="closeModal(event)">×</span>
+<img class="modal-content" id="modalImg" onclick="toggleZoom(event)"></p>
+</div>

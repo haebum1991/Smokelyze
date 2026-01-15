@@ -1,0 +1,134 @@
+---
+title: 'Smoke tool tutorial [03]: GAM previous - Overview'
+author: Haebum Lee
+date: '2025-03-12'
+slug: smoke-tool-tutorial-03-gam-previous-overview
+featuredImage: "01_SmokeTool_tutorial_gam_previous_overview.webp"
+categories:
+  - SmokeTool-tutorial
+tags: []
+---
+
+
+
+<style>
+pre code {
+    font-size: 14px;
+}
+</style>
+<p>This tutorial is for the “PM2.5 and O3 smoke tool” app, available at (<a href="https://westar.shinyapps.io/PMO3smokeTool/" target="_blank">https://westar.shinyapps.io/PMO3smokeTool/</a>).</p>
+<p>The <code>[GAM previous]</code> tab allows users to explore and understand previously developed GAMs for O3 prediction and related air quality analyses. It includes two main sub-tabs: <code>[Overview]</code> and <code>[Layer map]</code>.
+Additionally, users can compare not only our GAM results but also findings from other studies on smoke contributions to O3 and PM2.5, derived using different methods.</p>
+<p>In this post, we introduce how to use <code>[Overview]</code> sub-tab in <code>[GAM previous]</code> tab.
+In the <code>[Overview]</code> sub-tab, users can view model metadata, compare different model outputs,
+and examine time-series and scatter plots of observed versus predicted values for selected sites.</p>
+<hr>
+<ol style="list-style-type: decimal">
+<li>Go to <code>[GAM previous]</code> &gt; <code>[Overview]</code> tab.</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="01_SmokeTool_tutorial_gam_previous_overview.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="2" style="list-style-type: decimal">
+<li>The currently available datasets are as follows:</li>
+</ol>
+<ul>
+<li><code>GAM v1</code> (red) : Research for smoke contribution to O3 using GAM in the US / data period: May to Sep, 2018-2023, study area: CONUS
+(<a href="https://doi.org/10.1021/acs.est.4c05870" target="_blank">Lee and Jaffe, 2024</a>).</li>
+<li><code>GAM v3</code> (green) : Research for smoke contribution to O3 using GAM in the US / data period: Apr to Oct, 2019-2024, study area: CONUS + AK + HI
+(not yet peer reviewed).</li>
+<li><code>GAM v3 EDM</code> (darkgreen) : Research for smoke contribution to O3 using GAM in the US / data period: Apr to Oct, 2019-2024, study area: CONUS + AK + HI
+(not yet peer reviewed).</li>
+<li><code>EPA EMBER</code> (yellow) : Research for smoke contribution to O3 using EMBER in the US/ data period: Apr to Sep, 2023, study area: CONUS
+(<a href="https://doi.org/10.1016/j.dib.2024.111208" target="_blank">Simon et al., 2024</a>).</li>
+<li><code>Smoke PM2.5</code> (magenta) : Research for smoke contribution to PM2.5 in the US / data period: Jan to Dec, 2019-2024, study area: CONUS + AK + HI
+(not yet peer reviewed).</li>
+</ul>
+<p>As demonstrated in <code>Smoke tool tutorial [01]: GAM manual - Data collection</code>,
+once you select (checkbox) the desired dataset, available sites will be displayed on a map.
+If you want to find out information about a site, simply place your mouse cursor over the site.
+You can then look at detailed site information including <code>state</code>, <code>site name</code>, <code>AQS code</code>, etc.</p>
+<div style="text-align: center;">
+<p><img src="02_SmokeTool_tutorial_gam_previous_overview.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="3" style="list-style-type: decimal">
+<li>You can also use the search feature to search by <code>state</code>, <code>site name</code>, or <code>AQS code</code>.
+In this tutorial, we will use the Hawthorne site, UT as an example.
+When typing, you can also check the list below to see what data is available for collection at the Hawthorne site.
+And then, when you click the <code>map icon</code>, the site location will be displayed on the map.</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="03_SmokeTool_tutorial_gam_previous_overview.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="4" style="list-style-type: decimal">
+<li>Click on the site (red-filled circle) on the map.
+The <code>Metadata</code> for the selected site will then be displayed,
+and the site will be added to the <code>[Model summary &amp; List of selected sites]</code> box.
+Similarly, additional sites from other results can be included in the list.
+Note that if you want to remove a site from the list,
+click the <code>trash bin icon</code>.</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="04_SmokeTool_tutorial_gam_previous_overview.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="5" style="list-style-type: decimal">
+<li>In addition, you can also explore the results of target site as follows:</li>
+</ol>
+<ul>
+<li><code>[Obs vs pred]</code>: A scatter plot of <code>Observed</code> and <code>Predicted MDA8</code> for the <code>GAM v1</code>, <code>GAM v3</code>, <code>GAM v3 EDM</code>, and <code>EPA EMBER</code> data.
+In the <code>Smoke PM2.5</code> data, this plot is not supported.</li>
+<li><code>[Time-series]</code>: A time-series plot of <code>Observed MDA8</code> and <code>Predicted MDA8</code> including <code>SMO</code> and <code>Smoke day</code> information<br />
+for the <code>GAM v1</code>, <code>GAM v3</code>, <code>GAM v3 EDM</code>, and <code>EPA EMBER</code> data.
+In the <code>Smoke PM2.5</code> data, only <code>Observed PM2.5</code> including <code>Smoke day</code> information is displayed.</li>
+<li><code>[Monthly smoke]</code>: Summary of monthly number of <code>smoke day</code> for all type of data.</li>
+<li><code>[Exceedance day]</code>: Annual exceedance days (&gt; 70 ppb) for the <code>GAM v1</code>, <code>GAM v3</code>, <code>GAM v3 EDM</code>, and <code>EPA EMBER</code>,
+and annual days with &gt; 9 ug m-3 for the <code>Smoke PM2.5</code> data.</li>
+</ul>
+<p>All plots have a download feature.
+If you want to download, click the <code>download icon</code> in the upper right corner in each plot.</p>
+<div style="text-align: center;">
+<p><img src="05_1_SmokeTool_tutorial_gam_previous_overview.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<div style="text-align: center;">
+<p><img src="05_2_SmokeTool_tutorial_gam_previous_overview.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<div style="text-align: center;">
+<p><img src="05_3_SmokeTool_tutorial_gam_previous_overview.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<div style="text-align: center;">
+<p><img src="05_4_SmokeTool_tutorial_gam_previous_overview.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="6" style="list-style-type: decimal">
+<li>Our app is providing the data download option for the <code>GAM v1</code>, <code>GAM v3</code>, <code>GAM v3 EDM</code>, <code>EPA EMBER</code>, and <code>Smoke PM2.5</code> data.
+For the two datasets, <code>GAM v1</code> and <code>EPA EMBER</code>, already published
+(<a href="https://doi.org/10.1021/acs.est.4c05870" target="_blank">Lee and Jaffe, 2024</a>;
+<a href="https://doi.org/10.1016/j.dib.2024.111208" target="_blank">Simon et al., 2024</a>),
+please note that they are also provided in the respective papers.
+As mentioned in Step 5 above, after listing sites, you will need to set your desired data collection period (red rectangular).
+Once the setting is complete, click the <code>Load data</code> button (blue rectangular).
+Or if you want to clear all site list, click the <code>Clear list</code> button (green rectangular).</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="06_SmokeTool_tutorial_gam_previous_overview.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="7" style="list-style-type: decimal">
+<li>Once data loading is complete, the data will be displayed in the box below (<code>GAM v1</code>, <code>GAM v3</code>, <code>GAM v3 EDM</code>, <code>EPA EMBER</code>, and/or <code>Smoke PM2.5</code>).
+If you want to download the loaded data, you just click on the <code>Save data</code> button for each data section.</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="07_SmokeTool_tutorial_gam_previous_overview.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<p>So far, we have introduced how to explore AQS sites in relation to previously developed GAMs for O3 prediction and related air quality analyses.
+The <code>[Overview]</code> sub-tab allows users to compare different model outputs, and examine time-series and scatter plots of observed versus predicted values for selected sites.</p>
+<p>In the next post, we will take a look at the <code>[Layer map]</code> sub-tab.</p>
+<div id="imgModal" class="modal" onclick="closeModal(event)">
+<p><span class="close" onclick="closeModal(event)">×</span>
+<img class="modal-content" id="modalImg" onclick="toggleZoom(event)"></p>
+</div>

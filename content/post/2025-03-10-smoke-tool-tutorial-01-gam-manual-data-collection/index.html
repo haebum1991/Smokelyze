@@ -1,0 +1,147 @@
+---
+title: 'Smoke tool tutorial [01]: GAM manual - Data collection'
+author: Haebum Lee
+date: '2025-03-10'
+slug: smoke-tool-tutorial-01-gam-manual-data-collection
+featuredImage: "01_SmokeTool_tutorial_gam_manual_data_collection.webp"
+categories:
+  - SmokeTool-tutorial
+tags: []
+---
+
+
+
+<style>
+pre code {
+    font-size: 14px;
+}
+</style>
+<p>This tutorial is for the “PM2.5 and O3 smoke tool” app, available at (<a href="https://westar.shinyapps.io/PMO3smokeTool/" target="_blank">https://westar.shinyapps.io/PMO3smokeTool/</a>).</p>
+<p>The <code>[GAM manual]</code> tab is designed to provide users with comprehensive tools to manually manage data collection and loading processes for building GAMs.
+It includes two main sub-tabs: <code>[Data collection]</code>, <code>[Load dataset]</code>, <code>[GAM setup]</code>, and <code>[GAM results]</code>.
+Please note that <code>[GAM setup]</code> and <code>[GAM results]</code> are normally hidden unless you run <code>[Load datset]</code>.</p>
+<p>In this post, we introduce how to use <code>[Data collection]</code> sub-tab in <code>[GAM manual]</code> tab.</p>
+<hr>
+<ol style="list-style-type: decimal">
+<li>Go to <code>[GAM manual]</code> &gt; <code>[Data collection]</code> tab.</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="01_SmokeTool_tutorial_gam_manual_data_collection.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="2" style="list-style-type: decimal">
+<li>There are three types of datasets to collect: PM2.5 &amp; O3 data from the EPA, and ASOS (Automated Surface Observing Systems) meteorological data from the IEM (Iowa Environmental Mesonet).</li>
+</ol>
+<ul>
+<li><code>EPA sites for O3 (44210)</code>: Monitoring sites operated by the EPA that measure daily maximum 8-hour average ozone (MDA8) concentrations, categorized under parameter code 44210.
+The data is sourced from EPA-API.
+If you want to download pre-generated file from EPA,
+please visit EPA website (<a href="https://aqs.epa.gov/aqsweb/airdata/download_files.html" target="_blank">here</a>)</li>
+<li><code>EPA sites for PM (88101, 88502)</code>: Monitoring sites managed by the EPA that measure particulate matter (PM2.5) concentrations, using parameter codes 88101 (FRM/FEM) and 88502 (non-FRM/FEM).
+The data is sourced from EPA-API.
+If you want to download pre-generated file from EPA,
+please visit EPA website (<a href="https://aqs.epa.gov/aqsweb/airdata/download_files.html" target="_blank">here</a>)</li>
+<li><code>IEM sites for ASOS</code>: ASOS stations managed by the Iowa Environmental Mesonet (IEM), providing real-time meteorological data such as temperature, humidity, and wind speed. In addition, the data can be obtained using “riem” package in R
+(<a href="https://cran.r-project.org/web/packages/riem/index.html" target="_blank">here</a>).</li>
+</ul>
+<div style="text-align: center;">
+<p><img src="02_SmokeTool_tutorial_gam_manual_data_collection.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="3" style="list-style-type: decimal">
+<li>Once you select (checkbox) the desired dataset, available sites will be displayed on a map.
+If you want to find out information about a site, simply place your mouse cursor over the site.
+You can then look at detailed site information including <code>state</code>, <code>site name</code>, <code>AQS code</code>, etc.</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="03_SmokeTool_tutorial_gam_manual_data_collection.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="4" style="list-style-type: decimal">
+<li>You can also use the search feature to search by <code>state</code>, <code>site name</code>, or <code>AQS code</code>.
+This feature only applies to EPA AQS sites.</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="04_SmokeTool_tutorial_gam_manual_data_collection.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="5" style="list-style-type: decimal">
+<li>In this tutorial, we will use the Hawthorne site, UT as an example.
+When typing, you can also check the list below to see what data is available for collection at the Hawthorne site.
+And then, when you click the <code>map icon</code>, the site location will be displayed on the map.</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="05_SmokeTool_tutorial_gam_manual_data_collection.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="6" style="list-style-type: decimal">
+<li>Let’s click on the site (red-filled circle) on the map.
+Then, the list of O3 monitoring site at this location will be added to the <code>[List of selected sites]</code> box.
+In the same way, PM2.5 and ASOS sites can also be added.
+Note that if you want to clear the list, click the <code>Clear list</code> button.</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="06_SmokeTool_tutorial_gam_manual_data_collection.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="7" style="list-style-type: decimal">
+<li>To collect EPA data (excluding IEM-ASOS), you will need your email and an EPA API key.
+If you do not have an EPA API key, enter your email in the box and click the <code>Get key</code> button.
+You should receive an email with your EPA API key within a few minutes.
+If you want to know detailed instructions, please visit the EPA API official website (<a href="https://aqs.epa.gov/aqsweb/documents/data_api.html#signup" target="_blank">here</a>).</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="07_SmokeTool_tutorial_gam_manual_data_collection.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="8" style="list-style-type: decimal">
+<li>After entering your email and EPA API key, you will need to set your desired data collection period.
+If you want to collect multi-year data but only for specific months,
+click on your desired months in the <code>Which months would you like to collect data for?</code> section.
+Once everything is complete, click the <code>Run collection</code> button. The data collection process may take several minutes,
+depending on the period.</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="08_SmokeTool_tutorial_gam_manual_data_collection.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="9" style="list-style-type: decimal">
+<li>Once data collection is complete, the collected data will be displayed in the box below (<code>O3 data</code>, <code>PM2.5 data</code>, and/or <code>ASOS data</code>). If you want to download the collected data, you just click on the <code>Save data</code> button for each data type.</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="09_SmokeTool_tutorial_gam_manual_data_collection.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="10" style="list-style-type: decimal">
+<li>When you click the <code>Merge data</code>, collected data (O3, PM2.5, and/or ASOS) will be merged, and the detailed steps are as follows:</li>
+</ol>
+<ul>
+<li>For O3 and PM2.5 EPA data, if a site has multiple measurements, as indicated by the ‘POC (Parameter Occurrence Code)’ column, average all valid observations.</li>
+<li>The data priority is O3 &gt; PM2.5 &gt; ASOS, and when O3 data are available, the nearest PM2.5 and ASOS data based on the O3 measurement site will be merged.</li>
+<li>If O3 data are invalid or unavailable, the nearest ASOS data based on the PM2.5 measurement site will be merged.</li>
+</ul>
+<div style="text-align: center;">
+<p><img src="10_SmokeTool_tutorial_gam_manual_data_collection.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<ol start="11" style="list-style-type: decimal">
+<li>If the data you collected includes PM2.5 data, the previously hidden the <code>[HMS and PM2.5-Criteria]</code> tab will become visible.
+This tab provides a tool for calculating PM2.5-criteria using the <code>Merged data</code>.
+For more details, please refer to our previous papers
+(<a href="https://doi.org/10.1080/10962247.2023.2291197" target="_blank">Lee and Jaffe, 2024a</a>;
+<a href="https://doi.org/10.1021/acs.est.4c05870" target="_blank">Lee and Jaffe, 2024b</a>).
+Once the options are set, click the <code>Run process</code> button.
+Then, the processed data, including the <code>HMS</code> and <code>PM2.5-criteria</code> columns, will be displayed in the box below.
+If you want to download the data, click the <code>Save data</code> button.</li>
+</ol>
+<div style="text-align: center;">
+<p><img src="11_SmokeTool_tutorial_gam_manual_data_collection.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+<p>So far, we have introduced the process of collecting PM2.5, O3, and meteorological data from EPA and IEM based on selected sites in the <code>[Data collection]</code> sub-tab.
+Now, you can use the collected data for further data analysis.</p>
+<p>In the next post, we will explore how to perform GAM (Generalized Additive Model) analysis using the collected data in the <code>[GAM setup]</code> sub-tab.</p>
+<div id="imgModal" class="modal" onclick="closeModal(event)">
+<p><span class="close" onclick="closeModal(event)">×</span>
+<img class="modal-content" id="modalImg" onclick="toggleZoom(event)"></p>
+</div>

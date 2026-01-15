@@ -1,0 +1,175 @@
+---
+title: 'R shiny [01]: Getting started'
+author: Haebum Lee
+date: '2025-02-04'
+slug: r-shiny-01-getting-started
+featuredImage: "01_Shiny_web_app.webp"
+categories:
+  - R-shiny
+tags: []
+---
+
+
+
+<style>
+pre code {
+    font-size: 14px;
+}
+</style>
+<div id="r-shiny" class="section level2">
+<h2>R Shiny</h2>
+<p><strong>R Shiny</strong> is an open-source R package that allows users to build interactive web applications directly in R without requiring extensive knowledge of web development (HTML, CSS, or JavaScript). It is widely used for <strong>data visualization, dashboard creation, and interactive analytics</strong>. Shiny applications run in a web browser and can be hosted <strong>locally</strong>, on <strong>Shiny Server</strong>, or deployed to <strong>ShinyApps.io</strong> or other cloud platforms.
+R Shiny is a game-changer for those who want to create <strong>interactive applications</strong> and <strong>data-driven dashboards</strong> without needing deep web development expertise. Whether you’re an analyst, researcher, or developer, Shiny provides a powerful and flexible way to bring your data to life.</p>
+<div id="key-advantages" class="section level3">
+<h3><strong>Key Advantages</strong></h3>
+<ul>
+<li><strong>User-Friendly &amp; R-Based</strong>: Shiny is built in R, so data analysts and statisticians can create interactive applications without learning additional web development frameworks.</li>
+<li><strong>Highly Interactive</strong>: Shiny’s <strong>reactive programming</strong> framework allows applications to update dynamically based on user inputs, making it ideal for dashboards and live data exploration.</li>
+<li><strong>Seamless Data Integration</strong>: Supports <strong>real-time data processing</strong>, <strong>machine learning models</strong>, and <strong>big data visualization</strong> by integrating with R’s powerful analytical capabilities.</li>
+<li><strong>Flexible UI Design</strong>: Shiny provides built-in UI functions (<code>fluidPage()</code>, <code>navbarPage()</code>, etc.) and allows customization using <strong>HTML, CSS, and JavaScript</strong>.</li>
+<li><strong>Scalability &amp; Deployment</strong>: Apps can be deployed on <strong>ShinyApps.io</strong>, <strong>RStudio Connect</strong>, <strong>AWS</strong>, or <strong>Docker</strong>, making it easy to share interactive reports with stakeholders.</li>
+</ul>
+<hr>
+</div>
+</div>
+<div id="install-and-import-shiny-pacakge" class="section level2">
+<h2>Install and import shiny pacakge</h2>
+<pre class="r"><code>install.packages(&quot;shiny&quot;)
+library(shiny)</code></pre>
+<hr>
+</div>
+<div id="open-a-new-shiny-r-file" class="section level2">
+<h2>Open a new shiny R file</h2>
+<p>Please go to the <code>File</code> -&gt; <code>New file</code> -&gt; <code>Shiny Web App...</code> in R studio, then, you can see the below window.
+Type the <code>Application name</code> and setup the directory, and please click the <code>Create</code> button.</p>
+<div style="text-align: center;">
+<p><img src="01_Shiny_web_app.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<p>When finishing above step, an example file will be opened in R studio as follows:</p>
+<pre class="r"><code>library(shiny)
+
+# Define UI for application that draws a histogram
+ui &lt;- fluidPage(
+
+    # Application title
+    titlePanel(&quot;Old Faithful Geyser Data&quot;),
+
+    # Sidebar with a slider input for number of bins 
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput(&quot;bins&quot;,
+                        &quot;Number of bins:&quot;,
+                        min = 1,
+                        max = 50,
+                        value = 30)
+        ),
+
+        # Show a plot of the generated distribution
+        mainPanel(
+           plotOutput(&quot;distPlot&quot;)
+        )
+    )
+)
+
+# Define server logic required to draw a histogram
+server &lt;- function(input, output) {
+
+    output$distPlot &lt;- renderPlot({
+        # generate bins based on input$bins from ui.R
+        x    &lt;- faithful[, 2]
+        bins &lt;- seq(min(x), max(x), length.out = input$bins + 1)
+
+        # draw the histogram with the specified number of bins
+        hist(x, breaks = bins, col = &#39;darkgray&#39;, border = &#39;white&#39;,
+             xlab = &#39;Waiting time to next eruption (in mins)&#39;,
+             main = &#39;Histogram of waiting times&#39;)
+    })
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)</code></pre>
+<hr>
+</div>
+<div id="run-the-app" class="section level2">
+<h2>Run the App</h2>
+<p>Please follow the steps below figures.
+First, click the <code>Run App</code> button and the app will appear on the localhost page.</p>
+<div style="text-align: center;">
+<p><img src="02_1_Shiny_web_app.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<p>This stage does not mean the application has been officially deployed yet. It is merely running on your local computer.
+Therefore, you can use this as a kind of ‘preview’ to see how it looks before deploying.
+Anyway, after clicking the <code>Run App</code> button, you may see the result as given below.</p>
+<div style="text-align: center;">
+<p><img src="02_2_Shiny_web_app.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<hr>
+</div>
+<div id="deploy-the-app" class="section level2">
+<h2>Deploy the App</h2>
+<p>To deploy your app to the <code>shinyapps.io</code>, follow these steps:</p>
+<p>Click the <code>Publish Application...</code> (Figure 1)</p>
+<div style="text-align: center;">
+<p><img src="03_Shiny_web_app.webp" class="centered-img" onclick="openModal(this.src)">
+<br>
+Figure 1</p>
+</div>
+<p>In my case, I have already registered multiple accounts,
+but if you haven’t, there will be nothing under the <code>Publish From Account</code>.
+Therefore, click <code>Add New Account</code> (Figure 2).</p>
+<div style="text-align: center;">
+<p><img src="04_Shiny_web_app.webp" class="centered-img" onclick="openModal(this.src)">
+<br>
+Figure 2</p>
+</div>
+<p>In this example, we will learn how to deploy using the <code>ShinyApps.io</code>.
+Click the <code>ShinyApps.io</code> (Figure 3).</p>
+<div style="text-align: center;">
+<p><img src="05_Shiny_web_app.webp" class="centered-img" onclick="openModal(this.src)">
+<br>
+Figure 3</p>
+</div>
+<p>If you are new to R shiny, you may not understand what this page means.
+I will assume that you do not have a ShinyApps.io account.
+Click on the <code>Get started here</code> or the <code>your account on ShinyApps</code> link as shown below (Figure 4).
+<br>
+(Or click here: <a href="https://www.shinyapps.io/" target="_blank">https://www.shinyapps.io/</a>)</p>
+<div style="text-align: center;">
+<p><img src="06_Shiny_web_app.webp" class="centered-img" onclick="openModal(this.src)">
+<br>
+Figure 4</p>
+</div>
+<p>I will assume that you have completed the registration by following the link.
+Then, the following page should appear first.
+Set the name of your account and click the <code>save</code> button (Figure 5).</p>
+<div style="text-align: center;">
+<p><img src="07_Shiny_web_app.webp" class="centered-img" onclick="openModal(this.src)">
+<br>
+Figure 5</p>
+</div>
+<p>This will bring up the <code>Getting Started</code> page.
+Follow this steps as given the page, you should intall the <code>rsconnect</code> package in your R.
+After installing the package, click the <code>Show secret</code>, and then, the <code>Copy to clipboard</code> (Figure 6).
+Then, copy and paste this clipboard as mentioned in Figure 4, and click the <code>Connect Account</code> in Figure 4.</p>
+<div style="text-align: center;">
+<p><img src="08_Shiny_web_app.webp" class="centered-img" onclick="openModal(this.src)">
+<br>
+Figure 6</p>
+</div>
+<p>You’re almost there! Now, select your <code>account</code>, edit the <code>Title</code>, and finally, click the <code>Publish</code> button! (Figure 7)</p>
+<div style="text-align: center;">
+<p><img src="09_Shiny_web_app.webp" class="centered-img" onclick="openModal(this.src)">
+<br>
+Figure 7</p>
+</div>
+<p>When you return to your account on <code>ShinyApps.io</code>, you will see the apps published to your account (Figure 8).</p>
+<div style="text-align: center;">
+<p><img src="10_Shiny_web_app.webp" class="centered-img" onclick="openModal(this.src)">
+<br>
+Figure 8</p>
+</div>
+<div id="imgModal" class="modal" onclick="closeModal(event)">
+<p><span class="close" onclick="closeModal(event)">×</span>
+<img class="modal-content" id="modalImg" onclick="toggleZoom(event)"></p>
+</div>
+</div>

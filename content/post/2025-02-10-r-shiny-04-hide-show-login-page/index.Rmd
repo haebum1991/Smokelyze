@@ -1,0 +1,342 @@
+---
+title: 'R shiny [04]: Hide/Show login page'
+author: Haebum Lee
+date: '2025-02-10'
+slug: r-shiny-04-hide-show-login-page
+featuredImage: "01_Shiny_hide_show_login_page.webp"
+categories:
+  - R-shiny
+tags: []
+---
+
+<style>
+pre code {
+    font-size: 14px;
+}
+</style>
+
+As explained in the previous post, creating a simulated login page in R Shiny is straightforward.
+This post demonstrates how to toggle the visibility of the login page, 
+allowing a seamless transition from the login page to the main page.
+This content includes the necessary information for the `server` section.
+The main focus of this post is to explain the transition of the login page using `actionButton()`. The part where the user enters an email and proceeds will not be covered in this post.
+
+<hr>
+## Install and import required pacakges
+
+As always, import the required packages.
+
+```{r, eval=FALSE}
+# Please install these packages before import them.
+# Load packages
+library(shiny)
+library(shinyjs)
+library(shinydashboard)
+library(htmltools)
+```
+
+<hr>
+## Create login and main UI pages
+
+Let's combine the two constructed syntax described in previous sections:
+"[R shiny [02]: Dashboard UI](https://leestory.netlify.app/2025/r-shiny-02-dashboard-ui/)" and 
+"[R shiny [03]: Create login page](https://leestory.netlify.app/2025/r-shiny-03-create-login-page/)".
+
+
+```{r, eval=FALSE}
+ui <- fluidPage(
+  shinyjs::useShinyjs(),
+  
+  ## UI login page
+  div(
+    id = "login_page",
+    
+    fluidRow(
+      column(4, 
+             offset = 4,
+             
+             wellPanel(
+               class = "login-panel",
+               
+               h2("Welcome to Login Page!"),
+               
+               textInput(inputId = "login_email", 
+                         label = HTML('Email (<span style="color: red;">required</span>)'), 
+                         value = ""),
+               
+               textInput(inputId = "login_affil", 
+                         label = "Affiliation (optional)", value = "")
+             ),
+             column(12,
+                    style = "text-align: right;",
+                    actionButton(inputId = "login_btn", 
+                                 label = "Go to app")
+             )
+      )
+    )
+  ),
+  
+  ## UI main page
+  div(
+    id = "ui_main_page",
+    
+    dashboardPage(
+      skin = "blue",
+      
+      ## Dashboard header
+      dashboardHeader(title = tagList(icon("chart-line"), "GAM tool"),
+                      tags$li(class = "dropdown",
+                              style = "margin-right: 10px; margin-top: 8px;",
+                              actionButton(inputId = "login_admin_btn",
+                                           label = "Admin",
+                                           icon = icon("user-shield")),
+                              actionButton(inputId = "logout_btn",
+                                           label = "Logout",
+                                           icon = icon("sign-out-alt"))
+                      )),
+      
+      ## Dashboard sidebar
+      dashboardSidebar(
+        sidebarMenu(
+          id = "tabs", 
+          menuItem("General information", 
+                   tabName = "ginfo", 
+                   icon = icon("info-circle")),
+          menuItem("GAM manual", 
+                   tabName = "gam_manual",
+                   icon = icon("project-diagram")),
+          menuItem("GAM previous", 
+                   tabName = "gam_previous", 
+                   icon = icon("history")),
+          menuItem("Discussion of statistics", 
+                   tabName = "discussion_of_statistics", 
+                   icon = icon("comments"))
+        )
+      ),
+      
+      ## Dashboard body
+      dashboardBody(
+        
+      )
+    )
+  )
+)
+
+server <- function(input, output, session) {}
+shiny::shinyApp(ui = ui, server = server)
+```
+
+If you run the app in this state, both the `div(id = "login_page", ...)` and `div(id = "ui_main_page", ...)` will be displayed on the same screen simultaneously.
+
+<div style="text-align: center;">
+  <img src="01_Shiny_hide_show_login_page.webp" class="centered-img" onclick="openModal(this.src)">
+</div>
+
+<hr>
+## Add hide/show function to the login page
+
+Therefore, when the app first opens, only the `login_page` should be visible. 
+To achieve this, we need to use the `shinyjs::hidden()` function.
+That is, the section with `div(id = "ui_main_page", ...)` should be wrapped with `shinyjs::hidden()` as follows:
+
+```{r, eval=FALSE}
+## UI main page
+ui <- fluidPage(
+  shinyjs::useShinyjs(),
+  
+  ## UI login page
+  div(
+    id = "login_page",
+    ...
+  ),
+  
+  ## UI main page
+  shinyjs::hidden(
+    div(
+      id = "ui_main_page",
+      ...
+    )
+  )
+)
+```
+
+Now, run `shiny::shinyApp(ui = ui, server = server)` again, and only the `login_page` will be displayed.
+Then, let's build the server part so that clicking the [Go to app] button 
+(i.e., `inputId = "login_btn"`) triggers the transition to `div(id = "ui_main_page", ...)`.
+
+```{r, eval=FALSE}
+## UI main page
+server <- function(input, output, session) {
+
+  ### Guest login button
+  observeEvent(input$login_btn, {
+      shinyjs::hide(id = "login_page")   # Hide the login page
+      shinyjs::show(id = "ui_main_page") # Show the main page
+  })
+}
+
+```
+
+Alternatively, you can modify it so that clicking the [Logout] button (i.e., `inputId = "logout_btn"`) inside `div(id = "ui_main_page", ...)` triggers the transition back to `div(id = "login_page", ...)`.
+
+```{r, eval=FALSE}
+## UI main page
+server <- function(input, output, session) {
+
+  ### Guest login button
+  observeEvent(input$login_btn, {
+      shinyjs::hide(id = "login_page")   # Hide the login page
+      shinyjs::show(id = "ui_main_page") # Show the main page
+  })
+  
+  ### Guest logout button
+  observeEvent(input$logout_btn, {
+    shinyjs::show(id = "login_page")   # Show the login page
+    shinyjs::hide(id = "ui_main_page") # Hide the main page
+  })
+}
+
+```
+
+Explanation of the Code: 
+
+`observeEvent(input$login_btn, { ... })`
+
+This function listens for the login button (`login_btn`) click event.
+When clicked, it hides the login page (`div(id = "login_page", ...)`) and displays the main page (`div(id = "ui_main_page", ...)`).
+
+`observeEvent(input$logout_btn, { ... })`
+
+This function listens for the logout button (`logout_btn`) click event.
+When clicked, it shows the login page (`div(id = "login_page", ...)`) again and hides the main page (`div(id = "ui_main_page", ...)`).
+This logic allows users to switch between the login page and the main page using the login/logout buttons.
+
+The most important thing here is to set the <span style="color:red; font-weight:bold;">`id`</span> properly. 
+Whether it's the <span style="color:red; font-weight:bold;">`id`</span> of an <code>`actionButton(id = ...)`</code> or the <span style="color:red; font-weight:bold;">`id`</span> included in <code>`div(id = ...)`</code>, 
+smooth communication between the `server` and `ui` relies on these <span style="color:red; font-weight:bold;">id</span> values.
+
+
+So, the final code is...
+```{r, eval=FALSE}
+## shiny packages
+suppressPackageStartupMessages(library("shiny"))
+suppressPackageStartupMessages(library("shinyjs"))
+suppressPackageStartupMessages(library("shinydashboard"))
+suppressPackageStartupMessages(library("htmltools"))
+
+# Define UI ----
+ui <- fluidPage(
+  shinyjs::useShinyjs(),
+  
+  ## UI login page
+  div(
+    id = "login_page",
+    
+    fluidRow(
+      column(4, 
+             offset = 4,
+             
+             wellPanel(
+               class = "login-panel",
+               
+               h2("Welcome to Login Page!"),
+               
+               textInput(inputId = "login_email", 
+                         label = HTML('Email (<span style="color: red;">required</span>)'), 
+                         value = ""),
+               
+               textInput(inputId = "login_affil", 
+                         label = "Affiliation (optional)", value = "")
+             ),
+             column(12,
+                    style = "text-align: right;",
+                    actionButton(inputId = "login_btn", 
+                                 label = "Go to app")
+             )
+      )
+    )
+  ),
+  
+  ## UI main page
+  shinyjs::hidden(
+    div(
+      id = "ui_main_page",
+      
+      dashboardPage(
+        skin = "blue",
+        
+        ## Dashboard header
+        dashboardHeader(title = tagList(icon("chart-line"), "GAM tool"),
+                        tags$li(class = "dropdown",
+                                style = "margin-right: 10px; margin-top: 8px;",
+                                actionButton(inputId = "login_admin_btn",
+                                             label = "Admin",
+                                             icon = icon("user-shield")),
+                                actionButton(inputId = "logout_btn",
+                                             label = "Logout",
+                                             icon = icon("sign-out-alt"))
+                        )),
+        
+        ## Dashboard sidebar
+        dashboardSidebar(
+          sidebarMenu(
+            id = "tabs", 
+            menuItem("General information", 
+                     tabName = "ginfo", 
+                     icon = icon("info-circle")),
+            menuItem("GAM manual", 
+                     tabName = "gam_manual",
+                     icon = icon("project-diagram")),
+            menuItem("GAM previous", 
+                     tabName = "gam_previous", 
+                     icon = icon("history")),
+            menuItem("Discussion of statistics", 
+                     tabName = "discussion_of_statistics", 
+                     icon = icon("comments"))
+          )
+        ),
+        
+        ## Dashboard body
+        dashboardBody(
+          
+        )
+      )
+    )
+  )
+)
+
+# Server part ----
+server <- function(input, output, session) {
+
+  ### Guest login button
+  observeEvent(input$login_btn, {
+      shinyjs::hide(id = "login_page")
+      shinyjs::show(id = "ui_main_page")
+  })
+  
+  ### Guest logout button
+  observeEvent(input$logout_btn, {
+    shinyjs::show(id = "login_page")
+    shinyjs::hide(id = "ui_main_page")
+  })
+}
+
+# Run the app ----
+shinyApp(ui = ui,
+         server = server)
+```
+
+<hr>
+## App test
+
+By testing the final output below, you can verify that clicking the `[Go to App]` button on the `login_page` and the `[Logout]` button on the `ui_main_page` successfully triggers the screen transition.
+
+```{r, results="asis", echo = F}
+cat('<iframe src="https://leestory.shinyapps.io/2025-02-10-03-r-shiny-hide-show-login-page/"
+     width="100%" height="600px" style="border:none;"></iframe>')
+```
+
+<div id="imgModal" class="modal" onclick="closeModal(event)">
+  <span class="close" onclick="closeModal(event)">&times;</span>
+  <img class="modal-content" id="modalImg" onclick="toggleZoom(event)">
+</div>

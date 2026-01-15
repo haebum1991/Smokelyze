@@ -1,0 +1,174 @@
+---
+title: 'R shiny [02]: Dashboard UI'
+author: Haebum Lee
+date: '2025-02-05'
+slug: r-shiny-02-dashboard-ui
+featuredImage: "01_Shiny_main_page.webp"
+categories:
+  - R-shiny
+tags: []
+---
+
+
+
+<style>
+pre code {
+    font-size: 14px;
+}
+</style>
+<p>R shiny is a very useful and versatile tool to build your own app using R.
+This blog section will walk you through the step-by-step process of how the GAM tool app was built.
+Please note that your R environment and package versions may differ from mine.
+Today’s topic will cover how the basic UI was set up.</p>
+<hr>
+<div id="install-and-import-required-pacakges" class="section level2">
+<h2>Install and import required pacakges</h2>
+<p>To begin, let’s set up a simple <code>shiny</code> application with a basic UI and server structure.
+Before creating the app, ensure you have the necessary libraries installed. If not, you can install them using:</p>
+<pre class="r"><code># Please install these packages before import them.
+# Load packages
+library(shiny)
+library(shinyjs)
+library(shinydashboard)
+library(htmltools)</code></pre>
+<ul>
+<li><p><code>shiny</code> is the core package for building interactive web applications in R, allowing users to create dynamic, user-friendly interfaces without needing extensive web development knowledge.</p></li>
+<li><p><code>shinydashboard</code> enhances Shiny applications by providing a structured and customizable dashboard layout, making it easier to design professional-looking interfaces with sidebar menus, tabbed content, and dynamic UI components.</p></li>
+<li><p><code>shinyjs</code> extends Shiny’s capabilities by allowing JavaScript interactions without writing JavaScript code, enabling features like hiding/showing elements, disabling/enabling inputs, running JavaScript functions, and modifying UI elements dynamically.</p></li>
+<li><p><code>htmltools</code> helps generate, manage, and customize HTML content in R, enabling users to create structured web elements, embed dependencies, and integrate HTML components into Shiny, R Markdown, and other web-based outputs.</p></li>
+</ul>
+<hr>
+</div>
+<div id="basic-structure-of-shiny-app" class="section level2">
+<h2>Basic structure of Shiny app</h2>
+<p>The basic structure of a shiny app consists of UI (frontend) and server (backend),
+and after setting the UI and server, you can check the app using <code>shinyApp()</code> function as given below:</p>
+<pre class="r"><code>ui &lt;- fluidPage()
+server &lt;- function(input, output, session) {}
+shiny::shinyApp(ui = ui, server = server)</code></pre>
+<hr>
+</div>
+<div id="create-shiny-app-dashboard" class="section level2">
+<h2>Create Shiny app dashboard</h2>
+<p>Let’s make a simple example using <code>shinydashboard</code> package.
+When you run below code, you can see the blank page with blue colored dashboard.</p>
+<pre class="r"><code>ui &lt;- fluidPage(
+  dashboardPage(
+    ## Dashboard color
+    skin = &quot;blue&quot;,
+    ## Dashboard header
+    dashboardHeader(),
+    ## Dashboard sidebar
+    dashboardSidebar(),
+    ## Dashboard body
+    dashboardBody()
+  )
+)
+
+server &lt;- function(input, output, session) {}
+shiny::shinyApp(ui = ui, server = server)</code></pre>
+<p><br>
+Okay, now let’s add a title to the app and some tabs to the sidebar in the UI.</p>
+<pre class="r"><code>ui &lt;- fluidPage(
+  dashboardPage(
+    ## Dashboard color
+    skin = &quot;blue&quot;,
+    ## Dashboard header
+    dashboardHeader(
+      title = tagList(icon(&quot;chart-line&quot;), 
+                      &quot;Hello&quot;)
+    ),
+    ## Dashboard sidebar
+    dashboardSidebar(
+      sidebarMenu( 
+        menuItem(&quot;Sidebar 1&quot;, 
+                 tabName = &quot;sidebar_1&quot;, 
+                 icon = icon(&quot;info-circle&quot;)),
+        menuItem(&quot;Sidebar 2&quot;, 
+                 tabName = &quot;sidebar_2&quot;,
+                 icon = icon(&quot;project-diagram&quot;)),
+        menuItem(&quot;Sidebar 3&quot;, 
+                 tabName = &quot;sidebar_3&quot;, 
+                 icon = icon(&quot;history&quot;)),
+        menuItem(&quot;Sidebar 4&quot;, 
+                 tabName = &quot;sidebar_4&quot;, 
+                 icon = icon(&quot;comments&quot;))
+      )
+    ),
+    ## Dashboard body
+    dashboardBody(
+    )
+  )
+)
+
+server &lt;- function(input, output, session) {}
+shiny::shinyApp(ui = ui, server = server)</code></pre>
+<p><br>
+In this context, the final basic structure of our app is as follows.
+The “id” and “tabName” shown below serve as a type of “address”.
+In dynamic web applications, elements such as id, name, and value are crucial.
+Properly setting these ensures smooth communication between the UI and the server.</p>
+<pre class="r"><code>ui &lt;- fluidPage(
+  shinyjs::useShinyjs(),
+  
+  div(id = &quot;ui_main_page&quot;,
+      dashboardPage(
+        ## Dashboard color
+        skin = &quot;blue&quot;,
+        ## Dashboard header
+        dashboardHeader(title = tagList(icon(&quot;chart-line&quot;), &quot;GAM tool&quot;),
+                        tags$li(class = &quot;dropdown&quot;,
+                                style = &quot;margin-right: 10px; margin-top: 8px;&quot;,
+                                actionButton(inputId = &quot;login_admin_btn&quot;,
+                                             label = &quot;Admin&quot;,
+                                             icon = icon(&quot;user-shield&quot;)),
+                                actionButton(inputId = &quot;logout_btn&quot;,
+                                             label = &quot;Logout&quot;,
+                                             icon = icon(&quot;sign-out-alt&quot;))
+                        )),
+        
+        ## Dashboard sidebar
+        dashboardSidebar(
+          sidebarMenu(
+            id = &quot;tabs&quot;, 
+            menuItem(&quot;General information&quot;, 
+                     tabName = &quot;ginfo&quot;, 
+                     icon = icon(&quot;info-circle&quot;)),
+            menuItem(&quot;GAM manual&quot;, 
+                     tabName = &quot;gam_manual&quot;,
+                     icon = icon(&quot;project-diagram&quot;)),
+            menuItem(&quot;GAM previous&quot;, 
+                     tabName = &quot;gam_previous&quot;, 
+                     icon = icon(&quot;history&quot;)),
+            menuItem(&quot;Discussion of statistics&quot;, 
+                     tabName = &quot;discussion_of_statistics&quot;, 
+                     icon = icon(&quot;comments&quot;))
+          )
+        ),
+        ## Dashboard body
+        dashboardBody(
+        )
+      )
+  )
+)
+
+server &lt;- function(input, output, session) {}
+shiny::shinyApp(ui = ui, server = server)</code></pre>
+<div style="text-align: center;">
+<p><img src="01_Shiny_main_page.webp" class="centered-img" onclick="openModal(this.src)"></p>
+</div>
+<!-- # ```{r, results="asis", echo=FALSE} -->
+<!-- # cat('<iframe src="https://leestory.shinyapps.io/2025-02-05-01-r-shiny-dashboard-ui/"  -->
+<!-- #       width="100%" height="600px" style="border:none;"></iframe>') -->
+<!-- # ``` -->
+<p><code>div(id = "ui_main_page", ... )</code> serves as a wrapper for the entire UI with “id”,
+allowing for future dynamic UI manipulations.
+<code>shinyjs::useShinyjs()</code> enables JavaScript-free UI modifications,
+making it possible to show/hide elements, disable buttons, and apply dynamic styling.
+In other words, it is used for managing login/logout or hide/show functionality and other interactive UI changes.
+Next time you’ll learn how to utilize these.</p>
+<div id="imgModal" class="modal" onclick="closeModal(event)">
+<p><span class="close" onclick="closeModal(event)">×</span>
+<img class="modal-content" id="modalImg" onclick="toggleZoom(event)"></p>
+</div>
+</div>

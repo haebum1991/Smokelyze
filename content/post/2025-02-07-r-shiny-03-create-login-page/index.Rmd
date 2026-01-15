@@ -1,0 +1,99 @@
+---
+title: 'R shiny [03]: Create login page'
+author: Haebum Lee
+date: '2025-02-07'
+slug: r-shiny-03-create-login-page
+featuredImage: "01_Shiny_login_page.webp"
+categories:
+  - R-shiny
+tags: []
+---
+
+<style>
+pre code {
+    font-size: 14px;
+}
+</style>
+
+Implementing a typical login page can be quite complex in R shiny.
+Implementing such a typical login page requires handling user information and passwords, 
+which presents limitations when building it in R Shiny.
+This post demonstrates how to create a "login page" in an R Shiny app.
+More precisely, it might be more appropriate to call it a simulated login page.
+
+For example, you could create a feature that takes guests 
+from the login page to the main UI page by simply entering their email address.
+Furthermore, you can even have your visitors receive a notification 
+via email as soon as they enter their email address.
+
+<hr>
+## Install and import required pacakges
+
+```{r, eval=FALSE}
+# Please install these packages before import them.
+# Load packages
+library(shiny)
+library(shinyjs)
+library(shinydashboard)
+library(htmltools)
+```
+
+<hr>
+## Create login page
+
+The following R Shiny code creates a simple login page UI. 
+It allows users to input their email (required) and affiliation (optional) before clicking the "Go to app" button to proceed.
+
+
+```{r, eval=FALSE}
+ui <- fluidPage(
+  shinyjs::useShinyjs(),  # Enables the use of ShinyJS for dynamic UI control
+  
+  ## UI login page
+  div(
+    id = "login_page",  # Wrapper div with an ID for the login page
+    
+    fluidRow(  # Creates a responsive row layout
+      column(4,  # Defines a column that takes 4/12 of the width
+             offset = 4,  # Centers the column by adding an offset of 4
+
+             wellPanel(  # Creates a styled panel for login inputs
+               class = "login-panel",  # Custom CSS class for styling
+               
+               h2("Welcome to Login Page!"),  # Heading text
+               
+               textInput(inputId = "login_email", 
+                         label = HTML('Email (<span style="color: red;">required</span>)'), 
+                         value = ""),  # Required email input field with HTML formatting
+               
+               textInput(inputId = "login_affil", 
+                         label = "Affiliation (optional)", value = "")  # Optional affiliation input field
+             ),
+             
+             column(12,  # Full-width column inside the main column for button alignment
+                    style = "text-align: right;",  # Aligns the button to the right
+                    actionButton(inputId = "login_btn", 
+                                 label = "Go to app")  # Button to proceed to the main app
+             )
+      )
+    )
+  )
+)
+
+server <- function(input, output, session) {}
+shiny::shinyApp(ui = ui, server = server)
+```
+
+After writing the code, you can run it using `shiny::shinyApp(ui = ui, server = server)`, 
+and the login page UI will be displayed as follows.
+(!Note that we haven't started the server part yet! So, there is nothing written in the server section. 
+You can modify various elements to match your design. Try making some changes and experiment with different settings!)
+
+<div style="text-align: center;">
+  <img src="01_Shiny_login_page.webp" class="centered-img" onclick="openModal(this.src)">
+</div>
+
+<div id="imgModal" class="modal" onclick="closeModal(event)">
+  <span class="close" onclick="closeModal(event)">&times;</span>
+  <img class="modal-content" id="modalImg" onclick="toggleZoom(event)">
+</div>
