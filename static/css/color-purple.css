@@ -1,0 +1,60 @@
+
+:root {
+  /* Text colors */
+  --text-heading: #222222;   /* h1~h6, 제목 계열 */
+  --text-main: #333333;      /* 본문 */
+  --text-strong: #111111;    /* archive 본문 등 진한 텍스트 */
+  --text-muted: #888888;     /* post-meta 등 회색 텍스트 */
+  --text-soft: #cccccc;      /* 날짜 등 옅은 텍스트 */
+
+  /* Base colors */
+  --color-bg: #ffffff;
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-code-bg: rgba(0, 0, 0, 0.02);
+  --color-code-bg2: rgba(255, 255, 255, 0.2);
+
+  /* header colors */
+  --header-grad-start:    #5b22a3;  /* 헤더 그라디언트 시작, 포인트 */
+  --header-grad-end:      #7b5fe9;  /* 헤더 그라디언트 끝 */
+  --header-border:        #5a3e85;  /* header border 등 */
+  
+  /* Footer / Widget / Card */
+  --footer-bg:            #4b0082;  /* footer 배경 */
+  --sidebar-widget-bg:    #f3eaff;  /* sidebar, widget 배경 */
+  --card-shadow:          #7D1FA3;  /* 카드 shadow, 테두리 등 */
+  --mobile-nav-bg:        #6a5acd;  /* 모바일 nav 배경 */
+
+  /* Accent colors */
+  --accent-highlight:     #f0dca8;  /* 본문 링크 underline, hover 배경 */
+  --accent-gold:          #B7A57A;  /* 모바일 nav-toggle 버튼 */
+  --accent-link:          #007acc;  /* 기본 링크 색 (prev/next, widget) */
+  --accent-link-strong:   #0056b3;  /* hover, BackToTop hover */
+
+  /* Greys / borders */
+  --border-main:          #dddddd;  /* 일반 border */
+  --border-light:         #e5e5e5;  /* hr, 연한 border */
+  --border-badge:         #bbbbbb;  /* duration badge 배경 */
+  --border-soft:          #cccccc;  /* 날짜, footer 보조 텍스트 */
+
+  /* Shadows */
+  --shadow-soft: rgba(0, 0, 0, 0.1); /* 썸네일, nav 등 가벼운 그림자 */
+  --shadow-strong: rgba(0, 0, 0, 0.2);/* BackToTop 버튼 등 진한 그림자 */
+  
+  
+  /* Map page colors */
+  --map-border: var(--color-white);              /* #map border */
+  --map-accordion-bg: #f9f8ff;                   /* accordion 전체 배경 */
+  --map-accordion-border: #e0dcf8;               /* accordion 외곽 border */
+  --map-accordion-gradient-start: #8c7ae6;       /* summary gradient 시작 */
+  --map-accordion-gradient-end: #9c88ff;         /* summary gradient 끝 */
+  --map-accordion-open-bg: #e9e7ff;              /* 열렸을 때 summary 배경 */
+  --map-accordion-open-border: #d4d1f4;          /* 열렸을 때 summary border */
+  --map-accordion-open-text: var(--color-black); /* 열렸을 때 summary 텍스트 */
+  --map-toolbar-bg: var(--sidebar-widget-bg);    /* toolbar-date 배경 */
+  --map-toolbar-border: var(--color-white);      /* toolbar-date border */
+  --map-toolbar-button-bg: var(--mobile-nav-bg); /* toolbar 버튼 배경 */
+  --map-toolbar-button-text: var(--color-white); /* toolbar 버튼 텍스트 */
+  --map-legend-bg: rgba(255, 255, 255, 0.9);     /* legend 박스 배경 */
+}
+

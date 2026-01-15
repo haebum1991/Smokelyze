@@ -1,0 +1,25 @@
+
+{
+  "name": "Smokelyze - Atmospheric Intelligence",
+  "short_name": "Smokelyze",
+  "description": "Your personalized platform for local climate, air quality, and natural hazard insights.",
+  "start_url": "/",
+  "scope": "/", 
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#222328", 
+  "theme_color": "#2c2d33", 
+  "icons": [
+    {
+      "src": "/images/Smokelyze_icon_192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/Smokelyze_icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+

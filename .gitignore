@@ -1,0 +1,9 @@
+
+.Rproj.user/
+public/
+themes/
+.RData
+.Rhistory
+.hugo_build.lock
+Smokelyze.Rproj
+

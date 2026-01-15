@@ -1,0 +1,59 @@
+
+:root {
+  /* Text colors */
+  --text-heading: #f7f7f9;   /* 더 밝게 */
+  --text-main:    #e7e7ea;   /* 본문 */
+  --text-strong:  #ffffff;   /* 최상위 강조 */
+  --text-muted:   #a8a8ba;   /* 서브 텍스트 */
+  --text-soft:    #9696a8;   /* 날짜 등 */
+
+  /* Base colors */
+  --color-bg:     #222328;       /* ✔ 소프트 다크 + 한 단계 밝게 */
+  --color-black:  #141418;
+  --color-white:  #ffffff;
+  --color-code-bg:  rgba(255,255,255,0.07);
+  --color-code-bg2: rgba(255,255,255,0.14);
+
+  /* Header colors — 회색 라인업으로 완전 변경 */
+  --header-grad-start: #2c2d33;   /* 약한 딥 그레이 */
+  --header-grad-end:   #4a4c55;   /* 중간 회색 */
+  --header-border:     #1f2025;   /* 헤더 구분선 */
+
+  /* Footer / Widget / Card */
+  --footer-bg:         #1d1e25;
+  --sidebar-widget-bg: #3c3d45;    /* 사이드바/위젯 더 밝게 */
+  --card-shadow:       #f0dca8;    /* 보라 제거, 뉴트럴한 그레이/라벤더 */
+  --mobile-nav-bg:     #5a5d67;    /* 완전 회색 계열 모바일 nav */
+
+  /* Accent colors */
+  --accent-highlight:   #4a4c55;
+  --accent-gold:        #e0d19c;
+  --accent-link:        #8abfff;
+  --accent-link-strong: #b3d2ff;
+
+  /* Borders / Greys */
+  --border-main:  #464850;
+  --border-light: #3a3b42;
+  --border-badge: #686a78;
+  --border-soft:  #7d7f8f;
+
+  /* Shadows */
+  --shadow-soft:   rgba(0, 0, 0, 0.32);
+  --shadow-strong: rgba(0, 0, 0, 0.50);
+
+  /* Map */
+  --map-border: rgba(255,255,255,0.22);
+  --map-accordion-bg: #2f3039;
+  --map-accordion-border: #4a4b58;
+  --map-accordion-gradient-start: #5c5d66;  /* 헤더와 통일된 회색톤 */
+  --map-accordion-gradient-end:   #72747f;
+  --map-accordion-open-bg:        #3b3c47;
+  --map-accordion-open-border:    #6a6c78;
+  --map-accordion-open-text:      var(--color-white);
+  --map-toolbar-bg:           #2d2e36;
+  --map-toolbar-border:       rgba(255,255,255,0.22);
+  --map-toolbar-button-bg:    #5a5d67;
+  --map-toolbar-button-text:  var(--color-white);
+  --map-legend-bg: rgba(40, 41, 50, 0.92);
+}
+

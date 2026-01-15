@@ -1,0 +1,224 @@
+
+<footer class="footer-container">
+  <ul class="footer-links">
+    <li>
+      <a href="https://gohugo.io/" class="footer-links-kudos">
+        MyArith developed by Dr. Haebum Lee, made with
+        <img src="{{ "images/hugo-logo.png" | relURL }}" alt="Hugo Logo" width="22" height="22">
+      </a>
+    </li>
+  </ul>
+
+  <p class="footer-copyright">
+    Copyright © {{ now.Year }} Smokelyze. All rights reserved.
+  </p>
+
+  <button id="BackToTop">▲ Back to Top</button>
+</footer>
+
+{{ partial "footer_highlightjs" . }}
+{{ partial "footer_mathjax" . }}
+{{ template "_internal/google_analytics.html" . }}
+
+<script>
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  (function () {
+    const button = document.getElementById("BackToTop");
+    if (button) {
+      button.addEventListener("click", scrollToTop);
+    }
+  })();
+
+  window.addEventListener("scroll", function () {
+    const button = document.getElementById("BackToTop");
+    if (button) {
+      if (window.scrollY > 300) {
+        button.style.display = "block";
+      } else {
+        button.style.display = "none";
+      }
+    }
+  });
+</script>
+
+<!-- Global Auth Overlay -->
+<div class="auth-overlay" id="AuthOverlay" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <h3>Login Required</h3>
+    </div>
+    <div class="auth-card-body" id="AuthViewMain">
+      <p>Join the Smokelyze community to add your insights and MapPost on the map.</p>
+      <button class="auth-btn-login" id="AuthBtnLogin">
+        <div class="auth-login-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20">
+            <path fill="#EA4335"
+              d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+            <path fill="#4285F4"
+              d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+            <path fill="#FBBC05"
+              d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+            <path fill="#34A853"
+              d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+            <path fill="none" d="M0 0h48v48H0z" />
+          </svg>
+        </div>
+        <span>Sign in with Google</span>
+      </button>
+
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+        <button id="AuthBtnBenefits" class="auth-btn-guest" style="text-decoration: underline;">
+          View Member Benefits
+        </button>
+        <button id="AuthBtnSkip" class="auth-btn-guest" style="margin-top: 2rem;">
+          Close (Continue as Guest)
+        </button>
+      </div>
+    </div>
+
+    <!-- Benefits View (Hidden by default) -->
+    <div class="auth-card-body" id="AuthViewBenefits" style="display: none;">
+      <ul class="auth-benefits-list">
+        <li>
+          <span class="icon">📝</span>
+          <div>
+            <strong>Create MapPost</strong>
+            <p>Share your insights and opinions directly on the map.</p>
+          </div>
+        </li>
+        <li>
+          <span class="icon">📥</span>
+          <div>
+            <strong>Data Download (Desktop only)</strong>
+            <p>Access and download [Published] data for your research and analysis.</p>
+          </div>
+        </li>
+      </ul>
+      <button id="AuthBackToLogin" class="auth-btn-login" style="margin-top: 2rem; justify-content: center;">
+        Back to Login
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- User Profiles Modal -->
+<div class="auth-overlay ProfilePage" id="ProfilePage" style="display: none;">
+  <div class="auth-card profile-card">
+
+    <div class="auth-card-header">
+      <h3>User Profiles</h3>
+      <button class="auth-btn-close" id="ProfileBtnClose">&times;</button>
+    </div>
+
+    <div class="auth-card-body">
+      <div class="profile-group">
+        <label>Name</label>
+        <input type="text" id="ProfileName" readonly class="profile-input readonly" title="Name is provided by Google">
+      </div>
+      <div class="profile-group">
+        <label>Email</label>
+        <input type="email" id="ProfileEmails" readonly class="profile-input readonly"
+          title="Email is provided by Google">
+      </div>
+      <div class="profile-group">
+        <label>User ID (UID) <small style="color:var(--text-soft);">(Share this to be added to
+            groups)</small></label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="ProfileUID" readonly class="profile-input readonly" style="flex: 1;">
+          <button id="ProfileBtnCopyUID" class="auth-btn-login"
+            style="width: auto; padding: 0 1rem; margin: 0;">Copy</button>
+        </div>
+      </div>
+      <hr>
+      <div class="profile-group">
+        <label for="ProfileNickname">Nickname</label>
+        <input type="text" id="ProfileNickname" maxlength="20" placeholder="Enter your nickname" class="profile-input">
+      </div>
+      <div class="profile-group">
+        <label for="ProfileAffiliation">Affiliation</label>
+        <input type="text" id="ProfileAffiliation" maxlength="50" placeholder="e.g. University, Company"
+          class="profile-input">
+      </div>
+
+      <div class="profile-message" id="ProfileMessage"></div>
+    </div>
+    <div class="auth-card-footer">
+      <button class="profile-btn-save" id="ProfileBtnSave">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- User Settings Modal -->
+<div class="auth-overlay SettingsPage" id="SettingsPage" style="display: none;">
+  <div class="auth-card settings-card">
+    <div class="auth-card-header">
+      <h3>Settings</h3>
+      <button class="auth-btn-close" id="SettingsBtnClose">&times;</button>
+    </div>
+    <div class="auth-card-body">
+      <div class="settings-group">
+        <label>
+          [My Group settings]
+          <br>
+          Group members permission to view and interact with your shared posts.
+          Therefore, "Group" MapPost is not displayed on the List drawer in the Map page.
+          <br>
+        </label>
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+          <input type="text" id="SettingsGroupInput" placeholder="Enter friend User ID (UID)" class="settings-input"
+            style="flex: 1;">
+          <button id="SettingsGroupAdd" class="auth-btn-login"
+            style="width: auto; padding: 0 1rem; margin: 0;">Add</button>
+        </div>
+        <ul id="SettingsGroupList" class="settings-input" style="max-height: 200px; overflow-y: auto;">
+          <li style="text-align: center; color: var(--text-main);">No group members yet.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/js/stats-data-export.js"></script>
+<script type="module" src="/js/stats-data-search.js"></script>
+<script type="module" src="/js/signin.js"></script>
+
+<script>
+  (function () {
+    const THEME_KEY = "hb-theme";
+    const linkEl = document.getElementById("theme-colors");
+    const btn = document.getElementById("theme-toggle");
+
+    if (!linkEl || !btn) return;
+
+    const DARK_HREF = "/css/color-dark.css";
+    const LIGHT_HREF = "/css/color-purple.css";
+
+    function applyTheme(mode) {
+      if (mode === "dark") {
+        linkEl.setAttribute("href", DARK_HREF);
+        btn.textContent = "Dark mode";
+        document.documentElement.dataset.theme = "dark";
+      } else {
+        linkEl.setAttribute("href", LIGHT_HREF);
+        btn.textContent = "Light mode";
+        document.documentElement.dataset.theme = "light";
+      }
+      localStorage.setItem(THEME_KEY, mode);
+      window.dispatchEvent(new CustomEvent("themeChanged", { detail: { theme: mode } }));
+    }
+
+    const saved = localStorage.getItem(THEME_KEY) || "dark";
+    applyTheme(saved);
+
+    btn.addEventListener("click", function () {
+      const current =
+        linkEl.getAttribute("href") === DARK_HREF ? "dark" : "light";
+      const next = current === "dark" ? "light" : "dark";
+      applyTheme(next);
+    });
+  })();
+</script>
+

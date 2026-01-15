@@ -1,0 +1,44 @@
+
+import { restoreUI, bindAccordionAutosave } from "./ui-state.js";
+import { initDateButtons } from "./ui-date.js";
+import { initUIPulsingIcons } from "./layers-icon.js";
+import { map } from "./map-init.js";
+import { geolocate } from "./layers.js";
+import { resetViewControl } from "./ui-reset.js";
+import { initMapCapture } from "./map-capture.js";
+
+// ---- [External data] AirNow ----
+import { initTimeButtons, initTimePicker } from "./ui-time.js";
+// ---- [External data] AirNow ----
+
+const datePicker = document.getElementById("datePicker");
+
+if (datePicker && !datePicker.value) {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const todayStr = `${yyyy}-${mm}-${dd}`;
+  datePicker.value = todayStr;
+  datePicker.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+// Initialize Map Controls
+if (map) {
+  if (geolocate) map.addControl(geolocate, "bottom-left");
+  if (resetViewControl) map.addControl(new resetViewControl(), "bottom-left");
+  map.addControl(new maplibregl.AttributionControl({ compact: false }), "bottom-right");
+  map.addControl(new maplibregl.ScaleControl({ maxWidth: 90, unit: "metric" }), "bottom-right");
+}
+
+if (restoreUI) restoreUI();
+if (bindAccordionAutosave) bindAccordionAutosave();
+if (initDateButtons) initDateButtons();
+if (initUIPulsingIcons) initUIPulsingIcons();
+
+// ---- [External data] AirNow ----
+if (initTimeButtons) initTimeButtons();
+if (initTimePicker) initTimePicker();
+if (initMapCapture) initMapCapture();
+// ---- [External data] AirNow ----
+

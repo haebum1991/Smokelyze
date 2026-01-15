@@ -1,0 +1,246 @@
+
+{{ define "main" }}
+
+<script>document.body.classList.add("page-main");</script>
+
+<div class="content">
+  <section class="hero-main-section">
+    <div class="hero-main-text">
+      <h1 class="hero-main-title reveal-on-scroll">{{ .Site.Title }}</h1>
+      <p class="hero-main-slogan reveal-on-scroll">
+        Your personalized platform for local climate, air quality, and natural hazard insights.
+      </p>
+    </div>
+  </section>
+
+  <section class="dashboard-window reveal-on-scroll">
+    <h2>Atmospheric Intelligence</h2>
+    <div class="dashboard-group">
+      
+      <a href="/map" class="dashboard-card-link">
+        <article class="dashboard-group-sub">
+          <h3> PMO3smokeTool (JS version) </h3>
+          <p>Check out the latest wildfire and smoke plume status including the latest research</p>
+          <img src="/images/map_page_sample.webp" alt="map_page_sample" style="width:100%; height:20rem; border-radius: var(--border-radius-0p8rem);
+          object-fit: cover; border: 0.1rem solid var(--color-bg);">
+        </article>
+      </a>
+
+      <a href="/smoke-tool" class="dashboard-card-link">
+        <article class="dashboard-group-sub">
+          <h3> PMO3smokeTool (R shiny version) </h3>
+          <p>Explore interactive maps based on the latest research on wildfires and air pollutants.</p>
+          <img src="/images/rsGAM_page_sample.webp" alt="rsGAM_page_sample" style="width:100%; height:20rem; border-radius: var(--border-radius-0p8rem); 
+          object-fit: cover; border: 0.1rem solid var(--color-bg);">
+        </article>
+      </a>
+      
+    </div>
+  </section>
+  
+  <br>
+
+  <section class="dashboard-window reveal-on-scroll">
+    <h2>Latest Archive </h2>
+    <div class="archive">
+      {{ $pages := .Pages }}
+      {{ if .IsHome }}
+        {{ $pages = .Site.RegularPages }}
+      {{ end }}
+      {{ $filteredPages := where $pages "Section" "!=" "" }}
+      {{ $latestThree := $filteredPages.ByDate.Reverse | first 3 }}
+      {{ range $latestThree }}
+        <article class="archive-item post-item">
+          {{ if .Resources.Match .Params.featuredImage }}
+            {{ $image := .Resources.GetMatch .Params.featuredImage }}
+            <div class="post-thumbnail">
+              <a href="{{ .RelPermalink }}">
+              <img src="{{ $image.RelPermalink }}" alt="{{ .Title }}">
+              </a>
+            </div>
+          {{ end }}
+    
+          <div class="post-content">
+            <a href="{{ .RelPermalink }}" class="archive-item-link">{{ .Title }}</a>
+    
+            <div class="post-meta">
+              <span class="post-date">{{ .Date.Format "2006-01-02" }}</span>
+              • <span class="post-read-time">{{ .ReadingTime }} min read</span>
+              • <span class="post-comments">0 comments</span>
+              {{ with .Params.categories }}
+                • <span class="post-category">{{ delimit . ", " }}</span>
+              {{ end }}
+            </div>
+          </div>
+        </article>
+      {{ end }}
+    </div>
+    
+    <div class="dashboard-archive-link">
+      <a href="/post" class="dashboard-archive-button">More archive →</a>
+    </div>
+  </section>
+</div>
+
+<style>
+body.page-main .container {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body.page-main .content {
+  max-width: 60%;
+}
+
+.hero-main-section {
+  width: 100vw;
+  height: 50vh;
+  position: relative;
+  left: 50%;
+  margin-left: -50vw;
+  padding: 8rem 2rem;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 4rem;
+
+  background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url("/images/main_bg_1.webp");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 120% auto;
+  background-attachment: fixed;
+  transition: background-position 0.2s linear;
+}
+
+.hero-main-title {
+  font-size: 4.8rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-heading);
+  text-shadow: 0 0.2rem 0.5rem var(--color-bg);
+}
+
+.hero-main-slogan {
+  font-size: 2.5rem;
+  margin-bottom: 2.5rem;
+  color: var(--text-heading);
+  text-shadow: 0 0.2rem 0.5rem var(--color-bg);
+}
+
+.dashboard-window {
+  margin-bottom: 4rem;
+}
+
+.dashboard-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.dashboard-group-sub {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem;
+  height: 100%;
+  color: var(--text-main);
+  background: var(--sidebar-widget-bg);
+  border: 0.1rem solid var(--card-shadow);
+  border-radius: var(--border-radius-0p8rem);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-card-link {
+  text-decoration: none;
+  display: block;
+  color: inherit;
+}
+
+.dashboard-card-link:hover .dashboard-group-sub {
+  transform: translateY(-0.5rem);
+  box-shadow: 0 1rem 2rem var(--text-main);
+}
+
+.dashboard-group-sub h3,
+.dashboard-group-sub p,
+.dashboard-group-sub img,
+.dashboard-group-sub-post-title,
+.dashboard-group-sub-post-meta,
+.dashboard-group-sub-post-summary {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.dashboard-group-sub-post-title {
+  color: var(--text-main);
+  font-size: 1.8rem;
+  font-weight: bold;
+  transition: color 0.2s ease; 
+}
+
+.dashboard-group-sub-post-meta {
+  color: var(--text-main);
+  font-size: 1.4rem;
+}
+
+.dashboard-group-sub-post-summary {
+  color: var(--text-main);
+  font-size: 1.4rem;
+}
+
+.dashboard-archive-link {
+  text-align: left;
+  margin-top: 1rem;
+}
+
+.dashboard-archive-button {
+  text-decoration: none;
+  max-width: max-content;
+  display: inline-block;
+  padding: 1rem 2.5rem;
+  font-weight: bold;
+  transition: background-color 0.2s;
+  color: var(--color-bg);
+  background-color: var(--card-shadow);
+  border-radius: var(--border-radius-0p8rem);
+}
+
+.dashboard-archive-button:hover {
+  background-color: var(--accent-link);
+}
+
+@media (max-width: 1366px) {
+  .hero-main-section {
+    background-size: cover; 
+    background-attachment: scroll !important;
+  }
+  
+  body.page-main .content {
+    max-width: 90%;
+  }
+  
+  .dashboard-group {
+    row-gap: 5rem;
+  }
+  
+}
+</style>
+
+<script>
+  window.addEventListener("scroll", function() {
+    const container = document.querySelector(".hero-main-section");
+    if (container) {
+      let scrollY = window.pageYOffset;
+      let moveX = 50 - (scrollY * 0.05); 
+      container.style.backgroundPosition = moveX + "% center";
+    }
+  });
+</script>
+
+{{ end }}
+

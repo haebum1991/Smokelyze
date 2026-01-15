@@ -1,0 +1,524 @@
+
+/**
+ * 레이어 정의 및 템플릿: 각 데이터셋별 필드 정보, 렌더링 스타일, 데이터 시각화 규칙을 정의
+ */
+export const ExcludeLayerGroups = {
+  
+  // ========= Common Groups =========
+  satelliteLayers: ["burn", "smoke", "fire"],
+    
+  // ========= Find by [key] =========
+  // [layers-handler.js] > [applyLayerToggles] > [EXCLUDED]
+  legend: ["wildfire-news", "wildfire-nifc", "MapPost"],
+
+  // [layers-colors.js] > [updateStateColors] > [EXCLUDED]
+  stateChoropleth: ["smoke", "wildfire-news", "wildfire-nifc", "MapPost"],
+
+  // [layers-tooltip.js] > [stateHoverHTML] > [EXCLUDED]
+  stateHover: ["wildfire-news", "wildfire-nifc", "MapPost"],
+
+  // [stats-common.js] > [getActiveModelLayers] > [EXCLUDED]
+  modelTable: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost"],
+
+  // [stats-data-search.js] > [updateVisibility] > [EXCLUDED]
+  // [loader.js] > [updateAllActiveSources] > [EXCLUDED]
+  searchSite: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-pm25", "airnow-ozone", "airnow-no2"],
+
+  // [stats-plot-dy-scatter.js] > [getActiveModelLayers] > [EXCLUDED]
+  plotScatter: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-pm25", "airnow-ozone", "airnow-no2"],
+
+
+  // ========= Find by [source] =========
+  // [loader.js] > [loadSourceData] > [GZIP_DATASETS]
+  formatGzip: ["gam_v2", "gam_v1", "gam_v2_edm", "pm_cbsa", "epa_ember", "wildfire_news", "wildfire_nifc", "smoke", "fire"],
+
+  // [loader.js] > [loadSourceData] > [CALC_SOURCES]
+  calcSources: ["gam_v2", "gam_v2_edm", "gam_v1", "epa_ember"],
+
+  // [loader.js] > [loadSourceData] > [STATS_SOURCES] & [publishedSources]
+  // [loader.js] > [updateAllActiveSources] > [STATS_SOURCES] & [publishedSources]
+  statsSources: ["gam_v2", "gam_v1", "gam_v2_edm", "pm_cbsa", "epa_ember"]
+
+};
+
+import { generatePopupHTML } from "./layers-tooltip.js";
+import {
+  EMPTY_FC,
+  PALETTE_EPA, PALETTE_JET, PALETTE_BIN_1, PALETTE_BIN_2, PALETTE_BIN_3, PALETTE_TRI, PALETTE_BURN, PALETTE_SMOKE,
+  BREAKS_O3, BREAKS_RESI, BREAKS_SMO_EMBER, BREAKS_PM, BREAKS_PM_CRIT,
+  BREAKS_TMAX, BREAKS_T2MAX, BREAKS_SRAD, BREAKS_QUANT, BREAKS_R2,
+  BREAKS_BIN, BREAKS_TRI, BREAKS_NO2, BREAKS_FIRE, BREAKS_SMOKE, BREAKS_BURN, BREAKS_FRP,
+  LABEL_SMOKE, LABEL_BIN, LABEL_SMO, LABEL_SMP
+} from "./layers-constants.js";
+
+export const DATA_IMPORT_METHOD = {
+
+  "wildfire-news": {
+      key: "wildfire-news",
+      source: "wildfire_news",
+      prefix: "wildfire_news_",
+      gzfileBaseUrlDate: "/realtime"
+  },
+  "wildfire-nifc": {
+      key: "wildfire-nifc",
+      source: "wildfire_nifc",
+      prefix: "wildfire_nifc_",
+      gzfileBaseUrlDate: "/realtime"
+  },
+  "MapPost": {
+      key: "MapPost",
+      source: "MapPost",
+      firebase: true // Hint that this is handled via Firebase
+  },
+  
+  // ---- [External data] AirNow ----
+  "airnow-pm25": {
+      key: "airnow-pm25",
+      source: "airnow-pm25",
+      coverage: "airnow.pm25",
+      hourly: true
+  },
+  "airnow-ozone": {
+      key: "airnow-ozone",
+      source: "airnow-ozone",
+      coverage: "airnow.ozone",
+      hourly: true
+  },
+  "airnow-no2": {
+      key: "airnow-no2",
+      source: "airnow-no2",
+      coverage: "airnow.no2",
+      hourly: true
+  },
+  // ---- [External data] AirNow ----
+  
+  "smoke": {
+      key: "smoke",
+      source: "smoke",
+      prefix: "noaa_hms_smoke_",
+      excludeIDs: ["uni"],
+      gzfileBaseUrlDate: "/noaa_hms_smoke_date_geojson",
+      statsBaseUrlDate: "/noaa_hms_smoke_date_json",
+      statsBaseUrlYear: "/noaa_hms_smoke_year_json"
+  },
+  "fire": {
+      key: "fire",
+      source: "fire",
+      prefix: "noaa_hms_fire_",
+      gzfileBaseUrlDate: "/noaa_hms_fire_date_geojson",
+      statsBaseUrlDate: "/noaa_hms_fire_date_json",
+      statsBaseUrlYear: "/noaa_hms_fire_year_json"
+  },
+  "burn": {
+      key: "burn",
+      source: "burn",
+      prefix: "MODIS_MCD64A1_",
+      excludeIDs: ["US", "US_conus"],
+      geoBaseUrlDate: "/modis_burn_area_date_geojson",
+      statsBaseUrlDate: "/modis_burn_area_date_json",
+      statsBaseUrlYear: "/modis_burn_area_year_json"
+  },
+  "gam_v2": {
+      key: "gam_v2",
+      source: "gam_v2",
+      prefix: "data_by_date_",
+      gzfileBaseUrlDate: "/data_by_date",
+  },
+  "gam_v2_edm": {
+      key: "gam_v2_edm",
+      source: "gam_v2_edm",
+      prefix: "data_by_date_",
+      gzfileBaseUrlDate: "/data_by_date",
+  },
+  "gam_v1": {
+      key: "gam_v1",
+      source: "gam_v1",
+      prefix: "data_by_date_",
+      gzfileBaseUrlDate: "/data_by_date",
+  },
+  "pm_cbsa": {
+      key: "pm_cbsa",
+      source: "pm_cbsa",
+      prefix: "data_by_date_",
+      gzfileBaseUrlDate: "/data_by_date",
+  },
+  "epa_ember": {
+      key: "epa_ember",
+      source: "epa_ember",
+      prefix: "data_by_date_",
+      gzfileBaseUrlDate: "/data_by_date",
+  },
+
+  "mda8-obs-gam-v2": { key: "mda8-obs-gam-v2", source: "gam_v2", field: "MDA8O3" },
+  "mda8-obs-gam-v1": { key: "mda8-obs-gam-v1", source: "gam_v1", field: "MDA8O3" },
+  "mda8-obs-epa-ember": { key: "mda8-obs-epa-ember", source: "epa_ember", field: "MDA8O3" },
+
+  "mda8-pred-gam-v2": { key: "mda8-pred-gam-v2", source: "gam_v2", field: "MDA8O3_pred" },
+  "mda8-pred-edm-gam-v2": { key: "mda8-pred-edm-gam-v2", source: "gam_v2", field: "edm_MDA8O3_pred" },
+  "mda8-pred-gam-v1": { key: "mda8-pred-gam-v1", source: "gam_v1", field: "MDA8O3_pred" },
+  "mda8-pred-epa-ember": { key: "mda8-pred-epa-ember", source: "epa_ember", field: "MDA8O3_pred" },
+
+  "smo-gam-v2": { key: "smo-gam-v2", source: "gam_v2", field: "SMO" },
+  "smo-edm-gam-v2": { key: "smo-edm-gam-v2", source: "gam_v2", field: "edm_SMO" },
+  "smo-gam-v1": { key: "smo-gam-v1", source: "gam_v1", field: "SMO" },
+  "smo-epa-ember": { key: "smo-epa-ember", source: "epa_ember", field: "SMO" },
+
+  "resids-gam-v2": { key: "resids-gam-v2", source: "gam_v2", field: "MDA8O3_resids" },
+  "resids-edm-gam-v2": { key: "resids-edm-gam-v2", source: "gam_v2", field: "edm_MDA8O3_resids" },
+  "resids-gam-v1": { key: "resids-gam-v1", source: "gam_v1", field: "MDA8O3_resids" },
+  "resids-epa-ember": { key: "resids-epa-ember", source: "epa_ember", field: "MDA8O3_resids" },
+
+  "resids-quant-gam-v2": { key: "resids-quant-gam-v2", source: "gam_v2", field: "Quant_MDA8O3_resids" },
+  "resids-quant-edm-gam-v2": { key: "resids-quant-edm-gam-v2", source: "gam_v2", field: "edm_Quant_MDA8O3_resids" },
+  "resids-quant-gam-v1": { key: "resids-quant-gam-v1", source: "gam_v1", field: "Quant_MDA8O3_resids" },
+  "resids-quant-epa-ember": { key: "resids-quant-epa-ember", source: "epa_ember", field: "Quant_MDA8O3_resids" },
+
+  "pm25-obs-gam-v2": { key: "pm25-obs-gam-v2", source: "gam_v2", field: "PM2.5" },
+  "pm25-obs-gam-v1": { key: "pm25-obs-gam-v1", source: "gam_v1", field: "PM2.5" },
+  "pm25-obs-pm-cbsa": { key: "pm25-obs-pm-cbsa", source: "pm_cbsa", field: "PM2.5" },
+
+  "pm25-quant-gam-v2": { key: "pm25-quant-gam-v2", source: "gam_v2", field: "Quant_PM2.5" },
+  "pm25-quant-gam-v1": { key: "pm25-quant-gam-v1", source: "gam_v1", field: "Quant_PM2.5" },
+  "pm25-quant-pm-cbsa": { key: "pm25-quant-pm-cbsa", source: "pm_cbsa", field: "Quant_PM2.5" },
+
+  "pm25-crit-gam-v2": { key: "pm25-crit-gam-v2", source: "gam_v2", field: "PM2.5_Crit" },
+  "pm25-crit-gam-v1": { key: "pm25-crit-gam-v1", source: "gam_v1", field: "PM2.5_Crit" },
+
+  "pm25-crit-m0p5m-pm-cbsa": { key: "pm25-crit-m0p5m-pm-cbsa", source: "pm_cbsa", field: "PM2.5_Crit_m0p5m" },
+  "pm25-crit-m1p0m-pm-cbsa": { key: "pm25-crit-m1p0m-pm-cbsa", source: "pm_cbsa", field: "PM2.5_Crit_m1p0m" },
+
+  "pm25-smoke-m0p5m-pm-cbsa": { key: "pm25-smoke-m0p5m-pm-cbsa", source: "pm_cbsa", field: "smoke_PM2.5_m0p5m" },
+  "pm25-smoke-m1p0m-pm-cbsa": { key: "pm25-smoke-m1p0m-pm-cbsa", source: "pm_cbsa", field: "smoke_PM2.5_m1p0m" },
+
+  "tmax-gam-v2": { key: "tmax-gam-v2", source: "gam_v2", field: "TMAX" },
+  "tmax-gam-v1": { key: "tmax-gam-v1", source: "gam_v1", field: "TMAX" },
+
+  "srad-gam-v2": { key: "srad-gam-v2", source: "gam_v2", field: "SRAD" },
+  "srad-gam-v1": { key: "srad-gam-v1", source: "gam_v1", field: "SRAD" },
+
+  "smokeday-gam-v2": { key: "smokeday-gam-v2", source: "gam_v2", field: "smoke" },
+  "smokeday-gam-v1": { key: "smokeday-gam-v1", source: "gam_v1", field: "smoke" },
+
+  "smokeday-975-gam-v2": { key: "smokeday-975-gam-v2", source: "gam_v2", field: "smoke_p975" },
+  "smokeday-975-gam-v1": { key: "smokeday-975-gam-v1", source: "gam_v1", field: "smoke_p975" },
+  "smokeday-975-edm-gam-v2": { key: "smokeday-975-edm-gam-v2", source: "gam_v2", field: "edm_smoke_p975" },
+
+  "smokeday-m0p5m-pm-cbsa": { key: "smokeday-m0p5m-pm-cbsa", source: "pm_cbsa", field: "smoke_m0p5m" },
+  "smokeday-m1p0m-pm-cbsa": { key: "smokeday-m1p0m-pm-cbsa", source: "pm_cbsa", field: "smoke_m1p0m" },
+
+  "ExcDays-gam-v1": { key: "ExcDays-gam-v1", source: "gam_v1", field: "exceedance" },
+  "ExcDays-gam-v2": { key: "ExcDays-gam-v2", source: "gam_v2", field: "exceedance" },
+  "ExcDays-epa-ember": { key: "ExcDays-epa-ember", source: "epa_ember", field: "exceedance" },
+  "ExcDays-edm-gam-v2": { key: "ExcDays-edm-gam-v2", source: "gam_v2", field: "edm_exceedance" },
+  "ExcDays-m0p5m-pm-cbsa": { key: "ExcDays-m0p5m-pm-cbsa", source: "pm_cbsa", field: "exceedance_m0p5m" },
+  "ExcDays-m1p0m-pm-cbsa": { key: "ExcDays-m1p0m-pm-cbsa", source: "pm_cbsa", field: "exceedance_m1p0m" }
+};
+
+export const DATASET_SOURCE_MAP = {
+    "gam-v2": "gam_v2",
+    "gam-v1": "gam_v1",
+    "epa-ember": "epa_ember",
+    "pm-cbsa": "pm_cbsa",
+    
+    // ---- [External data] AirNow ----
+    "airnow-pm25": "airnow-pm25",
+    "airnow-ozone": "airnow-ozone",
+    "airnow-no2": "airnow-no2",
+    // ---- [External data] AirNow ----
+    
+    "wildfire-news": "wildfire_news",
+    "wildfire-nifc": "wildfire_nifc",
+    "MapPost": "MapPost"
+};
+
+export function makeStepExpr(valueField, breaks, colors, nullVal) {
+    if (!breaks || breaks.length === 0) return colors[0];
+    var fallback = (nullVal !== undefined) ? nullVal : "rgba(0, 0, 0, 0)";
+    var stepExpr = ["step", ["to-number", ["get", valueField]]];
+    stepExpr.push(colors[0]);
+    for (var i = 0; i < breaks.length; i++) {
+        stepExpr.push(breaks[i]);
+        stepExpr.push(colors[i + 1]);
+    }
+
+    return [
+        "case",
+        ["==", ["get", valueField], null], fallback,
+        ["==", ["get", valueField], "NA"], fallback,
+        ["!", ["has", valueField]], fallback,
+        stepExpr
+    ];
+}
+
+export function makeSizeLegendItems(breaks, radii) {
+    var items = [{ label: "< " + breaks[0], radius: radii[0] }];
+    for (var i = 0; i < breaks.length; i++) {
+        var label = (i === breaks.length - 1) ? "> " + breaks[i] : breaks[i] + " to " + breaks[i + 1];
+        items.push({ label: label, radius: radii[i + 1] });
+    }
+    return items;
+}
+
+export function getLayerDef(key, sourceKey, fieldName, breaks, colors, opts) {
+    opts = opts || {};
+    var type = opts.type || "circle";
+
+    var layerSpec;
+    if (type === "symbol") {
+        layerSpec = {
+            id: key + "-symbol",
+            type: "symbol",
+            source: sourceKey,
+            layout: {
+                "icon-image": opts.iconImage || "marker",
+                "icon-size": opts.iconSize || [
+                    "interpolate", ["linear"], ["zoom"],
+                    1, 0.4,
+                    3, 0.6,
+                    6, 0.8,
+                    9, 1.0,
+                    12, 1.2
+                ],
+                "icon-allow-overlap": opts.iconAllowOverlap !== undefined ? opts.iconAllowOverlap : true
+            }
+        };
+    } else {
+        var defaultRadius = [
+            "interpolate", ["linear"], ["zoom"],
+            1, 3,
+            3, 6,
+            6, 10,
+            9, 14,
+            12, 18
+        ];
+        var radius = (opts.radius !== undefined) ? opts.radius : defaultRadius;
+        var strokeWidth = (opts.strokeWidth !== undefined) ? opts.strokeWidth : 1;
+        var strokeColor = opts.strokeColor || "black";
+
+        layerSpec = {
+            id: key + "-circle",
+            type: "circle",
+            source: sourceKey,
+            paint: {
+                "circle-radius": radius,
+                "circle-color": makeStepExpr(fieldName, breaks, colors),
+                "circle-stroke-width": strokeWidth,
+                "circle-stroke-color": strokeColor
+            }
+        };
+    }
+
+    return {
+        layers: [layerSpec],
+        hoverHTML: (p) => generatePopupHTML(p, sourceKey),
+        hoverOn: layerSpec.id,
+        legend: {
+            title: opts.title || fieldName,
+            breaks: breaks,
+            colors: colors,
+            labels: opts.labels || null
+        },
+        dsKey: opts.dsKey
+    };
+}
+
+export const LAYER_TEMPLATES = [
+    // --- Real-time data ---
+    { duration: "daily", id: "wildfire-news", field: "title", breaks: [], colors: ["blue"], title: "Wildfire News", datasets: ["wildfire-news"], type: "symbol", iconImage: "pulsing-news" },
+    { duration: "daily", id: "wildfire-nifc", field: "IncidentName", breaks: [], colors: ["orange"], title: "Wildfire Incidents", datasets: ["wildfire-nifc"], type: "symbol", iconImage: "pulsing-fire" },
+    { duration: "daily", id: "MapPost", field: "title", breaks: [], colors: ["red"], title: "MapPost", datasets: ["MapPost"], type: "symbol", iconImage: "pulsing-alert" },
+    
+    // ---- [External data] AirNow ----
+    { duration: "hourly", id: "airnow-pm25", field: "pm25(ug/m3)", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "AirNow<br>PM2.5-hr (µg m⁻³)", decimals: 1, datasets: ["airnow-pm25"], hourly: true },
+    { duration: "hourly", id: "airnow-ozone", field: "ozone(ppb)", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "AirNow<br>O3-hr (ppb)", decimals: 1, datasets: ["airnow-ozone"], hourly: true },
+    { duration: "hourly", id: "airnow-no2", field: "no2(ppb)", breaks: BREAKS_NO2, colors: PALETTE_EPA, title: "AirNow<br>NO2-hr (ppb)", decimals: 1, datasets: ["airnow-no2"], hourly: true },
+
+    // --- MDA8 Ozone ---
+    { duration: "daily", id: "mda8-obs", field: "MDA8O3", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "Obs MDA8 (ppb)", decimals: 1, datasets: ["gam-v2", "gam-v1", "epa-ember"] },
+    { duration: "daily", id: "mda8-pred", field: "MDA8O3_pred", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "Pred MDA8 (ppb)", decimals: 1, datasets: ["gam-v2", "gam-v1", "epa-ember"] },
+    { duration: "daily", id: "mda8-pred-edm", field: "edm_MDA8O3_pred", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "Pred MDA8 (EDM) (ppb)", decimals: 1, datasets: ["gam-v2"] },
+
+    // --- SMO ---
+    { duration: "daily", id: "smo", field: "SMO", breaks: (ds) => ds === "epa-ember" ? BREAKS_SMO_EMBER : BREAKS_RESI, colors: PALETTE_EPA, title: "SMO (ppb)", decimals: 1, datasets: ["gam-v2", "gam-v1", "epa-ember"] },
+    { duration: "daily", id: "smo-edm", field: "edm_SMO", breaks: BREAKS_RESI, colors: PALETTE_EPA, title: "SMO (EDM) (ppb)", decimals: 1, datasets: ["gam-v2"] },
+
+    // --- Residuals ---
+    { duration: "daily", id: "resids", field: "MDA8O3_resids", breaks: BREAKS_RESI, colors: PALETTE_EPA, title: "Residuals (ppb)", decimals: 1, datasets: ["gam-v2", "gam-v1", "epa-ember"] },
+    { duration: "daily", id: "resids-edm", field: "edm_MDA8O3_resids", breaks: BREAKS_RESI, colors: PALETTE_EPA, title: "Residuals (EDM) (ppb)", decimals: 1, datasets: ["gam-v2"] },
+
+    // --- Quantile Residuals ---
+    { duration: "daily", id: "resids-quant", field: "Quant_MDA8O3_resids", breaks: BREAKS_QUANT, colors: PALETTE_EPA, title: "Residual quantile (%)", decimals: 1, datasets: ["gam-v2", "gam-v1", "epa-ember"] },
+    { duration: "daily", id: "resids-quant-edm", field: "edm_Quant_MDA8O3_resids", breaks: BREAKS_QUANT, colors: PALETTE_EPA, title: "Residual quantile (EDM) (%)", decimals: 1, datasets: ["gam-v2"] },
+
+    // --- PM2.5 ---
+    { duration: "daily", id: "pm25-obs", field: "PM2.5", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "Obs PM2.5 (µg m⁻³)", decimals: 1, datasets: ["gam-v2", "gam-v1", "pm-cbsa"] },
+
+    { duration: "daily", id: "pm25-smoke-m0p5m", field: "smoke_PM2.5_m0p5m", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "Smoke PM2.5 m0p5m (µg m⁻³)", decimals: 2, datasets: ["pm-cbsa"] },
+    { duration: "daily", id: "pm25-smoke-m1p0m", field: "smoke_PM2.5_m1p0m", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "Smoke PM2.5 m1p0m (µg m⁻³)", decimals: 2, datasets: ["pm-cbsa"] },
+
+    // --- PM2.5 Quantiles ---
+    { duration: "daily", id: "pm25-quant", field: "Quant_PM2.5", breaks: BREAKS_QUANT, colors: PALETTE_EPA, title: "PM2.5 quantile (%)", decimals: 1, datasets: ["gam-v2", "gam-v1", "pm-cbsa"] },
+
+    // --- PM2.5 Crit ---
+    { duration: "daily", id: "pm25-crit", field: "PM2.5_Crit", breaks: BREAKS_PM_CRIT, colors: PALETTE_EPA, title: "PM2.5-crit (µg m⁻³)", decimals: 2, datasets: ["gam-v2", "gam-v1"] },
+    { duration: "daily", id: "pm25-crit-m0p5m", field: "PM2.5_Crit_m0p5m", breaks: BREAKS_PM_CRIT, colors: PALETTE_EPA, title: "PM2.5-crit m0p5m (µg m⁻³)", decimals: 2, datasets: ["pm-cbsa"] },
+    { duration: "daily", id: "pm25-crit-m1p0m", field: "PM2.5_Crit_m1p0m", breaks: BREAKS_PM_CRIT, colors: PALETTE_EPA, title: "PM2.5-crit m1p0m (µg m⁻³)", decimals: 2, datasets: ["pm-cbsa"] },
+
+    // --- Meteo (TMAX, SRAD) ---
+    { duration: "daily", id: "tmax", field: function (ds) { return ds === "gam-v2" ? "T2MAX" : "TMAX"; }, breaks: function (ds) { return ds === "gam-v2" ? BREAKS_T2MAX : BREAKS_TMAX; }, colors: PALETTE_EPA, title: function (ds) { return ds === "gam-v2" ? "TMAX (K)" : "TMAX (°C)"; }, decimals: 1, datasets: ["gam-v2", "gam-v1"] },
+    { duration: "daily", id: "srad", field: "SRAD", breaks: BREAKS_SRAD, colors: PALETTE_EPA, title: "SRAD (W m⁻²)", decimals: 1, datasets: ["gam-v2", "gam-v1"] },
+
+    // --- Smoke day (Binary) ---
+    { duration: "daily", id: "smokeday", field: "smoke", breaks: BREAKS_BIN, colors: PALETTE_BIN_1, title: "Smoke Day (SMD)", labelParams: LABEL_BIN, decimals: 0, datasets: ["gam-v2", "gam-v1"] },
+    { duration: "daily", id: "smokeday-975", field: "smoke_p975", breaks: BREAKS_BIN, colors: PALETTE_BIN_2, title: "SMO > 97.5th", labelParams: LABEL_BIN, decimals: 0, datasets: ["gam-v2", "gam-v1"] },
+    { duration: "daily", id: "smokeday-975-edm", field: "edm_smoke_p975", breaks: BREAKS_BIN, colors: PALETTE_BIN_3, title: "SMO > 97.5th (EDM)", labelParams: LABEL_BIN, decimals: 0, datasets: ["gam-v2"] },
+    { duration: "daily", id: "smokeday-m0p5m", field: "smoke_m0p5m", breaks: BREAKS_BIN, colors: PALETTE_BIN_1, title: "Smoke day (SMD) m0p5m", labelParams: LABEL_BIN, decimals: 0, datasets: ["pm-cbsa"] },
+    { duration: "daily", id: "smokeday-m1p0m", field: "smoke_m1p0m", breaks: BREAKS_BIN, colors: PALETTE_BIN_2, title: "Smoke day (SMD) m1p0m", labelParams: LABEL_BIN, decimals: 0, datasets: ["pm-cbsa"] },
+
+    // --- Exceedance Cause (Combined: 0=None, 1=Not Smoke, 2=Smoke) ---
+    // 0: Transparent, 1: Blue (#3399ff), 2: Red (#ff3333)
+    { duration: "daily", id: "ExcDays", field: "exceedance", breaks: BREAKS_TRI, colors: PALETTE_TRI, title: "Exc. day (> 70 ppb)", labelParams: LABEL_SMO, decimals: 0, datasets: ["gam-v2", "gam-v1", "epa-ember"] },
+    { duration: "daily", id: "ExcDays-edm", field: "edm_exceedance", breaks: BREAKS_TRI, colors: PALETTE_TRI, title: "Exc. day (EDM) (> 70 ppb)", labelParams: LABEL_SMO, decimals: 0, datasets: ["gam-v2"] },
+
+    // --- Exceedance Cause (PM CBSA) ---
+    { duration: "daily", id: "ExcDays-m0p5m", field: "exceedance_m0p5m", breaks: BREAKS_TRI, colors: PALETTE_TRI, title: "Exc. day (m0p5m) (> 9 µg m⁻³)", labelParams: LABEL_SMP, decimals: 0, datasets: ["pm-cbsa"] },
+    { duration: "daily", id: "ExcDays-m1p0m", field: "exceedance_m1p0m", breaks: BREAKS_TRI, colors: PALETTE_TRI, title: "Exc. day (m1p0m) (> 9 µg m⁻³)", labelParams: LABEL_SMP, decimals: 0, datasets: ["pm-cbsa"] },
+
+    // --- Satellite data ---
+    { duration: "daily", id: "burn", field: "burn", title: "Area burned (km²)", breaks: BREAKS_BURN, colors: PALETTE_BURN, decimals: 1, manualLayer: true },
+    { duration: "daily", id: "smoke", field: "smokeLight", category: "light", title: "Smoke area (light) (km²)", breaks: BREAKS_SMOKE, colors: PALETTE_SMOKE, labelParams: LABEL_SMOKE, decimals: 0, manualLayer: true },
+    { duration: "daily", id: "smoke", field: "smokeMedium", category: "medium", title: "Smoke area (medium) (km²)", breaks: BREAKS_SMOKE, colors: PALETTE_SMOKE, labelParams: LABEL_SMOKE, decimals: 0, manualLayer: true },
+    { duration: "daily", id: "smoke", field: "smokeHeavy", category: "heavy", title: "Smoke area (heavy) (km²)", breaks: BREAKS_SMOKE, colors: PALETTE_SMOKE, labelParams: LABEL_SMOKE, decimals: 0, manualLayer: true },
+    { duration: "daily", id: "fire", field: "fireCount", title: "Fire points", breaks: BREAKS_FIRE, colors: PALETTE_JET, decimals: 0, manualLayer: true },
+    { duration: "daily", id: "fire", field: "fireFrp", title: "FRP (MW)", breaks: BREAKS_FRP, colors: "#fd8d3c", decimals: 1, manualLayer: true }
+];
+
+export const LAYER_DEFS = (function () {
+    var defs = {};
+
+    LAYER_TEMPLATES.forEach(function (tmpl) {
+
+        if (tmpl.manualLayer) {
+            if (tmpl.duration && DATA_IMPORT_METHOD[tmpl.id]) {
+                DATA_IMPORT_METHOD[tmpl.id].duration = tmpl.duration;
+            }
+            return;
+        }
+        var supported = tmpl.datasets || Object.keys(DATASET_SOURCE_MAP);
+
+        supported.forEach(function (dsKey) {
+            if (!DATASET_SOURCE_MAP[dsKey]) return;
+            var sourceKey = DATASET_SOURCE_MAP[dsKey];
+            var key = (tmpl.id === dsKey) ? tmpl.id : (tmpl.id + "-" + dsKey);
+            var fieldName = typeof tmpl.field === "function" ? tmpl.field(dsKey) : tmpl.field;
+            var breaks = typeof tmpl.breaks === "function" ? tmpl.breaks(dsKey) : tmpl.breaks;
+            var title = typeof tmpl.title === "function" ? tmpl.title(dsKey) : tmpl.title;
+            
+            // Propagate duration to the raw source within DATA_IMPORT_METHOD
+            if (tmpl.duration && DATA_IMPORT_METHOD[sourceKey]) {
+                DATA_IMPORT_METHOD[sourceKey].duration = tmpl.duration;
+            }
+            
+            var opts = Object.assign({}, tmpl, {
+                title: title,
+                labels: tmpl.labelParams,
+                dsKey: dsKey
+            });
+
+            defs[key] = getLayerDef(key, sourceKey, fieldName, breaks, tmpl.colors, opts);
+        });
+    });
+
+    // Satellite data
+    var smokeTmpl = LAYER_TEMPLATES.find(function (t) { return t.id === "smoke"; });
+    if (smokeTmpl) {
+        defs.smoke = {
+            layers: [
+                {
+                    id: "smoke-fill",
+                    type: "fill",
+                    paint: {
+                        "fill-color": [
+                            "match", ["get", "category"],
+                            smokeTmpl.labelParams[2], smokeTmpl.colors[2],
+                            smokeTmpl.labelParams[1], smokeTmpl.colors[1],
+                            smokeTmpl.labelParams[0], smokeTmpl.colors[0],
+                            "uni", "#d9d9d9",
+                            "#f0f0f0"
+                        ],
+                        "fill-opacity": 0.35
+                    }
+                },
+                {
+                    id: "smoke-line",
+                    type: "line",
+                    paint: { "line-color": "#000000", "line-width": 0.5 }
+                }
+            ],
+            hoverHTML: (p) => generatePopupHTML(p, "smoke"),
+            hoverOn: "smoke-fill",
+            legend: {
+                title: "Smoke Density",
+                colors: smokeTmpl.colors,
+                labels: smokeTmpl.labelParams
+            }
+        };
+    }
+
+    var fireTmpl = LAYER_TEMPLATES.find(function (t) { return t.id === "fire" && t.field === "fireCount"; });
+    var frpTmpl = LAYER_TEMPLATES.find(function (t) { return t.id === "fire" && t.field === "fireFrp"; });
+
+    if (fireTmpl && frpTmpl) {
+    
+        var frpRadii = [2, 4, 6, 8, 10];
+        
+        defs.fire = {
+            layers: [
+                {
+                    id: "fire-circle",
+                    type: "circle",
+                    paint: {
+                        "circle-radius": makeStepExpr("FRP", frpTmpl.breaks, frpRadii, 0),
+                        "circle-color": frpTmpl.colors,
+                        "circle-opacity": 0.8,
+                        "circle-stroke-width": 0.5,
+                        "circle-stroke-color": "#000000"
+                    }
+                }
+            ],
+            hoverHTML: (p) => generatePopupHTML(p, "fire"),
+            hoverOn: "fire-circle",
+            legend: {
+                title: fireTmpl.title,
+                breaks: fireTmpl.breaks,
+                colors: fireTmpl.colors,
+                sizeLegend: {
+                    title: frpTmpl.title,
+                    color: frpTmpl.colors,
+                    items: makeSizeLegendItems(frpTmpl.breaks, frpRadii)
+                }
+            },
+            dsKey: "fire"
+        };
+    }
+
+    var burnTmpl = LAYER_TEMPLATES.find(function (t) { return t.id === "burn"; });
+    if (burnTmpl) {
+        defs.burn = {
+            layers: [
+                { id: "burn-fill", type: "fill", paint: { "fill-color": "#e31a1c", "fill-opacity": 0.8 } },
+                { id: "burn-line", type: "line", paint: { "line-color": "#b10026", "line-width": 0.5 } }
+            ],
+            hoverHTML: (p) => generatePopupHTML(p, "burn"),
+            hoverOn: "burn-fill",
+            legend: {
+                title: burnTmpl.title,
+                breaks: burnTmpl.breaks,
+                colors: burnTmpl.colors
+            }
+        };
+    }
+
+    return defs;
+})();
+

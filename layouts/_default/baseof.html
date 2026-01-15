@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    {{ partial "head.html" . }}
+  </head>
+  
+  <body>
+    <header class="header">
+      {{ partial "header.html" . }}
+    </header>
+
+    <main class="container">
+      {{ block "main" . }}{{ end }}
+    </main>
+
+    <footer class="footer">
+      {{ partial "footer.html" . }}
+    </footer>
+
+    <script src="https://instant.page/5.2.0" type="module" defer></script>
+  </body>
+  
+  <div id="UpdateToast" class="update-toast">
+    <div class="update-toast-content">
+      <span class="update-toast-icon">🚀</span>
+      <div class="update-toast-text">
+        <strong>New version available!</strong>
+        <p>Refresh to apply the latest updates.</p>
+      </div>
+      <button id="UpdateBtnRefresh" class="update-btn-refresh">Refresh</button>
+    </div>
+  </div>
+  
+  <script>
+    if ("serviceWorker" in navigator) {
+      let refreshing = false;
+  
+      // 서비스 워커가 업데이트되어 제어권이 변경되었을 때 페이지 새로고침
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        // 이미 새로고침 중이거나, 이전 컨트롤러가 없는 경우(첫 설치)는 무시
+        if (refreshing) return;
+        if (!navigator.serviceWorker.controller) return;
+  
+        console.log("[SW Client] Controller changed, reloading page to apply updates...");
+        refreshing = true;
+        window.location.reload();
+      });
+  
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js")
+          .then(registration => {
+            // 1. 이미 대기 중인 워커가 있는 경우
+            if (registration.waiting) {
+              handleWaitingWorker(registration.waiting);
+            }
+  
+            // 2. 새로운 워커가 발견된 경우
+            registration.addEventListener("updatefound", () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener("statechange", () => {
+                if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                  handleWaitingWorker(newWorker);
+                }
+              });
+            });
+            
+            // 3. 매 5분마다 업데이트 확인
+            setInterval(() => {
+              console.log("[SW Client] Checking for updates...");
+              registration.update().catch(err => console.error("[SW Client] Manual update failed:", err));
+            }, 300000); // 5 minutes
+          })
+          .catch(err => console.error("[SW Client] Registration failed:", err));
+      });
+  
+      function handleWaitingWorker(worker) {
+        // 이미 업데이트 알림이 떠 있다면 중복 실행 방지
+        const toast = document.getElementById("UpdateToast");
+        if (toast && toast.classList.contains("show")) return;
+  
+        showUpdateToast(worker);
+      }
+  
+      function showUpdateToast(worker) {
+        const toast = document.getElementById("UpdateToast");
+        const refreshBtn = document.getElementById("UpdateBtnRefresh");
+        if (!toast || !refreshBtn) return;
+  
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = "Refresh";
+        toast.classList.add("show");
+  
+        refreshBtn.onclick = () => {
+          console.log("[SW Client] User confirmed update.");
+          refreshBtn.disabled = true;
+          refreshBtn.textContent = "Applying...";
+  
+          // 대기 중인 서비스 워커에게 깨어나라는 메시지 전송
+          worker.postMessage("skipWaiting");
+  
+          // 만약 자동으로 새로고침이 안 될 경우를 대비한 보험 (3초 후)
+          setTimeout(() => {
+            if (!refreshing) window.location.reload();
+          }, 3000);
+        };
+      }
+    }
+  </script>
+</html>
+

@@ -1,0 +1,19 @@
+
+{
+  "name": "smokelyze-site",
+  "private": true,
+  "dependencies": {
+    "@google-cloud/storage": "^7.12.1"
+  },
+  "devDependencies": {
+    "terser": "^5.31.1",
+    "clean-css-cli": "^5.6.3"
+  },
+  "scripts": {
+    "build": "hugo && npm run minify",
+    "minify": "npm run minify:js && npm run minify:css",
+    "minify:js": "find public/js -name '*.js' -exec npx terser {} -o {} -c -m ';'",
+    "minify:css": "find public/css -name '*.css' -exec npx clean-css-cli -o {} {} ';'"
+  }
+}
+

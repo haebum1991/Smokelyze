@@ -1,0 +1,105 @@
+
+<script>
+  function setupNavToggle() {
+    const nav = document.getElementById("mainNav");
+    const openBtn = document.getElementById("navToggle");
+    const closeBtn = nav ? nav.querySelector(".nav-toggle-close") : null;
+    
+    if (!nav || !openBtn) return;
+    
+    openBtn.onclick = null;
+    nav.onclick = null;
+    if (closeBtn) closeBtn.onclick = null; 
+  
+    const closeMenu = () => {
+        nav.classList.remove("show");
+        openBtn.setAttribute("aria-expanded", "false"); 
+    }
+  
+    openBtn.addEventListener("click", () => {
+      const isShowing = nav.classList.toggle("show");
+      openBtn.setAttribute("aria-expanded", String(isShowing));
+    });
+  
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => {
+        closeMenu();
+      });
+    }
+  
+    nav.addEventListener("click", e => {
+      if (e.target.tagName === "A" && window.innerWidth <= 1024) {
+        closeMenu(); 
+      }
+    });
+  }
+  
+  document.readyState === "loading"
+    ? document.addEventListener("DOMContentLoaded", setupNavToggle)
+    : setupNavToggle();
+</script>
+
+
+<nav class="nav">
+  <a href="{{ "/" | relURL }}" class="nav-logo">
+    <img src="{{ print "images/" .Site.Params.logo.url | relURL }}" width="{{ .Site.Params.logo.width }}"
+      height="{{ .Site.Params.logo.height }}" alt="{{ .Site.Params.logo.alt }}">
+  </a>
+
+  <button id="theme-toggle" type="button" class="theme-toggle-btn">
+    Dark mode
+  </button>
+
+  <button class="nav-toggle" id="navToggle">☰</button>
+
+  <ul class="nav-links" id="mainNav">
+    <button class="nav-toggle-close" aria-label="Close">&times;</button>
+
+    {{ range .Site.Menus.main }}
+    <li><a href="{{ .URL }}">{{ .Name }}</a></li>
+    {{ end }}
+    <li id="NavAuthItem">
+      <!-- Unauthenticated State -->
+      <div id="ProfileBoxUnauthenticated" style="display: none;">
+        <a href="javascript:void(0)" id="NavBtnAuth">Login</a>
+      </div>
+
+      <!-- Authenticated State (Profile Icon) -->
+      <div class="profile-box" id="ProfileBoxAuthenticated" style="display: none;">
+        <button class="profile-btn-user" id="ProfileBtnUser" aria-label="User profile">
+          <div class="profile-avatar">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path
+                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+            </svg>
+          </div>
+        </button>
+        <div class="profile-dropdown" id="ProfileDropdown">
+          <button class="profile-btn-item" id="ProfileBtnProfile">
+            Profiles
+          </button>
+          <button class="profile-btn-item" id="ProfileBtnSettings">
+            Settings
+          </button>
+          <button class="profile-btn-item logout" id="ProfileBtnLogout">
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <script>
+        (function () {
+          const lastState = sessionStorage.getItem("auth-last-state");
+          const unauth = document.getElementById("ProfileBoxUnauthenticated");
+          const auth = document.getElementById("ProfileBoxAuthenticated");
+          if (lastState === "in") {
+            if (auth) auth.style.display = "flex";
+          } else {
+            if (unauth) unauth.style.display = "block";
+          }
+        })();
+      </script>
+    </li>
+  </ul>
+</nav>
+

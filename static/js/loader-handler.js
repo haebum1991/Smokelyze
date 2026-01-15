@@ -1,0 +1,662 @@
+
+/**
+ * 비즈니스 로직: 데이터 로딩, 관련 이벤트 바인딩, 각 모듈(Fetcher, State, UI) 간의 실행 순서를 제어
+ */
+ 
+import * as utils from "./utils.js";
+import { DATA_IMPORT_METHOD, ExcludeLayerGroups, DATASET_SOURCE_MAP } from "./layers-def.js";
+import { map } from "./map-init.js";
+import { saveDate, saveLayerFlag, state } from "./ui-state.js";
+import { auth } from "./fb-init.js";
+import { triggerRefresh, clearPlotSelectionForLayer } from "./stats-common.js";
+import { ensureLayers, applyLayerToggles } from "./layers-handler.js";
+import { EMPTY_FC } from "./layers-constants.js";
+import { regionStats } from "./layers-state.js";
+import { showErrorToast, toggleSpinner, updateWildfireNewsList } from "./loader-ui.js";
+import { fetchGeoJSON } from "./loader-fetch.js";
+import {
+    loadedSources, loadedGeoJSON, modelStatsCache, activeSources,
+    metricsMap, COUNT_METRICS, initializeMetrics, clearModelStats,
+    resetLoadedSources, mergeModelStats
+} from "./loader-state.js";
+
+// ---- [External data] AirNow ----
+import { airnowLoadData } from "./airnow-loader.js";
+import { showTimeControls, hideTimeControls } from "./ui-time.js";
+import { airnowHasActiveLayers } from "./airnow.js";
+// ---- [External data] AirNow ----
+
+export async function loadSourceData(sourceKey, isoDate) {
+    initializeMetrics();
+
+    if (sourceKey === "gam_v2_edm") {
+        return loadSourceData("gam_v2", isoDate);
+    }
+
+    const publishedSources = ExcludeLayerGroups.statsSources;
+    const isPublishedData = publishedSources.includes(sourceKey);
+
+    if (isPublishedData && !auth.currentUser) {
+        console.warn(`Blocking data load for ${sourceKey} - Login required for Published Data.`);
+        const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
+        if (ds && ds.source) {
+            map.getSource(ds.source)?.setData(EMPTY_FC);
+        }
+        
+        clearModelStats();
+        return;
+    }
+
+    if (loadedSources[sourceKey] === isoDate && loadedGeoJSON[sourceKey] !== null) {
+        if (modelStatsCache[sourceKey]) {
+            console.log("Restoring cached stats for:", sourceKey);
+            mergeModelStats(modelStatsCache[sourceKey]);
+        }
+
+        if (sourceKey === "wildfire_news" && loadedGeoJSON[sourceKey]) {
+            updateWildfireNewsList(loadedGeoJSON[sourceKey].features);
+        }
+
+        if (utils.refreshHighlight) {
+            utils.refreshHighlight();
+        }
+        return;
+    }
+
+    const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
+    if (!ds) return;
+    
+    ensureLayers();
+
+    if (ds.firebase) {
+        return;
+    }
+
+    const GZIP_DATASETS = ExcludeLayerGroups.formatGzip
+    const isGzipDataset = GZIP_DATASETS.includes(sourceKey);
+
+    let url;
+    if (isGzipDataset) {
+        url = utils.urlByDateGZfile(ds, isoDate);
+    } else {
+        url = utils.urlByDateGeo(ds, isoDate);
+    }
+
+    if (!url) return;
+
+    if (loadedSources[sourceKey] === isoDate && utils.isRecentlyFailed && utils.isRecentlyFailed(url)) {
+        return;
+    }
+
+    try {
+        let data = await fetchGeoJSON(url);
+        if (!data) throw new Error("Failed to load data for " + sourceKey);
+
+        if (sourceKey === "gam_v2") {
+            const dsEdm = DATA_IMPORT_METHOD["gam_v2_edm"];
+            if (dsEdm) {
+                const urlEdm = utils.urlByDateGZfile(dsEdm, isoDate);
+                const dataEdm = await fetchGeoJSON(urlEdm);
+
+                if (dataEdm && dataEdm.features) {
+                    const edmMap = new Map();
+                    dataEdm.features.forEach(f => {
+                        if (f.properties && f.properties.AQS_O3) {
+                            edmMap.set(f.properties.AQS_O3, f.properties);
+                        }
+                    });
+
+                    if (data.features) {
+                        data.features.forEach(f => {
+                            const aqs = f.properties.AQS_O3;
+                            const match = edmMap.get(aqs);
+
+                            if (match) {
+                                f.properties.edm_MDA8O3_pred = match.MDA8O3_pred;
+                                f.properties.edm_MDA8O3_resids = match.MDA8O3_resids;
+                                f.properties.edm_Quant_MDA8O3_resids = match.Quant_MDA8O3_resids;
+                                f.properties.edm_SMO = match.SMO;
+                                f.properties.edm_p975 = match.p975;
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
+        const CALC_SOURCES = ExcludeLayerGroups.calcSources
+
+        if (CALC_SOURCES.includes(sourceKey) && data.features) {
+            data.features.forEach(f => {
+                const p = f.properties;
+
+                if (sourceKey !== "epa_ember") {
+                    const condition = (p.MDA8O3_resids > p.p975) && (p.smoke === 1);
+                    p.smoke_p975 = condition ? 1 : 0;
+
+                    if (p.edm_MDA8O3_resids !== undefined) {
+                        const conditionEdm = (p.edm_MDA8O3_resids > p.edm_p975) && (p.smoke === 1);
+                        p.edm_smoke_p975 = conditionEdm ? 1 : 0;
+
+                        if (p.smoke == 0) {
+                            p.edm_SMO = null;
+                        }
+                    }
+
+                    if (p.smoke == 0) {
+                        p.SMO = null;
+                    }
+                }
+
+                const conditionExd = p.MDA8O3 > 70;
+                const conditionExd_ember = (p.MDA8O3 > 70) && (p.smoke === 1);
+                const conditionExd_v2 = (p.MDA8O3 > 70) && (p.smoke === 1) && (p.MDA8O3_resids > p.p975);
+                let conditionExd_v2_edm = false;
+                if (p.edm_MDA8O3_resids !== undefined) {
+                    conditionExd_v2_edm = (p.MDA8O3 > 70) && (p.smoke === 1) && (p.edm_MDA8O3_resids > p.edm_p975);
+                }
+
+                p.exceedance = 0;
+                p.edm_exceedance = 0;
+
+                if (conditionExd) {
+                    p.exceedance = 1;
+                    p.edm_exceedance = 1;
+
+                    if (sourceKey === "epa_ember") {
+                        if (conditionExd_ember) {
+                            p.exceedance = 2;
+                        }
+                    } else {
+                        if (conditionExd_v2) {
+                            p.exceedance = 2;
+                        }
+                        if (p.edm_MDA8O3_resids !== undefined) {
+                            if (conditionExd_v2_edm) {
+                                p.edm_exceedance = 2;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        if (sourceKey === "pm_cbsa" && data.features) {
+            data.features.forEach(f => {
+                const p = f.properties;
+                p.exceedance_m0p5m = 0;
+                p.exceedance_m1p0m = 0;
+
+                const pmVal = Number(p["PM2.5"]);
+                if (!isNaN(pmVal) && pmVal > 9) {
+                    const condExd_m0p5m = (p.smoke_m0p5m === 1);
+                    const condExd_m1p0m = (p.smoke_m1p0m === 1);
+                    p.exceedance_m0p5m = condExd_m0p5m ? 2 : 1;
+                    p.exceedance_m1p0m = condExd_m1p0m ? 2 : 1;
+                }
+            });
+        }
+
+        if (sourceKey === "smoke" && Array.isArray(ds.excludeIDs) && Array.isArray(data.features)) {
+            data.features = data.features.filter(
+                f => !ds.excludeIDs.includes(f?.properties?.category)
+            );
+        }
+
+        if (sourceKey === "burn" && data.features) {
+            data.features = data.features.filter(
+                f => !ds.excludeIDs.includes(f?.properties?.ID)
+            );
+
+            const burnStatsByRegion = {};
+            data.features.forEach(f => {
+                const p = f.properties;
+                if (p && p.ID) {
+                    if (!burnStatsByRegion[p.ID]) burnStatsByRegion[p.ID] = { burn: 0 };
+                    burnStatsByRegion[p.ID].burn += (Number(p.area_km2) || 0);
+                }
+            });
+
+            modelStatsCache.burn = burnStatsByRegion;
+            mergeModelStats(burnStatsByRegion);
+        }
+
+        if (sourceKey === "wildfire_nifc" && data.features) {
+            const stateMap = {
+                "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas", "CA": "California",
+                "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware", "FL": "Florida", "GA": "Georgia",
+                "HI": "Hawaii", "ID": "Idaho", "IL": "Illinois", "IN": "Indiana", "IA": "Iowa",
+                "KS": "Kansas", "KY": "Kentucky", "LA": "Louisiana", "ME": "Maine", "MD": "Maryland",
+                "MA": "Massachusetts", "MI": "Michigan", "MN": "Minnesota", "MS": "Mississippi", "MO": "Missouri",
+                "MT": "Montana", "NE": "Nebraska", "NV": "Nevada", "NH": "New Hampshire", "NJ": "New Jersey",
+                "NM": "New Mexico", "NY": "New York", "NC": "North Carolina", "ND": "North Dakota", "OH": "Ohio",
+                "OK": "Oklahoma", "OR": "Oregon", "PA": "Pennsylvania", "RI": "Rhode Island", "SC": "South Carolina",
+                "SD": "South Dakota", "TN": "Tennessee", "TX": "Texas", "UT": "Utah", "VT": "Vermont",
+                "VA": "Virginia", "WA": "Washington", "WV": "West Virginia", "WI": "Wisconsin", "WY": "Wyoming"
+            };
+            data.features.forEach(f => {
+                if (f.properties && f.properties.POOState) {
+                    let s = f.properties.POOState;
+                    if (s.startsWith("US-")) {
+                        const abbr = s.split("-")[1];
+                        if (stateMap[abbr]) f.properties.state = stateMap[abbr];
+                    }
+                }
+            });
+        }
+
+        if (sourceKey === "wildfire_news" && data.features) {
+            data.features.forEach(f => {
+                const p = f.properties;
+                const coords = f.geometry && f.geometry.coordinates;
+                const canShow = Array.isArray(coords) && coords.length >= 2;
+
+                if (canShow) {
+                    const range = 0.5;
+                    f.geometry.coordinates[0] += (Math.random() - 0.5) * range;
+                    f.geometry.coordinates[1] += (Math.random() - 0.5) * range;
+                    f._showOnMap = true;
+                } else {
+                    f._showOnMap = false;
+                }
+            });
+            updateWildfireNewsList(data.features);
+        }
+
+        const mapSource = map.getSource(ds.source);
+        if (mapSource) {
+            if (sourceKey === "wildfire_news") {
+                const filteredData = Object.assign({}, data, {
+                    features: data.features.filter(f => f._showOnMap)
+                });
+                mapSource.setData(filteredData);
+            } else {
+                mapSource.setData(data);
+            }
+
+            loadedSources[sourceKey] = isoDate;
+            loadedGeoJSON[sourceKey] = data;
+
+            if (utils.refreshHighlight) {
+                utils.refreshHighlight();
+            }
+        }
+
+        const STATS_SOURCES = ExcludeLayerGroups.statsSources;
+
+        if (STATS_SOURCES.includes(sourceKey) && data.features) {
+            var stateSums = {};
+            var computedStatsByState = {};
+
+            stateSums["US"] = {};
+            stateSums["US_conus"] = {};
+
+            Object.keys(metricsMap).forEach(function (k) {
+                stateSums["US"][k] = { sum: 0, count: 0 };
+                stateSums["US_conus"][k] = { sum: 0, count: 0 };
+            });
+
+            var keysToReset = [];
+            Object.keys(metricsMap).forEach(function (key) {
+                var p = metricsMap[key];
+                var fieldName = (typeof p === "function") ? p(sourceKey) : p;
+                keysToReset.push(fieldName);
+            });
+
+            Object.keys(regionStats).forEach(function (st) {
+                if (!regionStats[st]) return;
+                keysToReset.forEach(function (k) {
+                    if (regionStats[st][k] !== undefined) {
+                        regionStats[st][k] = null;
+                    }
+                });
+            });
+
+            var dsMap = DATASET_SOURCE_MAP || {};
+            var dsKey = Object.keys(dsMap).find(function (k) { return dsMap[k] === sourceKey; }) || sourceKey;
+
+            var resolvedMetrics = [];
+            Object.keys(metricsMap).forEach(function (key) {
+                var p = metricsMap[key];
+                var fieldName = (typeof p === "function") ? p(dsKey) : p;
+                resolvedMetrics.push({ key: key, field: fieldName });
+            });
+
+            data.features.forEach(function (fi) {
+                var s = fi.properties.state;
+                if (!s) return;
+
+                if (!stateSums[s]) {
+                    stateSums[s] = {};
+                    Object.keys(metricsMap).forEach(function (k) {
+                        stateSums[s][k] = { sum: 0, count: 0 };
+                    });
+                }
+
+                var p = fi.properties;
+                var isConus = (s !== "Alaska" && s !== "Hawaii" && s !== "Canada" && s !== "Mexico");
+
+                resolvedMetrics.forEach(function (m) {
+                    var val = p[m.field];
+
+                    if (val !== undefined && val !== null && !isNaN(Number(val))) {
+                        var v = Number(val);
+                        stateSums[s][m.key].sum += v;
+                        stateSums[s][m.key].count++;
+
+                        stateSums["US"][m.key].sum += v;
+                        stateSums["US"][m.key].count++;
+
+                        if (isConus) {
+                            stateSums["US_conus"][m.key].sum += v;
+                            stateSums["US_conus"][m.key].count++;
+                        }
+
+                        if (m.key.startsWith("ExcDays")) {
+                            var inc1 = (v === 1 ? 1 : 0);
+                            var inc2 = (v === 2 ? 1 : 0);
+
+                            stateSums[s][m.key].c1 = (stateSums[s][m.key].c1 || 0) + inc1;
+                            stateSums[s][m.key].c2 = (stateSums[s][m.key].c2 || 0) + inc2;
+
+                            stateSums["US"][m.key].c1 = (stateSums["US"][m.key].c1 || 0) + inc1;
+                            stateSums["US"][m.key].c2 = (stateSums["US"][m.key].c2 || 0) + inc2;
+
+                            if (isConus) {
+                                stateSums["US_conus"][m.key].c1 = (stateSums["US_conus"][m.key].c1 || 0) + inc1;
+                                stateSums["US_conus"][m.key].c2 = (stateSums["US_conus"][m.key].c2 || 0) + inc2;
+                            }
+                        }
+                    }
+                });
+            });
+
+            Object.keys(stateSums).forEach(function (state) {
+                var metricObj = stateSums[state];
+                var newStats = {};
+                var hasData = false;
+
+                Object.keys(metricsMap).forEach(function (key) {
+                    var item = metricObj[key];
+
+                    if (item && item.count > 0) {
+                        if (COUNT_METRICS.includes(key)) {
+                            newStats[key] = item.sum + " / " + item.count;
+                        } else {
+                            newStats[key] = item.sum / item.count;
+                        }
+
+                        if (key.startsWith("ExcDays")) {
+                            newStats[key + "_c1"] = item.c1 || 0;
+                            newStats[key + "_c2"] = item.c2 || 0;
+                        }
+                        hasData = true;
+                    } else {
+                        newStats[key] = null;
+                    }
+                });
+
+                if (hasData) {
+                    if (sourceKey === "gam_v2" || sourceKey === "gam_v2_edm") {
+                        newStats.label_display = "TMAX (K)";
+                    } else {
+                        newStats.label_display = "TMAX (°C)";
+                    }
+                    computedStatsByState[state] = newStats;
+                }
+            });
+
+            modelStatsCache[sourceKey] = computedStatsByState;
+            mergeModelStats(computedStatsByState);
+        }
+
+    } catch (e) {
+        console.warn("loadSourceData failed [" + sourceKey + "]: ", e);
+        map.getSource(ds.source)?.setData(EMPTY_FC);
+
+        loadedSources[sourceKey] = isoDate;
+        loadedGeoJSON[sourceKey] = null;
+
+        if (utils.refreshHighlight) {
+            utils.refreshHighlight();
+        }
+
+        if (["smoke", "fire"].includes(sourceKey)) {
+            showErrorToast(`
+          No data found for this date(${utils.ESML(isoDate)}) and dataset(${utils.ESML(sourceKey)}).
+          <br>
+   "HMS-smoke" and "HMS-fire" are automatically updated everyday, but
+          the latest data is from the previous day.`);
+        } else if (ExcludeLayerGroups.statsSources.includes(sourceKey)) {
+            showErrorToast(`
+          No data found for this date(${utils.ESML(isoDate)}) and dataset(${utils.ESML(sourceKey)}).
+          <br>
+   Please see the detail information[Desc.] for the valid data period of [Published] data.`);
+        } else {
+            showErrorToast(`No data found for this date(${utils.ESML(isoDate)}) and dataset(${utils.ESML(sourceKey)})`);
+        }
+
+        if (sourceKey === "wildfire_news") {
+            updateWildfireNewsList([]);
+        }
+
+        const STATS_SOURCES = ExcludeLayerGroups.statsSources;
+
+        if (STATS_SOURCES.includes(sourceKey)) {
+            clearModelStats();
+        }
+    }
+}
+
+export async function updateAllActiveSources() {
+    toggleSpinner(true);
+    try {
+        const isoDate = utils.currentDate();
+        const currentDataset = document.getElementById("MapDataSelect")?.value;
+        const checkboxes = document.querySelectorAll("input[type=checkbox][id^='layer-']");
+
+        const sourcesToLoad = new Set();
+        const activeShortIds = new Set();
+
+        checkboxes.forEach(cb => {
+            if (!cb.checked) return;
+
+            const shortId = cb.id.replace("layer-", "");
+            const contextKey = shortId + "-" + currentDataset;
+            const globalKey = shortId;
+
+            activeShortIds.add(shortId);
+
+            let targetConfig = null;
+
+            if (DATA_IMPORT_METHOD[contextKey]) {
+                targetConfig = DATA_IMPORT_METHOD[contextKey];
+            } else if (DATA_IMPORT_METHOD[globalKey]) {
+                targetConfig = DATA_IMPORT_METHOD[globalKey];
+            }
+
+            if (targetConfig && targetConfig.source) {
+                sourcesToLoad.add(targetConfig.source);
+            }
+        });
+
+        const publishedSources = ExcludeLayerGroups.statsSources;
+        const tryingToLoadPublished = Array.from(sourcesToLoad).some(s => publishedSources.includes(s));
+        
+        // 로그인 안 되어 있고 Published data 로드 시도 시 데이터 클리어
+        if (!auth.currentUser && tryingToLoadPublished) {
+
+            // Clear all published source data to remove any cached state colors/data
+            publishedSources.forEach(sourceKey => {
+                const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
+                if (ds && ds.source) {
+                    map.getSource(ds.source)?.setData(EMPTY_FC);
+                }
+                // Clear from loaded state
+                delete loadedSources[sourceKey];
+                delete loadedGeoJSON[sourceKey];
+                delete modelStatsCache[sourceKey];
+            });
+
+            // Clear all model stats to remove state colors
+            clearModelStats();
+        }
+        
+        // previous code before adding AirNow data
+        // const promises = [];
+        // sourcesToLoad.forEach(sourceKey => {
+        //     promises.push(loadSourceData(sourceKey, isoDate));
+        // });
+        // await Promise.all(promises);
+        
+        // ---- [External data] Hourly vs Daily load synchronization ----
+        const promises = [];
+        let hasHourly = false;
+
+        sourcesToLoad.forEach(sourceKey => {
+            const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
+            const duration = ds ? ds.duration : "daily";
+
+            if (duration === "hourly") {
+                hasHourly = true;
+            } else {
+                promises.push(loadSourceData(sourceKey, isoDate));
+            }
+        });
+
+        await Promise.all(promises);
+
+        if (hasHourly) {
+            if (typeof showTimeControls === "function") showTimeControls();
+            toggleSpinner(true);
+            airnowLoadData(isoDate)
+                .catch(e => console.error("Hourly background load failed:", e))
+                .finally(() => toggleSpinner(false));
+        } else {
+            if (typeof hideTimeControls === "function") hideTimeControls();
+        }
+        // ---- [External data] Hourly vs Daily load synchronization ----
+
+
+        // Update activeSources set
+        activeSources.length = 0;
+        sourcesToLoad.forEach(s => activeSources.push(s));
+
+        var searchWrapper = document.getElementById("SiteSearchWrapper");
+        if (sourcesToLoad.size === 0) {
+            if (utils.clearHighlight) {
+                utils.clearHighlight();
+            }
+            if (searchWrapper) searchWrapper.style.display = "none";
+        } else {
+            var hasSearchable = false;
+            var EXCLUDED = ExcludeLayerGroups.searchSite;
+
+            activeShortIds.forEach(function (sid) {
+                if (!EXCLUDED.includes(sid)) {
+                    hasSearchable = true;
+                }
+            });
+
+            if (searchWrapper) {
+                searchWrapper.style.display = hasSearchable ? "block" : "none";
+            }
+        }
+        
+        applyLayerToggles();
+        
+        if (typeof triggerRefresh === "function") {
+            triggerRefresh();
+        }
+        
+    } catch (e) {
+        console.error("updateAllActiveSources failed", e);
+    } finally {
+        toggleSpinner(false);
+    }
+}
+
+export function bindEvents() {
+    const datePicker = document.getElementById("datePicker");
+    if (datePicker) {
+        const onDateChange = utils.debounce(function (e) {
+            if (saveDate) saveDate(e.target.value);
+            resetLoadedSources(updateWildfireNewsList);
+            updateAllActiveSources();
+        }, 200);
+        datePicker.addEventListener("change", onDateChange);
+        datePicker.addEventListener("input", onDateChange);
+    }
+
+    const dataSelect = document.getElementById("MapDataSelect");
+    if (dataSelect) {
+        dataSelect.addEventListener("change", function () {
+            var newVal = dataSelect.value;
+            if (state && state.currentHighlight) {
+                var newSourceKey = DATASET_SOURCE_MAP[newVal] || newVal;
+                state.currentHighlight.dsKey = newVal;
+                state.currentHighlight.dataSource = newSourceKey;
+            }
+
+            clearModelStats();
+            updateAllActiveSources();
+        });
+    }
+    
+    const onLayerChange = utils.debounce(function () {
+        updateAllActiveSources();
+    }, 200);
+    
+    document.querySelectorAll("input[type=checkbox][id^='layer-']").forEach(cb => {
+        cb.addEventListener("change", function () {
+            const shortId = cb.id.replace("layer-", "");
+            if (saveLayerFlag) saveLayerFlag(shortId, cb.checked);
+            
+            // Published data 체크 시 로그인 확인 (사용자 클릭 이벤트 내에서 처리)
+            if (cb.checked && !auth.currentUser) {
+                const publishedSources = ExcludeLayerGroups.statsSources;
+                const currentDataset = document.getElementById("MapDataSelect")?.value;
+                const contextKey = shortId + "-" + currentDataset;
+                const globalKey = shortId;
+
+                let targetConfig = null;
+                if (DATA_IMPORT_METHOD[contextKey]) {
+                    targetConfig = DATA_IMPORT_METHOD[contextKey];
+                } else if (DATA_IMPORT_METHOD[globalKey]) {
+                    targetConfig = DATA_IMPORT_METHOD[globalKey];
+                }
+
+                // Published data인 경우 오버레이 표시
+                if (targetConfig && targetConfig.source && publishedSources.includes(targetConfig.source)) {
+                    utils.showAuthOverlay();
+                }
+            }
+            
+            if (!cb.checked && ExcludeLayerGroups.satelliteLayers.indexOf(shortId) !== -1) {
+                if (typeof clearPlotSelectionForLayer === "function") {
+                    clearPlotSelectionForLayer(cb.id);
+                }
+            }
+            
+            onLayerChange();
+        });
+    });
+    
+    // ---- [External data] AirNow ----
+    // AirNow time picker event listener
+    const timePicker = document.getElementById("timePicker");
+    if (timePicker) {
+        timePicker.addEventListener("change", utils.debounce(async function () {
+            if (airnowHasActiveLayers()) {
+                toggleSpinner(true);
+                try {
+                    await airnowLoadData(utils.currentDate());
+                } finally {
+                    toggleSpinner(false);
+                }
+            }
+        }, 200));
+    }
+    // ---- [External data] AirNow ----
+}
+
