@@ -168,13 +168,6 @@ if (navAuthBtn) navAuthBtn.addEventListener("click", () => {
     utils.showAuthOverlay();
 });
 
-if (profileUserBtn) {
-    profileUserBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        if (profileDrop) profileDrop.classList.toggle("show");
-    });
-}
-
 window.addEventListener("click", () => {
     if (profileDrop) profileDrop.classList.remove("show");
 });

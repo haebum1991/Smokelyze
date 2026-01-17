@@ -4,17 +4,23 @@ title: ""
 ---
 
 <h1 style="font-weight: bold;">
-GAM & PM2.5 and O3 smoke tool (PMO3smokeTool)
+Smokelyze
 </h1>
 
+<h3>
+Smokelyze, formerly known as PMO3smokeTool, is a comprehensive analytical platform for wildfire smoke impact assessment.
+</h3>
+
 <div style="text-align: left;">
-  <p><a href="https://westar.shinyapps.io/PMO3smokeTool/" target="_blank" rel="noopener noreferrer" style="font-size: 1.6rem;">
-    https://westar.shinyapps.io/PMO3smokeTool/
-  </a> (R shiny version (primary app))
-  <br>
+  <p>
   <a href="https://smokelyze.netlify.app/map/" rel="noopener noreferrer" style="font-size: 1.6rem;">
     https://smokelyze.netlify.app/map/
-  </a> (JavaScript version) </p>
+  </a> (JavaScript version) 
+  <br>
+  <a href="https://westar.shinyapps.io/PMO3smokeTool/" target="_blank" rel="noopener noreferrer" style="font-size: 1.6rem;">
+    https://westar.shinyapps.io/PMO3smokeTool/
+  </a> (R shiny version)
+  </p>
 </div>
 
 <div class="reveal-on-scroll">

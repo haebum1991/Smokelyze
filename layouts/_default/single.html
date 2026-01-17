@@ -2,7 +2,7 @@
 {{ define "main" }}
 
 <main class="content">
-  {{ if not (or (eq .RelPermalink "/about/") (eq .RelPermalink "/smoke-tool/")) }}
+  {{ if not (or (eq .RelPermalink "/about/") (eq .RelPermalink "/smokelyze/")) }}
     {{ $currentCategories := .Params.categories }}
     {{ $filteredPages := slice }}
 

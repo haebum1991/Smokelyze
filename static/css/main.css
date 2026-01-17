@@ -977,7 +977,7 @@ body.page-about .sidebar {
 }
 
 .profile-btn-item:hover {
-  background: rgba(128, 128, 128, 0.1);
+  background: rgba(128, 128, 128, 0.3);
 }
 
 .profile-btn-item.logout:hover {
