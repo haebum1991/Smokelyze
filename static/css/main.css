@@ -1157,7 +1157,7 @@ body.page-about .sidebar {
     top: var(--safe-area-top);
     bottom: 0;
     right: 0;
-    width: 35%;
+    width: 40%;
 
     transform: translateX(100%);
     transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
@@ -1177,6 +1177,7 @@ body.page-about .sidebar {
 
     justify-content: flex-start;
     align-items: flex-start;
+    touch-action: pan-y;
   }
   
   .nav-logo img {
