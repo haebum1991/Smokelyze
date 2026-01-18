@@ -33,6 +33,51 @@
       }
     });
     
+    // Swipe to close logic
+    let touchStartX = 0;
+    let touchCurrentX = 0;
+    let touchStartY = 0;
+
+    nav.addEventListener("touchstart", (e) => {
+      if (window.innerWidth > 1024) return;
+      touchStartX = e.touches[0].clientX;
+      touchCurrentX = touchStartX;
+      touchStartY = e.touches[0].clientY;
+      nav.style.transition = "none"; // Disable transition during swipe
+    }, { passive: true });
+
+    nav.addEventListener("touchmove", (e) => {
+      if (window.innerWidth > 1024 || !nav.classList.contains("show")) return;
+      
+      touchCurrentX = e.touches[0].clientX;
+      const touchCurrentY = e.touches[0].clientY;
+      const diffX = touchCurrentX - touchStartX;
+      const diffY = touchCurrentY - touchStartY;
+
+      // Only swipe if mostly horizontal and moving right
+      if (Math.abs(diffX) > Math.abs(diffY) && diffX > 0) {
+        e.preventDefault(); // Prevent scrolling while swiping menu
+        nav.style.transform = `translateX(${diffX}px)`;
+      }
+    }, { passive: false });
+
+    nav.addEventListener("touchend", () => {
+      if (window.innerWidth > 1024) return;
+      
+      nav.style.transition = ""; // Restore original transition (from CSS)
+      const diffX = touchCurrentX - touchStartX;
+      
+      // Threshold: if swiped more than 100px or more than 30% of nav width
+      if (diffX > 100) {
+        closeMenu();
+      }
+      
+      // Reset transform so CSS takes over
+      nav.style.transform = "";
+      touchStartX = 0;
+      touchCurrentX = 0;
+    }, { passive: true });
+    
     // Dropdown toggle logic
     const dropdownTriggers = nav.querySelectorAll(".nav-dropdowns, #ProfileBtnUser");
     dropdownTriggers.forEach(trigger => {
