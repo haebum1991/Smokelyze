@@ -5,7 +5,7 @@
  * Each coverage uses its own separate map source for independent caching
  */
 
-import { refreshHighlight } from "./utils.js";
+import { refreshHighlight, isRecentlyFailed, failedUrls } from "./utils.js";
 import { map } from "./map-init.js";
 import { EMPTY_FC } from "./layers-constants.js";
 import { loadedGeoJSON, loadedSources } from "./loader-state.js";
@@ -101,7 +101,22 @@ export async function airnowLoadData(isoDate) {
             }
 
             const url = airnowBuildURL(coverage, utcIsoDate, utcHour, bbox);
+            
+            // [추가] 최근 실패한 이력이 있으면 서버에 요청하지 않고 즉시 종료
+            if (isRecentlyFailed(url)) {
+                const pollutantName = coverage.split(".")[1].toUpperCase();
+                const errorMsg = `AirNow ${pollutantName} data is not available for the selected time. Please try a different time (data is usually 1-2 hours delayed).`;
+                showErrorToast(errorMsg);
 
+                const cbId = "layer-" + coverage.replace(".", "-");
+                const cb = document.getElementById(cbId);
+                if (cb) cb.checked = false;
+
+                const source = map.getSource(sourceId);
+                if (source) source.setData(EMPTY_FC);
+                return { coverage, sourceId, success: false };
+            }
+            
             try {
                 const data = await airnowFetchData(url);
                 const rows = airnowParseCSV(data);
@@ -126,8 +141,18 @@ export async function airnowLoadData(isoDate) {
                 
                 // User-friendly error message
                 const pollutantName = coverage.split(".")[1].toUpperCase();
-                const errorMsg = `AirNow ${pollutantName} data is not available for the selected time. Please try a different time (data is usually 1-2 hours delayed).`;
+                const errorMsg = `AirNow ${pollutantName} data is not available for the selected time.<br>Please try a different time (data is usually 1-2 hours delayed).`;
                 showErrorToast(errorMsg);
+                
+                // [추가] 실패한 URL 기록 (15분간 재요청 방지)
+                if (url && failedUrls) {
+                    failedUrls.set(url, Date.now());
+                }
+                
+                // Auto-uncheck failed AirNow layer
+                const cbId = "layer-" + coverage.replace(".", "-");
+                const cb = document.getElementById(cbId);
+                if (cb) cb.checked = false;
                 
                 const source = map.getSource(sourceId);
                 if (source) source.setData(EMPTY_FC);

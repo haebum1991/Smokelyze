@@ -85,6 +85,7 @@ export async function loadSourceData(sourceKey, isoDate) {
     if (!url) return;
 
     if (loadedSources[sourceKey] === isoDate && utils.isRecentlyFailed && utils.isRecentlyFailed(url)) {
+        handleLoadingError(sourceKey, isoDate);
         return;
     }
 
@@ -412,39 +413,89 @@ export async function loadSourceData(sourceKey, isoDate) {
 
     } catch (e) {
         console.warn("loadSourceData failed [" + sourceKey + "]: ", e);
+        handleLoadingError(sourceKey, isoDate, ds);
+    }
+}
+
+/**
+ * Consolidates error feedback (Uncheck checkbox + Error Toast)
+ */
+function handleLoadingError(sourceKey, isoDate, ds = null) {
+    // 1. Uncheck the corresponding checkbox
+    document.querySelectorAll("input[type=checkbox][id^='layer-']").forEach(cb => {
+        const shortId = cb.id.replace("layer-", "");
+        const currentDataset = document.getElementById("MapDataSelect")?.value;
+        const config = DATA_IMPORT_METHOD[shortId + "-" + currentDataset] || DATA_IMPORT_METHOD[shortId];
+        if (config && config.source === sourceKey) {
+            cb.checked = false;
+        }
+    });
+
+    // 2. Clear Source data if config is provided
+    if (ds && ds.source) {
         map.getSource(ds.source)?.setData(EMPTY_FC);
+    }
 
-        loadedSources[sourceKey] = isoDate;
-        loadedGeoJSON[sourceKey] = null;
+    // 3. Update global tracking placeholders
+    loadedSources[sourceKey] = isoDate;
+    loadedGeoJSON[sourceKey] = null;
 
-        if (utils.refreshHighlight) {
-            utils.refreshHighlight();
-        }
+    if (utils.refreshHighlight) {
+        utils.refreshHighlight();
+    }
 
-        if (["smoke", "fire"].includes(sourceKey)) {
-            showErrorToast(`
+    // 4. Show error toast based on source type
+    if (["smoke", "fire"].includes(sourceKey)) {
+        showErrorToast(`
           No data found for this date(${utils.ESML(isoDate)}) and dataset(${utils.ESML(sourceKey)}).
           <br>
-   "HMS-smoke" and "HMS-fire" are automatically updated everyday, but
+          "HMS-smoke" and "HMS-fire" are automatically updated everyday, but 
           the latest data is from the previous day.`);
-        } else if (ExcludeLayerGroups.statsSources.includes(sourceKey)) {
-            showErrorToast(`
+    } else if (ExcludeLayerGroups.statsSources.includes(sourceKey)) {
+        showErrorToast(`
           No data found for this date(${utils.ESML(isoDate)}) and dataset(${utils.ESML(sourceKey)}).
           <br>
-   Please see the detail information[Desc.] for the valid data period of [Published] data.`);
-        } else {
-            showErrorToast(`No data found for this date(${utils.ESML(isoDate)}) and dataset(${utils.ESML(sourceKey)})`);
-        }
+          Please see the detail information[Desc.] for the valid data period of [Published] data.`);
+    } else {
+        showErrorToast(`No data found for this date(${utils.ESML(isoDate)}) and dataset(${utils.ESML(sourceKey)})`);
+    }
 
-        if (sourceKey === "wildfire_news") {
-            updateWildfireNewsList([]);
-        }
+    if (sourceKey === "wildfire_news") {
+        updateWildfireNewsList([]);
+    }
 
-        const STATS_SOURCES = ExcludeLayerGroups.statsSources;
+    if (ExcludeLayerGroups.statsSources.includes(sourceKey)) {
+        clearModelStats();
+    }
 
-        if (STATS_SOURCES.includes(sourceKey)) {
-            clearModelStats();
+    // 5. [추가] 체크박스가 해제되었으므로 검색 UI 상태도 새로고침
+    refreshSearchUIVisibility();
+}
+
+/**
+ * Re-scans checkboxes to show/hide the Site Search UI
+ */
+export function refreshSearchUIVisibility() {
+    const searchWrapper = document.getElementById("SiteSearchWrapper");
+    if (!searchWrapper) return;
+
+    const checkboxes = document.querySelectorAll("input[type=checkbox][id^='layer-']");
+    let hasSearchable = false;
+    const EXCLUDED = ExcludeLayerGroups.searchSite;
+
+    checkboxes.forEach(cb => {
+        if (!cb.checked) return;
+        const shortId = cb.id.replace("layer-", "");
+        if (!EXCLUDED.includes(shortId)) {
+            hasSearchable = true;
         }
+    });
+
+    if (hasSearchable) {
+        searchWrapper.style.display = "block";
+    } else {
+        searchWrapper.style.display = "none";
+        if (utils.clearHighlight) utils.clearHighlight();
     }
 }
 
@@ -537,33 +588,8 @@ export async function updateAllActiveSources() {
         }
         // ---- [External data] Hourly vs Daily load synchronization ----
 
-
-        // Update activeSources set
-        activeSources.length = 0;
-        sourcesToLoad.forEach(s => activeSources.push(s));
-
-        var searchWrapper = document.getElementById("SiteSearchWrapper");
-        if (sourcesToLoad.size === 0) {
-            if (utils.clearHighlight) {
-                utils.clearHighlight();
-            }
-            if (searchWrapper) searchWrapper.style.display = "none";
-        } else {
-            var hasSearchable = false;
-            var EXCLUDED = ExcludeLayerGroups.searchSite;
-
-            activeShortIds.forEach(function (sid) {
-                if (!EXCLUDED.includes(sid)) {
-                    hasSearchable = true;
-                }
-            });
-
-            if (searchWrapper) {
-                searchWrapper.style.display = hasSearchable ? "block" : "none";
-            }
-        }
-        
         applyLayerToggles();
+        refreshSearchUIVisibility();
         
         if (typeof triggerRefresh === "function") {
             triggerRefresh();

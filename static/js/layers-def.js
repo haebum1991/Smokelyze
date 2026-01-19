@@ -329,9 +329,9 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "MapPost", field: "title", breaks: [], colors: ["red"], title: "MapPost", datasets: ["MapPost"], type: "symbol", iconImage: "pulsing-alert" },
     
     // ---- [External data] AirNow ----
-    { duration: "hourly", id: "airnow-pm25", field: "pm25(ug/m3)", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "AirNow<br>PM2.5-hr (µg m⁻³)", decimals: 1, datasets: ["airnow-pm25"], hourly: true },
-    { duration: "hourly", id: "airnow-ozone", field: "ozone(ppb)", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "AirNow<br>O3-hr (ppb)", decimals: 1, datasets: ["airnow-ozone"], hourly: true },
-    { duration: "hourly", id: "airnow-no2", field: "no2(ppb)", breaks: BREAKS_NO2, colors: PALETTE_EPA, title: "AirNow<br>NO2-hr (ppb)", decimals: 1, datasets: ["airnow-no2"], hourly: true },
+    { duration: "hourly", id: "airnow-pm25", field: "pm25(ug/m3)", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "AirNow PM2.5-hr (µg m⁻³)", decimals: 1, datasets: ["airnow-pm25"], hourly: true },
+    { duration: "hourly", id: "airnow-ozone", field: "ozone(ppb)", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "AirNow O3-hr (ppb)", decimals: 1, datasets: ["airnow-ozone"], hourly: true },
+    { duration: "hourly", id: "airnow-no2", field: "no2(ppb)", breaks: BREAKS_NO2, colors: PALETTE_EPA, title: "AirNow NO2-hr (ppb)", decimals: 1, datasets: ["airnow-no2"], hourly: true },
 
     // --- MDA8 Ozone ---
     { duration: "daily", id: "mda8-obs", field: "MDA8O3", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "Obs MDA8 (ppb)", decimals: 1, datasets: ["gam-v2", "gam-v1", "epa-ember"] },
