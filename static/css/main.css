@@ -702,7 +702,7 @@ body.page-about .sidebar {
 
 .auth-card {
   background: var(--color-bg);
-  padding: 1rem 4rem 4rem 4rem;
+  padding: 3rem 3rem 3rem 3rem;
   border-radius: calc(var(--border-radius-0p8rem) * 4);
   box-shadow: 0 2rem 6rem rgba(0, 0, 0, 0.5);
   max-width: 45rem;
@@ -1018,8 +1018,8 @@ body.page-about .sidebar {
 
 .auth-btn-close {
   position: absolute;
-  top: 2rem;
-  right: 0rem;
+  top: 0.5rem;
+  right: 0.5rem;
   background: transparent;
   border: none;
   font-size: 3rem;

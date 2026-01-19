@@ -10,14 +10,46 @@ function convertToCSV(geoJSON) {
     }
 
     var f = geoJSON.features;
-    var p = f.map(function (fi) { return fi.properties; });
+    var p = f.map(function (fi) {
+        var props = Object.assign({}, fi.properties);
+        // Add longitude and latitude from coordinates if available (for Point features)
+        if (fi.geometry && fi.geometry.type === "Point" && Array.isArray(fi.geometry.coordinates)) {
+            props.lon = fi.geometry.coordinates[0];
+            props.lat = fi.geometry.coordinates[1];
+        }
+        return props;
+    });
 
     // Collect all unique keys
-    var keys = new Set();
+    var keySet = new Set();
     p.forEach(function (i) {
-        Object.keys(i).forEach(function (k) { keys.add(k); });
+        Object.keys(i).forEach(function (k) { keySet.add(k); });
     });
-    var header = Array.from(keys);
+
+    var keys = Array.from(keySet);
+
+    // Reorder keys: Put lon and lat after site_name
+    var header = [];
+    var added = new Set();
+
+    // Find site_name and insert lon, lat right after it
+    keys.forEach(function (k) {
+        if (!added.has(k)) {
+            header.push(k);
+            added.add(k);
+            if (k === "site_name") {
+                if (keySet.has("lon") && !added.has("lon")) { header.push("lon"); added.add("lon"); }
+                if (keySet.has("lat") && !added.has("lat")) { header.push("lat"); added.add("lat"); }
+            }
+        }
+    });
+
+    keys.forEach(function (k) {
+        if (!added.has(k)) {
+            header.push(k);
+            added.add(k);
+        }
+    });
 
     // Characters for safety
     var COMMA = String.fromCharCode(44); // ,

@@ -1,0 +1,206 @@
+
+---
+title: ""
+---
+
+<link rel="stylesheet" href="/css/data.css">
+
+<h1>
+Data
+</h1>
+
+<div class="datadb-tabs">
+  <button class="datadb-tab-btn active" onclick="openTab(event, 'published')">Published data</button>
+  <button class="datadb-tab-btn" onclick="openTab(event, 'annual')">Annual report</button>
+</div>
+
+<div id="published" class="datadb-tab-content active">
+  
+  <h3>UW GAM-v2</h3>
+  <ul>
+      <li>
+      <b style="font-weight: bold; color: var(--card-shadow);">[Full dataset]</b>: 
+      University of Washington ResearchWorks Archive,
+      <a href="https://hdl.handle.net/1773/52893" target="_blank" rel="noopener noreferrer">https://hdl.handle.net/1773/52893</a>
+      </li>
+      <li>
+      <b style="font-weight: bold; color: var(--card-shadow);">[Citation]</b>: 
+      Lee, H. and Jaffe, D. A.: 
+      Impact of Wildfires on O3 and Air Quality Across the United States for 2019–2024 Using Generalized Additive Models, 
+      <em>J. Geophys. Res.: Atmos.</em>, 130, e2025JD044088, 2025.
+      <a href="https://doi.org/10.1029/2025JD044088" target="_blank" rel="noopener noreferrer">https://doi.org/10.1029/2025JD044088</a>
+      </li>
+  </ul>
+  <h3>UW GAM-v1</h3>
+  <ul>
+      <li>
+      <b style="font-weight: bold; color: var(--card-shadow);">[Full dataset]</b>: 
+      University of Washington ResearchWorks Archive,
+      <a href="http://hdl.handle.net/1773/51276" target="_blank" rel="noopener noreferrer">http://hdl.handle.net/1773/51276</a>
+      </li>
+      <li>
+      <b style="font-weight: bold; color: var(--card-shadow);">[Citation]</b>: 
+      Lee, H. and Jaffe, D. A.: 
+      Wildfire impacts on O3 in the continental United States using PM2.5 and a generalized additive model (2018–2023), 
+      <em>Environ. Sci. Technol.</em>, 58, 14764–14774, 2024.
+      <a href="https://doi.org/10.1021/acs.est.4c05870" target="_blank" rel="noopener noreferrer">https://doi.org/10.1021/acs.est.4c05870</a>
+      </li>
+  </ul>
+  <h3>EPA EMBER</h3>
+  <ul>
+      <li>
+      <b style="font-weight: bold; color: var(--card-shadow);">[Full dataset]</b>: 
+      Zenodo,
+      <a href="https://zenodo.org/records/13737754" target="_blank" rel="noopener noreferrer">https://zenodo.org/records/13737754</a>
+      </li>
+      <li>
+      <b style="font-weight: bold; color: var(--card-shadow);">[Citation]</b>: 
+      Simon, H. Beidler, J., Baker, K. R., Henderson, B. H., Fox, L., Misenis, C., Campbell, P., Vukovich, J., Possiel, N., and Eyth, A.: 
+      Expediated modeling of burn events results (EMBER): A screening-level dataset of 2023 ozone fire impacts in the US, 
+      <em>Data in Brief</em>, 58, 111208, 2024.
+      <a href="https://doi.org/10.1016/j.dib.2024.111208" target="_blank" rel="noopener noreferrer">https://doi.org/10.1016/j.dib.2024.111208</a>
+      </li>
+  </ul>
+  <br>
+
+  <h3>By Query</h3>
+  <br>
+  
+  <div class="card-about reveal-on-scroll">
+    <div class="datadb-query-form">
+      <div class="datadb-form-group">
+        <label for="DatadbDataSource">Dataset</label>
+        <select id="DatadbDataSource">
+          <option value="gam-v2">UW GAM-v2 (Lee and Jaffe, 2025 )</option>
+          <option value="gam-v1">UW GAM-v1 (Lee and Jaffe, 2024) </option>
+          <option value="pm-cbsa">UW Smoke PM2.5 (Under review) </option>
+          <option value="epa-ember">EPA EMBER (Simon, et al., 2024) </option>
+        </select>
+      </div>
+      <div class="datadb-form-group">
+        <label for="DatadbDataState">State</label>
+        <select id="DatadbDataState">
+          <option value="">Select State</option>
+          <option value="Alabama">Alabama</option>
+          <option value="Alaska">Alaska</option>
+          <option value="Arizona">Arizona</option>
+          <option value="Arkansas">Arkansas</option>
+          <option value="California">California</option>
+          <option value="Colorado">Colorado</option>
+          <option value="Connecticut">Connecticut</option>
+          <option value="Delaware">Delaware</option>
+          <option value="Florida">Florida</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Hawaii">Hawaii</option>
+          <option value="Idaho">Idaho</option>
+          <option value="Illinois">Illinois</option>
+          <option value="Indiana">Indiana</option>
+          <option value="Iowa">Iowa</option>
+          <option value="Kansas">Kansas</option>
+          <option value="Kentucky">Kentucky</option>
+          <option value="Louisiana">Louisiana</option>
+          <option value="Maine">Maine</option>
+          <option value="Maryland">Maryland</option>
+          <option value="Massachusetts">Massachusetts</option>
+          <option value="Michigan">Michigan</option>
+          <option value="Minnesota">Minnesota</option>
+          <option value="Mississippi">Mississippi</option>
+          <option value="Missouri">Missouri</option>
+          <option value="Montana">Montana</option>
+          <option value="Nebraska">Nebraska</option>
+          <option value="Nevada">Nevada</option>
+          <option value="New Hampshire">New Hampshire</option>
+          <option value="New Jersey">New Jersey</option>
+          <option value="New Mexico">New Mexico</option>
+          <option value="New York">New York</option>
+          <option value="North Carolina">North Carolina</option>
+          <option value="North Dakota">North Dakota</option>
+          <option value="Ohio">Ohio</option>
+          <option value="Oklahoma">Oklahoma</option>
+          <option value="Oregon">Oregon</option>
+          <option value="Pennsylvania">Pennsylvania</option>
+          <option value="Rhode Island">Rhode Island</option>
+          <option value="South Carolina">South Carolina</option>
+          <option value="South Dakota">South Dakota</option>
+          <option value="Tennessee">Tennessee</option>
+          <option value="Texas">Texas</option>
+          <option value="Utah">Utah</option>
+          <option value="Vermont">Vermont</option>
+          <option value="Virginia">Virginia</option>
+          <option value="Washington">Washington</option>
+          <option value="West Virginia">West Virginia</option>
+          <option value="Wisconsin">Wisconsin</option>
+          <option value="Wyoming">Wyoming</option>
+        </select>
+      </div>
+      <div class="datadb-form-group">
+        <label for="DatadbDataAQS">AQS</label>
+        <select id="DatadbDataAQS">
+          <option value="">Select AQS</option>
+        </select>
+      </div>
+      <button class="datadb-query-btn" onclick="handleQuery()">Import data</button>
+    </div>
+    <br>
+  </div>
+</div>
+
+<div id="annual" class="datadb-tab-content">
+  <div class="card-about reveal-on-scroll">
+    <h2>Annual Report</h2>
+    <div class="datadb-report-info">
+      <p>
+        Welcome to the Annual Analysis section. Here you will be able to download and view comprehensive annual reports 
+        summarizing air quality trends, smoke event frequencies, and health impact assessments for the selected year.
+      </p>
+      <p">
+        * Annual report generation for 2025 is currently in progress.
+      </p>
+    </div>
+  </div>
+</div>
+<br>
+
+<script>
+function openTab(evt, tabName) {
+  var i, tabContent, tabBtns;
+  tabContent = document.getElementsByClassName("datadb-tab-content");
+  for (i = 0; i < tabContent.length; i++) {
+    tabContent[i].classList.remove("active");
+  }
+  tabBtns = document.getElementsByClassName("datadb-tab-btn");
+  for (i = 0; i < tabBtns.length; i++) {
+    tabBtns[i].classList.remove("active");
+  }
+  document.getElementById(tabName).classList.add("active");
+  evt.currentTarget.classList.add("active");
+}
+
+function handleQuery() {
+  const dataType = document.getElementById("DatadbDataSource").value;
+  const state = document.getElementById("DatadbDataState").value;
+  const aqsSite = document.getElementById("DatadbDataAQS").value;
+  
+  if (!state) {
+    alert("Please select a state to proceed.");
+    return;
+  }
+  
+  console.log("Querying:", { dataType, state, aqsSite });
+  
+  // Visual feedback for the button
+  const btn = document.querySelector(".datadb-query-btn");
+  const originalText = btn.textContent;
+  btn.textContent = "Fetching...";
+  btn.style.opacity = "0.7";
+  btn.disabled = true;
+  
+  setTimeout(() => {
+    btn.textContent = originalText;
+    btn.style.opacity = "1";
+    btn.disabled = false;
+    alert(`Query initiated for ${dataType} in ${state}. Results will be displayed once the data sync is complete.`);
+  }, 1000);
+}
+</script>
+

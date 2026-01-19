@@ -19,8 +19,8 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
   identifier = "resrc"
 
 [[menu.main]]
-  name = "Published data"
-  url = "/resrc/published-data/"
+  name = "Data"
+  url = "/resrc/data/"
   weight = 1
   parent = "resrc"
 
