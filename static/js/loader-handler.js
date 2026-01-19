@@ -447,17 +447,17 @@ function handleLoadingError(sourceKey, isoDate, ds = null) {
     // 4. Show error toast based on source type
     if (["smoke", "fire"].includes(sourceKey)) {
         showErrorToast(`
-          No data found for this date(${utils.ESML(isoDate)}) and dataset(${utils.ESML(sourceKey)}).
+          No data found for this date (${utils.ESML(isoDate)}) and dataset (${utils.ESML(sourceKey)}).
           <br>
           "HMS-smoke" and "HMS-fire" are automatically updated everyday, but 
           the latest data is from the previous day.`);
     } else if (ExcludeLayerGroups.statsSources.includes(sourceKey)) {
         showErrorToast(`
-          No data found for this date(${utils.ESML(isoDate)}) and dataset(${utils.ESML(sourceKey)}).
+          No data found for this date (${utils.ESML(isoDate)}) and dataset (${utils.ESML(sourceKey)}).
           <br>
-          Please see the detail information[Desc.] for the valid data period of [Published] data.`);
+          Please see the detail information [Desc.] for the valid data period of [Published] data.`);
     } else {
-        showErrorToast(`No data found for this date(${utils.ESML(isoDate)}) and dataset(${utils.ESML(sourceKey)})`);
+        showErrorToast(`No data found for this date (${utils.ESML(isoDate)}) and dataset (${utils.ESML(sourceKey)})`);
     }
 
     if (sourceKey === "wildfire_news") {
