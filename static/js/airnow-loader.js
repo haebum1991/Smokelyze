@@ -22,6 +22,7 @@ import {
 } from "./airnow.js";
 import { updateStateColors } from "./layers-colors.js";
 import { triggerRefresh } from "./stats-common.js";
+import { showErrorToast } from "./loader-ui.js";
 
 /**
  * Load AirNow data for all active coverages
@@ -126,7 +127,7 @@ export async function airnowLoadData(isoDate) {
                 // User-friendly error message
                 const pollutantName = coverage.split(".")[1].toUpperCase();
                 const errorMsg = `AirNow ${pollutantName} data is not available for the selected time. Please try a different time (data is usually 1-2 hours delayed).`;
-                alert(errorMsg);
+                showErrorToast(errorMsg);
                 
                 const source = map.getSource(sourceId);
                 if (source) source.setData(EMPTY_FC);
