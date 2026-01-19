@@ -50,13 +50,13 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
 
 [[menu.main]]
   name = "Smokelyze?"
-  url = "/smokelyze/"
+  url = "/about/smokelyze/"
   weight = 1
   parent = "about"
 
 [[menu.main]]
   name = "About us"
-  url = "/about/"
+  url = "/about/about_us/"
   weight = 2
   parent = "about"
 

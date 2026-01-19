@@ -704,17 +704,6 @@ tr.stats-state-row-ca.show {
   border-bottom: 0.1rem solid var(--text-soft);
 }
 
-.Desc-content p,
-.Desc-content li {
-  font-size: 1.6rem;
-  margin: 0;
-}
-
-.Desc-content ul {
-  padding-left: 2rem;
-  margin: 1rem 0;
-}
-
 .Desc-item {
   margin-bottom: 2.5rem;
 }

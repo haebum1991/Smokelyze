@@ -171,13 +171,52 @@ h6 {
   color: var(--text-heading);
 }
 
-hr {
-  border: none !important;
-  border-top: 0.1rem solid var(--text-soft) !important;
+h1 {
+  font-size: 3rem;
+  font-weight: bold;
+}
+
+h2 {
+  font-size: 2.4rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+h3 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+p {
+  font-size: 1.6rem;
+  line-height: 1.5;
+}
+
+li {
+  font-size: 1.6rem;
+  margin: 0;
+}
+
+ul {
+  padding-left: 2rem;
+  margin: 1rem 0;
 }
 
 a {
   outline: none;
+  font-weight: bold;
+  color: var(--accent-link);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+hr {
+  border: none !important;
+  border-top: 0.1rem solid var(--text-soft) !important;
 }
 
 img {
@@ -389,34 +428,6 @@ body.page-about .sidebar {
   background: var(--color-bg);
   box-shadow: 0.2rem 0.2rem 0.2rem var(--card-shadow);
 }
-
-.card-about h2 {
-  margin: 0;
-  font-weight: bold;
-  font-size: 2.4rem;
-}
-
-.card-about h3 {
-  margin: 0;
-  font-weight: bold;
-  font-size: 1.8rem;
-}
-
-.card-about p {
-  font-size: 1.6rem;
-  line-height: 1.5;
-}
-
-.card-about a {
-  font-weight: bold;
-  color: var(--accent-link);
-  text-decoration: none;
-}
-
-.card-about a:hover {
-  text-decoration: underline;
-}
-
 
 
 /* Post previous-Next post setting */

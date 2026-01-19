@@ -172,7 +172,7 @@ const DescData = {
           id: "citation",
           title: "Citation",
           desc: "Lee, H. and Jaffe, D. A.: " +
-                "Impact of Wildfires on O3 and Air Quality Across the United States for 2019–2024 Using Generalized Additive Models," +
+                "Impact of Wildfires on O3 and Air Quality Across the United States for 2019–2024 Using Generalized Additive Models, " +
                 "<em>J. Geophys. Res.: Atmos.</em>, 130, e2025JD044088, 2025. " +
                 "<a href='https://doi.org/10.1029/2025JD044088' target='_blank'>https://doi.org/10.1029/2025JD044088</a>"
         },
@@ -201,7 +201,7 @@ const DescData = {
           id: "citation",
           title: "Citation",
           desc: "Lee, H. and Jaffe, D. A.: " +
-                "Wildfire impacts on O3 in the continental United States using PM2.5 and a generalized additive model (2018–2023)," +
+                "Wildfire impacts on O3 in the continental United States using PM2.5 and a generalized additive model (2018–2023), " +
                 "<em>Environ. Sci. Technol.</em>, 58, 14764–14774, 2024. " +
                 "<a href='https://doi.org/10.1021/acs.est.4c05870' target='_blank'>https://doi.org/10.1021/acs.est.4c05870</a>"
         },
@@ -243,7 +243,7 @@ const DescData = {
           id: "citation",
           title: "Citation",
           desc: "Simon, H. Beidler, J., Baker, K. R., Henderson, B. H., Fox, L., Misenis, C., Campbell, P., Vukovich, J., Possiel, N., and Eyth, A.: " +
-                "Expediated modeling of burn events results (EMBER): A screening-level dataset of 2023 ozone fire impacts in the US," +
+                "Expediated modeling of burn events results (EMBER): A screening-level dataset of 2023 ozone fire impacts in the US, " +
                 "<em>Data in Brief</em>, 58, 111208, 2024. " +
                 "<a href='https://doi.org/10.1016/j.dib.2024.111208' target='_blank'>https://doi.org/10.1016/j.dib.2024.111208</a>"
         },
