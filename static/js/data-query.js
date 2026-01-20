@@ -16,7 +16,7 @@ let currentDatasetId = "";  // Track for filename
 let currentAqs = "";        // Track for filename
 
 // Pagination State
-const ROWS_PER_PAGE = 30;
+const ROWS_PER_PAGE = 15;
 let currentPage = 1;
 let totalPages = 1;
 let currentFeatures = [];

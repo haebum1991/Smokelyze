@@ -132,7 +132,6 @@
     background: var(--text-muted);
     box-shadow: none;
     cursor: pointer;
-    /* keep it pointer so users click and see the login prompt */
 }
 
 .datadb-query-btn.disabled-auth:hover {
@@ -155,8 +154,9 @@
     margin-top: 1rem;
     border-radius: var(--border-radius-0p8rem);
     border: 0.1rem solid var(--border-light);
-    max-height: 70rem;
+    max-height: 60rem;
     overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 #DatadbTableTable {
@@ -238,8 +238,12 @@
     background: var(--color-code-bg);
     border-radius: var(--border-radius-0p8rem);
     padding: 2rem;
+    margin: 2rem auto;
     border: 0.1rem solid var(--border-light);
     box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.05);
+    max-height: 60rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .datadb-meta-grid {
