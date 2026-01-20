@@ -259,7 +259,7 @@ function renderGroupList(group) {
     }
     group.forEach(member => {
         const li = document.createElement("li");
-        li.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 1px solid var(--border-color);";
+        li.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 0.1rem solid var(--border-color);";
 
         const span = document.createElement("span");
         span.textContent = `${member.email} (${member.nickname || "No Nickname"})`;

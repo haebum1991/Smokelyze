@@ -68,7 +68,7 @@ export function injectSearchUI() {
         border: "0.1rem solid var(--card-shadow)",
         color: "var(--text-strong)",
         boxSizing: "border-box",
-        fontSize: "16px"
+        fontSize: "1.6rem"
     });
 
     var resultsList = document.createElement("ul");
