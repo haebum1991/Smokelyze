@@ -1,4 +1,4 @@
-const CACHE_NAME = "v-20260119-2035"; // R에서 자동으로 생성된 버전
+const CACHE_NAME = "v-20260119-2105"; // R에서 자동으로 생성된 버전
 const OFFLINE_URL = "/offline/";
 
 const requiredFiles = [
@@ -58,7 +58,14 @@ self.addEventListener("fetch", event => {
     const path = requestUrl.pathname;
 
     // 1. Netlify Functions / GCS - Network Only
-    if (path.startsWith("/.netlify/functions/") || path.startsWith("/data_by_date") || path.startsWith("/noaa_hms") || path.startsWith("/modis_burn") || path.includes("/realtime/")) {
+    if (
+        path.startsWith("/.netlify/functions/") ||
+        path.startsWith("/data_by_date") ||
+        path.startsWith("/data_by_aqs") ||
+        path.startsWith("/noaa_hms") ||
+        path.startsWith("/modis_burn") ||
+        path.includes("/realtime/")
+    ) {
         return;
     }
 

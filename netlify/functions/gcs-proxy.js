@@ -49,6 +49,7 @@ function extractGcsPath(event) {
   const p = event.path || "";
   const prefixes = [
     "realtime",
+    "data_by_aqs", 
     "data_by_date", 
     "modis_burn_area_date_geojson",
     "modis_burn_area_year_json",

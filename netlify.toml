@@ -20,6 +20,12 @@
   force  = true
 
 [[redirects]]
+  from = "/data_by_aqs/*"
+  to   = "/.netlify/functions/gcs-proxy/data_by_aqs/:splat"
+  status = 200
+  force  = true
+  
+[[redirects]]
   from = "/realtime/*"
   to   = "/.netlify/functions/gcs-proxy/realtime/:splat"
   status = 200
