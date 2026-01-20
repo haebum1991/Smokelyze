@@ -30,7 +30,13 @@
   to   = "/.netlify/functions/gcs-proxy/data_by_aqs_meta/:splat"
   status = 200
   force  = true
-  
+
+[[redirects]]
+  from = "/data_by_state/*"
+  to   = "/.netlify/functions/gcs-proxy/data_by_state/:splat"
+  status = 200
+  force  = true
+
 [[redirects]]
   from = "/realtime/*"
   to   = "/.netlify/functions/gcs-proxy/realtime/:splat"

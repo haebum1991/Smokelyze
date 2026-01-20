@@ -206,7 +206,7 @@ function renderDataMeta(data) {
  * Render Table Body
  */
 function renderTableBody() {
-    const body = document.getElementById("DatadbTableBody");
+    const body = document.getElementById("DatadbDataTableBody");
     const start = (currentPage - 1) * ROWS_PER_PAGE;
     const end = start + ROWS_PER_PAGE;
     const pageData = currentTableData.slice(start, end);
@@ -223,9 +223,9 @@ function renderTableBody() {
  * Update Pagination UI
  */
 function updatePaginationUI() {
-    const prevBtn = document.getElementById("DatadbPrevBtn");
-    const nextBtn = document.getElementById("DatadbNextBtn");
-    const pageInfo = document.getElementById("DatadbPageInfo");
+    const prevBtn = document.getElementById("DatadbDataTableBtnPrev");
+    const nextBtn = document.getElementById("DatadbDataTableBtnNext");
+    const pageInfo = document.getElementById("DatadbDataTablePageInfo");
 
     if (prevBtn) prevBtn.disabled = (currentPage === 1);
     if (nextBtn) nextBtn.disabled = (currentPage === totalPages);
@@ -236,10 +236,10 @@ function updatePaginationUI() {
  * Render GeoJSON features into the results table
  */
 function renderDataTable() {
-    const head = document.getElementById("DatadbTableHead");
-    const body = document.getElementById("DatadbTableBody");
-    const title = document.getElementById("DatadbTableTitle");
-    const pagination = document.getElementById("DatadbPagination");
+    const head = document.getElementById("DatadbDataTableHead");
+    const body = document.getElementById("DatadbDataTableBody");
+    const title = document.getElementById("DatadbDataTableTitle");
+    const pagination = document.getElementById("DatadbDataTablePagination");
 
     if (!head || !body) return;
 
@@ -342,7 +342,7 @@ window.handleQuery = async function () {
             }
 
             renderDataTable();
-            document.getElementById("DatadbTableWrapper").style.display = "block";
+            document.getElementById("DatadbDataTableWrapper").style.display = "block";
 
             // Default to Metadata tab on new query
             const metaTabBtn = document.getElementById("BtnMetaTab");
@@ -350,7 +350,7 @@ window.handleQuery = async function () {
             
         } else {
             alert("No detailed data found for this AQS site in the selected dataset.");
-            document.getElementById("DatadbTableWrapper").style.display = "none";
+            document.getElementById("DatadbDataTableWrapper").style.display = "none";
         }
     } catch (err) {
         console.error("Query failed:", err);
