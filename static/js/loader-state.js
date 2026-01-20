@@ -136,7 +136,7 @@ export function getSiteStatsForState(targetState) {
                 }
             });
 
-            if (sourceKey === "gam_v2" || sourceKey === "gam_v2_edm") {
+            if (sourceKey === "gam_v2") {
                 siteStats[id].label_display = "TMAX (K)";
             } else {
                 siteStats[id].label_display = "TMAX (°C)";

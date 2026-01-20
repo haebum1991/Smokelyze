@@ -29,10 +29,6 @@ import { airnowHasActiveLayers } from "./airnow.js";
 export async function loadSourceData(sourceKey, isoDate) {
     initializeMetrics();
 
-    if (sourceKey === "gam_v2_edm") {
-        return loadSourceData("gam_v2", isoDate);
-    }
-
     const publishedSources = ExcludeLayerGroups.statsSources;
     const isPublishedData = publishedSources.includes(sourceKey);
 
@@ -92,38 +88,6 @@ export async function loadSourceData(sourceKey, isoDate) {
     try {
         let data = await fetchGeoJSON(url);
         if (!data) throw new Error("Failed to load data for " + sourceKey);
-
-        if (sourceKey === "gam_v2") {
-            const dsEdm = DATA_IMPORT_METHOD["gam_v2_edm"];
-            if (dsEdm) {
-                const urlEdm = utils.urlByDateGZfile(dsEdm, isoDate);
-                const dataEdm = await fetchGeoJSON(urlEdm);
-
-                if (dataEdm && dataEdm.features) {
-                    const edmMap = new Map();
-                    dataEdm.features.forEach(f => {
-                        if (f.properties && f.properties.AQS_O3) {
-                            edmMap.set(f.properties.AQS_O3, f.properties);
-                        }
-                    });
-
-                    if (data.features) {
-                        data.features.forEach(f => {
-                            const aqs = f.properties.AQS_O3;
-                            const match = edmMap.get(aqs);
-
-                            if (match) {
-                                f.properties.edm_MDA8O3_pred = match.MDA8O3_pred;
-                                f.properties.edm_MDA8O3_resids = match.MDA8O3_resids;
-                                f.properties.edm_Quant_MDA8O3_resids = match.Quant_MDA8O3_resids;
-                                f.properties.edm_SMO = match.SMO;
-                                f.properties.edm_p975 = match.p975;
-                            }
-                        });
-                    }
-                }
-            }
-        }
 
         const CALC_SOURCES = ExcludeLayerGroups.calcSources
 
@@ -398,7 +362,7 @@ export async function loadSourceData(sourceKey, isoDate) {
                 });
 
                 if (hasData) {
-                    if (sourceKey === "gam_v2" || sourceKey === "gam_v2_edm") {
+                    if (sourceKey === "gam_v2") {
                         newStats.label_display = "TMAX (K)";
                     } else {
                         newStats.label_display = "TMAX (°C)";

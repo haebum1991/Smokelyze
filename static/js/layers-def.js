@@ -30,14 +30,14 @@ export const ExcludeLayerGroups = {
 
   // ========= Find by [source] =========
   // [loader.js] > [loadSourceData] > [GZIP_DATASETS]
-  formatGzip: ["gam_v2", "gam_v1", "gam_v2_edm", "pm_cbsa", "epa_ember", "wildfire_news", "wildfire_nifc", "smoke", "fire"],
+  formatGzip: ["gam_v2", "gam_v1", "pm_cbsa", "epa_ember", "wildfire_news", "wildfire_nifc", "smoke", "fire"],
 
   // [loader.js] > [loadSourceData] > [CALC_SOURCES]
-  calcSources: ["gam_v2", "gam_v2_edm", "gam_v1", "epa_ember"],
+  calcSources: ["gam_v2", "gam_v1", "epa_ember"],
 
   // [loader.js] > [loadSourceData] > [STATS_SOURCES] & [publishedSources]
   // [loader.js] > [updateAllActiveSources] > [STATS_SOURCES] & [publishedSources]
-  statsSources: ["gam_v2", "gam_v1", "gam_v2_edm", "pm_cbsa", "epa_ember"]
+  statsSources: ["gam_v2", "gam_v1", "pm_cbsa", "epa_ember"]
 
 };
 
@@ -121,12 +121,6 @@ export const DATA_IMPORT_METHOD = {
   "gam_v2": {
       key: "gam_v2",
       source: "gam_v2",
-      prefix: "data_by_date_",
-      gzfileBaseUrlDate: "/data_by_date",
-  },
-  "gam_v2_edm": {
-      key: "gam_v2_edm",
-      source: "gam_v2_edm",
       prefix: "data_by_date_",
       gzfileBaseUrlDate: "/data_by_date",
   },
