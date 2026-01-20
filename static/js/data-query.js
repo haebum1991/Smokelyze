@@ -4,9 +4,10 @@
  * Handles cascading dropdowns and data table display
  */
 
+
 import { fetchGeoJSON } from "./loader-fetch.js";
 import { auth, onAuthStateChanged } from "./fb-init.js";
-import { showAuthOverlay } from "./utils.js";
+import { showAuthOverlay, fetchJson } from "./utils.js";
 
 let datasetCache = {};
 let currentTableData = null; // Store for CSV download
@@ -15,36 +16,47 @@ let currentDatasetId = "";  // Track for filename
 let currentAqs = "";        // Track for filename
 
 // Pagination State
-let currentPage = 1;
 const ROWS_PER_PAGE = 30;
+let currentPage = 1;
 let totalPages = 1;
 let currentFeatures = [];
-
 
 const QUERY_IMPORT_CONFIG = {
     "gam-v2": {
         source: "gam_v2",
         prefix: "data_by_aqs_",
         baseUrl: "/data_by_aqs",
-        extension: ".geojson.gz"
+        extension: ".geojson.gz",
+        metaBaseUrl: "/data_by_aqs_meta",
+        metaPrefix: "data_by_aqs_meta_",
+        metaExtension: ".json"
     },
     "gam-v1": {
         source: "gam_v1",
         prefix: "data_by_aqs_",
         baseUrl: "/data_by_aqs",
-        extension: ".geojson.gz"
+        extension: ".geojson.gz",
+        metaBaseUrl: "/data_by_aqs_meta",
+        metaPrefix: "data_by_aqs_meta_",
+        metaExtension: ".json"
     },
     "pm-cbsa": {
         source: "pm_cbsa",
         prefix: "data_by_aqs_",
         baseUrl: "/data_by_aqs",
-        extension: ".geojson.gz"
+        extension: ".geojson.gz",
+        metaBaseUrl: "/data_by_aqs_meta",
+        metaPrefix: "data_by_aqs_meta_",
+        metaExtension: ".json"
     },
     "epa-ember": {
         source: "epa_ember",
         prefix: "data_by_aqs_",
         baseUrl: "/data_by_aqs",
-        extension: ".geojson.gz"
+        extension: ".geojson.gz",
+        metaBaseUrl: "/data_by_aqs_meta",
+        metaPrefix: "data_by_aqs_meta_",
+        metaExtension: ".json"
     }
 };
 
@@ -57,16 +69,9 @@ async function fetchDatasetList(datasetId) {
     const fileSuffix = datasetId.replace(/-/g, "_");
     const url = `/aqs_list_${fileSuffix}.json`;
 
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        datasetCache[datasetId] = data;
-        return data;
-    } catch (err) {
-        console.error("Error loading aqs list:", err);
-        return null;
-    }
+    const data = await fetchJson(url, null);
+    if (data) datasetCache[datasetId] = data;
+    return data;
 }
 
 /**
@@ -122,7 +127,7 @@ function updateAQS() {
 
     const data = datasetCache[datasetId];
     if (!data || !state) {
-        aqsSelect.innerHTML = '<option value="">Select AQS</option>';
+        aqsSelect.innerHTML = '<option value="">Select State</option>';
         return;
     }
 
@@ -143,56 +148,89 @@ function updateAQS() {
 }
 
 /**
- * Handle Query: Fetch AQS data and render table
+ * Render Metadata section
  */
-window.handleQuery = async function () {
+function renderDataMeta(data) {
+    const container = document.getElementById("DatadbMetaContainer");
+    const content = document.getElementById("DatadbMetaContent");
+    if (!container || !content || !data.meta) return;
 
-    if (!auth.currentUser) {
-        showAuthOverlay();
-        return;
-    }
-    
-    const datasetId = document.getElementById("DatadbDataSource")?.value;
-    const state = document.getElementById("DatadbDataState")?.value;
-    const aqsSite = document.getElementById("DatadbDataAQS")?.value;
-
-    if (!aqsSite) {
-        alert("Please select a specific AQS site to proceed.");
-        return;
-    }
-
-    const config = QUERY_IMPORT_CONFIG[datasetId];
-    if (!config) return;
-
-    const btn = document.querySelector(".datadb-query-btn");
-    const originalText = btn.textContent;
-    btn.textContent = "Loading...";
-    btn.disabled = true;
-
-    // Construct URL: /data_by_aqs/{source}/data_by_aqs_{aqs}.geojson.gz
-    const url = `${config.baseUrl}/${config.source}/${config.prefix}${aqsSite}${config.extension}`;
-
-    try {
-        const data = await fetchGeoJSON(url);
-        if (data && data.features) {
-            currentDatasetId = datasetId;
-            currentAqs = aqsSite;
-            currentFeatures = data.features;
-            currentPage = 1;
-            renderDataTable();
-            document.getElementById("DatadbTableWrapper").style.display = "block";
-        } else {
-            alert("No detailed data found for this AQS site in the selected dataset.");
-            document.getElementById("DatadbTableWrapper").style.display = "none";
+    let html = "";
+    data.meta.forEach(row => {
+        // Pair 1
+        if (row.Contents && row.Descriptions) {
+            html += `
+                <div class="datadb-meta-item">
+                    <span class="datadb-meta-label">${row.Contents}</span>
+                    <span class="datadb-meta-value">${row.Descriptions}</span>
+                </div>
+            `;
         }
-    } catch (err) {
-        console.error("Query failed:", err);
-        alert("Failed to fetch data. Please try again later.");
-    } finally {
-        btn.textContent = originalText;
-        btn.disabled = false;
+        // Pair 2
+        if (row["Contents.1"] && row["Descriptions.1"]) {
+            html += `
+                <div class="datadb-meta-item">
+                    <span class="datadb-meta-label">${row["Contents.1"]}</span>
+                    <span class="datadb-meta-value">${row["Descriptions.1"]}</span>
+                </div>
+            `;
+        }
+    });
+
+    if (data.terms && data.terms.length > 0) {
+        html += `<div style="grid-column: 1 / -1; margin-top: 2rem; border-top: 0.1rem solid var(--border-light); padding-top: 1rem;">
+                    <h5 style="margin-bottom: 1rem; font-size: 1.6rem; color: var(--text-main);">Model Terms (EDF & F-statistic)</h5>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">`;
+
+        data.terms.forEach(term => {
+            if (term.term) {
+                html += `<div class="datadb-meta-item" style="border-bottom: none; background: rgba(0,0,0,0.02); padding: 0.5rem; border-radius: 0.4rem;">
+                            <span class="datadb-meta-label" style="font-size: 1.2rem;">${term.term}</span>
+                            <span class="datadb-meta-value" style="font-size: 1.2rem;">EDF: ${term.edf} / F: ${term.F}</span>
+                         </div>`;
+            }
+            if (term["term.1"]) {
+                html += `<div class="datadb-meta-item" style="border-bottom: none; background: rgba(0,0,0,0.02); padding: 0.5rem; border-radius: 0.4rem;">
+                            <span class="datadb-meta-label" style="font-size: 1.2rem;">${term["term.1"]}</span>
+                            <span class="datadb-meta-value" style="font-size: 1.2rem;">EDF: ${term["edf.1"]} / F: ${term["F.1"]}</span>
+                         </div>`;
+            }
+        });
+        html += `</div></div>`;
     }
-};
+
+    content.innerHTML = html;
+}
+
+/**
+ * Render Table Body
+ */
+function renderTableBody() {
+    const body = document.getElementById("DatadbTableBody");
+    const start = (currentPage - 1) * ROWS_PER_PAGE;
+    const end = start + ROWS_PER_PAGE;
+    const pageData = currentTableData.slice(start, end);
+
+    body.innerHTML = pageData.map(p => {
+        return `<tr>${currentTableKeys.map(k => {
+            const val = p[k];
+            return `<td>${val === null || val === undefined ? "NA" : val}</td>`;
+        }).join("")}</tr>`;
+    }).join("");
+}
+
+/**
+ * Update Pagination UI
+ */
+function updatePaginationUI() {
+    const prevBtn = document.getElementById("DatadbPrevBtn");
+    const nextBtn = document.getElementById("DatadbNextBtn");
+    const pageInfo = document.getElementById("DatadbPageInfo");
+
+    if (prevBtn) prevBtn.disabled = (currentPage === 1);
+    if (nextBtn) nextBtn.disabled = (currentPage === totalPages);
+    if (pageInfo) pageInfo.textContent = `Page ${currentPage} of ${totalPages} (${currentTableData.length} total rows)`;
+}
 
 /**
  * Render GeoJSON features into the results table
@@ -215,13 +253,39 @@ function renderDataTable() {
     }
 
     // Use keys from the first feature to maintain "original" JSON order
-    currentTableKeys = Object.keys(currentFeatures[0].properties);
-    currentTableData = currentFeatures.map(f => f.properties);
+    currentTableData = currentFeatures.map(f => {
+        const p = { ...f.properties };
+        if (f.geometry && f.geometry.coordinates) {
+            p.lon = f.geometry.coordinates[0];
+            p.lat = f.geometry.coordinates[1];
+        }
 
-    // Calculate pagination
+        if (p.smoke === 0) {
+            p.SMO = null;
+            p.edm_SMO = null;
+        }
+
+        return p;
+    });
+
+    let baseKeys = Object.keys(currentTableData[0]);
+    const finalKeys = [];
+    const addedCoords = new Set(["lon", "lat"]);
+
+    baseKeys.forEach(k => {
+        if (k === "lon" || k === "lat") return;
+        finalKeys.push(k);
+        if (k === "site_name") {
+            finalKeys.push("lon", "lat");
+            addedCoords.clear();
+        }
+    });
+
+    addedCoords.forEach(c => finalKeys.push(c));
+    currentTableKeys = finalKeys;
+
     totalPages = Math.ceil(currentTableData.length / ROWS_PER_PAGE);
 
-    // Show/hide pagination
     if (totalPages > 1) {
         pagination.style.display = "flex";
         updatePaginationUI();
@@ -229,37 +293,77 @@ function renderDataTable() {
         pagination.style.display = "none";
     }
 
-    // Render header
     head.innerHTML = currentTableKeys.map(k => `<th>${k}</th>`).join("");
-
-    // Render current page body
     renderTableBody();
 }
 
-function renderTableBody() {
-    const body = document.getElementById("DatadbTableBody");
-    const start = (currentPage - 1) * ROWS_PER_PAGE;
-    const end = start + ROWS_PER_PAGE;
-    const pageData = currentTableData.slice(start, end);
+/**
+ * Handle Query: Fetch AQS data and render table
+ */
+window.handleQuery = async function () {
+    if (!auth.currentUser) {
+        showAuthOverlay();
+        return;
+    }
 
-    body.innerHTML = pageData.map(p => {
-        return `<tr>${currentTableKeys.map(k => {
-            const val = p[k];
-            return `<td>${val === null || val === undefined ? "NA" : val}</td>`;
-        }).join("")}</tr>`;
-    }).join("");
-}
+    const datasetId = document.getElementById("DatadbDataSource")?.value;
+    const aqsSite = document.getElementById("DatadbDataAQS")?.value;
 
-function updatePaginationUI() {
-    const prevBtn = document.getElementById("DatadbPrevBtn");
-    const nextBtn = document.getElementById("DatadbNextBtn");
-    const pageInfo = document.getElementById("DatadbPageInfo");
+    if (!aqsSite) {
+        alert("Please select a specific AQS site to proceed.");
+        return;
+    }
 
-    if (prevBtn) prevBtn.disabled = (currentPage === 1);
-    if (nextBtn) nextBtn.disabled = (currentPage === totalPages);
-    if (pageInfo) pageInfo.textContent = `Page ${currentPage} of ${totalPages} (${currentTableData.length} total rows)`;
-}
+    const config = QUERY_IMPORT_CONFIG[datasetId];
+    if (!config) return;
 
+    const btn = document.querySelector(".datadb-query-btn");
+    const originalText = btn.textContent;
+    btn.textContent = "Loading...";
+    btn.disabled = true;
+
+    const url = `${config.baseUrl}/${config.source}/${config.prefix}${aqsSite}${config.extension}`;
+    const metaUrl = `${config.metaBaseUrl}/${config.source}/${config.metaPrefix}${aqsSite}${config.metaExtension}`;
+
+    try {
+        const [data, metaData] = await Promise.all([
+            fetchGeoJSON(url),
+            fetchJson(metaUrl, null)
+        ]);
+
+        if (data && data.features) {
+            currentDatasetId = datasetId;
+            currentAqs = aqsSite;
+            currentFeatures = data.features;
+            currentPage = 1;
+
+            if (metaData) {
+                renderDataMeta(metaData);
+            }
+
+            renderDataTable();
+            document.getElementById("DatadbTableWrapper").style.display = "block";
+
+            // Default to Metadata tab on new query
+            const metaTabBtn = document.getElementById("BtnMetaTab");
+            if (metaTabBtn) metaTabBtn.click();
+            
+        } else {
+            alert("No detailed data found for this AQS site in the selected dataset.");
+            document.getElementById("DatadbTableWrapper").style.display = "none";
+        }
+    } catch (err) {
+        console.error("Query failed:", err);
+        alert("Failed to fetch data. Please try again later.");
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+};
+
+/**
+ * Exposed functions for HTML
+ */
 window.changePage = function (delta) {
     const newPage = currentPage + delta;
     if (newPage >= 1 && newPage <= totalPages) {
@@ -267,16 +371,11 @@ window.changePage = function (delta) {
         renderTableBody();
         updatePaginationUI();
 
-        // Scroll back to top of table container
         const container = document.querySelector(".datadb-table-container");
         if (container) container.scrollTop = 0;
     }
 };
 
-
-/**
- * Download current table data as CSV
- */
 window.downloadCSV = function () {
     if (!currentTableData || currentTableData.length === 0 || currentTableKeys.length === 0) return;
 
@@ -316,8 +415,7 @@ function initQueryBuilder() {
     if (stateSelect) {
         stateSelect.addEventListener("change", updateAQS);
     }
-    
-    // Auth state listener to enable/disable button
+
     onAuthStateChanged(auth, (user) => {
         const btn = document.querySelector(".datadb-query-btn");
         if (btn) {
@@ -334,7 +432,6 @@ function initQueryBuilder() {
     });
 }
 
-// Run on load
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initQueryBuilder);
 } else {

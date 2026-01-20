@@ -155,7 +155,7 @@
     margin-top: 1rem;
     border-radius: var(--border-radius-0p8rem);
     border: 0.1rem solid var(--border-light);
-    max-height: 50rem;
+    max-height: 70rem;
     overflow-y: auto;
 }
 
@@ -199,6 +199,7 @@
     align-items: center;
     gap: 2rem;
     margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
     padding: 1rem;
     border-top: 0.1rem solid var(--border-light);
 }
@@ -230,6 +231,47 @@
     font-size: 1.4rem;
     color: var(--text-main);
     font-weight: 500;
+}
+
+/* Metadata Section */
+#DatadbMetaContainer {
+    background: var(--color-code-bg);
+    border-radius: var(--border-radius-0p8rem);
+    padding: 2rem;
+    border: 0.1rem solid var(--border-light);
+    box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.05);
+}
+
+.datadb-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem 4rem;
+}
+
+.datadb-meta-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 0.1rem dashed var(--border-light);
+    padding-bottom: 0.8rem;
+    font-size: 1.4rem;
+}
+
+.datadb-meta-label {
+    color: var(--text-main);
+    font-weight: bold;
+}
+
+.datadb-meta-value {
+    color: var(--card-shadow);
+    font-size: 1.4rem;
+    text-align: right;
+}
+
+@media (max-width: 768px) {
+    .datadb-meta-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Responsive adjustments */

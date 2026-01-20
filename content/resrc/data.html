@@ -94,24 +94,44 @@ Data
     <br>
     
     <div id="DatadbTableWrapper" style="display: none;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h3 id="DatadbTableTitle">Query Results</h3>
-        <button class="datadb-query-btn" onclick="downloadCSV()">Download CSV</button>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h3 id="DatadbTableTitle" style="margin: 0;">Query Results</h3>
       </div>
-      <div class="datadb-table-container">
-        <table id="DatadbTableTable">
-          <thead>
-            <tr id="DatadbTableHead"></tr>
-          </thead>
-          <tbody id="DatadbTableBody"></tbody>
-        </table>
+
+      <div class="datadb-tabs">
+        <button id="BtnMetaTab" class="datadb-tab-btn active"
+          onclick="openSubTab(event, 'DatadbMetaContainer')">Metadata</button>
+        <button id="BtnDataTab" class="datadb-tab-btn" 
+          onclick="openSubTab(event, 'DatadbDataTableSection')">Data table</button>
       </div>
-      <div id="DatadbPagination" class="datadb-pagination" style="display: none;">
-        <button id="DatadbPrevBtn" class="datadb-page-btn" onclick="changePage(-1)">Previous</button>
-        <span id="DatadbPageInfo">Page 1 of 1</span>
-        <button id="DatadbNextBtn" class="datadb-page-btn" onclick="changePage(1)">Next</button>
+
+      <!-- Metadata Section -->
+      <div id="DatadbMetaContainer" class="datadb-tab-content sub-tab-content active">
+        <div id="DatadbMetaContent" class="datadb-meta-grid"></div>
       </div>
+      
+      <!-- Data Table Section -->
+      <div id="DatadbDataTableSection" class="datadb-tab-content sub-tab-content">
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
+          <button class="datadb-query-btn" onclick="downloadCSV()">Download CSV</button>
+        </div>
+        <div class="datadb-table-container">
+          <table id="DatadbTableTable">
+            <thead>
+              <tr id="DatadbTableHead"></tr>
+            </thead>
+            <tbody id="DatadbTableBody"></tbody>
+          </table>
+        </div>
+        <div id="DatadbPagination" class="datadb-pagination" style="display: none;">
+          <button id="DatadbPrevBtn" class="datadb-page-btn" onclick="changePage(-1)">Previous</button>
+          <span id="DatadbPageInfo">Page 1 of 1</span>
+          <button id="DatadbNextBtn" class="datadb-page-btn" onclick="changePage(1)">Next</button>
+        </div>
+      </div>
+      
     </div>
+    
   </div>
 </div>
 
@@ -134,18 +154,40 @@ Data
 <script type="module" src="/js/data-query.js"></script>
 
 <script>
-function openTab(evt, tabName) {
-  var i, tabContent, tabBtns;
-  tabContent = document.getElementsByClassName("datadb-tab-content");
-  for (i = 0; i < tabContent.length; i++) {
-    tabContent[i].classList.remove("active");
+  function openTab(evt, tabName) {
+    const btn = evt.currentTarget;
+    const container = btn.parentElement; // .datadb-tabs
+    const wrapper = container.parentElement; // The main section/body
+
+    // 1. Deactivate buttons only in this specific tab group
+    const btns = container.querySelectorAll(".datadb-tab-btn");
+    btns.forEach(b => b.classList.remove("active"));
+
+    // 2. Deactivate content only at the same level (not nested ones)
+    const contents = wrapper.querySelectorAll(".datadb-tab-content:not(.sub-tab-content)");
+    contents.forEach(c => c.classList.remove("active"));
+
+    // 3. Activate selected
+    btn.classList.add("active");
+    document.getElementById(tabName).classList.add("active");
   }
-  tabBtns = document.getElementsByClassName("datadb-tab-btn");
-  for (i = 0; i < tabBtns.length; i++) {
-    tabBtns[i].classList.remove("active");
+
+  function openSubTab(evt, tabName) {
+    const btn = evt.currentTarget;
+    const container = btn.parentElement; // .datadb-tabs (the sub one)
+    const wrapper = document.getElementById("DatadbTableWrapper");
+
+    // 1. Deactivate buttons in this specific sub-tab group
+    const btns = container.querySelectorAll(".datadb-tab-btn");
+    btns.forEach(b => b.classList.remove("active"));
+
+    // 2. Deactivate sub-content only
+    const contents = wrapper.querySelectorAll(".sub-tab-content");
+    contents.forEach(c => c.classList.remove("active"));
+
+    // 3. Activate selected
+    btn.classList.add("active");
+    document.getElementById(tabName).classList.add("active");
   }
-  document.getElementById(tabName).classList.add("active");
-  evt.currentTarget.classList.add("active");
-}
 </script>
 
