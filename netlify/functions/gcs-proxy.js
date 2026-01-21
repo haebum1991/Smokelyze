@@ -66,8 +66,6 @@ function checkOrigin(event) {
   if (allow) {
     const allowHost = hostOf(allow);
     if (currentHost && currentHost === allowHost) return { ok: true, allow };
-    // Also allow netlify.app subdomains for easier testing/preview
-    if (currentHost.endsWith(".netlify.app")) return { ok: true, allow: origin || "*" };
     return { ok: false, error: "Origin/Referer mismatch" };
   }
 
