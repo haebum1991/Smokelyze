@@ -53,17 +53,22 @@ function checkOrigin(event) {
   
   if (method === "OPTIONS") return { ok: true, preflight: true, allow: allow || "*" };
   
-  // STRICT: Block if Origin is missing (prevents direct browser address bar access)
-  if (!origin) {
+  // FIXED: Browsers often omit Origin on same-site GET requests. Fallback to Referer.
+  const referer = h.referer || h.Referer || "";
+  const refererHost = referer ? hostOf(referer) : "";
+  const currentHost = (origin ? hostOf(origin) : "") || refererHost;
+
+  // Block if no Origin OR Referer (this happens on direct address bar access)
+  if (!currentHost) {
     return { ok: false, error: "Direct access forbidden (Hotlinking protection)" };
   }
-  
-  // If ALLOWED_ORIGIN is set, verify it
+
   if (allow) {
     const allowHost = hostOf(allow);
-    const originHost = hostOf(origin);
-    if (originHost && originHost === allowHost) return { ok: true, allow };
-    return { ok: false, error: "Origin mismatch" };
+    if (currentHost && currentHost === allowHost) return { ok: true, allow };
+    // Also allow netlify.app subdomains for easier testing/preview
+    if (currentHost.endsWith(".netlify.app")) return { ok: true, allow: origin || "*" };
+    return { ok: false, error: "Origin/Referer mismatch" };
   }
 
   // If no ALLOWED_ORIGIN set, at least we checked that SOME origin exists
