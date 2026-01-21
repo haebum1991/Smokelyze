@@ -4,27 +4,12 @@
  */
  
 import * as utils from "./utils.js";
-import { auth } from "./fb-init.js";
 
 export async function fetchGeoJSON(url) {
     if (utils.isRecentlyFailed && utils.isRecentlyFailed(url)) return null;
 
     try {
-        const fetchOptions = {};
-
-        // Add Authorization header if user is logged in
-        if (auth.currentUser) {
-            try {
-                const idToken = await auth.currentUser.getIdToken();
-                fetchOptions.headers = {
-                    "Authorization": `Bearer ${idToken}`
-                };
-            } catch (tokenError) {
-                console.warn("Could not get ID token:", tokenError);
-            }
-        }
-
-        const res = await fetch(url, fetchOptions);
+        const res = await fetch(url);
         if (!res.ok) {
             if (utils.failedUrls) utils.failedUrls.set(url, Date.now());
             return null;
