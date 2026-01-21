@@ -152,12 +152,13 @@ async function updateStates() {
     const datasetId = document.getElementById("DatadbReportTableDataset").value;
     const stateSelect = document.getElementById("DatadbReportTableState");
     const fileSuffix = datasetId.replace(/-/g, "_");
-    const url = `/aqs_list_${fileSuffix}.json`;
-
-    const data = await fetchJson(url, null);
+    const url = `/aqs_list_${fileSuffix}.geojson.gz`;
+    const data = await fetchGeoJSON(url, null);
     if (!data) return;
 
-    const states = [...new Set(data.map(item => item.state))].sort();
+    // Handle both GeoJSON FeatureCollection and plain array of objects
+    const items = data.features ? data.features.map(f => f.properties) : data;
+    const states = [...new Set(items.map(item => item.state))].sort();
     const currentState = stateSelect.value;
 
     stateSelect.innerHTML = '<option value="">Select State</option>';
@@ -204,7 +205,9 @@ function pivotData(data, timeKey, valueKey) {
         if (!sites[siteKey]) {
             sites[siteKey] = {
                 AQS: siteKey,
-                site_name: siteName
+                site_name: siteName,
+                lon: d.lon !== undefined ? d.lon : "NA",
+                lat: d.lat !== undefined ? d.lat : "NA"
             };
         }
 
@@ -238,7 +241,14 @@ async function loadStateData(datasetId, state, config) {
 
     if (!geoData || !geoData.features) return null;
 
-    let flatData = geoData.features.map(f => f.properties);
+    let flatData = geoData.features.map(f => {
+        const p = { ...f.properties };
+        if (f.geometry && f.geometry.coordinates) {
+            p.lon = f.geometry.coordinates[0];
+            p.lat = f.geometry.coordinates[1];
+        }
+        return p;
+    });
 
     if (edmData && edmData.features) {
         const edmMap = new Map();
@@ -357,6 +367,8 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
                 count: 0,
                 sum: 0,
                 site_name: d.site_name,
+                lon: d.lon,
+                lat: d.lat,
                 [siteKey]: d[siteKey],
                 [timeKey]: d[timeKey]
             };
@@ -465,6 +477,8 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
             [siteKey]: g[siteKey],
             [timeKey]: g[timeKey],
             site_name: g.site_name,
+            lon: g.lon,
+            lat: g.lat,
             result: finalVal
         };
     });
@@ -485,7 +499,7 @@ function renderDatadbReportTable() {
     if (!head || !body || !reportResults) return;
 
     // Header: AQS, Site Name, [Time Columns]
-    const baseCols = ["AQS", "site_name"];
+    const baseCols = ["AQS", "site_name", "lon", "lat"];
     const allCols = baseCols.concat(reportResults.columns);
     head.innerHTML = allCols.map(c => `<th>${c}</th>`).join("");
 
@@ -501,7 +515,12 @@ function renderDatadbReportTable() {
             return `<td>${ESML(displayVal)}</td>`;
         }).join("")}</tr>`;
     }).join("");
-
+    
+    // Trigger feedback animation
+    body.classList.remove("datadb-table-refreshing");
+    void body.offsetWidth; // Force reflow to restart animation
+    body.classList.add("datadb-table-refreshing");
+    
     // Pagination
     const totalPages = Math.ceil(reportResults.data.length / ROWS_PER_PAGE);
     info.textContent = `Page ${currentPage} of ${totalPages} (${reportResults.data.length} sites)`;
@@ -528,7 +547,7 @@ window.downloadReportCSV = function () {
     
     if (!reportResults) return;
 
-    const baseCols = ["AQS", "site_name"];
+    const baseCols = ["AQS", "site_name", "lon", "lat"];
     const allCols = baseCols.concat(reportResults.columns);
 
     const csvContent = [

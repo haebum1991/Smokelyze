@@ -180,7 +180,7 @@ export function updateAuthButton(btn, user, baseText) {
         el.title = "";
     } else {
         el.classList.add("disabled-auth");
-        el.textContent = `${baseText} (Login required)`;
+        el.textContent = `${baseText}`;
         el.title = `Please login to ${baseText.toLowerCase()}`;
     }
 }

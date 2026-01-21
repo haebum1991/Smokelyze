@@ -2,6 +2,7 @@
 import { map } from "./map-init.js";
 import { state } from "./ui-state.js";
 import { generatePopupHTML } from "./layers-tooltip.js";
+import { auth } from "./fb-init.js";
 import { loadedGeoJSON, loadedSources } from "./loader-state.js";
 import { DATA_IMPORT_METHOD } from "./layers-def.js";
 
@@ -142,23 +143,35 @@ export function isRecentlyFailed(url) {
   return false;
 }
 
-export function fetchJson(url, fallback) {
+export async function fetchJson(url, fallback) {
   if (isRecentlyFailed(url)) {
     return Promise.resolve(fallback);
   }
-  return fetch(url)
-    .then(function (res) {
-      if (!res.ok) {
-        failedUrls.set(url, Date.now());
-        throw new Error("HTTP " + res.status);
-      }
-      return res.json();
-    })
-    .catch(function (err) {
-      console.error("Error fetching", url, err);
+
+  const fetchOptions = {};
+  if (auth && auth.currentUser) {
+    try {
+      const idToken = await auth.currentUser.getIdToken();
+      fetchOptions.headers = {
+        "Authorization": `Bearer ${idToken}`
+      };
+    } catch (tokenError) {
+      console.warn("Could not get ID token for fetchJson:", tokenError);
+    }
+  }
+
+  try {
+    const res = await fetch(url, fetchOptions);
+    if (!res.ok) {
       failedUrls.set(url, Date.now());
-      return fallback;
-    });
+      throw new Error("HTTP " + res.status);
+    }
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching", url, err);
+    failedUrls.set(url, Date.now());
+    return fallback;
+  }
 }
 
 export function debounce(fn, wait) {

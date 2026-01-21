@@ -22,6 +22,12 @@ let currentTableKeys = [];  // Store sorted keys for CSV download
 let currentDatasetId = "";  // Track for filename
 let currentQueryState = ""; // Track for filename
 let currentAqs = "";        // Track for filename
+let currentLocationData = null; // Store location info (lon, lat, site_name)
+let locationMap = null; // MapLibre GL map instance for Location tab
+let mapLibraryLoaded = false; // Track if MapLibre GL is loaded
+let mapLibraryLoading = false; // Track if library is currently loading
+let defaultDateStart = null; // Store original min date
+let defaultDateEnd = null; // Store original max date
 
 // Pagination State
 const ROWS_PER_PAGE = 15;
@@ -75,9 +81,9 @@ async function fetchDatasetList(datasetId) {
     if (datasetCache[datasetId]) return datasetCache[datasetId];
 
     const fileSuffix = datasetId.replace(/-/g, "_");
-    const url = `/aqs_list_${fileSuffix}.json`;
-
-    const data = await fetchJson(url, null);
+    const url = `/aqs_list_${fileSuffix}.geojson.gz`;
+    const data = await fetchGeoJSON(url, null);
+    
     if (data) datasetCache[datasetId] = data;
     return data;
 }
@@ -100,10 +106,12 @@ async function updateStates() {
         aqsSelect.innerHTML = '<option value="">Select AQS</option>';
         return;
     }
-
-    const states = [...new Set(data.map(item => item.state))].sort();
-
+    
+    // Handle both GeoJSON FeatureCollection and plain array of objects
+    const items = data.features ? data.features.map(f => f.properties) : data;
+    const states = [...new Set(items.map(item => item.state))].sort();
     const currentState = stateSelect.value;
+    
     stateSelect.innerHTML = '<option value="">Select State</option>';
     states.forEach(state => {
         const option = document.createElement("option");
@@ -139,7 +147,8 @@ function updateAQS() {
         return;
     }
 
-    const aqsList = data
+    const items = data.features ? data.features.map(f => f.properties) : data;
+    const aqsList = items
         .filter(item => item.state === state)
         .map(item => item.AQS)
         .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
@@ -226,6 +235,11 @@ function renderTableBody() {
             return `<td>${ESML(displayVal)}</td>`;
         }).join("")}</tr>`;
     }).join("");
+    
+    // Trigger feedback animation
+    body.classList.remove("datadb-table-refreshing");
+    void body.offsetWidth; // Force reflow to restart animation
+    body.classList.add("datadb-table-refreshing");
 }
 
 /**
@@ -239,6 +253,58 @@ function updatePaginationUI() {
     if (prevBtn) prevBtn.disabled = (currentPage === 1);
     if (nextBtn) nextBtn.disabled = (currentPage === totalPages);
     if (pageInfo) pageInfo.textContent = `Page ${currentPage} of ${totalPages} (${currentTableData.length} total rows)`;
+}
+
+/**
+ * Render Location Information
+ */
+function renderLocationInfo() {
+    if (!currentLocationData) return;
+
+    const siteName = currentLocationData.site_name || "NA";
+    const aqs = currentLocationData.AQS || currentAqs || "NA";
+    const lon = currentLocationData.lon !== undefined ? currentLocationData.lon.toFixed(6) : "NA";
+    const lat = currentLocationData.lat !== undefined ? currentLocationData.lat.toFixed(6) : "NA";
+
+    document.getElementById("DatadbLocationSiteName").textContent = siteName;
+    document.getElementById("DatadbLocationAQS").textContent = aqs;
+    document.getElementById("DatadbLocationLon").textContent = lon;
+    document.getElementById("DatadbLocationLat").textContent = lat;
+}
+
+/**
+ * Set date range inputs to min/max from data
+ */
+function setDateRangeFromData(features) {
+    if (!features || features.length === 0) return;
+
+    const dateStartInput = document.getElementById("DatadbDataDateStart");
+    const dateEndInput = document.getElementById("DatadbDataDateEnd");
+
+    if (!dateStartInput || !dateEndInput) return;
+
+    // Extract all dates from features (as strings to avoid timezone issues)
+    const dateStrings = features
+        .map(f => f.properties?.date)
+        .filter(date => date && typeof date === "string") // Remove null/undefined
+        .filter(date => /^\d{4}-\d{2}-\d{2}/.test(date)); // Validate YYYY-MM-DD format
+
+    if (dateStrings.length === 0) return;
+
+    // Find min and max dates (string comparison works for YYYY-MM-DD format)
+    const minDate = dateStrings.reduce((min, date) => date < min ? date : min);
+    const maxDate = dateStrings.reduce((max, date) => date > max ? date : max);
+    const extractDate = (dateStr) => dateStr.split("T")[0].split(" ")[0];
+    
+    const minDateFormatted = extractDate(minDate);
+    const maxDateFormatted = extractDate(maxDate);
+
+    // Store as default for reset
+    defaultDateStart = minDateFormatted;
+    defaultDateEnd = maxDateFormatted;
+
+    dateStartInput.value = minDateFormatted;
+    dateEndInput.value = maxDateFormatted;
 }
 
 /**
@@ -260,9 +326,28 @@ function renderDataTable() {
         pagination.style.display = "none";
         return;
     }
+    
+    // Get date range from inputs
+    const dateStart = document.getElementById("DatadbDataDateStart")?.value;
+    const dateEnd = document.getElementById("DatadbDataDateEnd")?.value;
+
+    // Filter features by date range
+    let filteredFeatures = currentFeatures;
+    if (dateStart && dateEnd) {
+        const startDate = new Date(dateStart);
+        const endDate = new Date(dateEnd);
+
+        filteredFeatures = currentFeatures.filter(f => {
+            const featureDate = f.properties.date;
+            if (!featureDate) return true; // Include if no date field
+
+            const fDate = new Date(featureDate);
+            return fDate >= startDate && fDate <= endDate;
+        });
+    }
 
     // Use keys from the first feature to maintain "original" JSON order
-    currentTableData = currentFeatures.map(f => {
+    currentTableData = filteredFeatures.map(f => {
         const p = { ...f.properties };
         if (f.geometry && f.geometry.coordinates) {
             p.lon = f.geometry.coordinates[0];
@@ -347,7 +432,22 @@ window.handleQuery = async function () {
             currentAqs = aqsSite;
             currentFeatures = data.features;
             currentPage = 1;
-
+            
+            // Extract location data from first feature
+            if (data.features.length > 0) {
+                const firstFeature = data.features[0];
+                currentLocationData = {
+                    site_name: firstFeature.properties?.site_name || "NA",
+                    AQS: firstFeature.properties?.AQS || aqsSite,
+                    lon: firstFeature.geometry?.coordinates?.[0],
+                    lat: firstFeature.geometry?.coordinates?.[1]
+                };
+                renderLocationInfo();
+            }
+            
+            // Set date range to data min/max
+            setDateRangeFromData(data.features);
+            
             if (metaData) {
                 renderDataMeta(metaData);
             }
@@ -356,8 +456,8 @@ window.handleQuery = async function () {
             document.getElementById("DatadbDataTableWrapper").style.display = "block";
 
             // Default to Metadata tab on new query
-            const metaTabBtn = document.getElementById("BtnMetaTab");
-            if (metaTabBtn) metaTabBtn.click();
+            const initTabBtn = document.getElementById("datadbBtnLocationTab");
+            if (initTabBtn) initTabBtn.click();
             
         } else {
             alert("No detailed data found for this AQS site in the selected dataset.");
@@ -371,6 +471,195 @@ window.handleQuery = async function () {
         btn.disabled = false;
     }
 };
+
+
+/**
+ * Load MapLibre GL library dynamically (lazy loading)
+ */
+async function loadMapLibrary() {
+    if (mapLibraryLoaded) return true;
+    if (mapLibraryLoading) {
+        // Wait for ongoing load
+        return new Promise((resolve) => {
+            const checkInterval = setInterval(() => {
+                if (mapLibraryLoaded) {
+                    clearInterval(checkInterval);
+                    resolve(true);
+                }
+            }, 100);
+        });
+    }
+
+    mapLibraryLoading = true;
+
+    try {
+        // Load CSS
+        const cssLink = document.createElement("link");
+        cssLink.rel = "stylesheet";
+        cssLink.href = "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css";
+        document.head.appendChild(cssLink);
+
+        // Load JS
+        await new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js";
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+
+        mapLibraryLoaded = true;
+        mapLibraryLoading = false;
+        return true;
+    } catch (error) {
+        console.error("Failed to load MapLibre GL:", error);
+        mapLibraryLoading = false;
+        return false;
+    }
+}
+
+/**
+ * Initialize and display location on embedded map (optimized with lazy loading)
+ */
+async function initLocationMap() {
+    if (!currentLocationData || currentLocationData.lon === undefined || currentLocationData.lat === undefined) {
+        return;
+    }
+
+    const mapContainer = document.getElementById("DatadbLocationMap");
+    if (!mapContainer) return;
+
+    const libraryLoaded = await loadMapLibrary();
+    if (!libraryLoaded) {
+        const errorDiv = document.createElement("div");
+        errorDiv.style.cssText = "padding: 2rem; text-align: center; color: var(--text-main);";
+        errorDiv.textContent = "Failed to load map library. Please refresh the page.";
+        mapContainer.innerHTML = "";
+        mapContainer.appendChild(errorDiv);
+        return;
+    }
+
+    if (locationMap) {
+        locationMap.flyTo({
+            center: [currentLocationData.lon, currentLocationData.lat],
+            zoom: 8,
+            essential: true
+        });
+        return;
+    }
+
+    // Show loading indicator with safe DOM creation
+    const loadingDiv = document.createElement("div");
+    const loadingSpan = document.createElement("span");
+    
+    loadingDiv.style.cssText = "display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-main);";
+    loadingSpan.textContent = "Loading map...";
+    loadingDiv.appendChild(loadingSpan);
+    mapContainer.innerHTML = "";
+    mapContainer.appendChild(loadingDiv);
+    
+    // Small delay to ensure container is visible
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    // Clear container
+    mapContainer.innerHTML = "";
+
+    // Initialize map
+    locationMap = new maplibregl.Map({
+        container: "DatadbLocationMap",
+        style: "https://tiles.openfreemap.org/styles/liberty",
+        center: [currentLocationData.lon, currentLocationData.lat],
+        zoom: 8,
+        attributionControl: false
+    });
+
+    // Add controls
+    locationMap.addControl(new maplibregl.NavigationControl(), "top-right");
+    locationMap.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
+
+    // Add marker and popup when map is loaded
+    locationMap.on("load", () => {
+        // Add marker
+        const marker = new maplibregl.Marker({ color: "#a366ff" })
+            .setLngLat([currentLocationData.lon, currentLocationData.lat])
+            .addTo(locationMap);
+
+        // Add popup with sanitized data to prevent XSS
+        const siteName = ESML(currentLocationData.site_name || "AQS Site");
+        const aqsCode = ESML(currentLocationData.AQS);
+        const lonStr = ESML(currentLocationData.lon.toFixed(6));
+        const latStr = ESML(currentLocationData.lat.toFixed(6));
+
+        const popupHTML = `
+            <div style="font-family: sans-serif; padding: 0.5rem;">
+                <strong style="color: #a366ff; font-size: 1.4rem;">${siteName}</strong><br>
+                <span style="font-size: 1.2rem; color: #666;">AQS: ${aqsCode}</span><br>
+                <span style="font-size: 1.2rem; color: #666;">Lon: ${lonStr}</span><br>
+                <span style="font-size: 1.2rem; color: #666;">Lat: ${latStr}</span>
+            </div>
+        `;
+
+        const popup = new maplibregl.Popup({ offset: 25 })
+            .setHTML(popupHTML);
+
+        marker.setPopup(popup);
+        popup.addTo(locationMap);
+    });
+}
+
+/**
+ * Reset date range to original min/max
+ */
+function resetDateRange() {
+    if (!defaultDateStart || !defaultDateEnd) {
+        alert("No default date range available. Please import data first.");
+        return;
+    }
+
+    const dateStartInput = document.getElementById("DatadbDataDateStart");
+    const dateEndInput = document.getElementById("DatadbDataDateEnd");
+
+    if (dateStartInput && dateEndInput) {
+        dateStartInput.value = defaultDateStart;
+        dateEndInput.value = defaultDateEnd;
+
+        // Re-render table with full date range
+        if (currentFeatures.length > 0) {
+            currentPage = 1;
+            renderDataTable();
+        }
+    }
+}
+
+/**
+ * Apply current date range filter
+ */
+function applyDateRange() {
+    if (currentFeatures.length === 0) {
+        alert("No data loaded. Please import data first.");
+        return;
+    }
+
+    const dateStartInput = document.getElementById("DatadbDataDateStart");
+    const dateEndInput = document.getElementById("DatadbDataDateEnd");
+
+    if (!dateStartInput?.value || !dateEndInput?.value) {
+        alert("Please select both start and end dates.");
+        return;
+    }
+
+    // Re-render table with current date range
+    currentPage = 1;
+    renderDataTable();
+}
+
+// Expose to window for HTML onclick
+window.resetDateRange = resetDateRange;
+window.applyDateRange = applyDateRange;
+
+// Expose to window for HTML onclick
+window.initLocationMap = initLocationMap;
+
 
 /**
  * Exposed functions for HTML
@@ -436,6 +725,8 @@ function initQueryBuilder() {
     onAuthStateChanged(auth, (user) => {
         updateAuthButton("DatadbDataTableBtnImport", user, "Import data");
         updateAuthButton("DatadbDataTableBtnDownload", user, "Download CSV");
+        updateAuthButton("DatadbDataTableBtnDateDefault", user, "Default date");
+        updateAuthButton("DatadbDataTableBtnDateSetRange", user, "Set range");
     });
 }
 

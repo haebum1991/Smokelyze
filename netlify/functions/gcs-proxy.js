@@ -1,5 +1,23 @@
 
 const { Storage } = require("@google-cloud/storage");
+const admin = require("firebase-admin");
+
+// Initialize Firebase Admin
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.GCP_PROJECT_ID,
+      clientEmail: process.env.GCP_CLIENT_EMAIL,
+      private_key: (process.env.GCP_PRIVATE_KEY || "")
+        .replace(/?
+/g, "
+")
+        .replace(/\n/g, "
+"),
+    }),
+  });
+}
+
 const storage = new Storage({
   projectId: process.env.GCP_PROJECT_ID,
   credentials: {
@@ -84,7 +102,32 @@ exports.handler = async (event) => {
   };
 
   if (cor.preflight) return { statusCode: 204, headers: corsHeaders, body: "" };
+  
+   // --- Check Authentication ---
+  const authHeader = event.headers.authorization || event.headers.Authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    dwarn("[UNAUTHORIZED] No token provided");
+    return {
+      statusCode: 401,
+      headers: corsHeaders,
+      body: JSON.stringify({ error: "Unauthorized: No token provided" })
+    };
+  }
 
+  const idToken = authHeader.split(" ")[1];
+  try {
+    await admin.auth().verifyIdToken(idToken);
+    dlog("[AUTH_SUCCESS]");
+  } catch (authError) {
+    dwarn("[UNAUTHORIZED] Invalid token", authError.message);
+    return {
+      statusCode: 401,
+      headers: corsHeaders,
+      body: JSON.stringify({ error: "Unauthorized: Invalid token" })
+    };
+  }
+  // ----------------------------
+  
   try {
     const path = extractGcsPath(event);
     if (!path) {

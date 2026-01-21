@@ -143,11 +143,22 @@
     width: 100%;
     overflow-x: auto;
     margin-top: 1rem;
+    background: var(--card-bg);
     border-radius: var(--border-radius-0p8rem);
     border: 0.1rem solid var(--border-light);
     max-height: 60rem;
     overflow-y: auto;
     overscroll-behavior: contain;
+}
+
+/* Subtle fade-in animation for data updates */
+@keyframes datadbFadeIn {
+    from { opacity: 0.1; transform: translateY(2rem); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.datadb-table-refreshing {
+    animation: datadbFadeIn 0.5s ease-out;
 }
 
 #DatadbDataTable,
@@ -316,6 +327,31 @@
     background: var(--color-bg);
     color: var(--text-main);
     font-size: 1.4rem;
+    cursor: pointer;
+}
+
+/* Change calendar icon color using filter */
+.datadb-date-range input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(37%) sepia(93%) saturate(2578%) hue-rotate(246deg) brightness(98%) contrast(101%);
+    cursor: pointer;
+}
+
+/* Firefox */
+.datadb-date-range input[type="date"]::-moz-calendar-picker-indicator {
+    filter: invert(37%) sepia(93%) saturate(2578%) hue-rotate(246deg) brightness(98%) contrast(101%);
+    cursor: pointer;
+}
+
+#DatadbDataSource:hover,
+#DatadbDataAQS:hover,
+#DatadbDataState:hover,
+#DatadbReportTableDataset:hover,
+#DatadbReportTableState:hover,
+#DatadbReportTableType:hover,
+.datadb-date-range input[type="date"]:hover,
+.datadb-date-range input[type="date"]:focus {
+    border-color: var(--card-shadow);
+    box-shadow: 0 0 0 0.4rem rgba(163, 102, 255, 0.15);
 }
 
 /* Radio Group */
