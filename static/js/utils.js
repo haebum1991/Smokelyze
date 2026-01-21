@@ -388,7 +388,8 @@ export function highlightLocation(coords, p, dataSource) {
 }
 
 export function ESML(str) {
-  if (!str) return "";
+  // if (!str) return "";
+  if (str === null || str === undefined) return "";
   return String(str)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
