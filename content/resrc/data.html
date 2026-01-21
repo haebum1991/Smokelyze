@@ -80,6 +80,8 @@ title: ""
     <!-- AQS query Sub-tab -->
     <div id="DatadbByQuerySection" class="datadb-tab-content sub-tab-content active">
       <div class="card-about reveal-on-scroll">
+      
+        <!-- Config -->
         <div class="datadb-query-form" style="align-items: flex-end;">
           <div class="datadb-form-group">
             <label for="DatadbDataSource">Dataset</label>
@@ -102,11 +104,16 @@ title: ""
               <option value="">Select AQS</option>
             </select>
           </div>
-          <button class="datadb-query-btn" onclick="handleQuery()">Import data</button>
         </div>
         <br>
-
+        
+        <div class="datadb-query-form" style="display: flex; justify-content: flex-end;">
+          <button class="datadb-query-btn" id="DatadbDataTableBtnImport" onclick="handleQuery()">Import data</button>
+        </div>
+        
+        <!-- Query Content / Results -->
         <div id="DatadbDataTableWrapper" style="display: none;">
+          <hr>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             <h3 id="DatadbDataTableTitle" style="margin: 0;">Query Results</h3>
           </div>
@@ -122,13 +129,12 @@ title: ""
           <!-- Metadata Section -->
           <div id="DatadbMetaContainer" class="datadb-tab-content nested-sub-tab-content active">
             <div id="DatadbMetaContent" class="datadb-meta-grid"></div>
-            <br>
           </div>
 
           <!-- Data Table Section -->
           <div id="DatadbDataTableSection" class="datadb-tab-content nested-sub-tab-content">
             <div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
-              <button class="datadb-query-btn" onclick="downloadCSV()">Download CSV</button>
+              <button class="datadb-query-btn" id="DatadbDataTableBtnDownload" onclick="downloadCSV()">Download CSV</button>
             </div>
             <div class="datadb-table-container">
               <table id="DatadbDataTable">
@@ -145,6 +151,9 @@ title: ""
             </div>
           </div>
         </div>
+        
+        <br>
+        
       </div>
     </div>
 
@@ -152,7 +161,7 @@ title: ""
     <div id="DatadbStateReportSection" class="datadb-tab-content sub-tab-content">
       <div class="card-about reveal-on-scroll">
         
-          <!-- Sidebar / Config -->
+          <!-- Config -->
           <div class="datadb-query-form">
             <div class="datadb-form-group">
               <label for="DatadbReportTableDataset">Dataset</label>
@@ -211,43 +220,38 @@ title: ""
           </div>
           <br>
           
-          <div class="datadb-query-form">
-            <button class="datadb-query-btn" id="DatadbReportTableBtnGenerate" onclick="generateReport()">Generate Report</button>
+          <div class="datadb-query-form" style="display: flex; justify-content: flex-end;">
+            <button class="datadb-query-btn" id="DatadbReportTableBtnGenerate" onclick="generateReport()">
+              Generate Report
+            </button>
+          </div>
+          
+          <!-- State Report Content / Results -->
+          <div id="DatadbReportTableWrapper" style="display: none;">
+            <hr>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+              <h3 id="DatadbReportTableTitle" style="font-size: 1.4rem;">Report Results</h3>
+              <button class="datadb-query-btn" id="DatadbReportTableBtnDownload" onclick="downloadReportCSV()">Download CSV</button>
+            </div>
+
+            <div class="datadb-table-container">
+              <table id="DatadbReportTable">
+                <thead>
+                  <tr id="DatadbReportTableHead"></tr>
+                </thead>
+                <tbody id="DatadbReportTableBody"></tbody>
+              </table>
+            </div>
+
+            <div id="DatadbReportTablePagination" class="datadb-pagination" style="display: none;">
+              <button id="DatadbReportTableBtnPrev" class="datadb-page-btn" onclick="changeReportPage(-1)">Previous</button>
+              <span id="DatadbReportTablePageInfo">Page 1 of 1</span>
+              <button id="DatadbReportTableBtnNext" class="datadb-page-btn" onclick="changeReportPage(1)">Next</button>
+            </div>
           </div>
           
           <br>
-          <!-- Main Content / Results -->
-          <div class="datadb-report-main">
-            <div id="DatadbReportTableWrapper" style="display: none;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <h3>Report Results</h3>
-                <div class="datadb-report-actions">
-                  <button class="datadb-query-btn" onclick="downloadReportCSV()">Download CSV</button>
-                </div>
-              </div>
-
-              <div class="datadb-table-container">
-                <table id="DatadbReportTable">
-                  <thead>
-                    <tr id="DatadbReportTableHead"></tr>
-                  </thead>
-                  <tbody id="DatadbReportTableBody"></tbody>
-                </table>
-              </div>
-
-              <div id="DatadbReportTablePagination" class="datadb-pagination" style="display: none;">
-                <button id="DatadbReportTableBtnPrev" class="datadb-page-btn" onclick="changeReportPage(-1)">Previous</button>
-                <span id="DatadbReportTablePageInfo">Page 1 of 1</span>
-                <button id="DatadbReportTableBtnNext" class="datadb-page-btn" onclick="changeReportPage(1)">Next</button>
-              </div>
-            </div>
-
-            <div id="DatadbReportTablePlaceholder" class="datadb-placeholder">
-              <p>Configure the report settings on the left and click "Generate Report" to view results.</p>
-            </div>
-            <br>
-          </div>
-        
+          
       </div>
     </div>
   </div>

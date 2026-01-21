@@ -3,16 +3,16 @@
  * Data Page Query Builder Logic
  * Handles cascading dropdowns and data table display
  */
-
-
 import { fetchGeoJSON } from "./loader-fetch.js";
 import { auth, onAuthStateChanged } from "./fb-init.js";
-import { showAuthOverlay, fetchJson } from "./utils.js";
+import { showAuthOverlay, fetchJson, ESML } from "./utils.js";
+import { updateAuthButton } from "./signin.js";
 
 let datasetCache = {};
 let currentTableData = null; // Store for CSV download
 let currentTableKeys = [];  // Store sorted keys for CSV download
 let currentDatasetId = "";  // Track for filename
+let currentQueryState = ""; // Track for filename
 let currentAqs = "";        // Track for filename
 
 // Pagination State
@@ -161,8 +161,8 @@ function renderDataMeta(data) {
         if (row.Contents && row.Descriptions) {
             html += `
                 <div class="datadb-meta-item">
-                    <span class="datadb-meta-label">${row.Contents}</span>
-                    <span class="datadb-meta-value">${row.Descriptions}</span>
+                    <span class="datadb-meta-label">${ESML(row.Contents)}</span>
+                    <span class="datadb-meta-value">${ESML(row.Descriptions)}</span>
                 </div>
             `;
         }
@@ -170,8 +170,8 @@ function renderDataMeta(data) {
         if (row["Contents.1"] && row["Descriptions.1"]) {
             html += `
                 <div class="datadb-meta-item">
-                    <span class="datadb-meta-label">${row["Contents.1"]}</span>
-                    <span class="datadb-meta-value">${row["Descriptions.1"]}</span>
+                    <span class="datadb-meta-label">${ESML(row["Contents.1"])}</span>
+                    <span class="datadb-meta-value">${ESML(row["Descriptions.1"])}</span>
                 </div>
             `;
         }
@@ -185,14 +185,14 @@ function renderDataMeta(data) {
         data.terms.forEach(term => {
             if (term.term) {
                 html += `<div class="datadb-meta-item" style="border-bottom: none; background: rgba(0,0,0,0.02); padding: 0.5rem; border-radius: 0.4rem;">
-                            <span class="datadb-meta-label" style="font-size: 1.2rem;">${term.term}</span>
-                            <span class="datadb-meta-value" style="font-size: 1.2rem;">EDF: ${term.edf} / F: ${term.F}</span>
+                            <span class="datadb-meta-label" style="font-size: 1.2rem;">${ESML(term.term)}</span>
+                            <span class="datadb-meta-value" style="font-size: 1.2rem;">EDF: ${ESML(term.edf)} / F: ${ESML(term.F)}</span>
                          </div>`;
             }
             if (term["term.1"]) {
                 html += `<div class="datadb-meta-item" style="border-bottom: none; background: rgba(0,0,0,0.02); padding: 0.5rem; border-radius: 0.4rem;">
-                            <span class="datadb-meta-label" style="font-size: 1.2rem;">${term["term.1"]}</span>
-                            <span class="datadb-meta-value" style="font-size: 1.2rem;">EDF: ${term["edf.1"]} / F: ${term["F.1"]}</span>
+                            <span class="datadb-meta-label" style="font-size: 1.2rem;">${ESML(term["term.1"])}</span>
+                            <span class="datadb-meta-value" style="font-size: 1.2rem;">EDF: ${ESML(term["edf.1"])} / F: ${ESML(term["F.1"])}</span>
                          </div>`;
             }
         });
@@ -214,7 +214,8 @@ function renderTableBody() {
     body.innerHTML = pageData.map(p => {
         return `<tr>${currentTableKeys.map(k => {
             const val = p[k];
-            return `<td>${val === null || val === undefined ? "NA" : val}</td>`;
+            const displayVal = (val !== undefined && val !== null) ? val : "NA";
+            return `<td>${ESML(displayVal)}</td>`;
         }).join("")}</tr>`;
     }).join("");
 }
@@ -243,7 +244,7 @@ function renderDataTable() {
 
     if (!head || !body) return;
 
-    title.textContent = `[${currentDatasetId}] [${currentAqs}]`;
+    title.textContent = `[${currentDatasetId}] [${currentQueryState}] [${currentAqs}]`;
 
     if (currentFeatures.length === 0) {
         head.innerHTML = "";
@@ -307,6 +308,7 @@ window.handleQuery = async function () {
     }
 
     const datasetId = document.getElementById("DatadbDataSource")?.value;
+    const stateVal = document.getElementById("DatadbDataState")?.value;
     const aqsSite = document.getElementById("DatadbDataAQS")?.value;
 
     if (!aqsSite) {
@@ -333,6 +335,7 @@ window.handleQuery = async function () {
 
         if (data && data.features) {
             currentDatasetId = datasetId;
+            currentQueryState = stateVal;
             currentAqs = aqsSite;
             currentFeatures = data.features;
             currentPage = 1;
@@ -377,6 +380,12 @@ window.changePage = function (delta) {
 };
 
 window.downloadCSV = function () {
+
+    if (!auth.currentUser) {
+        showAuthOverlay();
+        return;
+    }
+    
     if (!currentTableData || currentTableData.length === 0 || currentTableKeys.length === 0) return;
 
     const csvContent = [
@@ -417,18 +426,8 @@ function initQueryBuilder() {
     }
 
     onAuthStateChanged(auth, (user) => {
-        const btn = document.querySelector(".datadb-query-btn");
-        if (btn) {
-            if (user) {
-                btn.classList.remove("disabled-auth");
-                btn.textContent = "Import data";
-                btn.title = "";
-            } else {
-                btn.classList.add("disabled-auth");
-                btn.textContent = "Import data (Login required)";
-                btn.title = "Please login to import data";
-            }
-        }
+        updateAuthButton("DatadbDataTableBtnImport", user, "Import data");
+        updateAuthButton("DatadbDataTableBtnDownload", user, "Download CSV");
     });
 }
 

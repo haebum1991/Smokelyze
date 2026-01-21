@@ -5,7 +5,9 @@
  */
 
 import { fetchGeoJSON } from "./loader-fetch.js";
-import { fetchJson } from "./utils.js";
+import { auth, onAuthStateChanged } from "./fb-init.js";
+import { fetchJson, ESML, showAuthOverlay } from "./utils.js";
+import { updateAuthButton } from "./signin.js";
 
 // --- Configuration ---
 const REPORT_CONFIG = {
@@ -270,6 +272,12 @@ async function loadStateData(datasetId, state, config) {
  * Core Logic: Generate Report
  */
 window.generateReport = async function () {
+
+    if (!auth.currentUser) {
+        showAuthOverlay();
+        return;
+    }
+    
     const datasetId = document.getElementById("DatadbReportTableDataset").value;
     const state = document.getElementById("DatadbReportTableState").value;
     const period = document.querySelector('input[name="DatadbReportTablePeriod"]:checked').value;
@@ -317,8 +325,13 @@ window.generateReport = async function () {
         reportResults = result;
         currentPage = 1;
         renderDatadbReportTable();
-
-        document.getElementById("DatadbReportTablePlaceholder").style.display = "none";
+          
+        // Update Title with Truncated Report Type
+        const titleEl = document.getElementById("DatadbReportTableTitle");
+        if (titleEl) {
+            titleEl.textContent = `[${datasetId}] [${state}] [${reportType}]`;
+        }
+        
         document.getElementById("DatadbReportTableWrapper").style.display = "block";
 
     } catch (err) {
@@ -496,7 +509,8 @@ function renderDatadbReportTable() {
     body.innerHTML = pageData.map(row => {
         return `<tr>${allCols.map(c => {
             const val = row[c];
-            return `<td>${(val !== undefined && val !== null) ? val : "NA"}</td>`;
+            const displayVal = (val !== undefined && val !== null) ? val : "NA";
+            return `<td>${ESML(displayVal)}</td>`;
         }).join("")}</tr>`;
     }).join("");
 
@@ -518,6 +532,12 @@ window.changeReportPage = function (delta) {
  * Export CSV
  */
 window.downloadReportCSV = function () {
+    
+    if (!auth.currentUser) {
+        showAuthOverlay();
+        return;
+    }
+    
     if (!reportResults) return;
 
     const baseCols = ["AQS", "site_name"];
@@ -568,6 +588,11 @@ function initReport() {
     }
 
     periodRadios.forEach(r => r.addEventListener("change", handlePeriodChange));
+    
+    onAuthStateChanged(auth, (user) => {
+        updateAuthButton("DatadbReportTableBtnGenerate", user, "Generate Report");
+        updateAuthButton("DatadbReportTableBtnDownload", user, "Download CSV");
+    });
 }
 
 if (document.readyState === "loading") {

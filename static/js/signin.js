@@ -164,6 +164,27 @@ export async function doLogin() {
     }
 }
 
+/**
+ * Update button UI based on Firebase auth status
+ * @param {HTMLElement|string} btn - Button element or its ID
+ * @param {Object|null} user - Firebase user object
+ * @param {string} baseText - The text to show when logged in
+ */
+export function updateAuthButton(btn, user, baseText) {
+    const el = typeof btn === "string" ? document.getElementById(btn) : btn;
+    if (!el) return;
+
+    if (user) {
+        el.classList.remove("disabled-auth");
+        el.textContent = baseText;
+        el.title = "";
+    } else {
+        el.classList.add("disabled-auth");
+        el.textContent = `${baseText} (Login required)`;
+        el.title = `Please login to ${baseText.toLowerCase()}`;
+    }
+}
+
 if (navAuthBtn) navAuthBtn.addEventListener("click", () => {
     utils.showAuthOverlay();
 });
