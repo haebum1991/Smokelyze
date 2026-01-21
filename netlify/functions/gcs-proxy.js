@@ -1,5 +1,20 @@
 
 const { Storage } = require("@google-cloud/storage");
+const admin = require("firebase-admin");
+
+// Initialize Firebase Admin for token verification
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.GCP_PROJECT_ID,
+      clientEmail: process.env.GCP_CLIENT_EMAIL,
+      private_key: (process.env.GCP_PRIVATE_KEY || "")
+        .replace(/\r?\n/g, "\n")
+        .replace(/\\n/g, "\n"),
+    }),
+  });
+}
+
 const storage = new Storage({
   projectId: process.env.GCP_PROJECT_ID,
   credentials: {
@@ -9,8 +24,22 @@ const storage = new Storage({
       .replace(/\\n/g, "\n"),
   },
 });
+
 const bucket = storage.bucket(process.env.GCS_BUCKET);
 const DEBUG = (process.env.DEBUG_LOG || "1") === "1";
+
+// Publicly accessible prefixes (No login required, but Origin check still applies)
+const PUBLIC_PREFIXES = [
+  "realtime", 
+  "noaa_hms_smoke_date_geojson",
+  "noaa_hms_smoke_date_json",
+  "noaa_hms_smoke_year_json",
+  "noaa_hms_fire_date_geojson",
+  "noaa_hms_fire_date_json",
+  "noaa_hms_fire_year_json",
+  "modis_burn_area_date_geojson",
+  "modis_burn_area_year_json"
+];
 
 function dlog(...args) { if (DEBUG) console.log.apply(console, args); }
 function dwarn(...args) { if (DEBUG) console.warn.apply(console, args); }
@@ -22,13 +51,22 @@ function checkOrigin(event) {
   const method = (event.httpMethod || "").toUpperCase();
   const origin = h.origin || h.Origin || "";
   
-  if (method === "OPTIONS") return { ok: true, preflight: true, allow };
-  if (!allow) return { ok: true, allow: "*" };
-
-  const allowHost = hostOf(allow);
-  const originHost = hostOf(origin);
+  if (method === "OPTIONS") return { ok: true, preflight: true, allow: allow || "*" };
   
-  if (originHost && originHost === allowHost) return { ok: true, allow };
+  // STRICT: Block if Origin is missing (prevents direct browser address bar access)
+  if (!origin) {
+    return { ok: false, error: "Direct access forbidden (Hotlinking protection)" };
+  }
+  
+  // If ALLOWED_ORIGIN is set, verify it
+  if (allow) {
+    const allowHost = hostOf(allow);
+    const originHost = hostOf(origin);
+    if (originHost && originHost === allowHost) return { ok: true, allow };
+    return { ok: false, error: "Origin mismatch" };
+  }
+
+  // If no ALLOWED_ORIGIN set, at least we checked that SOME origin exists
   return { ok: true, allow: "*" };
 }
 
@@ -78,19 +116,55 @@ exports.handler = async (event) => {
   
   const corsHeaders = {
     "Vary": "Origin",
-    "Access-Control-Allow-Origin": cor.allow,
+    "Access-Control-Allow-Origin": cor.allow || "*",
     "Access-Control-Allow-Methods": "GET,OPTIONS,HEAD",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };
 
   if (cor.preflight) return { statusCode: 204, headers: corsHeaders, body: "" };
-
+  
+  // 1. Origin Check (Hotlinking Protection)
+  if (!cor.ok) {
+    dwarn("[FORBIDDEN] Hotlinking attempt:", cor.error);
+    return { 
+      statusCode: 403, 
+      headers: corsHeaders, 
+      body: JSON.stringify({ error: cor.error }) 
+    };
+  }
+  
   try {
     const path = extractGcsPath(event);
     if (!path) {
       return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: "bad path" }) };
     }
+    
+    // 2. Selective Authentication
+    const isPublic = PUBLIC_PREFIXES.some(pre => path.startsWith(pre + "/"));
+    
+    if (!isPublic) {
+      const authHeader = event.headers.authorization || event.headers.Authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return { 
+          statusCode: 401, 
+          headers: corsHeaders, 
+          body: JSON.stringify({ error: "Unauthorized: Login required for this data" }) 
+        };
+      }
 
+      const idToken = authHeader.split(" ")[1];
+      try {
+        await admin.auth().verifyIdToken(idToken);
+      } catch (authError) {
+        return { 
+          statusCode: 401, 
+          headers: corsHeaders, 
+          body: JSON.stringify({ error: "Unauthorized: Invalid session" }) 
+        };
+      }
+    }
+
+    // 3. Data Fetching
     const file = bucket.file(path);
     const [exists] = await file.exists();
     if (!exists) {
