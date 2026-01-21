@@ -83,18 +83,14 @@ const REPORT_CONFIG = {
                 { name: "No. of probable smoke days (HMS + PM2.5 > Criteria 1)", method: "count" },
                 { name: "No. of highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "count" },
                 { name: "Mean smoke PM2.5 (ug m-3) on probable smoke days (HMS + PM2.5 > Criteria 1)", method: "mean" },
-                { name: "Mean PM2.5 (ug m-3) on non-smoke days (based HMS + PM2.5 > Criteria 1)", method: "mean" },
-                { name: "Mean smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "mean" },
-                { name: "Mean PM2.5 (ug m-3) on non-smoke days (based HMS + PM2.5 > Criteria 2)", method: "mean" }
+                { name: "Mean smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "mean" }
             ],
             "by_date": [
                 { name: "Days with overhead HMS (1: Yes, 0: No)", method: "count" },
                 { name: "Probable smoke days (HMS + PM2.5 > Criteria 1) (1: Yes, 0: No)", method: "count" },
                 { name: "Highly probable smoke days (HMS + PM2.5 > Criteria 2) (1: Yes, 0: No)", method: "count" },
                 { name: "Smoke PM2.5 (ug m-3) on probable smoke days (HMS + PM2.5 > Criteria 1)", method: "mean" },
-                { name: "PM2.5 (ug m-3) on non-smoke days (based HMS + PM2.5 > Criteria 1)", method: "mean" },
-                { name: "Smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "mean" },
-                { name: "PM2.5 (ug m-3) on non-smoke days (based HMS + PM2.5 > Criteria 2)", method: "mean" }
+                { name: "Smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "mean" }
             ]
         }
     }
@@ -444,17 +440,9 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
                 case "Smoke PM2.5 (ug m-3) on probable smoke days (HMS + PM2.5 > Criteria 1)":
                     if (d.smoke_m0p5m === 1) { isMatch = true; val = del_0p5; }
                     break;
-                case "Mean PM2.5 (ug m-3) on non-smoke days (based HMS + PM2.5 > Criteria 1)":
-                case "PM2.5 (ug m-3) on non-smoke days (based HMS + PM2.5 > Criteria 1)":
-                    if (d.smoke_m0p5m === 0) { isMatch = true; val = d["PM2.5"]; }
-                    break;
                 case "Mean smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)":
                 case "Smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)":
                     if (d.smoke_m1p0m === 1) { isMatch = true; val = del_1p0; }
-                    break;
-                case "Mean PM2.5 (ug m-3) on non-smoke days (based HMS + PM2.5 > Criteria 2)":
-                case "PM2.5 (ug m-3) on non-smoke days (based HMS + PM2.5 > Criteria 2)":
-                    if (d.smoke_m1p0m === 0) { isMatch = true; val = d["PM2.5"]; }
                     break;
             }
         }

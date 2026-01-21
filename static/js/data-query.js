@@ -8,6 +8,14 @@ import { auth, onAuthStateChanged } from "./fb-init.js";
 import { showAuthOverlay, fetchJson, ESML } from "./utils.js";
 import { updateAuthButton } from "./signin.js";
 
+/**
+ * Local utility: Same as ESML but specifically allows <br> tags for line breaks
+ */
+function ESML_BR(str) {
+    if (str === null || str === undefined) return "";
+    return ESML(str).replace(/&lt;br&gt;/gi, "<br>");
+}
+
 let datasetCache = {};
 let currentTableData = null; // Store for CSV download
 let currentTableKeys = [];  // Store sorted keys for CSV download
@@ -162,7 +170,7 @@ function renderDataMeta(data) {
             html += `
                 <div class="datadb-meta-item">
                     <span class="datadb-meta-label">${ESML(row.Contents)}</span>
-                    <span class="datadb-meta-value">${ESML(row.Descriptions)}</span>
+                    <span class="datadb-meta-value">${ESML_BR(row.Descriptions)}</span>
                 </div>
             `;
         }
@@ -171,7 +179,7 @@ function renderDataMeta(data) {
             html += `
                 <div class="datadb-meta-item">
                     <span class="datadb-meta-label">${ESML(row["Contents.1"])}</span>
-                    <span class="datadb-meta-value">${ESML(row["Descriptions.1"])}</span>
+                    <span class="datadb-meta-value">${ESML_BR(row["Descriptions.1"])}</span>
                 </div>
             `;
         }
