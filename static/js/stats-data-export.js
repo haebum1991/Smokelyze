@@ -1,8 +1,9 @@
 
-import { auth } from "./fb-init.js";
+import * as utils from "./utils.js";
+import { auth, onAuthStateChanged } from "./fb-init.js";
 import { loadedGeoJSON, loadSourceData } from "./loader.js";
 import { DATASET_SOURCE_MAP } from "./layers-def.js";
-import * as utils from "./utils.js";
+import { updateAuthButton } from "./signin.js";
 
 function convertToCSV(geoJSON) {
     if (!geoJSON || !geoJSON.features || geoJSON.features.length === 0) {
@@ -230,6 +231,9 @@ export function initExportButton() {
     btn.style.flex = "0 0 auto";
     btn.style.whiteSpace = "nowrap";
     btn.style.marginLeft = "0";
+    
+    // Initial check
+    updateAuthButton(btn, auth.currentUser, "⬇ .CSV");
 }
 
 export { handleDownload };
@@ -240,4 +244,8 @@ if (document.readyState === "loading") {
 } else {
     initExportButton();
 }
+
+onAuthStateChanged(auth, (user) => {
+    updateAuthButton("ExportBtnDaily", user, "⬇ .CSV");
+});
 

@@ -1115,6 +1115,20 @@ body.page-about .sidebar {
   color: #e74c3c;
 }
 
+/* Login required css */
+.disabled-auth {
+    opacity: 0.6;
+    filter: grayscale(0.5);
+    background: var(--text-muted);
+    box-shadow: none;
+    cursor: pointer;
+}
+
+.disabled-auth:hover {
+    transform: none;
+    background: var(--text-main);
+}
+
 
 /* Mobile version setting */
 @media (max-width: 1024px) {

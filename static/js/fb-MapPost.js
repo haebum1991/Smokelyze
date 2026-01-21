@@ -4,6 +4,7 @@ import * as utils from "./utils.js";
 import { map } from "./map-init.js";
 import { setMapPostDrawer } from "./ui-toggles.js";
 import { initUIPulsingIcons } from "./layers-icon.js";
+import { updateAuthButton } from "./signin.js";
 import { resetLoadedSources, updateAllActiveSources, showErrorToast } from "./loader.js";
 
 // --- 1. Global State (Prefix: state) ---
@@ -126,7 +127,10 @@ async function dbDeleteMapPost(id) {
 }
 
 async function dbToggleLikeMapPost(id) {
-    if (!state.currentUser) return;
+    if (!state.currentUser) {
+        utils.showAuthOverlay();
+        return;
+    }
     const data = state.MapPostData[id];
     if (!data) return;
     const isLiked = (data.likes || []).includes(state.currentUser.uid);
@@ -201,7 +205,12 @@ function renderLikeButton(id, likes, isSmall = false) {
 }
 
 function uiShowModal(editData = null) {
-
+    
+    if (!state.currentUser) {
+        utils.showAuthOverlay();
+        return;
+    }
+    
     uiHideContextMenu();
 
     if (!editData && state.pendingLngLat) {
@@ -314,15 +323,7 @@ function renderMapPostDetail(id) {
                     ` : ""}
                     
                     ${p.mapState ? `
-                        ${state.currentUser ? `
-                            <button class="MapPost-btn-restore" data-id="${utils.ESML(id)}">
-                                Get map condition (Date, Zoom, Layers)
-                            </button>
-                        ` : `
-                            <button class="MapPost-btn-restore" style="opacity: 0.5; cursor: not-allowed;" title="Login required" onclick="const overlay=document.getElementById('AuthOverlay'); if(overlay) overlay.style.display='flex';">
-                                Get map condition (Login required)
-                            </button>
-                        `}
+                        <button class="MapPost-btn-restore" data-id="${utils.ESML(id)}">Get map condition (Date, Zoom, Layers)</button>
                     ` : ""}
 
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
@@ -344,11 +345,7 @@ function renderMapPostDetail(id) {
                     <div class="reply-section">
                         <div class="reply-section-start">
                           Replies (${allReplies.length})
-                          ${state.currentUser ? `
                           <button class="reply-btn-reply" data-id="${utils.ESML(id)}">Reply</button>
-                          ` : `
-                          <button class="reply-btn-reply" style="opacity: 0.5; cursor: not-allowed;" title="Login required to reply" onclick="const overlay=document.getElementById('AuthOverlay'); if(overlay) overlay.style.display='flex';">Reply (Login required)</button>
-                          `}
                         </div>
                         <div class="reply-text-container" id="ReplyTextContainer-${utils.ESML(id)}" style="display: none;">
                             <textarea class="reply-text-typing" placeholder="Write a reply..."></textarea>
@@ -365,6 +362,18 @@ function renderMapPostDetail(id) {
     document.getElementById("MapPostModalOverlay").style.display = "flex";
     document.getElementById("MapPostModalEditBody").style.display = "none";
     viewBody.style.display = "block";
+    
+    // Update buttons using auth utility
+    const restoreBtn = viewBody.querySelector(".MapPost-btn-restore");
+    if (restoreBtn) updateAuthButton(restoreBtn, state.currentUser, "Get map condition (Date, Zoom, Layers)");
+
+    viewBody.querySelectorAll(".reply-btn-reply").forEach(btn => {
+        updateAuthButton(btn, state.currentUser, "Reply");
+    });
+    viewBody.querySelectorAll(".reply-btn-submit").forEach(btn => {
+        updateAuthButton(btn, state.currentUser, "Submit");
+    });
+    
     const titleText = document.getElementById("MapPostModalTitle");
     if (titleText) titleText.textContent = "MapPost detail";
 }
@@ -451,8 +460,8 @@ function renderMapPostList() {
     }
 
     let html = `
-                <button class="MapPost-item-link clickOnAddFromDrawer" style="width: max-content; margin: 0 auto;">
-                    +MapPost
+                <button class="MapPost-item-link clickOnAddFromDrawer" style="width: max-content; margin: 0 auto; display: block;">
+                     +MapPost
                 </button>
                 <div style="font-size: 1.4rem; color: var(--text-strong);">
                     The 20 most recent posts are displayed.
@@ -490,7 +499,12 @@ function renderMapPostList() {
                     `;
         });
     }
+    
     listContainer.innerHTML = html;
+    
+    // Update Add button using auth utility
+    const addBtn = listContainer.querySelector(".clickOnAddFromDrawer");
+    if (addBtn) updateAuthButton(addBtn, state.currentUser, "+MapPost");
 }
 
 // --- 7. Event Handling (Prefix: clickOn) ---
@@ -670,7 +684,6 @@ document.body.addEventListener("click", async (e) => {
     }
     if (target.closest(".clickOnAddFromDrawer")) {
 
-        // 로그인 확인을 먼저! (사용자 클릭 이벤트 내에서 처리)
         if (!state.currentUser) {
             utils.showAuthOverlay();
             return;
@@ -707,6 +720,10 @@ document.body.addEventListener("click", async (e) => {
 
     // Reply UI actions
     if (target.closest(".reply-btn-reply")) {
+        if (!state.currentUser) {
+            utils.showAuthOverlay();
+            return;
+        }
         const id = target.closest(".reply-btn-reply").dataset.id;
         const container = document.getElementById(`ReplyTextContainer-${id}`);
         if (container) {
@@ -726,6 +743,10 @@ document.body.addEventListener("click", async (e) => {
         return;
     }
     if (target.closest(".reply-btn-submit")) {
+        if (!state.currentUser) {
+            utils.showAuthOverlay();
+            return;
+        }
         const btn = target.closest(".reply-btn-submit");
         const rootId = btn.dataset.root;
         const parentId = btn.dataset.parent;
@@ -977,7 +998,11 @@ onAuthStateChanged(auth, (user) => {
     // Re-render to update edit/delete button visibility
     renderMapPostList();
     if (state.viewingDocId) renderMapPostDetail(state.viewingDocId);
-
+    
+    // Update global write/submit buttons
+    updateAuthButton("MapPostBtnWrite", user, "Write");
+    updateAuthButton("MapPostBtnSubmit", user, state.editingDocId ? "Update" : "Submit");
+    
     // Important: Re-start listener if user changed (login/logout) 
     if (oldUid !== newUid) {
         startRecentPostsListener();

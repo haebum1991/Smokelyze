@@ -130,19 +130,6 @@
     transform: scale(1.05);
 }
 
-.datadb-query-btn.disabled-auth {
-    opacity: 0.6;
-    filter: grayscale(0.5);
-    background: var(--text-muted);
-    box-shadow: none;
-    cursor: pointer;
-}
-
-.datadb-query-btn.disabled-auth:hover {
-    transform: none;
-    background: var(--text-main);
-}
-
 /* Annual Report Styles */
 .datadb-report-info {
     color: var(--text-main);
