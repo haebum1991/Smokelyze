@@ -28,6 +28,9 @@ const storage = new Storage({
 const bucket = storage.bucket(process.env.GCS_BUCKET);
 const DEBUG = (process.env.DEBUG_LOG || "1") === "1";
 
+function dlog(...args) { if (DEBUG) console.log.apply(console, args); }
+function dwarn(...args) { if (DEBUG) console.warn.apply(console, args); }
+
 // Publicly accessible prefixes (No login required, but Origin check still applies)
 const PUBLIC_PREFIXES = [
   "realtime", 
