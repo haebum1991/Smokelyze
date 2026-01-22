@@ -178,7 +178,7 @@ function renderLikeButton(id, likes, isSmall = false) {
 
     // Inline styles for small/big version
     const boxStyle = isSmall
-        ? "background: none; border: none; padding: 0; margin-right: 1.5rem; display: flex; align-items: center; cursor: pointer; color: var(--text-soft);"
+        ? "background: none; border: none; padding: 0; margin-right: 1.5rem; display: flex; align-items: center; cursor: pointer; color: var(--text-main);"
         : "text-align: center; cursor: pointer; min-width: 40px;";
 
     const svgFill = isLiked ? "#e74c3c" : "none";
@@ -198,7 +198,7 @@ function renderLikeButton(id, likes, isSmall = false) {
         return `
             <div class="${boxClass}" data-id="${utils.ESML(id)}" style="${boxStyle}">
                 <div class="post-like-icon" style="font-size: ${iconSize}; line-height: 1;">${svgHtml}</div>
-                <div class="post-like-count" style="font-size: 1.2rem; color: var(--text-soft);">${count}</div>
+                <div class="post-like-count" style="font-size: 1.2rem; color: var(--text-main);">${count}</div>
             </div>
         `;
     }
@@ -258,6 +258,30 @@ function uiShowModal(editData = null) {
         if (titleText) titleText.innerText = "New MapPost";
     }
     document.getElementById("MapPostFormTitle").focus();
+    updateCounter("MapPostFormTitle", "MapPostTitleCounter", 100);
+    updateCounter("MapPostFormContent", "MapPostContentCounter", 2000);
+}
+
+function updateCounter(inputId, counterId, max) {
+    const input = document.getElementById(inputId);
+    const counter = document.getElementById(counterId);
+    if (input && counter) {
+        const len = input.value.length;
+        counter.textContent = `${len}/${max}`;
+        counter.style.color = len > max ? "#e74c3c" : "var(--text-main)";
+    }
+}
+
+function updateReplyCounter(textarea) {
+    if (!textarea) return;
+    const container = textarea.parentElement;
+    const counter = container.querySelector(".reply-counter");
+    if (counter) {
+        const len = textarea.value.length;
+        const max = 2000;
+        counter.textContent = `${len}/${max}`;
+        counter.style.color = len > max ? "#e74c3c" : "var(--text-main)";
+    }
 }
 
 function uiHideModal() {
@@ -342,12 +366,14 @@ function renderMapPostDetail(id) {
                     </div>
                     
                     <div class="cm-area-display">${utils.ESML(p.text)}</div>
+                    
                     <div class="reply-section">
                         <div class="reply-section-start">
                           Replies (${allReplies.length})
                           <button class="reply-btn-reply" data-id="${utils.ESML(id)}">Reply</button>
                         </div>
                         <div class="reply-text-container" id="ReplyTextContainer-${utils.ESML(id)}" style="display: none;">
+                            <div style="display: flex; justify-content: flex-end;"><small class="reply-counter" style="font-size: 1.1rem;">0/2000</small></div>
                             <textarea class="reply-text-typing" placeholder="Write a reply..."></textarea>
                             <div class="reply-btn-wrapper-edit">
                                 <button class="reply-btn-submit" data-root="${utils.ESML(id)}" data-parent="${utils.ESML(id)}">Submit</button>
@@ -388,49 +414,54 @@ function renderReplyItem(r, allReplies, rootId) {
         .sort((a, b) => (a.createdAt?.toDate?.() || a.createdAt || 0) - (b.createdAt?.toDate?.() || b.createdAt || 0));
 
     return `
-                <div class="reply-item" id="ReplyItem-${safeId}" style="${isDeleted ? "opacity: 0.6;" : ""}">
-                    <div class="reply-item-header">
-                        <div class="reply-item-author">
-                            ${`Re: ${utils.ESML(r.userName || "Anonymous")}`} [${utils.ESML(timeStr)}]
+                <div class="reply-node">
+                    <div class="reply-item" id="ReplyItem-${safeId}" style="${isDeleted ? "opacity: 0.6;" : ""}">
+                        <div class="reply-item-header">
+                            <div class="reply-item-author">
+                                ${`Re: ${utils.ESML(r.userName || "Anonymous")}`} [${utils.ESML(timeStr)}]
+                            </div>
+                            ${renderLikeButton(r.id, r.likes, true)}
                         </div>
-                        ${renderLikeButton(r.id, r.likes, true)}
-                    </div>
-                    <div id="ReplyItemBody-${safeId}">
-                        <div class="cm-area-display" style="${isDeleted ? "font-style: italic;" : ""}">
-                            ${isDeleted ? "This comment has been deleted." : utils.ESML(r.text)}
+                        <div id="ReplyItemBody-${safeId}">
+                            <div class="cm-area-display" style="${isDeleted ? "font-style: italic;" : ""}">${isDeleted ? "This comment has been deleted." : utils.ESML(r.text)}</div>
+                            ${!isDeleted ? `
+                            <div class="cm-area-edit" style="display:none;">
+                                <div style="display: flex; justify-content: flex-end;">
+                                    <small class="reply-counter" style="font-size: 1.1rem;">${(r.text || "").length}/2000</small>
+                                </div>
+                                <textarea class="cm-text-typing">${utils.ESML(r.text)}</textarea>
+                            </div>
+                            ` : ""}
                         </div>
-                        ${!isDeleted ? `
-                        <div class="cm-area-edit" style="display:none;">
-                            <textarea class="cm-text-typing">${utils.ESML(r.text)}</textarea>
-                        </div>
-                        ` : ""}
-                    </div>
-                    
-                    <div class="reply-btn-wrapper-view">
-                        ${!isDeleted ? `<button class="reply-btn-reply" data-id="${safeId}">Reply</button>` : ""}
-                        ${(isAuthor && !isDeleted) ? `
-                        <button class="reply-btn-edit" data-id="${safeId}">Edit</button>
-                        <button class="reply-btn-delete" data-id="${safeId}">Delete</button>
-                        ` : ""}
-                    </div>
-                    ${(isAuthor && !isDeleted) ? `
-                        <div class="reply-btn-wrapper-edit" style="display:none;">
-                            <button class="reply-btn-submit-inline" data-id="${safeId}">Submit</button>
-                            <button class="reply-btn-cancel-inline" data-id="${safeId}">Cancel</button>
-                        </div>
-                    ` : ""} 
                         
-                    ${!isDeleted ? `
-                    <div class="reply-text-container" id="ReplyTextContainer-${safeId}" style="display:none;">
-                        <textarea class="reply-text-typing" placeholder="Write a reply..."></textarea>
-                        <div class="reply-btn-wrapper">
-                            <button class="reply-btn-submit" data-root="${utils.ESML(rootId)}" data-parent="${safeId}">Submit</button>
-                            <button class="reply-btn-cancel">Cancel</button>
+                        <div class="reply-btn-wrapper-view">
+                            ${!isDeleted ? `<button class="reply-btn-reply" data-id="${safeId}">Reply</button>` : ""}
+                            ${(isAuthor && !isDeleted) ? `
+                            <button class="reply-btn-edit" data-id="${safeId}">Edit</button>
+                            <button class="reply-btn-delete" data-id="${safeId}">Delete</button>
+                            ` : ""}
                         </div>
+                        ${(isAuthor && !isDeleted) ? `
+                            <div class="reply-btn-wrapper-edit" style="display:none;">
+                                <button class="reply-btn-submit-inline" data-id="${safeId}">Submit</button>
+                                <button class="reply-btn-cancel-inline" data-id="${safeId}">Cancel</button>
+                            </div>
+                        ` : ""} 
+                            
+                        ${!isDeleted ? `
+                        <div class="reply-text-container" id="ReplyTextContainer-${safeId}" style="display:none;">
+                            <div style="display: flex; justify-content: flex-end;"><small class="reply-counter" style="font-size: 1.1rem;">0/2000</small></div>
+                            <textarea class="reply-text-typing" placeholder="Write a reply..."></textarea>
+                            <div class="reply-btn-wrapper">
+                                <button class="reply-btn-submit" data-root="${utils.ESML(rootId)}" data-parent="${safeId}">Submit</button>
+                                <button class="reply-btn-cancel">Cancel</button>
+                            </div>
+                        </div>
+                        ` : ""}
                     </div>
-                    ` : ""}
 
-                    <div class="reply-nested-container" style="margin-left: 2rem;">
+                    <!-- 자식 댓글들을 부모 상자(reply-item) 외부로 이동 -->
+                    <div class="reply-item-nested">
                         ${children.map(child => renderReplyItem(child, allReplies, rootId)).join("")}
                     </div>
                 </div>
@@ -514,7 +545,7 @@ async function clickOnSubmitMain() {
     const contentInput = document.getElementById("MapPostFormContent");
 
     const title = titleInput.value.trim();
-    const text = contentInput.value.trim();
+    const text = contentInput.value;
     const date = document.getElementById("datePicker").value;
     let dataSource = document.getElementById("MapDataSelect")?.value || "";
 
@@ -524,8 +555,16 @@ async function clickOnSubmitMain() {
         dataSource = "";
     }
 
-    if (!title || !text) return alert("Please enter both title and content.");
-
+    if (!title || !text.trim()) return alert("Please enter both title and content.");
+    
+    // Client-side length validation to match Firestore rules
+    if (title.length > 100) {
+        return alert(`Title is too long (${title.length}/100 characters). Please shorten it.`);
+    }
+    if (text.length > 2000) {
+        return alert(`Content is too long (${text.length}/2000 characters). Please shorten it.`);
+    }
+    
     // Read Visibility
     const visRadio = document.querySelector('input[name="MapPostVisibility"]:checked');
     const visibility = visRadio ? visRadio.value : "public";
@@ -729,7 +768,10 @@ document.body.addEventListener("click", async (e) => {
         if (container) {
             container.style.display = "block";
             const ta = container.querySelector("textarea");
-            if (ta) ta.focus();
+            if (ta) {
+                ta.focus();
+                updateReplyCounter(ta);
+            }
             target.closest(".reply-btn-reply").style.display = "none";
         }
         return;
@@ -754,9 +796,14 @@ document.body.addEventListener("click", async (e) => {
         if (!container) return;
         const textarea = container.querySelector("textarea");
         if (!textarea) return;
-        const text = textarea.value.trim();
-        if (!text) return alert("Enter a reply.");
-
+        const text = textarea.value;
+        if (!text.trim()) return alert("Enter a reply.");
+        
+        // Client-side length validation for replies
+        if (text.length > 2000) {
+            return alert(`Reply is too long (${text.length}/2000 characters). Please shorten it.`);
+        }
+        
         btn.disabled = true; btn.innerText = "...";
         try {
             let userName = state.currentUser.displayName;
@@ -788,7 +835,11 @@ document.body.addEventListener("click", async (e) => {
             const display = body.querySelector(".cm-area-display");
             const edit = body.querySelector(".cm-area-edit");
             if (display) display.style.display = "none";
-            if (edit) edit.style.display = "block";
+            if (edit) {
+                edit.style.display = "block";
+                const ta = edit.querySelector("textarea");
+                if (ta) updateReplyCounter(ta);
+            }
         }
         const item = document.getElementById(`ReplyItem-${rid}`);
         if (item) {
@@ -823,8 +874,14 @@ document.body.addEventListener("click", async (e) => {
         if (!body) return;
         const textarea = body.querySelector(".cm-text-typing");
         if (!textarea) return;
-        const text = textarea.value.trim();
-        if (!text) return alert("Text cannot be empty.");
+        const text = textarea.value; // Preserve indentation
+        if (!text.trim()) return alert("Text cannot be empty.");
+        
+        // Client-side length validation for inline reply edit
+        if (text.length > 2000) {
+            return alert(`Reply is too long (${text.length}/2000 characters). Please shorten it.`);
+        }
+        
         target.closest(".reply-btn-submit-inline").disabled = true;
         try { await dbSaveMapPost(rid, { text }); }
         catch (err) { alert("Update failed."); }
@@ -927,6 +984,19 @@ const overlay = document.getElementById("MapPostModalOverlay");
 // 창 밖에 마우스 클릭시 자동으로 닫히는 기능 (비활성화)
 // if (overlay) overlay.addEventListener("click", (e) => { if (e.target.id === "MapPostModalOverlay") uiHideModal(); });
 
+// Real-time counter listeners
+const titleIn = document.getElementById("MapPostFormTitle");
+if (titleIn) titleIn.addEventListener("input", () => updateCounter("MapPostFormTitle", "MapPostTitleCounter", 100));
+
+const contentIn = document.getElementById("MapPostFormContent");
+if (contentIn) contentIn.addEventListener("input", () => updateCounter("MapPostFormContent", "MapPostContentCounter", 2000));
+
+// Event delegation for dynamic reply counters
+document.body.addEventListener("input", (e) => {
+    if (e.target.classList.contains("reply-text-typing") || e.target.classList.contains("cm-text-typing")) {
+        updateReplyCounter(e.target);
+    }
+});
 
 // --- 9. Firestore Snapshot ---
 function startRecentPostsListener() {

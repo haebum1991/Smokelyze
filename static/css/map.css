@@ -615,6 +615,8 @@ details[open] summary {
   gap: 1.5rem;
   min-height: 0; 
   overflow-y: auto;
+  overflow-x: hidden;
+  word-wrap: break-word;
 }
 
 .MapPost-form-group {
@@ -702,6 +704,10 @@ details[open] summary {
   color: var(--text-main);
 } 
 
+.cm-area-display {
+  white-space: pre-wrap;
+} 
+
 .cm-text-typing, 
 .reply-text-typing {
   width: 100%;
@@ -715,12 +721,18 @@ details[open] summary {
   box-sizing: border-box;
 }
 
+.reply-node {
+  margin-top: 0.5rem;
+}
+
 .reply-item {
   background: var(--map-toolbar-bg);
   padding: 1rem;
   border-radius: calc(var(--border-radius-0p8rem) * 2);
   border-left: 0.5rem solid var(--map-accordion-gradient-start);
+  border-right: 0.1rem solid var(--card-shadow);
   border-bottom: 0.1rem solid var(--card-shadow);
+  border-top: 0.1rem solid var(--card-shadow);
   position: relative;
 }
 
@@ -734,13 +746,14 @@ details[open] summary {
 .reply-item-author {
   font-size: 1.4rem;
   font-weight: bold;
-  color: var(--text-soft);
-}
-
-.reply-item-author {
   color: var(--card-shadow);
 }
 
+.reply-item-nested {
+  padding-left: 1rem;
+  margin-left: 2rem; 
+  border-left: 0.2rem solid var(--card-shadow); 
+}
 
 /* Reply Buttons */
 .reply-btn-wrapper,

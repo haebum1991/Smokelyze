@@ -1,6 +1,6 @@
 
-const { Storage } = require("@google-cloud/storage");
 const admin = require("firebase-admin");
+const { Storage } = require("@google-cloud/storage");
 
 // Initialize Firebase Admin for token verification
 if (!admin.apps.length) {
@@ -138,12 +138,14 @@ exports.handler = async (event) => {
 
   if (cor.preflight) return { statusCode: 204, headers: corsHeaders, body: "" };
   if (!cor.ok) {
+    console.warn(`[SECURITY] Hotlink Blocked: Error=${cor.error}, UserAgent=${event.headers?.['user-agent']}`);
     return { statusCode: 403, headers: corsHeaders, body: JSON.stringify({ error: cor.error }) };
   }
   
   try {
     const path = extractGcsPath(event);
     if (!path) {
+      console.warn(`[SECURITY] Bad Path Attempt: QueryPath=${event.queryStringParameters?.path}, RawPath=${event.path}`);
       return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: "bad path" }) };
     }
     
@@ -157,6 +159,7 @@ exports.handler = async (event) => {
       try {
         await admin.auth().verifyIdToken(idToken);
       } catch (authError) {
+        console.error(`[SECURITY] Invalid Token Attempt: Error=${authError.message}`);
         return { statusCode: 401, headers: corsHeaders, body: "Invalid Session" };
       }
     }
