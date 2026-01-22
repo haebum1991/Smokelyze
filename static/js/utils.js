@@ -149,11 +149,7 @@ export async function fetchJson(url, fallback) {
   }
 
   const fetchOptions = {};
-  
-  // Send token ONLY to our own server/proxy
-  const isInternal = !url.startsWith("http") || url.startsWith(window.location.origin);
-
-  if (isInternal && auth && auth.currentUser) {
+  if (auth && auth.currentUser) {
     try {
       const idToken = await auth.currentUser.getIdToken();
       fetchOptions.headers = {

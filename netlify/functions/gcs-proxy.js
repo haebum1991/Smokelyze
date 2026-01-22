@@ -28,9 +28,6 @@ const storage = new Storage({
 const bucket = storage.bucket(process.env.GCS_BUCKET);
 const DEBUG = (process.env.DEBUG_LOG || "1") === "1";
 
-function dlog(...args) { if (DEBUG) console.log.apply(console, args); }
-function dwarn(...args) { if (DEBUG) console.warn.apply(console, args); }
-
 // Publicly accessible prefixes (No login required, but Origin check still applies)
 const PUBLIC_PREFIXES = [
   "realtime", 
@@ -44,6 +41,8 @@ const PUBLIC_PREFIXES = [
   "modis_burn_area_year_json"
 ];
 
+function dlog(...args) { if (DEBUG) console.log.apply(console, args); }
+function dwarn(...args) { if (DEBUG) console.warn.apply(console, args); }
 function hostOf(u) { try { return new URL(u).host; } catch { return ""; } }
 
 function checkOrigin(event) {
@@ -51,7 +50,6 @@ function checkOrigin(event) {
   const h = event.headers || {};
   const origin = h.origin || h.Origin || "";
   const referer = h.referer || h.Referer || "";
-
   const originHost = origin ? hostOf(origin) : "";
   const refererHost = referer ? hostOf(referer) : "";
   const currentHost = originHost || refererHost;
@@ -119,21 +117,14 @@ exports.handler = async (event) => {
   
   const corsHeaders = {
     "Vary": "Origin",
-    "Access-Control-Allow-Origin": cor.allow || "*",
+    "Access-Control-Allow-Origin": cor.allow,
     "Access-Control-Allow-Methods": "GET,OPTIONS,HEAD",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };
 
   if (cor.preflight) return { statusCode: 204, headers: corsHeaders, body: "" };
-  
-  // 1. Origin Check (Hotlinking Protection)
   if (!cor.ok) {
-    dwarn("[FORBIDDEN] Hotlinking attempt:", cor.error);
-    return { 
-      statusCode: 403, 
-      headers: corsHeaders, 
-      body: JSON.stringify({ error: cor.error }) 
-    };
+    return { statusCode: 403, headers: corsHeaders, body: JSON.stringify({ error: cor.error }) };
   }
   
   try {
@@ -142,32 +133,20 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers: corsHeaders, body: JSON.stringify({ error: "bad path" }) };
     }
     
-    // 2. Selective Authentication
     const isPublic = PUBLIC_PREFIXES.some(pre => path.startsWith(pre + "/"));
-    
     if (!isPublic) {
       const authHeader = event.headers.authorization || event.headers.Authorization;
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return { 
-          statusCode: 401, 
-          headers: corsHeaders, 
-          body: JSON.stringify({ error: "Unauthorized: Login required for this data" }) 
-        };
+        return { statusCode: 401, headers: corsHeaders, body: "Login Required" };
       }
-
       const idToken = authHeader.split(" ")[1];
       try {
         await admin.auth().verifyIdToken(idToken);
       } catch (authError) {
-        return { 
-          statusCode: 401, 
-          headers: corsHeaders, 
-          body: JSON.stringify({ error: "Unauthorized: Invalid session" }) 
-        };
+        return { statusCode: 401, headers: corsHeaders, body: "Invalid Session" };
       }
     }
-
-    // 3. Data Fetching
+    
     const file = bucket.file(path);
     const [exists] = await file.exists();
     if (!exists) {

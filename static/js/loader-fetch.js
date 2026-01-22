@@ -12,10 +12,8 @@ export async function fetchGeoJSON(url) {
     try {
         const fetchOptions = {};
 
-        // Send token ONLY to our own server/proxy (to avoid breaking public APIs like AirNow)
-        const isInternal = !url.startsWith("http") || url.startsWith(window.location.origin);
-
-        if (isInternal && auth.currentUser) {
+        // Add Authorization header if user is logged in
+        if (auth.currentUser) {
             try {
                 const idToken = await auth.currentUser.getIdToken();
                 fetchOptions.headers = {
