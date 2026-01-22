@@ -494,7 +494,11 @@ export async function updateAllActiveSources() {
                 sourcesToLoad.add(targetConfig.source);
             }
         });
-
+        
+        // Update activeSources in state so drill-down stats (AQS) can find data
+        activeSources.length = 0;
+        sourcesToLoad.forEach(s => activeSources.push(s));
+        
         const publishedSources = ExcludeLayerGroups.statsSources;
         const tryingToLoadPublished = Array.from(sourcesToLoad).some(s => publishedSources.includes(s));
         
