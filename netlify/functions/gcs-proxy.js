@@ -79,19 +79,13 @@ function safeNormalize(p) {
 }
 
 function extractGcsPath(event) {
-  const qs = event.queryStringParameters || {};
-  if (qs.path) return safeNormalize(qs.path);
-
-  const m = (event.path || "").match(/^\/\.netlify\/functions\/gcs-proxy\/(.+)$/);
-  if (m && m[1]) return safeNormalize(m[1]);
-
-  const p = event.path || "";
+  
   const prefixes = [
     "realtime",
-    "data_by_aqs", 
-    "data_by_aqs_meta", 
-    "data_by_state", 
-    "data_by_date", 
+    "data_by_aqs",
+    "data_by_aqs_meta",
+    "data_by_state",
+    "data_by_date",
     "modis_burn_area_date_geojson",
     "modis_burn_area_year_json",
     "noaa_hms_smoke_date_geojson",
@@ -102,14 +96,34 @@ function extractGcsPath(event) {
     "noaa_hms_fire_year_json"
   ];
 
-  for (const pre of prefixes) {
-    const re = new RegExp(`^/${pre}/(.+)$`);
-    const m = p.match(re);
+  let rawPath = "";
+  const qs = event.queryStringParameters || {};
+  if (qs.path) {
+    rawPath = safeNormalize(qs.path);
+  } else {
+    // 1. Try direct function path
+    const m = (event.path || "").match(/^\/\.netlify\/functions\/gcs-proxy\/(.+)$/);
     if (m && m[1]) {
-       return safeNormalize(`${pre}/${m[1]}`);
+      rawPath = safeNormalize(m[1]);
+    } else {
+      // 2. Try URL rewrite path
+      const p = event.path || "";
+      for (const pre of prefixes) {
+        const re = new RegExp(`^/${pre}/(.+)$`);
+        const m = p.match(re);
+        if (m && m[1]) {
+          rawPath = safeNormalize(`${pre}/${m[1]}`);
+          break;
+        }
+      }
     }
   }
-  return "";
+
+  if (!rawPath) return "";
+
+  // FINAL SAFETY CHECK: The path MUST start with one of our valid prefixes
+  const isValid = prefixes.some(pre => rawPath.startsWith(pre + "/"));
+  return isValid ? rawPath : "";
 }
 
 exports.handler = async (event) => {

@@ -387,7 +387,7 @@ function renderDataTable() {
         pagination.style.display = "none";
     }
 
-    head.innerHTML = currentTableKeys.map(k => `<th>${k}</th>`).join("");
+    head.innerHTML = currentTableKeys.map(k => `<th>${ESML(k)}</th>`).join("");
     renderTableBody();
 }
 
