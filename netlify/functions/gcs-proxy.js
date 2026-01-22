@@ -41,35 +41,32 @@ const PUBLIC_PREFIXES = [
   "modis_burn_area_year_json"
 ];
 
-function dlog(...args) { if (DEBUG) console.log.apply(console, args); }
-function dwarn(...args) { if (DEBUG) console.warn.apply(console, args); }
 function hostOf(u) { try { return new URL(u).host; } catch { return ""; } }
 
 function checkOrigin(event) {
   const allow = (process.env.ALLOWED_ORIGIN || "").trim();
   const h = event.headers || {};
-  const method = (event.httpMethod || "").toUpperCase();
   const origin = h.origin || h.Origin || "";
-  
-  if (method === "OPTIONS") return { ok: true, preflight: true, allow: allow || "*" };
-  
-  // FIXED: Browsers often omit Origin on same-site GET requests. Fallback to Referer.
   const referer = h.referer || h.Referer || "";
-  const refererHost = referer ? hostOf(referer) : "";
-  const currentHost = (origin ? hostOf(origin) : "") || refererHost;
 
-  // Block if no Origin OR Referer (this happens on direct address bar access)
+  const originHost = origin ? hostOf(origin) : "";
+  const refererHost = referer ? hostOf(referer) : "";
+  const currentHost = originHost || refererHost;
+
+  if ((event.httpMethod || "").toUpperCase() === "OPTIONS") {
+    return { ok: true, preflight: true, allow: allow || "*" };
+  }
+
   if (!currentHost) {
-    return { ok: false, error: "Direct access forbidden (Hotlinking protection)" };
+    return { ok: false, error: "ACCESS_DENIED_HOTLINK" };
   }
 
   if (allow) {
     const allowHost = hostOf(allow);
-    if (currentHost && currentHost === allowHost) return { ok: true, allow };
-    return { ok: false, error: "Origin/Referer mismatch" };
+    if (currentHost === allowHost) return { ok: true, allow };
+    return { ok: false, error: "ACCESS_DENIED_ORIGIN_MISMATCH" };
   }
 
-  // If no ALLOWED_ORIGIN set, at least we checked that SOME origin exists
   return { ok: true, allow: "*" };
 }
 
