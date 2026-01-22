@@ -23,6 +23,7 @@ import {
 import { updateStateColors } from "./layers-colors.js";
 import { triggerRefresh } from "./stats-common.js";
 import { showErrorToast } from "./loader-ui.js";
+import { hideTimeControls } from "./ui-time.js";
 
 /**
  * Load AirNow data for all active coverages

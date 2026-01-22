@@ -2,10 +2,11 @@
 import * as fb from "./fb-init.js";
 import * as utils from "./utils.js";
 import { map } from "./map-init.js";
-import { setMapPostDrawer } from "./ui-toggles.js";
 import { initUIPulsingIcons } from "./layers-icon.js";
 import { updateAuthButton } from "./signin.js";
 import { resetLoadedSources, updateAllActiveSources, showErrorToast } from "./loader.js";
+import { initHandlers, setupClickHandlers } from "./fb-MapPost-handler.js";
+import { state as ttState } from "./ui-state.js";
 
 // --- 1. Global State (Prefix: state) ---
 const state = {
@@ -677,6 +678,12 @@ async function clickOnDelete(id) {
     if (!confirm("Are you sure you want to delete this?")) return;
     try {
         await dbDeleteMapPost(id);
+        
+        // Clear highlight if this MapPost was highlighted
+        if (ttState.currentHighlight && ttState.currentHighlight.idVal === id) {
+            utils.clearHighlight();
+        }
+        
         if (state.viewingDocId === id) uiHideModal();
     } catch (err) {
         console.error("Delete failed:", err);
@@ -712,257 +719,28 @@ map.on("contextmenu", (e) => {
     uiShowContextMenu(e.originalEvent.clientX, e.originalEvent.clientY, e.lngLat);
 });
 
-document.body.addEventListener("click", async (e) => {
-    const target = e.target;
 
-    // List actions
-    if (target.closest(".clickOnLocation")) {
-        const b = target.closest(".clickOnLocation");
-        utils.highlightLocation([parseFloat(b.dataset.lon), parseFloat(b.dataset.lat)], { ...state.MapPostData[b.dataset.id], docId: b.dataset.id }, "MapPost");
-        return;
-    }
-    if (target.closest(".clickOnAddFromDrawer")) {
-
-        if (!state.currentUser) {
-            utils.showAuthOverlay();
-            return;
-        }
-
-        if (window.innerWidth <= 1024 && setMapPostDrawer) setMapPostDrawer(false);
-        handleMapPostModeToggle(true);
-        return;
-    }
-    if (target.closest(".clickOnShowDetail")) {
-        if (target.closest(".clickOnLocation")) return;
-        renderMapPostDetail(target.closest(".clickOnShowDetail").dataset.id);
-        return;
-    }
-
-    // Modal Main actions
-    if (target.closest(".reply-btn-edit-detail")) {
-        const id = target.closest(".reply-btn-edit-detail").dataset.id;
-        const data = state.MapPostData[id];
-        if (data) uiShowModal({ id, ...data });
-        return;
-    }
-    if (target.closest(".reply-btn-delete-detail")) return clickOnDelete(target.closest(".reply-btn-delete-detail").dataset.id);
-
-    // Like actions
-    if (target.closest(".post-like-box")) {
-        const id = target.closest(".post-like-box").dataset.id;
-        return dbToggleLikeMapPost(id);
-    }
-    if (target.closest(".reply-like-btn")) {
-        const id = target.closest(".reply-like-btn").dataset.id;
-        return dbToggleLikeMapPost(id);
-    }
-
-    // Reply UI actions
-    if (target.closest(".reply-btn-reply")) {
-        if (!state.currentUser) {
-            utils.showAuthOverlay();
-            return;
-        }
-        const id = target.closest(".reply-btn-reply").dataset.id;
-        const container = document.getElementById(`ReplyTextContainer-${id}`);
-        if (container) {
-            container.style.display = "block";
-            const ta = container.querySelector("textarea");
-            if (ta) {
-                ta.focus();
-                updateReplyCounter(ta);
-            }
-            target.closest(".reply-btn-reply").style.display = "none";
-        }
-        return;
-    }
-    if (target.closest(".reply-btn-cancel")) {
-        const container = target.closest(".reply-text-container");
-        container.style.display = "none";
-        const rootId = container.id.replace("ReplyTextContainer-", "");
-        const openBtn = document.querySelector(`.reply-btn-reply[data-id="${rootId}"]`);
-        if (openBtn) openBtn.style.display = "block";
-        return;
-    }
-    if (target.closest(".reply-btn-submit")) {
-        if (!state.currentUser) {
-            utils.showAuthOverlay();
-            return;
-        }
-        const btn = target.closest(".reply-btn-submit");
-        const rootId = btn.dataset.root;
-        const parentId = btn.dataset.parent;
-        const container = document.getElementById(`ReplyTextContainer-${parentId}`);
-        if (!container) return;
-        const textarea = container.querySelector("textarea");
-        if (!textarea) return;
-        const text = textarea.value;
-        if (!text.trim()) return alert("Enter a reply.");
-        
-        // Client-side length validation for replies
-        if (text.length > 2000) {
-            return alert(`Reply is too long (${text.length}/2000 characters). Please shorten it.`);
-        }
-        
-        btn.disabled = true; btn.innerText = "...";
-        try {
-            let userName = state.currentUser.displayName;
-            const nickname = await dbFetchNickname(state.currentUser.uid);
-            if (nickname) userName = nickname;
-            const rootMapPost = state.MapPostData[rootId];
-            // IMPORTANT: Reply must have the same viewers as parent to be accessible under security rules
-            const viewers = (rootMapPost && rootMapPost.viewers) ? rootMapPost.viewers : ["public"];
-
-            await dbSaveMapPost(null, {
-                title: "", text, type: "reply", rootId, parentId,
-                date: rootMapPost ? rootMapPost.date : "",
-                lon: rootMapPost ? rootMapPost.lon : 0,
-                lat: rootMapPost ? rootMapPost.lat : 0,
-                uid: state.currentUser.uid,
-                userName: userName || "Anonymous",
-                viewers
-            });
-        } catch (err) { alert("Reply failed."); }
-        finally { btn.disabled = false; btn.innerText = "Submit"; }
-        return;
-    }
-
-    // Inline Reply actions
-    if (target.closest(".reply-btn-edit")) {
-        const rid = target.closest(".reply-btn-edit").dataset.id;
-        const body = document.getElementById(`ReplyItemBody-${rid}`);
-        if (body) {
-            const display = body.querySelector(".cm-area-display");
-            const edit = body.querySelector(".cm-area-edit");
-            if (display) display.style.display = "none";
-            if (edit) {
-                edit.style.display = "block";
-                const ta = edit.querySelector("textarea");
-                if (ta) updateReplyCounter(ta);
-            }
-        }
-        const item = document.getElementById(`ReplyItem-${rid}`);
-        if (item) {
-            const viewWrapper = item.querySelector(".reply-btn-wrapper-view");
-            if (viewWrapper) viewWrapper.style.display = "none";
-            const editWrapper = item.querySelector(".reply-btn-wrapper-edit");
-            if (editWrapper) editWrapper.style.display = "flex";
-        }
-        return;
-    }
-    if (target.closest(".reply-btn-cancel-inline")) {
-        const rid = target.closest(".reply-btn-cancel-inline").dataset.id;
-        const body = document.getElementById(`ReplyItemBody-${rid}`);
-        if (body) {
-            const display = body.querySelector(".cm-area-display");
-            const edit = body.querySelector(".cm-area-edit");
-            if (display) display.style.display = "block";
-            if (edit) edit.style.display = "none";
-        }
-        const item = document.getElementById(`ReplyItem-${rid}`);
-        if (item) {
-            const viewWrapper = item.querySelector(".reply-btn-wrapper-view");
-            if (viewWrapper) viewWrapper.style.display = "flex";
-            const editWrapper = item.querySelector(".reply-btn-wrapper-edit");
-            if (editWrapper) editWrapper.style.display = "none";
-        }
-        return;
-    }
-    if (target.closest(".reply-btn-submit-inline")) {
-        const rid = target.closest(".reply-btn-submit-inline").dataset.id;
-        const body = document.getElementById(`ReplyItemBody-${rid}`);
-        if (!body) return;
-        const textarea = body.querySelector(".cm-text-typing");
-        if (!textarea) return;
-        const text = textarea.value; // Preserve indentation
-        if (!text.trim()) return alert("Text cannot be empty.");
-        
-        // Client-side length validation for inline reply edit
-        if (text.length > 2000) {
-            return alert(`Reply is too long (${text.length}/2000 characters). Please shorten it.`);
-        }
-        
-        target.closest(".reply-btn-submit-inline").disabled = true;
-        try { await dbSaveMapPost(rid, { text }); }
-        catch (err) { alert("Update failed."); }
-        finally { target.closest(".reply-btn-submit-inline").disabled = false; }
-        return;
-    }
-    if (target.closest(".reply-btn-delete")) {
-        return clickOnDelete(target.closest(".reply-btn-delete").dataset.id);
-    }
-
-    // Restore Map Condition
-    if (target.closest(".MapPost-btn-restore")) {
-        if (!state.currentUser) {
-            utils.showAuthOverlay();
-            return;
-        }
-        const rid = target.closest(".MapPost-btn-restore").dataset.id;
-        const data = state.MapPostData[rid];
-        if (data && data.mapState) {
-            const ms = data.mapState;
-
-            // 1. Move map
-            if (ms.center) {
-                map.flyTo({
-                    center: ms.center,
-                    zoom: ms.zoom || map.getZoom(),
-                    essential: true
-                });
-            }
-
-            let dateChanged = false;
-            let layersChanged = false;
-
-            // 2. Change Date
-            const dp = document.getElementById("datePicker");
-            if (dp && ms.date && dp.value !== ms.date) {
-                dp.value = ms.date;
-                dateChanged = true;
-            }
-
-            // 3. Restore Layers
-            if (ms.layers) {
-                document.querySelectorAll("input[type=checkbox][id^='layer-']").forEach(cb => {
-                    const shouldBeChecked = ms.layers.includes(cb.id);
-                    if (cb.checked !== shouldBeChecked) {
-                        cb.checked = shouldBeChecked;
-                        layersChanged = true;
-                    }
-                });
-            }
-
-            // 4. Restore Data Source
-            const dsSelect = document.getElementById("MapDataSelect");
-            if (dsSelect) {
-                const targetDS = ms.dataSource || "gam-v2";
-                if (dsSelect.value !== targetDS) {
-                    dsSelect.value = targetDS;
-                    layersChanged = true; // Changing data source means layers need re-evaluation
-                }
-            }
-
-            if (dateChanged || layersChanged) {
-                if (dateChanged && resetLoadedSources) {
-                    resetLoadedSources();
-                }
-                if (updateAllActiveSources) {
-                    updateAllActiveSources();
-                }
-            }
-
-            if (showErrorToast) showErrorToast("Map condition restored!", "info");
-
-            if (window.innerWidth <= 1024 && typeof setMapPostDrawer === "function") {
-                setMapPostDrawer(false);
-            }
-
-            // Close the modal to show the map immediately
-            uiHideModal();
-        }
-    }
+// ============================================
+// OPTIMIZED: New Handler System
+// ============================================
+// Initialize the new handler system with dependencies
+initHandlers({
+    state,
+    dbFetchNickname,
+    dbSaveMapPost,
+    dbToggleLikeMapPost,
+    clickOnDelete,
+    renderMapPostDetail,
+    uiShowModal,
+    uiHideModal,
+    handleMapPostModeToggle,
+    resetLoadedSources,
+    updateAllActiveSources
 });
+
+// Setup optimized click handlers (replaces 250-line event listener)
+setupClickHandlers();
+
 
 // Fixed element listeners
 const writeBtn = document.getElementById("MapPostBtnWrite");
