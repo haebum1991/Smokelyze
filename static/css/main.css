@@ -211,7 +211,8 @@ a {
   text-decoration: none;
 }
 
-a:hover {
+a:hover,
+a:active {
   text-decoration: underline;
 }
 
@@ -258,8 +259,10 @@ img {
   transition: transform 0.2s ease-out;
 }
 
-.nav-logo:hover {
-  transform: scale(1.1);
+@media (hover: hover) {
+  .nav-logo:hover {
+    transform: scale(1.1);
+  }
 }
 
 .nav-logo img {
@@ -292,13 +295,14 @@ img {
   transition: all 0.2s ease;
 }
 
-.nav-links a:hover {
-  background-color: var(--color-code-bg2);
-  border-radius: var(--border-radius-0p8rem);
-  color: var(--color-white);
-  transform: scale(1.1);
+@media (hover: hover) {
+  .nav-links a:hover {
+    background-color: var(--color-code-bg2);
+    border-radius: var(--border-radius-0p8rem);
+    color: var(--color-white);
+    transform: scale(1.1);
+  }
 }
-
 
 /* Contiainer & Content setting */
 .container {
@@ -347,7 +351,12 @@ img {
   color: var(--accent-link);
 }
 
-.article-content a:hover,
+@media (hover: hover) {
+  .article-content a:hover {
+    background: var(--accent-highlight);
+  }
+}
+
 .article-content a:focus {
   background: var(--accent-highlight);
 }
@@ -409,8 +418,10 @@ img {
   border-bottom: 0.1rem solid var(--border-main);
 }
 
-.archive-item-link:hover {
-  border-bottom-color: var(--text-heading);
+@media (hover: hover) {
+  .archive-item-link:hover {
+    border-bottom-color: var(--text-heading);
+  }
 }
 
 body.page-about .sidebar {
@@ -447,7 +458,8 @@ body.page-about .sidebar {
   padding: 0;
 }
 
-.post-navigation a:hover {
+.post-navigation a:hover,
+.post-navigation a:active {
   text-decoration: underline;
 }
 
@@ -499,11 +511,6 @@ body.page-about .sidebar {
   text-decoration: none;
   transition: color 0.2s ease;
   margin: 0 1.5rem;
-}
-
-.footer-links a:hover,
-.footer-links a:focus {
-  color: var(--color-white);
 }
 
 .footer-links li::before {
@@ -567,7 +574,8 @@ body.page-about .sidebar {
   color: var(--accent-link);
 }
 
-.sidebar .widget a:hover {
+.sidebar .widget a:hover,
+.sidebar .widget a:active {
   text-decoration: underline;
 }
 
@@ -594,7 +602,8 @@ body.page-about .sidebar {
   transition: transform 0.2s;
 }
 
-.social-links a:hover {
+.social-links a:hover,
+.social-links a:active {
   transform: scale(1.2);
   opacity: 1;
 }
@@ -666,10 +675,11 @@ body.page-about .sidebar {
   transition: transform 0.2s ease-in-out;
 }
 
-#BackToTop:hover {
-  transform: scale(1.05);
+@media (hover: hover) {
+  #BackToTop:hover {
+    transform: scale(1.05);
+  }
 }
-
 
 /* Global Scrollbar Styling */
 * {
@@ -782,10 +792,12 @@ body.page-about .sidebar {
   box-shadow: none;
 }
 
-.auth-btn-login:hover {
-  background: #f8faff;
-  box-shadow: 0 0.1rem 0.3rem 0.1rem rgba(0, 0, 0, 0.15), 0 0.1rem 0.2rem 0 rgba(0, 0, 0, 0.3);
-  border-color: var(--color-black);
+@media (hover: hover) {
+  .auth-btn-login:hover {
+    background: #f8faff;
+    box-shadow: 0 0.1rem 0.3rem 0.1rem rgba(0, 0, 0, 0.15), 0 0.1rem 0.2rem 0 rgba(0, 0, 0, 0.3);
+    border-color: var(--color-black);
+  }
 }
 
 .auth-btn-guest {
@@ -797,9 +809,11 @@ body.page-about .sidebar {
   transition: opacity 0.2s;
 }
 
-.auth-btn-guest:hover {
-  opacity: 0.7;
-  text-decoration: underline;
+@media (hover: hover) {
+  .auth-btn-guest:hover {
+    opacity: 0.7;
+    text-decoration: underline;
+  }
 }
 
 /* Benefits List Styling */
@@ -910,8 +924,10 @@ body.page-about .sidebar {
   transition: background 0.2s, transform 0.1s;
 }
 
-.update-btn-refresh:hover {
-  background: #006ae6;
+@media (hover: hover) {
+  .update-btn-refresh:hover {
+    background: #006ae6;
+  }
 }
 
 .update-btn-refresh:active {
@@ -939,9 +955,11 @@ body.page-about .sidebar {
   color: var(--color-bg);
 }
 
-.profile-btn-user:hover {
-  transform: scale(1.05);
-  background: var(--text-main);
+@media (hover: hover) {
+  .profile-btn-user:hover {
+    transform: scale(1.05);
+    background: var(--text-main);
+  }
 }
 
 .profile-dropdown {
@@ -993,13 +1011,15 @@ body.page-about .sidebar {
   transition: background 0.2s;
 }
 
-.profile-btn-item:hover {
-  background: rgba(128, 128, 128, 0.3);
-}
+@media (hover: hover) {
+  .profile-btn-item:hover {
+    background: rgba(128, 128, 128, 0.3);
+  }
 
-.profile-btn-item.logout:hover {
-  background: rgba(255, 77, 77, 0.1);
-  color: #ff4d4d;
+  .profile-btn-item.logout:hover {
+    background: rgba(255, 77, 77, 0.1);
+    color: #ff4d4d;
+  }
 }
 
 /* Profile Modal Overrides */
@@ -1036,8 +1056,10 @@ body.page-about .sidebar {
   padding: 0;
 }
 
-.auth-btn-close:hover {
-  opacity: 0.7;
+@media (hover: hover) {
+  .auth-btn-close:hover {
+    opacity: 0.7;
+  }
 }
 
 .profile-group,
@@ -1099,8 +1121,10 @@ body.page-about .sidebar {
   transition: background 0.2s, transform 0.1s;
 }
 
-.profile-btn-save:hover {
-  background: #006ae6;
+@media (hover: hover) {
+  .profile-btn-save:hover {
+    background: #006ae6;
+  }
 }
 
 .profile-btn-save:active {
@@ -1130,9 +1154,11 @@ body.page-about .sidebar {
     cursor: pointer;
 }
 
-.disabled-auth:hover {
-    transform: none;
-    background: var(--text-main);
+@media (hover: hover) {
+  .disabled-auth:hover {
+      transform: none;
+      background: var(--text-main);
+  }
 }
 
 
@@ -1278,17 +1304,6 @@ body.page-about .sidebar {
     max-width: 30rem;
     display: block;
     margin: 0 auto;
-  }
-
-  .nav-links a:hover,
-  .nav-logo:hover {
-    transform: none !important;
-    background: inherit !important;
-    color: inherit !important;
-  }
-
-  #BackToTop:hover {
-    transform: none !important;
   }
 }
 

@@ -43,8 +43,10 @@
   transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
-.FigurePage-toggle:hover {
-  transform: scale(1.05);
+@media (hover: hover) {
+  .FigurePage-toggle:hover {
+    transform: scale(1.05);
+  }
 }
 
 .FigurePage-toggle.active {
@@ -142,17 +144,19 @@ body.FigurePage-drawer-open #MapTooltip {
   border-right: 0.2rem solid var(--text-main);
 }
 
-.drawer-resizer:hover {
-  background-color: var(--accent-highlight);
-}
-
-.drawer-resizer:hover::after {
-  opacity: 0.8;
-  border-color: var(--text-main);
-}
-
-#ExportBtnDaily:hover {
-  transform: scale(1.05);
+@media (hover: hover) {
+  .drawer-resizer:hover {
+    background-color: var(--accent-highlight);
+  }
+  
+  .drawer-resizer:hover::after {
+    opacity: 0.8;
+    border-color: var(--text-main);
+  }
+  
+  #ExportBtnDaily:hover {
+    transform: scale(1.05);
+  }
 }
 
 .slot-cell {
@@ -243,17 +247,19 @@ tr.stats-state-row-ca.show {
   transition: transform 0.2s;
 }
 
-#AnnStatsInputMinus1y:hover,
-#AnnStatsInputPlus1y:hover,
-#StatsInputMinus1y:hover,
-#StatsInputMinus1m:hover,
-#StatsInputMinus1d:hover,
-#StatsInputMinus1h:hover,
-#StatsInputPlus1h:hover,
-#StatsInputPlus1d:hover,
-#StatsInputPlus1m:hover,
-#StatsInputPlus1y:hover {
-  transform: scale(1.1);
+@media (hover: hover) {
+  #AnnStatsInputMinus1y:hover,
+  #AnnStatsInputPlus1y:hover,
+  #StatsInputMinus1y:hover,
+  #StatsInputMinus1m:hover,
+  #StatsInputMinus1d:hover,
+  #StatsInputMinus1h:hover,
+  #StatsInputPlus1h:hover,
+  #StatsInputPlus1d:hover,
+  #StatsInputPlus1m:hover,
+  #StatsInputPlus1y:hover {
+    transform: scale(1.1);
+  }
 }
 
 .stats-expand-btn.expanded {
@@ -263,11 +269,13 @@ tr.stats-state-row-ca.show {
   font-weight: bold;
 }
 
-.stats-expand-btn.expanded:hover,
-.stats-expand-btn:not(.expanded):hover {
-  background-color: var(--accent-highlight);
-  color: var(--text-main);
-  border-color: var(--accent-highlight);
+@media (hover: hover) {
+  .stats-expand-btn.expanded:hover,
+  .stats-expand-btn:not(.expanded):hover {
+    background-color: var(--accent-highlight);
+    color: var(--text-main);
+    border-color: var(--accent-highlight);
+  }
 }
 
 #StatsRegionBodyDate td:first-child,
@@ -308,11 +316,13 @@ tr.stats-state-row-ca.show {
   color: var(--text-main);
 }
 
-.stats-tab-sub[stats-tab-sub-data="date"]:hover,
-.stats-tab-sub[stats-tab-sub-data="year"]:hover {
-  background-color: var(--accent-highlight);
-  color: var(--text-main);
-  border-color: var(--accent-highlight);
+@media (hover: hover) {
+  .stats-tab-sub[stats-tab-sub-data="date"]:hover,
+  .stats-tab-sub[stats-tab-sub-data="year"]:hover {
+    background-color: var(--accent-highlight);
+    color: var(--text-main);
+    border-color: var(--accent-highlight);
+  }
 }
 
 .stats-tab-month-main {
@@ -342,10 +352,12 @@ tr.stats-state-row-ca.show {
   color: var(--text-main);
 }
 
-.stats-tab-month-sub:hover {
-  background-color: var(--accent-highlight);
-  color: var(--text-main);
-  border-color: var(--accent-highlight);
+@media (hover: hover) {
+  .stats-tab-month-sub:hover {
+    background-color: var(--accent-highlight);
+    color: var(--text-main);
+    border-color: var(--accent-highlight);
+  }
 }
 
 .stats-container {
@@ -537,9 +549,11 @@ tr.stats-state-row-ca.show {
   color: var(--text-main);
 }
 
-.stats-plot-tab-sub:hover {
-  background-color: var(--accent-highlight);
-  color: var(--text-main);
+@media (hover: hover) {
+  .stats-plot-tab-sub:hover {
+    background-color: var(--accent-highlight);
+    color: var(--text-main);
+  }
 }
 
 .stats-plot-tab-sub-container {
@@ -551,10 +565,12 @@ tr.stats-state-row-ca.show {
   display: block;
 }
 
-.stats-plot-for-line-year:hover {
-  background-color: var(--accent-highlight);
-  color: var(--text-main);
-  cursor: pointer;
+@media (hover: hover) {
+  .stats-plot-for-line-year:hover {
+    background-color: var(--accent-highlight);
+    color: var(--text-main);
+    cursor: pointer;
+  }
 }
 
 .stats-plot-for-line-year.active {
@@ -588,8 +604,10 @@ tr.stats-state-row-ca.show {
   transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
-.Desc-toggle:hover {
-  transform: scale(1.05);
+@media (hover: hover) {
+  .Desc-toggle:hover {
+    transform: scale(1.05);
+  }
 }
 
 .Desc-toggle.active {
@@ -686,9 +704,11 @@ tr.stats-state-row-ca.show {
   color: var(--text-main);
 }
 
-.Desc-tab-main-btn:hover,
-.Desc-tab-sub-btn:hover {
-  background-color: var(--accent-highlight);
+@media (hover: hover) {
+  .Desc-tab-main-btn:hover,
+  .Desc-tab-sub-btn:hover {
+    background-color: var(--accent-highlight);
+  }
 }
 
 .Desc-content {
@@ -803,9 +823,11 @@ tr.stats-state-row-ca.show {
   }
 }
 
-.MapPost-toggle:hover,
-.WFnews-toggle:hover {
-  transform: scale(1.05);
+@media (hover: hover) {
+  .MapPost-toggle:hover,
+  .WFnews-toggle:hover {
+    transform: scale(1.05);
+  }
 }
 
 .MapPost-toggle.active,
@@ -896,9 +918,11 @@ tr.stats-state-row-ca.show {
   transition: background 0.2s;
 }
 
-.MapPost-drawer-close:hover,
-.WFnews-drawer-close:hover {
-  background: rgba(255, 255, 255, 0.4);
+@media (hover: hover) {
+  .MapPost-drawer-close:hover,
+  .WFnews-drawer-close:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
 }
 
 .MapPost-drawer-list, 
@@ -921,9 +945,11 @@ tr.stats-state-row-ca.show {
   cursor: default;
 }
 
-.MapPost-item:hover,
-.WFnews-item:hover {
-  border-color: var(--card-shadow);
+@media (hover: hover) {
+  .MapPost-item:hover,
+  .WFnews-item:hover {
+    border-color: var(--card-shadow);
+  }
 }
 
 .MapPost-item-title,
@@ -979,9 +1005,11 @@ tr.stats-state-row-ca.show {
   cursor: pointer;
 }
 
-.MapPost-item-link:hover,
-.WFnews-item-link:hover {
-  filter: brightness(1.2);
+@media (hover: hover) {
+  .MapPost-item-link:hover,
+  .WFnews-item-link:hover {
+    filter: brightness(1.2);
+  }
 }
 
 @media (max-width: 1024px) {
@@ -1022,23 +1050,6 @@ tr.stats-state-row-ca.show {
     padding: 0.3rem 0.5rem;
   }
 
-  .stats-tab-sub:hover,
-  .FigurePage-toggle:hover,
-  .Desc-toggle:hover,
-  #ExportBtnDaily:hover,
-  #AnnStatsInputMinus1y:hover,
-  #AnnStatsInputPlus1y:hover,
-  #StatsInputMinus1y:hover,
-  #StatsInputMinus1m:hover,
-  #StatsInputMinus1d:hover,
-  #StatsInputMinus1h:hover,
-  #StatsInputPlus1h:hover,
-  #StatsInputPlus1d:hover,
-  #StatsInputPlus1m:hover,
-  #StatsInputPlus1y:hover {
-    transform: none !important;
-  }
-  
   #StatsInputMinus1y,
   #StatsInputPlus1y {
     display: none !important;

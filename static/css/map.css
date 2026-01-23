@@ -282,8 +282,10 @@ details[open] summary {
   transition: transform 0.2s;
 }
 
-.toolbar-date button:hover {
-  transform: scale(1.1);
+@media (hover: hover) {
+  .toolbar-date button:hover {
+    transform: scale(1.1);
+  }
 }
 
 /* Minus buttons (go to past) - Red */
@@ -432,8 +434,10 @@ details[open] summary {
   transition: transform 0.2s ease-out;
 }
 
-.map-btn-capture:hover {
-  transform: scale(1.05);
+@media (hover: hover) {
+  .map-btn-capture:hover {
+    transform: scale(1.05);
+  }
 }
 
 .map-btn-capture {
@@ -496,11 +500,6 @@ details[open] summary {
   
   .accordion-toggle {
     top: calc(var(--header-height-total) + var(--toolbar-date-height) + 1rem);
-  }
-  
-  .accordion summary:hover,
-  .toolbar-date button:hover {
-    transform: none !important;
   }
 }
 
@@ -856,16 +855,18 @@ details[open] summary {
   transition: background 0.2s;
 }
 
-.MapPost-btn-restore:hover,
-.reply-btn-reply:hover,
-.reply-btn-edit:hover,
-.reply-btn-delete:hover,
-.reply-btn-edit-detail:hover,
-.reply-btn-delete-detail:hover,
-.reply-btn-submit:hover,
-.reply-btn-submit-inline:hover,
-.reply-btn-cancel:hover,
-.reply-btn-cancel-inline:hover {
-  background: var(--accent-highlight);
+@media (hover: hover) {
+  .MapPost-btn-restore:hover,
+  .reply-btn-reply:hover,
+  .reply-btn-edit:hover,
+  .reply-btn-delete:hover,
+  .reply-btn-edit-detail:hover,
+  .reply-btn-delete-detail:hover,
+  .reply-btn-submit:hover,
+  .reply-btn-submit-inline:hover,
+  .reply-btn-cancel:hover,
+  .reply-btn-cancel-inline:hover {
+    background: var(--accent-highlight);
+  }
 }
 

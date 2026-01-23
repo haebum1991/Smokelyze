@@ -22,9 +22,11 @@
     overflow: hidden;
 }
 
-.datadb-tab-btn:hover {
-    color: var(--text-heading);
-    background-color: var(--color-code-bg);
+@media (hover: hover) {
+  .datadb-tab-btn:hover {
+      color: var(--text-heading);
+      background-color: var(--color-code-bg);
+  }
 }
 
 .datadb-tab-btn.active {
@@ -126,8 +128,10 @@
     box-shadow: 0 0.4rem 1.5rem rgba(163, 102, 255, 0.3);
 }
 
-.datadb-query-btn:hover {
-    transform: scale(1.05);
+@media (hover: hover) {
+  .datadb-query-btn:hover {
+      transform: scale(1.05);
+  }
 }
 
 /* Annual Report Styles */
@@ -189,9 +193,11 @@
     border-bottom: 0.1rem solid var(--border-light);
 }
 
-#DatadbDataTable tr:hover,
-#DatadbReportTable tr:hover {
-    background-color: rgba(163, 102, 255, 0.05);
+@media (hover: hover) {
+  #DatadbDataTable tr:hover,
+  #DatadbReportTable tr:hover {
+      background-color: rgba(163, 102, 255, 0.05);
+  }
 }
 
 #DatadbDataTable tr:last-child td,
@@ -220,10 +226,12 @@
     transition: all 0.3s ease;
 }
 
-.datadb-page-btn:hover:not(:disabled) {
-    background: var(--card-shadow);
-    color: var(--color-bg);
-    border-color: var(--card-shadow);
+@media (hover: hover) {
+  .datadb-page-btn:hover:not(:disabled) {
+      background: var(--card-shadow);
+      color: var(--color-bg);
+      border-color: var(--card-shadow);
+  }
 }
 
 .datadb-page-btn:disabled {
@@ -342,13 +350,19 @@
     cursor: pointer;
 }
 
-#DatadbDataSource:hover,
-#DatadbDataAQS:hover,
-#DatadbDataState:hover,
-#DatadbReportTableDataset:hover,
-#DatadbReportTableState:hover,
-#DatadbReportTableType:hover,
-.datadb-date-range input[type="date"]:hover,
+@media (hover: hover) {
+  #DatadbDataSource:hover,
+  #DatadbDataAQS:hover,
+  #DatadbDataState:hover,
+  #DatadbReportTableDataset:hover,
+  #DatadbReportTableState:hover,
+  #DatadbReportTableType:hover,
+  .datadb-date-range input[type="date"]:hover {
+      border-color: var(--card-shadow);
+      box-shadow: 0 0 0 0.4rem rgba(163, 102, 255, 0.15);
+  }
+}
+
 .datadb-date-range input[type="date"]:focus {
     border-color: var(--card-shadow);
     box-shadow: 0 0 0 0.4rem rgba(163, 102, 255, 0.15);

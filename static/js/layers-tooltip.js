@@ -63,8 +63,10 @@ export function initGlobalTooltip() {
         transition: all 0.2s ease;
       }
       
-      .MapTooltip-close-btn:hover {
-        filter: brightness(1.2);
+      @media (hover: hover) {
+        .MapTooltip-close-btn:hover {
+          filter: brightness(1.2);
+        }
       }
       
       @media (max-width: 1024px) {
