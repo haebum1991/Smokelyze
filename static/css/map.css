@@ -1,6 +1,7 @@
 
 .map-btn-reset,
-.map-btn-capture {
+.map-btn-capture,
+.map-btn-statecolor {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
@@ -379,7 +380,8 @@ details[open] summary {
 }
 
 /* Map capture button css */
-.map-btn-capture {
+.map-btn-capture,
+.map-btn-statecolor {
   z-index: var(--z-FigurePage-toggle);
   font-size: 2rem;
   font-weight: bold;
@@ -389,22 +391,48 @@ details[open] summary {
   justify-content: center;
   max-width: max-content;
 
-  border-radius: var(--border-radius-0p8rem);
+  border-radius: calc(var(--border-radius-0p8rem) * 0.7);
   border: 0.1rem solid var(--card-shadow);
   background-color: var(--color-bg);
   color: var(--text-main);
   cursor: pointer;
-
-  position: absolute;
-  bottom: 0.9rem;
-  left: 8.7rem;
-  padding: 0.5rem 0.5rem;
-
+  
   transition: transform 0.2s ease-out;
 }
 
-.map-btn-capture:hover {
+.map-btn-capture:hover,
+.map-btn-statecolor:hover {
   transform: scale(1.05);
+}
+
+.map-btn-capture {
+  position: absolute;
+  bottom: 8px;
+  left: 127px;
+  padding: 5px 5px;
+}
+
+.map-btn-statecolor {
+  position: absolute;
+  bottom: 8px;
+  left: 87px;
+  padding: 5px 5px;
+  transition: transform 0.2s ease-out, background-color 0.2s, color 0.2s;
+}
+
+.map-btn-statecolor.disabled {
+  background-color: #fce4e4;
+  color: #e74c3c;
+  opacity: 0.7;
+}
+
+.map-btn-statecolor.disabled::after {
+  content: "";
+  position: absolute;
+  width: 2.2rem;
+  height: 0.15rem;
+  background: currentColor;
+  transform: rotate(-45deg);
 }
 
 @media (max-width: 1024px) {

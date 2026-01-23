@@ -24,6 +24,7 @@ let currentQueryState = ""; // Track for filename
 let currentAqs = "";        // Track for filename
 let currentLocationData = null; // Store location info (lon, lat, site_name)
 let locationMap = null; // MapLibre GL map instance for Location tab
+let locationMarker = null; // Marker instance for Location tab
 let mapLibraryLoaded = false; // Track if MapLibre GL is loaded
 let mapLibraryLoading = false; // Track if library is currently loading
 let defaultDateStart = null; // Store original min date
@@ -545,6 +546,7 @@ async function initLocationMap() {
             zoom: 8,
             essential: true
         });
+        refreshLocationMarker();
         return;
     }
 
@@ -579,32 +581,29 @@ async function initLocationMap() {
 
     // Add marker and popup when map is loaded
     locationMap.on("load", () => {
-        // Add marker
-        const marker = new maplibregl.Marker({ color: "#a366ff" })
-            .setLngLat([currentLocationData.lon, currentLocationData.lat])
-            .addTo(locationMap);
-
-        // Add popup with sanitized data to prevent XSS
-        const siteName = ESML(currentLocationData.site_name || "AQS Site");
-        const aqsCode = ESML(currentLocationData.AQS);
-        const lonStr = ESML(currentLocationData.lon.toFixed(6));
-        const latStr = ESML(currentLocationData.lat.toFixed(6));
-
-        const popupHTML = `
-            <div style="font-family: sans-serif; padding: 0.5rem;">
-                <strong style="color: #a366ff; font-size: 1.4rem;">${siteName}</strong><br>
-                <span style="font-size: 1.2rem; color: #666;">AQS: ${aqsCode}</span><br>
-                <span style="font-size: 1.2rem; color: #666;">Lon: ${lonStr}</span><br>
-                <span style="font-size: 1.2rem; color: #666;">Lat: ${latStr}</span>
-            </div>
-        `;
-
-        const popup = new maplibregl.Popup({ offset: 25 })
-            .setHTML(popupHTML);
-
-        marker.setPopup(popup);
-        popup.addTo(locationMap);
+        refreshLocationMarker();
     });
+}
+
+/**
+ * Refresh or create the location marker
+ */
+function refreshLocationMarker() {
+    if (!locationMap || !currentLocationData) return;
+
+    const lon = currentLocationData.lon;
+    const lat = currentLocationData.lat;
+    if (lon === undefined || lat === undefined) return;
+
+    if (locationMarker) {
+        // Update existing marker
+        locationMarker.setLngLat([lon, lat]);
+    } else {
+        // Create new marker
+        locationMarker = new maplibregl.Marker({ color: "#a366ff" })
+            .setLngLat([lon, lat])
+            .addTo(locationMap);
+    }
 }
 
 /**

@@ -4,7 +4,7 @@ import { map, mapConfig } from "./map-init.js";
 import { applyLayerToggles } from "./layers-handler.js";
 import { EMPTY_FC } from "./layers-constants.js";
 import { activeLayerStack } from "./layers-state.js";
-import { clearAll } from "./ui-state.js";
+import { clearAll, resetGlobalStateColor } from "./ui-state.js";
 import { clearHighlight } from "./utils.js";
 import { resetLoadedSources } from "./loader.js";
 import { resetState as resetBarLine } from "./stats-plot-dy-barline.js";
@@ -17,7 +17,8 @@ export function resetUIAndData() {
   // 1) 상태 저장소 삭제
   if (clearAll) clearAll();
   if (clearHighlight) clearHighlight();
-
+  if (resetGlobalStateColor) resetGlobalStateColor();
+  
   // 2) ★ Loader의 캐시(기록)를 초기화 (이게 없으면 재로딩 안됨)
   if (resetLoadedSources) {
     resetLoadedSources();

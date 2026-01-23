@@ -9,6 +9,11 @@ export { map };
 export let activeLayerStack = [];
 export let regionStats = {};
 export let _cachedActiveLayerIds = [];
+export let stateColorEnabled = true;
+
+export function setStateColorEnabled(enabled) {
+    stateColorEnabled = !!enabled;
+}
 
 export function setActiveLayerStack(stack) {
     activeLayerStack.length = 0;

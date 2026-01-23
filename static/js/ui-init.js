@@ -1,20 +1,19 @@
 
-import { restoreUI, bindAccordionAutosave } from "./ui-state.js";
+import { restoreUI, bindAccordionAutosave, initStateColorToggle } from "./ui-state.js";
 import { initDateButtons } from "./ui-date.js";
 import { initUIPulsingIcons } from "./layers-icon.js";
 import { map } from "./map-init.js";
 import { geolocate } from "./layers.js";
 import { resetViewControl } from "./ui-reset.js";
 import { initMapCapture } from "./map-capture.js";
-
-// ---- [External data] AirNow ----
 import { initTimeButtons, initTimePicker } from "./ui-time.js";
-// ---- [External data] AirNow ----
 
 const datePicker = document.getElementById("datePicker");
 
 if (datePicker && !datePicker.value) {
   const d = new Date();
+  d.setHours(d.getHours() - 2);
+  
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
@@ -40,5 +39,6 @@ if (initUIPulsingIcons) initUIPulsingIcons();
 if (initTimeButtons) initTimeButtons();
 if (initTimePicker) initTimePicker();
 if (initMapCapture) initMapCapture();
+if (initStateColorToggle) initStateColorToggle();
 // ---- [External data] AirNow ----
 

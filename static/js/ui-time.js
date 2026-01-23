@@ -136,8 +136,10 @@ export function initTimePicker() {
     const timePicker = document.getElementById("timePicker");
     if (!timePicker) return;
 
-    // Set to current local hour
+    // Set to 2 hours before current local hour (AirNow data usually has some delay)
     const now = new Date();
+    now.setHours(now.getHours() - 2);
+    
     const localHour = now.getHours();
     timePicker.value = String(localHour).padStart(2, "0");
 

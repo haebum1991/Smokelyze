@@ -1,4 +1,7 @@
 
+import { setStateColorEnabled, stateColorEnabled } from "./layers-state.js";
+import { updateStateColors } from "./layers-colors.js";
+
 const KEY = "mapStateV1";
 const S = sessionStorage;
 
@@ -53,6 +56,13 @@ export function restoreUI() {
       }
     });
   }
+  
+  // State Color 활성화 여부 복원
+  if (typeof s.stateColorEnabled === "boolean") {
+    setStateColorEnabled(s.stateColorEnabled);
+  } else {
+    setStateColorEnabled(true); // 기본값
+  }
 }
 
 // 맵 뷰 복원
@@ -99,6 +109,11 @@ export function saveLayerFlag(key, on) {
   savePatch({ layers });
 }
 
+export function saveGlobalStateColor(enabled) {
+  setStateColorEnabled(enabled);
+  savePatch({ stateColorEnabled: !!enabled });
+}
+
 export function bindAccordionAutosave() {
   const detailsList = document.querySelectorAll(".accordion details");
   if (!detailsList.length) return;
@@ -119,4 +134,43 @@ export function clearAll() {
 
 // Shared runtime state
 export const state = {};
+
+/**
+ * 전역 State Color 토글 버튼을 초기화합니다.
+ */
+export function initStateColorToggle() {
+  const btn = document.getElementById("MapBtnStateColor");
+  if (!btn) return;
+
+  // 초기 상태 반영
+  if (!stateColorEnabled) {
+    btn.classList.add("disabled");
+  }
+
+  btn.addEventListener("click", () => {
+    const currentlyEnabled = !btn.classList.contains("disabled");
+    const nextEnabled = !currentlyEnabled;
+
+    if (nextEnabled) {
+      btn.classList.remove("disabled");
+    } else {
+      btn.classList.add("disabled");
+    }
+
+    // 상태 저장 및 즉시 반영
+    saveGlobalStateColor(nextEnabled);
+    updateStateColors();
+  });
+}
+
+/**
+ * 전역 State Color 설정을 초기 상태(활성)로 리셋합니다.
+ */
+export function resetGlobalStateColor() {
+  const btn = document.getElementById("MapBtnStateColor");
+  if (btn) btn.classList.remove("disabled");
+
+  setStateColorEnabled(true);
+  updateStateColors();
+}
 
