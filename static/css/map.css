@@ -15,8 +15,8 @@
   box-sizing: border-box;
 
   width: 100%;
-  height: calc(100vh - var(--header-height-total) - var(--safe-area-bottom));
-  height: calc(100dvh - var(--header-height-total) - var(--safe-area-bottom));
+  height: calc(100vh - var(--header-height-total) - var(--footer-height-total));
+  height: calc(100dvh - var(--header-height-total) - var(--footer-height-total));
   border: 0.1rem solid var(--card-shadow);
   position: relative;
   overflow: visible;
@@ -117,8 +117,8 @@ body.page-map .content {
   z-index: var(--z-accordion);
 
   width: 30rem;
-  max-height: calc((100vh - var(--header-height-total) - var(--safe-area-bottom)) - (11rem));
-  max-height: calc((100dvh - var(--header-height-total) - var(--safe-area-bottom)) - (11rem));
+  max-height: calc((100vh - var(--header-height-total) - var(--footer-height-total)) - (11rem));
+  max-height: calc((100dvh - var(--header-height-total) - var(--footer-height-total)) - (11rem));
 
   overflow-y: auto;
   overflow-x: hidden;
@@ -579,8 +579,8 @@ details[open] summary {
   bottom: 0;
   left: 50%;
   width: 50%;
-  height: calc(100vh - var(--header-height-total) - var(--safe-area-bottom));
-  height: calc(100dvh - var(--header-height-total) - var(--safe-area-bottom));
+  height: calc(100vh - var(--header-height-total) - var(--footer-height-total));
+  height: calc(100dvh - var(--header-height-total) - var(--footer-height-total));
   transform: translateX(-50%);
   
   background: var(--color-bg);

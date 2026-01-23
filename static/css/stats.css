@@ -63,8 +63,8 @@
   bottom: 0;
   left: 0;
   width: var(--FigurePage-drawer-width);
-  height: calc(100vh - var(--header-height-total) - var(--safe-area-bottom));
-  height: calc(100dvh - var(--header-height-total) - var(--safe-area-bottom));
+  height: calc(100vh - var(--header-height-total) - var(--footer-height-total));
+  height: calc(100dvh - var(--header-height-total) - var(--footer-height-total));
 
   transform: translateX(-120%);
   transition: transform 0.2s ease-out;
@@ -606,8 +606,8 @@ tr.stats-state-row-ca.show {
   bottom: 0;
   right: 0;
   width: var(--FigurePage-drawer-width);
-  height: calc(100vh - var(--header-height-total) - var(--safe-area-bottom));
-  height: calc(100dvh - var(--header-height-total) - var(--safe-area-bottom));
+  height: calc(100vh - var(--header-height-total) - var(--footer-height-total));
+  height: calc(100dvh - var(--header-height-total) - var(--footer-height-total));
 
   transform: translateX(120%);
   transition: transform 0.2s ease-out;
