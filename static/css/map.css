@@ -113,9 +113,9 @@ body.page-map .content {
 }
 
 .accordion-page.collapsed {
-  visibility: hidden;
+  transform: translateX(100%);
   opacity: 0;
-  transform: translateX(2rem);
+  pointer-events: none;
 }
 
 /* 지도 위에 항상 떠 있는 레이어 열기 버튼 */
