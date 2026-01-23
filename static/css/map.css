@@ -129,7 +129,7 @@ body.page-map .content {
   height: 5rem;
 
   background: var(--map-toolbar-bg);
-  color: var(--color-white);
+  color: var(--text-main);
   border: 0.1rem solid var(--card-shadow);
   border-radius: var(--border-radius-0p8rem);
 
@@ -202,15 +202,17 @@ body.page-map .content {
   transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
-.accordion-toggle:hover,
-.accordion-close-btn:hover {
-  background-color: var(--map-accordion-gradient-start);
-}
+@media (hover: hover) {
+  .accordion-toggle:hover,
+  .accordion-close-btn:hover {
+    background-color: var(--map-accordion-gradient-start);
+  }
 
-.accordion-toggle:hover,
-.accordion-close-btn:hover,
-.accordion summary:hover {
-  transform: scale(1.05);
+  .accordion-toggle:hover,
+  .accordion-close-btn:hover,
+  .accordion summary:hover {
+    transform: scale(1.05);
+  }
 }
 
 details[open] summary {
@@ -297,7 +299,7 @@ details[open] summary {
 #onMapPlus1y,
 #onMapPlus1m,
 #onMapPlus1d,
-#onMapPlus1h{
+#onMapPlus1h {
   background: #4a90e2;
   color: white;
 }
