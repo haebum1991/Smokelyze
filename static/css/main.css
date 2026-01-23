@@ -1006,8 +1006,8 @@ body.page-about .sidebar {
   
   width: 90vw;
   max-width: 45rem;
-  max-height: calc((100vh - var(--header-height-total) - var(--footer-height-total)) - (11rem));
-  max-height: calc((100dvh - var(--header-height-total) - var(--footer-height-total)) - (11rem));
+  max-height: calc((100vh - var(--header-height-total) - var(--safe-area-bottom)) - (11rem));
+  max-height: calc((100dvh - var(--header-height-total) - var(--safe-area-bottom)) - (11rem));
   
   overflow-y: auto;
 }
