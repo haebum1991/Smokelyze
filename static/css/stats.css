@@ -107,7 +107,7 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
 }
 
 body.FigurePage-drawer-open #MapTooltip {
-  transform: translateX(calc(var(--FigurePage-drawer-width) - 31.7rem + 0.3rem));
+  transform: translateX(calc(var(--FigurePage-drawer-width) - var(--toolbar-date-width)));
 }
 
 .drawer-resizer {
@@ -721,7 +721,7 @@ tr.stats-state-row-ca.show {
   padding: 0.5rem 0.5rem;
 
   position: fixed;
-  bottom: calc(var(--footer-height-total) + 6rem);
+  bottom: calc(var(--footer-height-total) + 7rem);
   left: 0;
 
   background: linear-gradient(135deg, #0072ff, #00c6ff);
@@ -761,7 +761,7 @@ tr.stats-state-row-ca.show {
   padding: 0.5rem 0.5rem;
 
   position: fixed;
-  bottom: calc(var(--footer-height-total) + 14.5rem);
+  bottom: calc(var(--footer-height-total) + 15rem);
   left: 0;
 
   background: linear-gradient(135deg, #6a11cb, #2575fc);
@@ -857,10 +857,10 @@ tr.stats-state-row-ca.show {
   box-sizing: border-box;
 
   position: fixed;
-  top: calc(var(--header-height-total) + 7rem);
-  bottom: calc(var(--footer-height-total) + 6rem);
+  top: calc(var(--header-height-total) + var(--toolbar-date-height));
+  bottom: calc(var(--footer-height-total) + 7rem);
   left: 0;
-  width: calc(31.7rem - 0.5rem);
+  width: var(--toolbar-date-width);
 
   transform: translateX(-120%);
   transition: transform 0.2s ease-out;

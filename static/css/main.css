@@ -7,9 +7,10 @@
   --safe-area-bottom: env(safe-area-inset-bottom, 0);
   --header-height-total: calc(var(--header-height) + var(--safe-area-top));
   --footer-height-total: calc(var(--footer-height) + var(--safe-area-bottom));
+  --toolbar-date-width: 32rem;
+  --toolbar-date-height: 7rem;
 
   --border-radius-0p8rem: 0.8rem;
-  --toolbar-date-height: 4rem;
 
   /* z-Index: Global */
   --z-highest: 10000;
@@ -25,10 +26,10 @@
   /* z-Index: Map Page */
   --z-map-legend: 1000;
   --z-toolbar-date: 1000;
+  --z-MapTooltip: 1100;
   --z-accordion-toggle: 1200;
   --z-accordion: 1201;
   --z-WFnews-drawer: 1300;
-  --z-MapTooltip: 1400;
 
   /* z-Index: Stats Page */
   --z-stats-region-table-tr-1: 12;
@@ -44,8 +45,8 @@
 
   /* Stats parameters */
   --stats-plot-font-size: 1.6rem;
-  --FigurePage-drawer-width: 40vw;
   --drawer-resizer-width: 1.5rem;
+  --FigurePage-drawer-width: 40vw;
 }
 
 html,
@@ -1132,7 +1133,11 @@ body.page-about .sidebar {
 
 /* Mobile version setting */
 @media (max-width: 1024px) {
-
+  
+  :root {
+    --toolbar-date-height: 4rem;
+  }
+  
   html {
     font-size: 57.5%;
   }

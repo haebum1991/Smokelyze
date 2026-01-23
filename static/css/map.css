@@ -38,8 +38,8 @@
   max-width: max-content;
 
   position: fixed;
-  top: calc(var(--header-height-total) + 7rem);
-  left: 0.3rem;
+  top: calc(var(--header-height-total) + var(--toolbar-date-height));
+  left: 0;
 
   padding: 1rem;
   border-radius: var(--border-radius-0p8rem);
@@ -213,7 +213,9 @@ details[open] summary {
   z-index: var(--z-toolbar-date);
   display: flex;
   flex-direction: column;
-  width: calc(31.7rem - 0.5rem);
+  justify-content: center; 
+  width: var(--toolbar-date-width);
+  height: var(--toolbar-date-height);
   background: var(--map-toolbar-bg);
   border: 0.1rem solid var(--card-shadow);
   padding: 0.4rem;
@@ -332,6 +334,7 @@ details[open] summary {
   position: absolute;
   bottom: 0;
   left: 50%;
+  flex-direction: column;
   transform: translateX(-50%);
   background: var(--color-bg);
   color: var(--text-strong);
@@ -447,7 +450,6 @@ details[open] summary {
   
   .toolbar-date {
     width: 100%;
-    height: var(--toolbar-date-height);
     flex-direction: row;
     align-items: center;
     gap: 0.5rem;

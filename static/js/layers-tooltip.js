@@ -23,7 +23,7 @@ export function initGlobalTooltip() {
         
         position: fixed;
         top: var(--header-height-total) !important; 
-        left: 31.7rem !important; 
+        left: var(--toolbar-date-width) !important; 
         
         pointer-events: none;
         display: none;  
@@ -33,7 +33,7 @@ export function initGlobalTooltip() {
         color: var(--text-main);
         background: var(--color-bg);
         border: 0.1rem solid var(--card-shadow);
-        border-radius: var(--border-radius-0p8rem);
+        border-radius: 0 0 var(--border-radius-0p8rem) var(--border-radius-0p8rem);
       }
       
       .MapTooltip-close-btn {
@@ -72,7 +72,7 @@ export function initGlobalTooltip() {
           font-size: 1.4rem;
           max-width: 50vw;
           top: calc(var(--header-height-total) + var(--toolbar-date-height)) !important; 
-          left: 0.3rem !important;
+          left: 0 !important;
         }
       }
     `;

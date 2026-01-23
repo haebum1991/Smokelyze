@@ -40,7 +40,8 @@ export const geolocate = (typeof maplibregl !== "undefined") ? new maplibregl.Ge
   if (map) {
     map.on("mousemove", function (e) {
       coordsDiv.style.display = "block";
-      coordsDiv.innerText = `Lon: ${e.lngLat.lng.toFixed(3)}, Lat: ${e.lngLat.lat.toFixed(3)}`;
+      coordsDiv.innerText = `Lat: ${e.lngLat.lat.toFixed(3)}
+Lon: ${e.lngLat.lng.toFixed(3)}`;
     });
 
     map.on("mouseout", function () {
