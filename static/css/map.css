@@ -1,4 +1,8 @@
 
+body.page-map {
+  --footer-height: 5.5rem; 
+}
+
 body.page-map .container {
   display: flex;
   margin: 0 auto;
