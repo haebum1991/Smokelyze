@@ -468,7 +468,7 @@ body.page-about .sidebar {
 
 /* Footer setting */
 .footer-container {
-  height: var(--footer-height);
+  height: var(--footer-height-total);
   font-size: 1.4rem;
   background-color: var(--footer-bg);
   color: var(--color-white);

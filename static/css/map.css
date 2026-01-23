@@ -1,4 +1,22 @@
 
+body.page-map .container {
+  display: flex;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 100%;
+}
+
+body.page-map .sidebar {
+  display: none;
+}
+
+body.page-map .content {
+  flex: 1 1 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 .map-btn-reset,
 .map-btn-capture,
 .map-btn-statecolor {
@@ -15,8 +33,8 @@
   box-sizing: border-box;
 
   width: 100%;
-  height: calc(100vh - var(--header-height-total) - var(--footer-height-total));
-  height: calc(100dvh - var(--header-height-total) - var(--footer-height-total));
+  height: calc(100vh - var(--header-height-total) - var(--footer-height));
+  height: calc(100dvh - var(--header-height-total) - var(--footer-height));
   border: 0.1rem solid var(--card-shadow);
   position: relative;
   overflow: visible;
@@ -72,24 +90,6 @@
   border: 0.1rem solid var(--text-main);
 }
 
-body.page-map .container {
-  display: flex;
-  margin: 0 auto;
-  padding: 0;
-  max-width: 100%;
-}
-
-body.page-map .sidebar {
-  display: none;
-}
-
-body.page-map .content {
-  flex: 1 1 100%;
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
-}
-
 .toolbar-date-page {
   position: fixed;
   top: var(--header-height-total);
@@ -117,8 +117,8 @@ body.page-map .content {
   z-index: var(--z-accordion);
 
   width: 30rem;
-  max-height: calc((100vh - var(--header-height-total) - var(--footer-height-total)) - (11rem));
-  max-height: calc((100dvh - var(--header-height-total) - var(--footer-height-total)) - (11rem));
+  max-height: calc((100vh - var(--header-height-total) - var(--footer-height)) - (11rem));
+  max-height: calc((100dvh - var(--header-height-total) - var(--footer-height)) - (11rem));
 
   overflow-y: auto;
   overflow-x: hidden;
@@ -579,8 +579,8 @@ details[open] summary {
   bottom: 0;
   left: 50%;
   width: 50%;
-  height: calc(100vh - var(--header-height-total) - var(--footer-height-total));
-  height: calc(100dvh - var(--header-height-total) - var(--footer-height-total));
+  height: calc(100vh - var(--header-height-total) - var(--footer-height));
+  height: calc(100dvh - var(--header-height-total) - var(--footer-height));
   transform: translateX(-50%);
   
   background: var(--color-bg);
