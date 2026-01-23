@@ -197,7 +197,7 @@ export function initExportButton() {
         color: "var(--text-strong)",
         backgroundColor: "var(--color-bg)",
         border: "0.1rem solid var(--card-shadow)",
-        transition: "transform 0.2s ease"
+        transition: "transform 0.3s ease"
     });
 
     btn.addEventListener("click", handleDownload);

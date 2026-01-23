@@ -143,7 +143,7 @@ body,
   border-radius: var(--border-radius-0p8rem);
   cursor: pointer;
 
-  transition: transform 0.2s ease;
+  transition: transform 0.3s ease;
 }
 
 .theme-toggle-btn:hover {
@@ -250,13 +250,13 @@ img {
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .nav-logo {
   display: flex;
   align-items: center;
-  transition: transform 0.2s ease-out;
+  transition: transform 0.3s ease-out;
 }
 
 @media (hover: hover) {
@@ -292,7 +292,7 @@ img {
   color: var(--color-white);
   padding: 0 1.2rem;
   border-radius: var(--border-radius-0p8rem);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 @media (hover: hover) {
@@ -509,7 +509,7 @@ body.page-about .sidebar {
 .footer-links a {
   color: var(--color-white);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color 0.3s ease;
   margin: 0 1.5rem;
 }
 
@@ -599,7 +599,7 @@ body.page-about .sidebar {
   box-shadow: none !important;
   background: none !important;
   color: inherit !important;
-  transition: transform 0.2s;
+  transition: transform 0.3s;
 }
 
 .social-links a:hover,
@@ -628,7 +628,7 @@ body.page-about .sidebar {
   overflow: hidden;
   border-radius: var(--border-radius-0p8rem);
   border: 0.1rem solid var(--card-shadow);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .post-thumbnail:hover {
@@ -672,7 +672,7 @@ body.page-about .sidebar {
   border: none;
   border-radius: var(--border-radius-0p8rem);
   box-shadow: 0.2rem 0.2rem 0.5rem var(--shadow-strong);
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.3s ease-in-out;
 }
 
 @media (hover: hover) {
@@ -701,7 +701,7 @@ body.page-about .sidebar {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeInAuthOverlay 0.4s ease;
+  animation: fadeInAuthOverlay 0.5s ease;
 }
 
 @keyframes fadeInAuthOverlay {
@@ -787,7 +787,7 @@ body.page-about .sidebar {
   font-weight: bold;
   font-family: "Roboto", "Noto Sans KR", sans-serif;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-bottom: 2rem;
   box-shadow: none;
 }
@@ -806,7 +806,7 @@ body.page-about .sidebar {
   border: none;
   color: var(--text-main);
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity 0.3s;
 }
 
 @media (hover: hover) {
@@ -829,7 +829,7 @@ body.page-about .sidebar {
   gap: 1.5rem;
   margin-bottom: 2rem;
   align-items: flex-start;
-  animation: fadeInAuthOverlay 0.4s ease forwards;
+  animation: fadeInAuthOverlay 0.5s ease forwards;
 }
 
 .auth-benefits-list li .icon {
@@ -873,7 +873,7 @@ body.page-about .sidebar {
   border-radius: calc(var(--border-radius-0p8rem) * 3);
   padding: 1.2rem 2rem;
   box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.5), 0 0 0 0.1rem rgba(255, 255, 255, 0.05);
-  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   max-width: 90vw;
   width: 38rem;
   pointer-events: auto;
@@ -921,7 +921,7 @@ body.page-about .sidebar {
   font-weight: bold;
   font-size: 1.4rem;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: background 0.3s, transform 0.3s;
 }
 
 @media (hover: hover) {
@@ -950,7 +950,7 @@ body.page-about .sidebar {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   overflow: hidden;
   color: var(--color-bg);
 }
@@ -975,7 +975,7 @@ body.page-about .sidebar {
   display: none;
   overflow: hidden;
   padding: 0.5rem;
-  animation: slideDown 0.2s ease-out;
+  animation: slideDown 0.3s ease-out;
 }
 
 .profile-dropdown.show {
@@ -1008,7 +1008,7 @@ body.page-about .sidebar {
   display: flex;
   align-items: center;
   gap: 1rem;
-  transition: background 0.2s;
+  transition: background 0.3s;
 }
 
 @media (hover: hover) {
@@ -1051,7 +1051,7 @@ body.page-about .sidebar {
   font-size: 3rem;
   color: var(--text-strong);
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity 0.3s;
   line-height: 1;
   padding: 0;
 }
@@ -1088,7 +1088,7 @@ body.page-about .sidebar {
   color: var(--text-main);
   border-radius: var(--border-radius-0p8rem);
   font-size: 1.5rem;
-  transition: border-color 0.2s;
+  transition: border-color 0.3s;
   box-sizing: border-box !important;
   display: block;
   margin: 0;
@@ -1118,7 +1118,7 @@ body.page-about .sidebar {
   font-weight: bold;
   font-size: 1.6rem;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: background 0.3s, transform 0.3s;
 }
 
 @media (hover: hover) {
@@ -1221,7 +1221,7 @@ body.page-about .sidebar {
     width: 40%;
 
     transform: translateX(100%);
-    transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 
     opacity: 0;
     visibility: hidden;

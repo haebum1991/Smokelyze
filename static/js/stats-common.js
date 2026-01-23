@@ -632,7 +632,7 @@ window.addEventListener("themeChanged", function () {
     var targets = document.querySelectorAll(selector);
 
     targets.forEach(function (el) {
-        el.style.transition = "opacity 0.2s ease";
+        el.style.transition = "opacity 0.3s ease";
         el.style.opacity = "0";
     });
 

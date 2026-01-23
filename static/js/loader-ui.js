@@ -46,7 +46,7 @@ export function showErrorToast(message, type = "error") {
         fontSize: "1.6rem",
         fontWeight: "bold",
         pointerEvents: "none",
-        transition: "opacity 0.2s ease"
+        transition: "opacity 0.3s ease"
     });
 
     document.body.appendChild(toast);

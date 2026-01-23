@@ -60,7 +60,7 @@ export function initGlobalTooltip() {
         padding: 0.8rem 0.4rem;
         
         writing-mode: vertical-rl;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
       }
       
       @media (hover: hover) {
