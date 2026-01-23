@@ -102,13 +102,16 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left,
 body.FigurePage-drawer-open .WFnews-toggle,
 body.FigurePage-drawer-open .WFnews-drawer.open,
 body.FigurePage-drawer-open .MapPost-toggle,
-body.FigurePage-drawer-open .MapPost-drawer.open {
+body.FigurePage-drawer-open .MapPost-drawer.open,
+body.FigurePage-drawer-open #MapTooltip {
   transform: translateX(var(--FigurePage-drawer-width));
 }
 
+/*
 body.FigurePage-drawer-open #MapTooltip {
   transform: translateX(calc(var(--FigurePage-drawer-width) - var(--toolbar-date-width)));
 }
+*/
 
 .drawer-resizer {
   z-index: var(--z-FigurePage-drawer);

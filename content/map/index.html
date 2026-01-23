@@ -53,15 +53,6 @@ title: ""
         <circle cx="12" cy="13" r="4"></circle>
       </svg>
     </button>
-    
-    <button class="map-btn-statecolor" id="MapBtnStateColor" title="State Coloring">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
-        <line x1="8" y1="2" x2="8" y2="18"></line>
-        <line x1="16" y1="6" x2="16" y2="22"></line>
-      </svg>
-    </button>
 
   </div>
   <div class="map-legend" id="MapLegend" style="display:none;"></div>
@@ -118,14 +109,33 @@ title: ""
     </div>
   </div>
   
+  <!-- Layer Toggle Button (Always on Map) -->
+  <button class="accordion-toggle" id="AccordionToggle" title="Open Layers">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+      <polyline points="2 17 12 22 22 17"></polyline>
+      <polyline points="2 12 12 17 22 12"></polyline>
+    </svg>
+  </button>
+
   <!-- topright: accordion panel -->
-  <div class="accordion-page" id="AccordionPage">
-    <button class="accordion-toggle" id="AccordionToggle">
-      Layers ▶
-    </button>
-
+  <div class="accordion-page collapsed" id="AccordionPage">
     <div class="accordion">
-
+      <div class="accordion-header">
+        <span class="accordion-title">Layers</span>
+        <button id="AccordionClose" class="accordion-close-btn" title="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- State Color Toggle (Injected via JS) -->
+      <div id="ToggleSwitchStateChoropleth"></div>
+      
       <details open>
         <summary>Real-time WF</summary>
         <label>

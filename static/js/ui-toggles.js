@@ -1,15 +1,124 @@
 
-import { savePatch, read } from "./ui-state.js";
-import { clearHighlight, setOnSetNewsDrawer, setOnSetStatsDrawer, setOnSetDescDrawer, setOnSetMapPostDrawer, setOnSetAccordionCollapsed } from "./utils.js";
+import { savePatch, read, initStateColorToggle } from "./ui-state.js";
 import { onDescDrawerOpen } from "./ui-param-desc.js";
+import { 
+  clearHighlight, 
+  setOnSetNewsDrawer, 
+  setOnSetStatsDrawer, 
+  setOnSetDescDrawer, 
+  setOnSetMapPostDrawer, 
+  setOnSetAccordionCollapsed, 
+  ESML 
+} from "./utils.js";
+
+// --- Component: Modern Toggle Switch ---
+const SWITCH_STYLE = `
+.toggle-switch-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  padding-left: 0;
+  border-bottom: 0.1rem solid var(--card-shadow);
+  font-size: 1.4rem;
+  color: var(--text-main);
+}
+.toggle-switch-label {
+  position: relative;
+  display: inline-block;
+  width: 4rem;
+  height: 2rem;
+  flex-shrink: 0;
+}
+.toggle-switch-label input { 
+  opacity: 0; 
+  width: 0; 
+  height: 0; 
+}
+.toggle-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; 
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background-color: grey; 
+  transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+.toggle-switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 1.5rem; 
+  width: 1.5rem;
+  left: 0.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--color-white);
+  border: 0.2rem solid var(--color-black);
+  transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+  box-shadow: 0 0.2rem 0.4rem rgba(0,0,0,0.2);
+}
+input:checked + .toggle-switch-slider { 
+  background-color: var(--card-shadow);
+}
+input:checked + .toggle-switch-slider:before { 
+  transform: translateY(-50%) translateX(2rem);
+}
+`;
+
+function injectSwitchCSS() {
+    if (document.getElementById("toggle-switch-component-style")) return;
+    const style = document.createElement("style");
+    style.id = "toggle-switch-component-style";
+    style.textContent = SWITCH_STYLE;
+    document.head.appendChild(style);
+}
+
+/**
+ * Creates the HTML string for a modern toggle switch.
+ */
+export function createSwitchHTML(id, label, checked = false) {
+    injectSwitchCSS();
+    const isChecked = checked ? "checked" : "";
+    return `
+    <div class="toggle-switch-item">
+      <label class="toggle-switch-label">
+        <input type="checkbox" id="${id}" ${isChecked}>
+        <span class="toggle-switch-slider"></span>
+      </label>
+      <span>${ESML(label)}</span>
+    </div>
+  `.trim();
+}
+
+/**
+ * Creates and appends a switch element to a parent.
+ */
+export function appendSwitch(parent, options) {
+    injectSwitchCSS();
+    if (!parent) return;
+    const temp = document.createElement("div");
+    temp.innerHTML = createSwitchHTML(options.id, options.label, options.checked);
+    const switchEl = temp.firstElementChild;
+    parent.appendChild(switchEl);
+
+    if (options.onChange) {
+        const input = switchEl.querySelector("input");
+        input.addEventListener("change", (e) => options.onChange(e.target.checked));
+    }
+    return switchEl;
+}
 
 /**
  * Helper: Close other drawers (especially on mobile)
  * Ensures that only one drawer is open at a time on small screens.
  */
  
-const STATS_ICON = `<svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:4px;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`;
-const DESC_ICON = `<svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-left:4px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`;
+const LAYERS_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>`;
+const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
 export function closeAllExcept(activeId) {
     if (activeId !== "stats") {
@@ -137,37 +246,49 @@ export function setAccordionCollapsed(collapsed) {
 
     if (collapsed) {
         page.classList.add("collapsed");
-        btn.textContent = "Layers ◀";
+        btn.style.display = "flex"; // 패널 닫히면 열기 버튼 보임
     } else {
         page.classList.remove("collapsed");
-        btn.textContent = "Layers ▶";
+        btn.style.display = "none"; // 패널 열리면 열기 버튼 숨김 (패널 내 X 버튼 사용)
     }
     if (savePatch) savePatch({ accordionCollapsed: collapsed });
 }
 
 export function initAccordion() {
     const page = document.getElementById("AccordionPage");
-    const btn = document.getElementById("AccordionToggle");
-    if (!page || !btn) return;
+    const openBtn = document.getElementById("AccordionToggle");
+    const closeBtn = document.getElementById("AccordionClose");
+    if (!page || !openBtn) return;
 
-    btn.addEventListener("click", () => {
-        const isNowCollapsed = !page.classList.contains("collapsed");
-        setAccordionCollapsed(isNowCollapsed);
-    });
+    // 열기 버튼 클릭 시
+    openBtn.addEventListener("click", () => setAccordionCollapsed(false));
 
-    // Swipe-to-close (Right-side panel, swipe right to close)
+    // 패널 내 닫기 버튼 클릭 시
+    if (closeBtn) {
+        closeBtn.addEventListener("click", () => setAccordionCollapsed(true));
+    }
+
+    // Swipe-to-close
     addSwipeClose(page, {
         direction: "right",
         onClose: () => setAccordionCollapsed(true)
     });
-
-    // Restore state from session
+    
+    // Inject State Choropleth toggle
+    const StateChoroplethContainer = document.getElementById("ToggleSwitchStateChoropleth");
+    if (StateChoroplethContainer) {
+        appendSwitch(StateChoroplethContainer, {
+            id: "MapBtnStateChoropleth",
+            label: "State Choropleth",
+            checked: true // Default
+        });
+        initStateColorToggle();
+    }
+    
     if (read) {
         const s = read();
-        if (s.accordionCollapsed) {
-            page.classList.add("collapsed");
-            btn.textContent = "Layers ◀";
-        }
+        const isCollapsed = s.accordionCollapsed !== undefined ? s.accordionCollapsed : true;
+        setAccordionCollapsed(isCollapsed);
     }
 }
 

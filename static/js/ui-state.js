@@ -135,40 +135,52 @@ export function clearAll() {
 // Shared runtime state
 export const state = {};
 
-/**
- * 전역 State Color 토글 버튼을 초기화합니다.
- */
 export function initStateColorToggle() {
-  const btn = document.getElementById("MapBtnStateColor");
+  const btn = document.getElementById("MapBtnStateChoropleth");
   if (!btn) return;
 
-  // 초기 상태 반영
-  if (!stateColorEnabled) {
+  // 초기 상태 반영 (체크박스인 경우)
+  if (btn.type === "checkbox") {
+    btn.checked = !!stateColorEnabled;
+  } else if (!stateColorEnabled) {
     btn.classList.add("disabled");
   }
 
-  btn.addEventListener("click", () => {
-    const currentlyEnabled = !btn.classList.contains("disabled");
-    const nextEnabled = !currentlyEnabled;
-
-    if (nextEnabled) {
-      btn.classList.remove("disabled");
+  const handler = () => {
+    let nextEnabled;
+    if (btn.type === "checkbox") {
+      nextEnabled = btn.checked;
     } else {
-      btn.classList.add("disabled");
+      const currentlyEnabled = !btn.classList.contains("disabled");
+      nextEnabled = !currentlyEnabled;
+      if (nextEnabled) btn.classList.remove("disabled");
+      else btn.classList.add("disabled");
     }
 
     // 상태 저장 및 즉시 반영
     saveGlobalStateColor(nextEnabled);
     updateStateColors();
-  });
+  };
+
+  if (btn.type === "checkbox") {
+    btn.addEventListener("change", handler);
+  } else {
+    btn.addEventListener("click", handler);
+  }
 }
 
 /**
  * 전역 State Color 설정을 초기 상태(활성)로 리셋합니다.
  */
 export function resetGlobalStateColor() {
-  const btn = document.getElementById("MapBtnStateColor");
-  if (btn) btn.classList.remove("disabled");
+  const btn = document.getElementById("MapBtnStateChoropleth");
+  if (btn) {
+    if (btn.type === "checkbox") {
+      btn.checked = true;
+    } else {
+      btn.classList.remove("disabled");
+    }
+  }
 
   setStateColorEnabled(true);
   updateStateColors();
