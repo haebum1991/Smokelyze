@@ -147,13 +147,7 @@ body,
 }
 
 .theme-toggle-btn:hover {
-  transform: translate(-50%, -50%);
-}
-
-@media (hover: hover) {
-  .theme-toggle-btn:hover {
-    transform: scale(1.10);
-  }
+  transform: translate(-50%, -50%) scale(1.10);
 }
 
 #NavBtnAuth,
@@ -1177,6 +1171,10 @@ body.page-about .sidebar {
   
   html {
     font-size: 57.5%;
+  }
+
+  .theme-toggle-btn:hover {
+    transform: translate(-50%, -50%);
   }
 
   .container {

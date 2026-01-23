@@ -871,7 +871,10 @@ function renderBackButton(container, btnId, onClick) {
 
 function attachDrillDownListeners(container, selector, onDrillDown) {
     var elements = container.querySelectorAll(selector);
-
+    
+    // Check if device supports hover (desktop/mouse devices)
+    var hasHover = window.matchMedia("(hover: hover)").matches;
+    
     elements.forEach(function (el) {
         el.style.cursor = "pointer";
         el.style.pointerEvents = "all";
@@ -885,16 +888,19 @@ function attachDrillDownListeners(container, selector, onDrillDown) {
             }
         };
 
-        el.onmouseenter = function () {
-            this.style.fill = "red";
-            this.style.fontWeight = "bold";
-            this.style.fontSize = "var(--stats-plot-font-size)";
-        };
-        el.onmouseleave = function () {
-            this.style.fill = "var(--text-main)";
-            this.style.fontWeight = "normal";
-            this.style.fontSize = "calc(var(--stats-plot-font-size) * 0.8)";
-        };
+        // Only attach hover effects on devices with hover capability
+        if (hasHover) {
+            el.onmouseenter = function () {
+                this.style.fill = "red";
+                this.style.fontWeight = "bold";
+                this.style.fontSize = "var(--stats-plot-font-size)";
+            };
+            el.onmouseleave = function () {
+                this.style.fill = "var(--text-main)";
+                this.style.fontWeight = "normal";
+                this.style.fontSize = "calc(var(--stats-plot-font-size) * 0.8)";
+            };
+        }
     });
 }
 
