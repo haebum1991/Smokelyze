@@ -128,7 +128,7 @@ function renderDailyTimeSeriesPlot(theme, dsId, aqs, tableData) {
 
     let traces = [];
     let yTitle = dsId === "pm-cbsa" ? "Concentration (µg m⁻³)" : "MDA8 and SMO (ppb)";
-    let plotTitle = dsId === "pm-cbsa" ? `Daily time-series (AQS PM: ${aqs})` : `Daily time-series (AQS O3: ${aqs})`;
+    let plotTitle = dsId === "pm-cbsa" ? `Daily time-series<br>(AQS PM: ${aqs})` : `Daily time-series<br>(AQS O3: ${aqs})`;
 
     const sortedData = [...tableData].sort((a, b) => new Date(a.date) - new Date(b.date));
     const dates = sortedData.map(d => d.date);
@@ -257,17 +257,17 @@ function renderDailyTimeSeriesPlot(theme, dsId, aqs, tableData) {
     }
 
     const layout = {
-        title: { text: plotTitle, font: { size: theme.fontSize, color: theme.axisText }, y: 0.95 },
+        title: { text: plotTitle, font: { size: theme.fontSize * 0.9, color: theme.axisText }, y: 0.95 },
         hovermode: "x unified",
         paper_bgcolor: theme.paper_bgcolor, plot_bgcolor: theme.plot_bgcolor,
         xaxis: Object.assign({}, getSpikeLayout(theme), {
-            title: { text: "Date", font: { color: theme.axisText, size: theme.fontSize * 0.9 } },
+            title: { text: "Date", font: { color: theme.axisText, size: theme.fontSize * 0.8 } },
             tickfont: { color: theme.axisText, size: theme.fontSize * 0.8 },
             gridcolor: theme.grid,
             hoverformat: "%b %d, %Y"
         }),
         yaxis: Object.assign({}, getSpikeLayout(theme), {
-            title: { text: yTitle, font: { color: theme.axisText, size: theme.fontSize * 0.9 } },
+            title: { text: yTitle, font: { color: theme.axisText, size: theme.fontSize * 0.8 } },
             tickfont: { color: theme.axisText, size: theme.fontSize * 0.8 },
             gridcolor: theme.grid
         }),
@@ -378,15 +378,15 @@ function renderScatterPlot(theme, dsId, aqs, tableData) {
     }
 
     const layout = {
-        title: { text: `Obs. vs. Pred. (AQS O3: ${aqs})`, font: { size: theme.fontSize, color: theme.axisText }, y: 0.95 },
+        title: { text: `Obs. vs. Pred.<br>(AQS O3: ${aqs})`, font: { size: theme.fontSize * 0.9, color: theme.axisText }, y: 0.95 },
         paper_bgcolor: theme.paper_bgcolor, plot_bgcolor: theme.plot_bgcolor,
         xaxis: Object.assign({}, getSpikeLayout(theme), {
-            title: { text: "Pred MDA8 (ppb)", font: { color: theme.axisText, size: theme.fontSize * 0.9 } },
+            title: { text: "Pred MDA8 (ppb)", font: { color: theme.axisText, size: theme.fontSize * 0.8 } },
             tickfont: { color: theme.axisText, size: theme.fontSize * 0.8 },
             gridcolor: theme.grid
         }),
         yaxis: Object.assign({}, getSpikeLayout(theme), {
-            title: { text: "Obs MDA8 (ppb)", font: { color: theme.axisText, size: theme.fontSize * 0.9 } },
+            title: { text: "Obs MDA8 (ppb)", font: { color: theme.axisText, size: theme.fontSize * 0.8 } },
             tickfont: { color: theme.axisText, size: theme.fontSize * 0.8 },
             gridcolor: theme.grid
         }),
@@ -490,16 +490,16 @@ function renderMonthlySmokePlot(theme, dsId, aqs, tableData) {
     }
 
     const plotTitle = dsId === "pm-cbsa"
-        ? `Monthly smoke day count (AQS PM: ${aqs})`
-        : `Monthly smoke day count and SMO (AQS O3: ${aqs})`;
+        ? `Monthly smoke day count<br>(AQS PM: ${aqs})`
+        : `Monthly smoke day count and SMO<br>(AQS O3: ${aqs})`;
 
     const layout = {
-        title: { text: plotTitle, font: { size: theme.fontSize, color: theme.axisText }, y: 0.95 },
+        title: { text: plotTitle, font: { size: theme.fontSize * 0.9, color: theme.axisText }, y: 0.95 },
         barmode: (dsId === "pm-cbsa") ? "group" : "stack",
         hovermode: "x unified",
         paper_bgcolor: theme.paper_bgcolor, plot_bgcolor: theme.plot_bgcolor,
         xaxis: Object.assign({}, getSpikeLayout(theme), {
-            title: { text: "Year-Month", font: { color: theme.axisText, size: theme.fontSize * 0.9 } },
+            title: { text: "Year-Month", font: { color: theme.axisText, size: theme.fontSize * 0.8 } },
             tickfont: { color: theme.axisText, size: theme.fontSize * 0.75 },
             gridcolor: theme.grid,
             type: "category",
@@ -507,7 +507,7 @@ function renderMonthlySmokePlot(theme, dsId, aqs, tableData) {
             automargin: true // Automatically adjust margin for labels
         }),
         yaxis: Object.assign({}, getSpikeLayout(theme), {
-            title: { text: "Count and ppb", font: { color: theme.axisText, size: theme.fontSize * 0.9 } },
+            title: { text: "Count and ppb", font: { color: theme.axisText, size: theme.fontSize * 0.8 } },
             tickfont: { color: theme.axisText, size: theme.fontSize * 0.8 },
             gridcolor: theme.grid
         }),
@@ -669,18 +669,18 @@ function renderAnnualExceedancePlot(theme, dsId, aqs, tableData) {
     }
 
     const layout = {
-        title: { text: dsId === "pm-cbsa" ? `Annual days with > 9 ug m-3 (AQS PM: ${aqs})` : `Annual ExdDays (> 70 ppb) (AQS O3: ${aqs})`, font: { size: theme.fontSize, color: theme.axisText }, y: 0.95 },
+        title: { text: dsId === "pm-cbsa" ? `Annual days with > 9 ug m-3<br>(AQS PM: ${aqs})` : `Annual ExdDays (> 70 ppb)<br>(AQS O3: ${aqs})`, font: { size: theme.fontSize * 0.9, color: theme.axisText }, y: 0.95 },
         barmode: (dsId === "pm-cbsa" || dsId === "gam-v2") ? "group" : "stack",
         hovermode: "x unified",
         paper_bgcolor: theme.paper_bgcolor, plot_bgcolor: theme.plot_bgcolor,
         xaxis: Object.assign({}, getSpikeLayout(theme), {
-            title: { text: "Year", font: { color: theme.axisText, size: theme.fontSize * 0.9 } },
+            title: { text: "Year", font: { color: theme.axisText, size: theme.fontSize * 0.8 } },
             tickfont: { color: theme.axisText, size: theme.fontSize * 0.8 },
             gridcolor: theme.grid,
             type: "category"
         }),
         yaxis: Object.assign({}, getSpikeLayout(theme), {
-            title: { text: "No. of days", font: { color: theme.axisText, size: theme.fontSize * 0.9 } },
+            title: { text: "No. of days", font: { color: theme.axisText, size: theme.fontSize * 0.8 } },
             tickfont: { color: theme.axisText, size: theme.fontSize * 0.8 },
             gridcolor: theme.grid
         }),

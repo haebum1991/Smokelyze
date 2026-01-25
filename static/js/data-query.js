@@ -152,16 +152,16 @@ function updateAQS() {
     const items = data.features ? data.features.map(f => f.properties) : data;
     const aqsList = items
         .filter(item => item.state === state)
-        .map(item => item.AQS)
-        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        .map(item => ({ aqs: item.AQS, name: item.site_name || item.name || "" }))
+        .sort((a, b) => a.aqs.localeCompare(b.aqs, undefined, { numeric: true }));
 
     const currentAQS = aqsSelect.value;
     aqsSelect.innerHTML = '<option value="">Select AQS</option>';
-    aqsList.forEach(aqs => {
+    aqsList.forEach(obj => {
         const option = document.createElement("option");
-        option.value = aqs;
-        option.textContent = aqs;
-        if (aqs === currentAQS) option.selected = true;
+        option.value = obj.aqs;
+        option.textContent = obj.name ? `${obj.aqs} (${obj.name})` : obj.aqs;
+        if (obj.aqs === currentAQS) option.selected = true;
         aqsSelect.appendChild(option);
     });
 }

@@ -609,18 +609,6 @@ function setupPlotTabs() {
     });
 }
 
-function init() {
-    updateStickyHeaderOffsets();
-    setupPlotTabs();
-    bindEvents();
-}
-
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-} else {
-    init();
-}
-
 window.addEventListener("themeChanged", function () {
     var selector = [
         "#stats-plot-for-barline-date",
@@ -993,5 +981,17 @@ function getDatasetInfo() {
     else if (val === "epa-ember") key = "epa_ember";
     else if (val === "pm-cbsa") key = "pm_cbsa";
     return { value: val, key: key };
+}
+
+function init() {
+    updateStickyHeaderOffsets();
+    setupPlotTabs();
+    bindEvents();
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+} else {
+    init();
 }
 

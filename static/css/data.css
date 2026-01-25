@@ -445,5 +445,10 @@
     .datadb-plots-grid {
         grid-template-columns: 1fr;
     }
+    
+    #DatadbDataTableBtnDownload,
+    #DatadbReportTableBtnDownload {
+        display: none;
+    }
 }
 

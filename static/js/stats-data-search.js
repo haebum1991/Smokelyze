@@ -351,7 +351,7 @@ function selectSite(f) {
     }
 }
 
-export function init() {
+function init() {
     function updateVisibility() {
         var searchWrapper = document.getElementById("SiteSearchWrapper");
         if (!searchWrapper) return;
