@@ -867,7 +867,7 @@ body.page-about .sidebar {
   position: fixed;
   top: calc(var(--header-height-total) - 1rem);
   left: 50%;
-  transform: translateX(-50%) translateY(-200%);
+  transform: translateX(-50%) translateY(-300%);
   background: var(--color-bg);
   border: 0.1rem solid var(--card-shadow);
   border-radius: calc(var(--border-radius-0p8rem) * 3);
