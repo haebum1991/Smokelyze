@@ -43,7 +43,7 @@ const REPORT_CONFIG = {
                 { name: "Residual (ppb) on smoke days (EDM)", method: "mean" },
                 { name: "Residual quantile on smoke days", method: "mean" },
                 { name: "Residual quantile on smoke days (EDM)", method: "mean" },
-                { name: "Observed PM2.5 (ug m-3)", method: "mean" }
+                { name: "Ob PM2.5 (ug m-3)", method: "mean" }
             ]
         }
     },
@@ -68,7 +68,7 @@ const REPORT_CONFIG = {
                 { name: "Smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)", method: "count" },
                 { name: "Residual (ppb) on smoke days", method: "mean" },
                 { name: "Residual quantile on smoke days", method: "mean" },
-                { name: "Observed PM2.5 (ug m-3)", method: "mean" }
+                { name: "Ob PM2.5 (ug m-3)", method: "mean" }
             ]
         }
     },
@@ -426,7 +426,7 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
                         val = isEdmReport ? d.edm_Quant_MDA8O3_resids : d.Quant_MDA8O3_resids;
                     }
                     break;
-                case "Observed PM2.5 (ug m-3)":
+                case "Ob PM2.5 (ug m-3)":
                     isMatch = true;
                     val = d["PM2.5"];
                     break;

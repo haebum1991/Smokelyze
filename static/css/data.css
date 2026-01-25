@@ -389,6 +389,30 @@
     height: 1.8rem;
 }
 
+/* Plots Section */
+.datadb-plots-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    padding: 1rem 0;
+}
+
+.datadb-plot-item {
+    background: var(--color-bg);
+    border: 0.1rem solid var(--border-light);
+    border-radius: var(--border-radius-0p8rem);
+    min-height: 45rem;
+    width: 100%;
+    box-shadow: 0 0.4rem 1.2rem rgba(0,0,0,0.05);
+}
+
+.nested-sub-tab-content {
+    display: none;
+}
+
+.nested-sub-tab-content.active {
+    display: block;
+}
 
 /* Responsive adjustments */
 @media (max-width: 1024px) {
@@ -416,6 +440,10 @@
         padding: 1rem 1.5rem;
         font-size: 1.4rem;
         white-space: nowrap;
+    }
+
+    .datadb-plots-grid {
+        grid-template-columns: 1fr;
     }
 }
 

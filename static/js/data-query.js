@@ -7,6 +7,7 @@ import { fetchGeoJSON } from "./loader-fetch.js";
 import { auth, onAuthStateChanged } from "./fb-init.js";
 import { showAuthOverlay, fetchJson, ESML } from "./utils.js";
 import { updateAuthButton } from "./signin.js";
+import { renderAQSPlots as drawAQSPlots } from "./data-query-plots.js";
 
 /**
  * Local utility: Same as ESML but specifically allows <br> tags for line breaks
@@ -355,7 +356,7 @@ function renderDataTable() {
             p.lat = f.geometry.coordinates[1];
         }
 
-        if (p.smoke === 0) {
+        if (currentDatasetId !== "epa-ember" && p.smoke === 0) {
             p.SMO = null;
             p.edm_SMO = null;
         }
@@ -728,6 +729,13 @@ function initQueryBuilder() {
         updateAuthButton("DatadbDataTableBtnDateSetRange", user, "Set range");
     });
 }
+
+/**
+ * Exposed functions for HTML
+ */
+window.renderAQSPlots = function () {
+    drawAQSPlots(currentTableData, currentDatasetId, currentAqs);
+};
 
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initQueryBuilder);

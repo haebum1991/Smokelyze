@@ -140,6 +140,18 @@ title: ""
               onclick="openNestedSubTab(event, 'DatadbMetaContainer')">Metadata</button>
             <button id="datadbBtnDataTab" class="datadb-tab-btn"
               onclick="openNestedSubTab(event, 'DatadbDataTableSection')">Data table</button>
+          <button id="datadbBtnPlotsTab" class="datadb-tab-btn"
+              onclick="openNestedSubTab(event, 'DatadbPlotsSection')">Plots</button>
+          </div>
+
+          <!-- Plots Section -->
+          <div id="DatadbPlotsSection" class="datadb-tab-content nested-sub-tab-content">
+            <div id="DatadbPlotsContainer" class="datadb-plots-grid">
+              <div id="DatadbPlot1" class="datadb-plot-item"></div>
+              <div id="DatadbPlot2" class="datadb-plot-item"></div>
+              <div id="DatadbPlot3" class="datadb-plot-item"></div>
+              <div id="DatadbPlot4" class="datadb-plot-item"></div>
+            </div>
           </div>
                     
           <!-- Location Section -->
@@ -321,6 +333,7 @@ title: ""
 
 <script type="module" src="/js/data-query.js"></script>
 <script type="module" src="/js/data-report.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 
 <script>
   function openTab(evt, tabName) {
@@ -376,6 +389,15 @@ title: ""
       setTimeout(() => {
         if (window.initLocationMap) {
           window.initLocationMap();
+        }
+      }, 100);
+    }
+    
+    // Render plots when Plots tab is opened
+    if (tabName === "DatadbPlotsSection") {
+      setTimeout(() => {
+        if (window.renderAQSPlots) {
+          window.renderAQSPlots();
         }
       }, 100);
     }
