@@ -30,15 +30,12 @@ if (map) {
   map.addControl(new maplibregl.ScaleControl({ maxWidth: 90, unit: "metric" }), "bottom-right");
 }
 
-if (restoreUI) restoreUI();
-if (bindAccordionAutosave) bindAccordionAutosave();
-if (initDateButtons) initDateButtons();
-if (initUIPulsingIcons) initUIPulsingIcons();
-
-// ---- [External data] AirNow ----
-if (initTimeButtons) initTimeButtons();
-if (initTimePicker) initTimePicker();
-if (initMapCapture) initMapCapture();
-if (initStateColorToggle) initStateColorToggle();
-// ---- [External data] AirNow ----
+restoreUI?.();
+bindAccordionAutosave?.();
+initDateButtons?.();
+initUIPulsingIcons?.();
+initTimeButtons?.();
+initTimePicker?.();
+initMapCapture?.();
+initStateColorToggle?.();
 

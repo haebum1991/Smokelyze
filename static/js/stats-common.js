@@ -19,7 +19,7 @@ export function setOnUpdateYearStats(fn) { onUpdateYearStats = fn; }
 export let currentMonthKey = "all";
 export function setCurrentMonthKey(k) { currentMonthKey = k; }
 
-var expandState = {
+const expandState = {
     date: { us: false, ca: false },
     year: { us: false, ca: false }
 };
@@ -40,10 +40,10 @@ export const caStates = [
 
 export const regionIDs = ["US_conus", "US", ...usStates, "Canada", ...caStates, "Mexico"];
 
-export function createBurnStats(regionIDs) { var out = {}; regionIDs.forEach(function (id) { out[id] = null; }); return out; }
-export function createSmokeStats(regionIDs) { var out = {}; regionIDs.forEach(function (id) { out[id] = { light: null, medium: null, heavy: null }; }); return out; }
-export function createFireStats(regionIDs) { var out = {}; regionIDs.forEach(function (id) { out[id] = { count: null, frpTotal: null, n: 0 }; }); return out; }
-export function createModelStats(regionIDs) { var out = {}; regionIDs.forEach(function (id) { out[id] = {}; }); return out; }
+export const createBurnStats = (regionIDs) => { const out = {}; regionIDs.forEach(id => { out[id] = null; }); return out; };
+export const createSmokeStats = (regionIDs) => { const out = {}; regionIDs.forEach(id => { out[id] = { light: null, medium: null, heavy: null }; }); return out; };
+export const createFireStats = (regionIDs) => { const out = {}; regionIDs.forEach(id => { out[id] = { count: null, frpTotal: null, n: 0 }; }); return out; };
+export const createModelStats = (regionIDs) => { const out = {}; regionIDs.forEach(id => { out[id] = {}; }); return out; };
 
 export {
     setupExpandControls,
@@ -77,27 +77,27 @@ export {
 };
 
 function setupExpandControls(tbody, scopeKey) {
-    function applyExpand(target, expanded) {
-        var selector = ".stats-expand-btn[stats-data-target='" + target + "']";
-        var btn = tbody.querySelector(selector);
-        var rows = target === "us" ? tbody.querySelectorAll("tr.stats-state-row-us") : tbody.querySelectorAll("tr.stats-state-row-ca");
+    const applyExpand = (target, expanded) => {
+        const selector = `.stats-expand-btn[stats-data-target='${target}']`;
+        const btn = tbody.querySelector(selector);
+        const rows = target === "us" ? tbody.querySelectorAll("tr.stats-state-row-us") : tbody.querySelectorAll("tr.stats-state-row-ca");
         if (!btn) return;
-        rows.forEach(function (tr) {
+        rows.forEach(tr => {
             if (expanded) tr.classList.add("show");
             else tr.classList.remove("show");
         });
         btn.classList.toggle("expanded", expanded);
         btn.textContent = expanded ? "↑" : "↓";
-    }
+    };
 
-    var state = expandState[scopeKey] || { us: false, ca: false };
+    const state = expandState[scopeKey] || { us: false, ca: false };
     applyExpand("us", state.us);
     applyExpand("ca", state.ca);
 
-    tbody.querySelectorAll(".stats-expand-btn").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-            var target = btn.getAttribute("stats-data-target");
-            var expanding = !btn.classList.contains("expanded");
+    tbody.querySelectorAll(".stats-expand-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const target = btn.getAttribute("stats-data-target");
+            const expanding = !btn.classList.contains("expanded");
             expandState[scopeKey][target] = expanding;
             applyExpand(target, expanding);
         });
@@ -108,21 +108,21 @@ function setupPlotClickHandlers(tbody, scopeKey) {
     if (scopeKey !== "year") return;
     if (currentMonthKey !== "all") return;
 
-    tbody.querySelectorAll(".stats-plot-for-line-year").forEach(function (cell) {
-        var regionId = cell.getAttribute("data-region");
-        var metric = cell.getAttribute("data-metric");
+    tbody.querySelectorAll(".stats-plot-for-line-year").forEach(cell => {
+        const regionId = cell.getAttribute("data-region");
+        const metric = cell.getAttribute("data-metric");
         if (!regionId) return;
 
         if (!selectedRegionsByMetric[metric]) selectedRegionsByMetric[metric] = [];
-        var list = selectedRegionsByMetric[metric];
+        const list = selectedRegionsByMetric[metric];
 
         if (list.indexOf(regionId) !== -1) cell.classList.add("active");
 
         cell.style.cursor = "pointer";
         cell.title = "Click to toggle plot";
-        cell.addEventListener("click", function () {
-            var arr = selectedRegionsByMetric[metric] || [];
-            var idx = arr.indexOf(regionId);
+        cell.addEventListener("click", () => {
+            const arr = selectedRegionsByMetric[metric] || [];
+            const idx = arr.indexOf(regionId);
             if (idx === -1) {
                 arr.push(regionId);
                 cell.classList.add("active");
@@ -132,18 +132,18 @@ function setupPlotClickHandlers(tbody, scopeKey) {
             }
             selectedRegionsByMetric[metric] = arr;
 
-            var hasSelection = false;
-            var allMetrics = Object.keys(selectedRegionsByMetric);
-            for (var i = 0; i < allMetrics.length; i++) {
+            let hasSelection = false;
+            const allMetrics = Object.keys(selectedRegionsByMetric);
+            for (let i = 0; i < allMetrics.length; i++) {
                 if (selectedRegionsByMetric[allMetrics[i]].length > 0) {
                     hasSelection = true;
                     break;
                 }
             }
 
-            var panel = cell.closest(".stats-plot-tab-panel");
+            const panel = cell.closest(".stats-plot-tab-panel");
             if (panel) {
-                var lineTab = panel.querySelector(".stats-plot-tab-sub[stats-plot-target='stats-plot-for-line-year']");
+                const lineTab = panel.querySelector(".stats-plot-tab-sub[stats-plot-target='stats-plot-for-line-year']");
                 if (lineTab) {
                     lineTab.style.display = hasSelection ? "inline-block" : "none";
                 }
@@ -159,29 +159,29 @@ function setupPlotClickHandlers(tbody, scopeKey) {
  * Get all active layers for the Model Stats table, grouped by their category (e.g., Dataset or AirNow).
  */
 function getActiveModelLayers() {
-    var layers = [];
-    var templates = LAYER_TEMPLATES || [];
+    const layers = [];
+    const templates = LAYER_TEMPLATES || [];
 
-    var select = document.getElementById("MapDataSelect");
-    var currentDatasetLabel = "Model statistics";
-    if (select && select.selectedOptions && select.selectedOptions.length > 0) {
+    const select = document.getElementById("MapDataSelect");
+    let currentDatasetLabel = "Model statistics";
+    if (select?.selectedOptions?.length > 0) {
         currentDatasetLabel = select.selectedOptions[0].text.split("(")[0].trim();
     }
 
-    document.querySelectorAll("input[type=checkbox][id^='layer-']").forEach(function (cb) {
-        var lbl = cb.closest("label");
+    document.querySelectorAll("input[type=checkbox][id^='layer-']").forEach(cb => {
+        const lbl = cb.closest("label");
         if (!lbl || lbl.style.display === "none") return;
         if (!cb.checked) return;
 
-        var shortId = cb.id.replace("layer-", "");
-        var tmpl = templates.find(t => t.id === shortId);
+        const shortId = cb.id.replace("layer-", "");
+        const tmpl = templates.find(t => t.id === shortId);
 
-        var EXCLUDED = ExcludeLayerGroups.modelTable;
+        const EXCLUDED = ExcludeLayerGroups.modelTable;
         if (EXCLUDED.includes(shortId)) return;
 
         if (tmpl) {
-            var rawLabel = (lbl.innerText || lbl.textContent || shortId).trim();
-            var group = currentDatasetLabel;
+            const rawLabel = (lbl.innerText || lbl.textContent || shortId).trim();
+            let group = currentDatasetLabel;
             if (shortId.startsWith("airnow-") || tmpl.hourly) {
                 group = "AirNow";
             }
@@ -200,20 +200,20 @@ function getActiveModelLayers() {
 function rebuildStatsHeader(thead, activeModelLayers) {
     thead.innerHTML = "";
 
-    var tr1 = document.createElement("tr");
-    var tr2 = document.createElement("tr");
+    const tr1 = document.createElement("tr");
+    const tr2 = document.createElement("tr");
 
     // 1. Region Column (Fixed)
-    var thRegion = document.createElement("th");
+    const thRegion = document.createElement("th");
     thRegion.rowSpan = 2;
     thRegion.textContent = "Region";
     tr1.appendChild(thRegion);
 
     // 2. Model & AirNow Group Headers
     if (activeModelLayers.length > 0) {
-        var groups = [];
-        activeModelLayers.forEach(function (layer) {
-            var lastGroup = groups[groups.length - 1];
+        const groups = [];
+        activeModelLayers.forEach(layer => {
+            const lastGroup = groups[groups.length - 1];
             if (lastGroup && lastGroup.name === layer.group) {
                 lastGroup.count++;
             } else {
@@ -221,16 +221,16 @@ function rebuildStatsHeader(thead, activeModelLayers) {
             }
         });
 
-        groups.forEach(function (group) {
-            var thGroup = document.createElement("th");
+        groups.forEach(group => {
+            const thGroup = document.createElement("th");
             thGroup.colSpan = group.count;
             thGroup.textContent = group.name;
             thGroup.className = "col-model-head";
             tr1.appendChild(thGroup);
         });
 
-        activeModelLayers.forEach(function (layer) {
-            var thSub = document.createElement("th");
+        activeModelLayers.forEach(layer => {
+            const thSub = document.createElement("th");
             thSub.textContent = layer.label;
             thSub.title = layer.label;
             thSub.className = "col-model-head";
@@ -239,17 +239,17 @@ function rebuildStatsHeader(thead, activeModelLayers) {
     }
 
     // 3. Satellite Data Groups (Unified)
-    var satConfigs = [
+    const satConfigs = [
         { id: "burn", group: "burn", label: "Area burned (km²)", subLabels: [""] },
         { id: "smoke", group: "smoke", label: "Smoke area (km²)", subLabels: ["L", "M", "H"] },
         { id: "fire", group: "fire", label: "HMS-fire", subLabels: ["Fire points", "FRP (MW)"] }
     ];
 
-    satConfigs.forEach(function (cfg) {
-        var cb = document.getElementById("layer-" + cfg.id);
+    satConfigs.forEach(cfg => {
+        const cb = document.getElementById(`layer-${cfg.id}`);
         if (!cb || !cb.checked) return;
 
-        var th1 = document.createElement("th");
+        const th1 = document.createElement("th");
         th1.textContent = cfg.label;
         th1.className = "col-" + cfg.group;
 
@@ -257,7 +257,7 @@ function rebuildStatsHeader(thead, activeModelLayers) {
             th1.colSpan = cfg.subLabels.length;
             tr1.appendChild(th1);
             cfg.subLabels.forEach(function (sub) {
-                var th2 = document.createElement("th");
+                const th2 = document.createElement("th");
                 th2.textContent = sub;
                 th2.className = "col-" + cfg.group;
                 tr2.appendChild(th2);
@@ -273,17 +273,16 @@ function rebuildStatsHeader(thead, activeModelLayers) {
 }
 
 function getModelStatsCells(regionID, modelStats, activeLayers) {
-    var html = "";
-    var stats = modelStats[regionID] || {};
+    let html = "";
+    const stats = modelStats[regionID] || {};
 
-    activeLayers.forEach(function (layer) {
-        var value = stats[layer.id];
-        var formattedValue = "NA";
+    activeLayers.forEach(layer => {
+        const value = stats[layer.id];
+        let formattedValue = "NA";
         if (value !== null && value !== undefined) {
             if (typeof value === "number") {
-
-                var decimals = 0;
-                var tmpl = LAYER_TEMPLATES.find(function (t) { return t.id === layer.id; });
+                let decimals = 0;
+                const tmpl = LAYER_TEMPLATES.find(t => t.id === layer.id);
 
                 if (tmpl && tmpl.decimals !== undefined) {
                     decimals = tmpl.decimals;
@@ -298,55 +297,55 @@ function getModelStatsCells(regionID, modelStats, activeLayers) {
 
         // [Added] Special formatting for Exceedance layers (Green | Red)
         if (layer.id.startsWith("ExcDays")) {
-            var c1 = stats[layer.id + "_c1"];
-            var c2 = stats[layer.id + "_c2"];
-            var all = c1 + c2;
+            const c1 = stats[`${layer.id}_c1`];
+            const c2 = stats[`${layer.id}_c2`];
+            const all = (c1 || 0) + (c2 || 0);
 
             if (c1 !== undefined || c2 !== undefined) {
                 formattedValue = `
-                      <span style="font-weight:bold;">${utils.ESML(String(all || 0))}</span> | 
+                      <span style="font-weight:bold;">${utils.ESML(String(all))}</span> | 
                       <span style="color:green; font-weight:bold;">${utils.ESML(String(c1 || 0))}</span> | 
                       <span style="color:red; font-weight:bold;">${utils.ESML(String(c2 || 0))}</span>
                     `;
             }
         }
 
-        html += "<td class='slot-cell col-model'><span class='slot-roll'>" + formattedValue + "</span></td>";
+        html += `<td class='slot-cell col-model'><span class='slot-roll'>${formattedValue}</span></td>`;
     });
     return html;
 }
 
 function renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, tableID, modelStats) {
-    var tbody = document.getElementById(tableID);
+    const tbody = document.getElementById(tableID);
     if (!tbody) return;
-    var thead = tbody.previousElementSibling;
-    var theme = getPlotTheme();
+    const thead = tbody.previousElementSibling;
+    const theme = getPlotTheme();
 
     modelStats = modelStats || {};
 
-    var isDailyTable = (tableID === "StatsRegionBodyDate");
-    var activeModelLayers = [];
+    const isDailyTable = (tableID === "StatsRegionBodyDate");
+    let activeModelLayers = [];
 
     if (isDailyTable) {
         activeModelLayers = getActiveModelLayers();
         if (thead) rebuildStatsHeader(thead, activeModelLayers);
     }
 
-    var ChkBoxBurn = document.getElementById("layer-burn");
-    var ChkBoxSmoke = document.getElementById("layer-smoke");
-    var ChkBoxFire = document.getElementById("layer-fire");
-    var showBurn = !ChkBoxBurn || ChkBoxBurn.checked;
-    var showSmoke = !ChkBoxSmoke || ChkBoxSmoke.checked;
-    var showFire = !ChkBoxFire || ChkBoxFire.checked;
-    var showModel = activeModelLayers.length > 0;
+    const ChkBoxBurn = document.getElementById("layer-burn");
+    const ChkBoxSmoke = document.getElementById("layer-smoke");
+    const ChkBoxFire = document.getElementById("layer-fire");
+    const showBurn = !ChkBoxBurn || ChkBoxBurn.checked;
+    const showSmoke = !ChkBoxSmoke || ChkBoxSmoke.checked;
+    const showFire = !ChkBoxFire || ChkBoxFire.checked;
+    const showModel = activeModelLayers.length > 0;
 
-    var tableWrapper = tbody.closest(".stats-table-responsive-date, .stats-table-responsive-year");
-    var container = tableWrapper ? tableWrapper.parentElement : null;
+    const tableWrapper = tbody.closest(".stats-table-responsive-date, .stats-table-responsive-year");
+    const container = tableWrapper ? tableWrapper.parentElement : null;
     if (!container) return;
 
-    var msgBox = container.querySelector(".stats-empty-msg-table");
+    let msgBox = container.querySelector(".stats-empty-msg-table");
 
-    var hasContent = showBurn || showSmoke || showFire || showModel;
+    const hasContent = showBurn || showSmoke || showFire || showModel;
     if (!hasContent) {
         if (tableWrapper) tableWrapper.style.display = "none";
         if (!msgBox) {
@@ -365,79 +364,82 @@ function renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, tableID, 
     }
 
 
-    var applyColDisplay = function (cls, show) {
-        document.querySelectorAll("." + cls).forEach(function (el) { el.style.display = show ? "" : "none"; });
+    const applyColDisplay = (cls, show) => {
+        document.querySelectorAll(`.${cls}`).forEach(el => { el.style.display = show ? "" : "none"; });
     };
     applyColDisplay("col-burn", showBurn);
     applyColDisplay("col-smoke", showSmoke);
     applyColDisplay("col-fire", showFire);
 
-    var breakIdsBot = ["US", "Canada", "Wyoming", "Yukon"];
-    var html = "";
-    var isYear = (tableID === "StatsRegionBodyYear");
+    const breakIdsBot = ["US", "Canada", "Wyoming", "Yukon"];
+    let html = "";
+    const isYear = (tableID === "StatsRegionBodyYear");
 
-    regionIDs.forEach(function (id) {
-        var burn = (burnStats[id] !== undefined) ? burnStats[id] : null;
-        var smoke = smokeStats[id] || { light: null, medium: null, heavy: null };
-        var fire = fireStats[id] || { count: null, frpTotal: null, n: 0 };
-        var fireFrp = (fire.n > 0 && fire.frpTotal !== null) ? fire.frpTotal / fire.n : null;
+    regionIDs.forEach(id => {
+        const burn = (burnStats[id] !== undefined) ? burnStats[id] : null;
+        const smoke = smokeStats[id] || { light: null, medium: null, heavy: null };
+        const fire = fireStats[id] || { count: null, frpTotal: null, n: 0 };
+        const fireFrp = (fire.n > 0 && fire.frpTotal !== null) ? fire.frpTotal / fire.n : null;
 
-        function fmt(val, dec) {
+        const fmt = (val, dec) => {
             if (val === null || val === undefined) return "NA";
             return val.toLocaleString(undefined, { minimumFractionDigits: dec, maximumFractionDigits: dec });
-        }
+        };
 
-        var isUSState = usStates.indexOf(id) !== -1;
-        var isCAState = caStates.indexOf(id) !== -1;
-        var classList = [];
+        const isUSState = usStates.indexOf(id) !== -1;
+        const isCAState = caStates.indexOf(id) !== -1;
+        const classList = [];
         if (breakIdsBot.indexOf(id) !== -1) classList.push("stats-section-break-bot");
         if (isUSState) classList.push("stats-state-row-us");
         if (isCAState) classList.push("stats-state-row-ca");
-        var trClassAttr = classList.length ? " class='" + classList.join(" ") + "'" : "";
+        const trClassAttr = classList.length ? ` class='${classList.join(" ")}'` : "";
 
-        var regionLabel = utils.ESML(id);
+        const regionLabelBase = utils.ESML(id);
+        let regionLabel = regionLabelBase;
         if (id === "US") regionLabel += " <button type='button' class='stats-expand-btn' stats-data-target='us'>↓</button>";
         if (id === "Canada") regionLabel += " <button type='button' class='stats-expand-btn' stats-data-target='ca'>↓</button>";
 
-        var modelCells = isDailyTable ? getModelStatsCells(id, modelStats, activeModelLayers) : "";
+        const modelCells = isDailyTable ? getModelStatsCells(id, modelStats, activeModelLayers) : "";
 
-        var burnDec = getMetricInfo("burn").decimals;
-        var smokeLightDec = getMetricInfo("smokeLight").decimals;
-        var smokeMediumDec = getMetricInfo("smokeMedium").decimals;
-        var smokeHeavyDec = getMetricInfo("smokeHeavy").decimals;
-        var fireCountDec = getMetricInfo("fireCount").decimals;
-        var fireFrpDec = getMetricInfo("fireFrp").decimals;
+        const burnDec = getMetricInfo("burn").decimals;
+        const smokeLightDec = getMetricInfo("smokeLight").decimals;
+        const smokeMediumDec = getMetricInfo("smokeMedium").decimals;
+        const smokeHeavyDec = getMetricInfo("smokeHeavy").decimals;
+        const fireCountDec = getMetricInfo("fireCount").decimals;
+        const fireFrpDec = getMetricInfo("fireFrp").decimals;
 
         if (isYear) {
-            var enablePlotClick = currentMonthKey === "all";
-            var baseClass = "slot-cell" + (enablePlotClick ? " stats-plot-for-line-year" : "");
+            const enablePlotClick = currentMonthKey === "all";
+            const baseClass = `slot-cell${enablePlotClick ? " stats-plot-for-line-year" : ""}`;
 
-            html += "<tr" + trClassAttr + ">" +
-                "<td>" + regionLabel + "</td>" +
-                "<td class='" + baseClass + " col-burn' data-region='" + utils.ESML(id) + "' data-metric='burn'><span class='slot-roll'>" + utils.ESML(fmt(burn, burnDec)) + "</span></td>" +
-                "<td class='" + baseClass + " col-smoke' data-region='" + utils.ESML(id) + "' data-metric='smokeLight'><span class='slot-roll'>" + utils.ESML(fmt(smoke.light, smokeLightDec)) + "</span></td>" +
-                "<td class='" + baseClass + " col-smoke' data-region='" + utils.ESML(id) + "' data-metric='smokeMedium'><span class='slot-roll'>" + utils.ESML(fmt(smoke.medium, smokeMediumDec)) + "</span></td>" +
-                "<td class='" + baseClass + " col-smoke' data-region='" + utils.ESML(id) + "' data-metric='smokeHeavy'><span class='slot-roll'>" + utils.ESML(fmt(smoke.heavy, smokeHeavyDec)) + "</span></td>" +
-                "<td class='" + baseClass + " col-fire' data-region='" + utils.ESML(id) + "' data-metric='fireCount'><span class='slot-roll'>" + utils.ESML(fmt(fire.count, fireCountDec)) + "</span></td>" +
-                "<td class='" + baseClass + " col-fire' data-region='" + utils.ESML(id) + "' data-metric='fireFrp'><span class='slot-roll'>" + utils.ESML(fmt(fireFrp, fireFrpDec)) + "</span></td>" +
-                "</tr>";
+            html += `
+                <tr${trClassAttr}>
+                    <td>${regionLabel}</td>
+                    <td class='${baseClass} col-burn' data-region='${utils.ESML(id)}' data-metric='burn'><span class='slot-roll'>${utils.ESML(fmt(burn, burnDec))}</span></td>
+                    <td class='${baseClass} col-smoke' data-region='${utils.ESML(id)}' data-metric='smokeLight'><span class='slot-roll'>${utils.ESML(fmt(smoke.light, smokeLightDec))}</span></td>
+                    <td class='${baseClass} col-smoke' data-region='${utils.ESML(id)}' data-metric='smokeMedium'><span class='slot-roll'>${utils.ESML(fmt(smoke.medium, smokeMediumDec))}</span></td>
+                    <td class='${baseClass} col-smoke' data-region='${utils.ESML(id)}' data-metric='smokeHeavy'><span class='slot-roll'>${utils.ESML(fmt(smoke.heavy, smokeHeavyDec))}</span></td>
+                    <td class='${baseClass} col-fire' data-region='${utils.ESML(id)}' data-metric='fireCount'><span class='slot-roll'>${utils.ESML(fmt(fire.count, fireCountDec))}</span></td>
+                    <td class='${baseClass} col-fire' data-region='${utils.ESML(id)}' data-metric='fireFrp'><span class='slot-roll'>${utils.ESML(fmt(fireFrp, fireFrpDec))}</span></td>
+                </tr>`;
         } else {
-            html += "<tr" + trClassAttr + ">" +
-                "<td>" + regionLabel + "</td>" +
-                modelCells +
-                "<td class='slot-cell col-burn'><span class='slot-roll'>" + utils.ESML(fmt(burn, burnDec)) + "</span></td>" +
-                "<td class='slot-cell col-smoke'><span class='slot-roll'>" + utils.ESML(fmt(smoke.light, smokeLightDec)) + "</span></td>" +
-                "<td class='slot-cell col-smoke'><span class='slot-roll'>" + utils.ESML(fmt(smoke.medium, smokeMediumDec)) + "</span></td>" +
-                "<td class='slot-cell col-smoke'><span class='slot-roll'>" + utils.ESML(fmt(smoke.heavy, smokeHeavyDec)) + "</span></td>" +
-                "<td class='slot-cell col-fire'><span class='slot-roll'>" + utils.ESML(fmt(fire.count, fireCountDec)) + "</span></td>" +
-                "<td class='slot-cell col-fire'><span class='slot-roll'>" + utils.ESML(fmt(fireFrp, fireFrpDec)) + "</span></td>" +
-                "</tr>";
+            html += `
+                <tr${trClassAttr}>
+                    <td>${regionLabel}</td>
+                    ${modelCells}
+                    <td class='slot-cell col-burn'><span class='slot-roll'>${utils.ESML(fmt(burn, burnDec))}</span></td>
+                    <td class='slot-cell col-smoke'><span class='slot-roll'>${utils.ESML(fmt(smoke.light, smokeLightDec))}</span></td>
+                    <td class='slot-cell col-smoke'><span class='slot-roll'>${utils.ESML(fmt(smoke.medium, smokeMediumDec))}</span></td>
+                    <td class='slot-cell col-smoke'><span class='slot-roll'>${utils.ESML(fmt(smoke.heavy, smokeHeavyDec))}</span></td>
+                    <td class='slot-cell col-fire'><span class='slot-roll'>${utils.ESML(fmt(fire.count, fireCountDec))}</span></td>
+                    <td class='slot-cell col-fire'><span class='slot-roll'>${utils.ESML(fmt(fireFrp, fireFrpDec))}</span></td>
+                </tr>`;
         }
     });
 
     tbody.innerHTML = html;
 
-    var scopeKey = isYear ? "year" : "date";
+    const scopeKey = isYear ? "year" : "date";
     setupExpandControls(tbody, scopeKey);
     setupPlotClickHandlers(tbody, scopeKey);
 
@@ -450,57 +452,57 @@ function renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, tableID, 
 
 function clearPlotSelectionForLayer(layerId) {
     if (!selectedRegionsByMetric) return;
-    var metricsToClear = [];
+    let metricsToClear = [];
     if (layerId === "layer-burn") metricsToClear = ["burn"];
     else if (layerId === "layer-smoke") metricsToClear = ["smokeLight", "smokeMedium", "smokeHeavy"];
     else if (layerId === "layer-fire") metricsToClear = ["fireCount", "fireFrp"];
-    metricsToClear.forEach(function (m) { delete selectedRegionsByMetric[m]; });
+    metricsToClear.forEach(m => { delete selectedRegionsByMetric[m]; });
 }
 
 function updateStickyHeaderOffsets() {
-    var tables = document.querySelectorAll(".stats-region-table-date, .stats-region-table-year");
-    tables.forEach(function (table) {
-        var thead = table.querySelector("thead");
+    const tables = document.querySelectorAll(".stats-region-table-date, .stats-region-table-year");
+    tables.forEach(table => {
+        const thead = table.querySelector("thead");
         if (!thead) return;
 
-        var rows = thead.querySelectorAll("tr");
+        const rows = thead.querySelectorAll("tr");
         if (rows.length < 2) return;
 
-        var h = rows[0].offsetHeight;
+        const h = rows[0].offsetHeight;
         if (h > 0) {
-            rows[1].querySelectorAll("th").forEach(function (th) {
-                th.style.top = (h / 10) + "rem";
+            rows[1].querySelectorAll("th").forEach(th => {
+                th.style.top = `${h / 10}rem`;
             });
         }
     });
 }
 
 function setupDrawerResizer() {
-    var resizer = document.getElementById("DrawerResizer");
-    var drawer = document.getElementById("FigurePageDrawer");
+    const resizer = document.getElementById("DrawerResizer");
+    const drawer = document.getElementById("FigurePageDrawer");
     if (!resizer || !drawer) return;
 
-    resizer.addEventListener("mousedown", function (e) {
+    resizer.addEventListener("mousedown", e => {
         e.preventDefault();
         document.addEventListener("mousemove", resize);
         document.addEventListener("mouseup", stopResize);
         document.body.style.cursor = "col-resize";
     });
 
-    function resize(e) {
-        var newWidth = e.clientX;
+    const resize = (e) => {
+        let newWidth = e.clientX;
         // Clamp width
         if (newWidth < 300) newWidth = 300;
         if (newWidth > window.innerWidth * 0.9) newWidth = window.innerWidth * 0.9;
 
-        document.documentElement.style.setProperty("--FigurePage-drawer-width", (newWidth / 10) + "rem");
-    }
+        document.documentElement.style.setProperty("--FigurePage-drawer-width", `${newWidth / 10}rem`);
+    };
 
-    function stopResize() {
+    const stopResize = () => {
         document.removeEventListener("mousemove", resize);
         document.removeEventListener("mouseup", stopResize);
         document.body.style.cursor = "";
-    }
+    };
 }
 
 function updateAllStats(isoDate, regionIDs, monthKey) {
@@ -510,47 +512,47 @@ function updateAllStats(isoDate, regionIDs, monthKey) {
 
 // [추가] 외부에서 테이블 갱신을 트리거하기 위한 함수
 function triggerRefresh() {
-    var isoDate = utils.currentDate();
-    var activeMonthBtn = document.querySelector(".stats-tab-month-main .stats-tab-month-sub.active");
-    var monthKey = activeMonthBtn ? activeMonthBtn.getAttribute("stats-table-month") : "all";
+    const isoDate = utils.currentDate();
+    const activeMonthBtn = document.querySelector(".stats-tab-month-main .stats-tab-month-sub.active");
+    const monthKey = activeMonthBtn ? activeMonthBtn.getAttribute("stats-table-month") : "all";
     updateAllStats(isoDate, regionIDs, monthKey);
 }
 
 function bindEvents() {
     // Tabs logic
-    var tabs = document.querySelectorAll(".stats-tab-sub");
-    var panels = document.querySelectorAll(".stats-container");
-    tabs.forEach(function (tab) {
-        tab.addEventListener("click", function () {
-            var target = tab.getAttribute("stats-tab-sub-data");
+    const tabs = document.querySelectorAll(".stats-tab-sub");
+    const panels = document.querySelectorAll(".stats-container");
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            const target = tab.getAttribute("stats-tab-sub-data");
             if (!target) return;
-            tabs.forEach(function (t) { t.classList.toggle("active", t === tab); });
-            panels.forEach(function (p) { p.classList.toggle("active", p.getAttribute("stats-data-panel") === target); });
+            tabs.forEach(t => { t.classList.toggle("active", t === tab); });
+            panels.forEach(p => { p.classList.toggle("active", p.getAttribute("stats-data-panel") === target); });
             updateStickyHeaderOffsets();
         });
     });
 
     // Month tabs logic
-    var monthTabs = document.querySelectorAll(".stats-tab-month-main .stats-tab-month-sub");
-    monthTabs.forEach(function (btn) {
-        btn.addEventListener("click", function () {
-            var monthKey = btn.getAttribute("stats-table-month");
-            var val = utils.currentDate();
+    const monthTabs = document.querySelectorAll(".stats-tab-month-main .stats-tab-month-sub");
+    monthTabs.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const monthKey = btn.getAttribute("stats-table-month");
+            const val = utils.currentDate();
             if (!monthKey) return;
-            monthTabs.forEach(function (b) { b.classList.toggle("active", b === btn); });
+            monthTabs.forEach(b => { b.classList.toggle("active", b === btn); });
             if (monthKey !== "all" && onCurrentPlotHide) onCurrentPlotHide();
             if (onUpdateYearStats) onUpdateYearStats(val, regionIDs, monthKey);
         });
     });
 
-    var resetBtn = document.getElementById("MapBtnReset");
+    const resetBtn = document.getElementById("MapBtnReset");
     if (resetBtn) {
-        resetBtn.addEventListener("click", function () {
+        resetBtn.addEventListener("click", () => {
             if (resetUIAndData) resetUIAndData();
             if (resetAccordionDetails) resetAccordionDetails();
             if (resetMapViewToDefault) resetMapViewToDefault();
 
-            document.querySelectorAll(".stats-drill-back-btn").forEach(function (el) { el.remove(); });
+            document.querySelectorAll(".stats-drill-back-btn").forEach(el => { el.remove(); });
 
             selectedRegionsByMetric = {};
             if (onCurrentPlotHide) onCurrentPlotHide();
@@ -558,8 +560,8 @@ function bindEvents() {
             document.getElementById("StatsRegionBodyDate").innerHTML = "";
             document.getElementById("StatsRegionBodyYear").innerHTML = "";
 
-            var val = utils.currentDate();
-            var allMonth = document.querySelector(".stats-tab-month-main .stats-tab-month-sub[stats-table-month='all']");
+            const val = utils.currentDate();
+            const allMonth = document.querySelector(".stats-tab-month-main .stats-tab-month-sub[stats-table-month='all']");
             if (allMonth) allMonth.click();
             updateAllStats(val, regionIDs, "all");
 
@@ -570,34 +572,34 @@ function bindEvents() {
 
 // Plot tabs logic
 function setupPlotTabs() {
-    var plotTabs = document.querySelectorAll(".stats-plot-tab-sub");
-    var activeTab = document.querySelector(".stats-plot-tab-sub.active");
+    const plotTabs = document.querySelectorAll(".stats-plot-tab-sub");
+    const activeTab = document.querySelector(".stats-plot-tab-sub.active");
     if (activeTab) {
-        var targetId = activeTab.getAttribute("stats-plot-target");
+        const targetId = activeTab.getAttribute("stats-plot-target");
         if (targetId) document.body.setAttribute("data-stats-active-tab", targetId);
     }
 
-    plotTabs.forEach(function (tab) {
-        tab.addEventListener("click", function () {
-            var targetId = tab.getAttribute("stats-plot-target");
+    plotTabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            const targetId = tab.getAttribute("stats-plot-target");
             if (!targetId) return;
 
             document.body.setAttribute("data-stats-active-tab", targetId);
 
             // Find the parent panel to scope this action
-            var panel = tab.closest(".stats-plot-tab-panel");
+            const panel = tab.closest(".stats-plot-tab-panel");
             if (!panel) return;
 
             // Update tabs within this panel only
-            var panelTabs = panel.querySelectorAll(".stats-plot-tab-sub");
-            panelTabs.forEach(function (t) { t.classList.toggle("active", t === tab); });
+            const panelTabs = panel.querySelectorAll(".stats-plot-tab-sub");
+            panelTabs.forEach(t => { t.classList.toggle("active", t === tab); });
 
             // Update containers within this panel only
-            var panelContainers = panel.querySelectorAll(".stats-plot-tab-sub-container");
-            panelContainers.forEach(function (container) {
+            const panelContainers = panel.querySelectorAll(".stats-plot-tab-sub-container");
+            panelContainers.forEach(container => {
                 if (container.id === targetId) {
                     container.classList.add("active");
-                    var plotDiv = container;
+                    const plotDiv = container;
                     if (plotDiv && plotDiv.data && plotDiv.layout) {
                         Plotly.Plots.resize(plotDiv);
                     }
@@ -609,34 +611,34 @@ function setupPlotTabs() {
     });
 }
 
-window.addEventListener("themeChanged", function () {
-    var selector = [
+window.addEventListener("themeChanged", () => {
+    const selector = [
         "#stats-plot-for-barline-date",
         "#stats-plot-for-parcoords-date",
         "#stats-plot-for-scatter-date",
         "#stats-plot-for-heatmap-year",
         "#stats-plot-for-line-year"
     ].join(", ");
-    var targets = document.querySelectorAll(selector);
+    const targets = document.querySelectorAll(selector);
 
-    targets.forEach(function (el) {
+    targets.forEach(el => {
         el.style.transition = "opacity 0.3s ease";
         el.style.opacity = "0";
     });
 
-    setTimeout(function () {
+    setTimeout(() => {
         if (typeof triggerRefresh === "function") triggerRefresh();
 
-        setTimeout(function () {
-            var activeTargets = document.querySelectorAll(selector);
-            activeTargets.forEach(function (el) {
+        setTimeout(() => {
+            const activeTargets = document.querySelectorAll(selector);
+            activeTargets.forEach(el => {
                 el.style.opacity = "1";
             });
         }, 150);
     }, 300);
 });
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
     if (setupDrawerResizer) {
         setupDrawerResizer();
     }
@@ -647,11 +649,11 @@ document.addEventListener("DOMContentLoaded", function () {
 // ----------------------------------------------------
 
 function getPlotTheme() {
-    var styles = getComputedStyle(document.documentElement);
-    function v(name) { return styles.getPropertyValue(name).trim(); }
+    const styles = getComputedStyle(document.documentElement);
+    const v = (name) => styles.getPropertyValue(name).trim();
 
-    var fsRaw = v("--stats-plot-font-size");
-    var fs = parseFloat(fsRaw) || 14;
+    const fsRaw = v("--stats-plot-font-size");
+    let fs = parseFloat(fsRaw) || 14;
     if (fsRaw.indexOf("rem") !== -1) fs *= 10;
 
     return {
@@ -738,12 +740,12 @@ function getPlotTheme() {
 
 function getMetricInfo(metricKey) {
 
-    var templates = LAYER_TEMPLATES || [];
-    var tmpl = templates.find(function (t) { return t.field === metricKey; });
+    const templates = LAYER_TEMPLATES || [];
+    const tmpl = templates.find(function (t) { return t.field === metricKey; });
 
     if (tmpl) {
-        var title = (typeof tmpl.title === "function") ? tmpl.title(metricKey) : tmpl.title;
-        var decimals = (tmpl.decimals !== undefined) ? tmpl.decimals : 1;
+        const title = (typeof tmpl.title === "function") ? tmpl.title(metricKey) : tmpl.title;
+        const decimals = (tmpl.decimals !== undefined) ? tmpl.decimals : 1;
         return { title: title, y: title, decimals: decimals };
     }
 
@@ -751,8 +753,8 @@ function getMetricInfo(metricKey) {
 }
 
 function extractUnit(title) {
-    var regex = /\(([^)]+)\)$/;
-    var match = title.match(regex);
+    const regex = /\(([^)]+)\)$/;
+    const match = title.match(regex);
     if (match && match[1]) {
         return match[1].trim();
     }
@@ -760,19 +762,19 @@ function extractUnit(title) {
 }
 
 function getStandardMetrics() {
-    var templates = LAYER_TEMPLATES || [];
+    const templates = LAYER_TEMPLATES || [];
     return templates
         .filter(function (t) { return t.manualLayer === true; })
         .map(function (t) { return t.field; });
 }
 
 function isMetricVisible(metricField) {
-    var templates = LAYER_TEMPLATES || [];
-    var tmpl = templates.find(function (t) { return t.field === metricField; });
+    const templates = LAYER_TEMPLATES || [];
+    const tmpl = templates.find(function (t) { return t.field === metricField; });
     if (!tmpl) return false;
 
-    var checkboxId = "layer-" + tmpl.id;
-    var checkbox = document.getElementById(checkboxId);
+    const checkboxId = "layer-" + tmpl.id;
+    const checkbox = document.getElementById(checkboxId);
 
     return checkbox && checkbox.checked;
 }
@@ -789,8 +791,8 @@ function getSpikeLayout(theme) {
 }
 
 function getPlotlyConfig(filename) {
-    var isMobile = window.innerWidth <= 1024;
-    var buttonsToRemove = [
+    const isMobile = window.innerWidth <= 1024;
+    const buttonsToRemove = [
         "zoom2d", "pan2d", "select2d", "lasso2d", "zoomIn2d", "zoomOut2d",
         "hoverClosestCartesian", "hoverCompareCartesian", "autoscale"
     ];
@@ -800,7 +802,7 @@ function getPlotlyConfig(filename) {
         buttonsToRemove.push("toImage");
     }
 
-    var conf = {
+    const conf = {
         responsive: true,
         displaylogo: false,
         modeBarButtonsToRemove: buttonsToRemove,
@@ -819,12 +821,12 @@ function getPlotlyConfig(filename) {
 }
 
 function renderBackButton(container, btnId, onClick) {
-    var existing = document.getElementById(btnId);
+    const existing = document.getElementById(btnId);
     if (existing) existing.remove();
 
     if (!onClick) return;
 
-    var btn = document.createElement("button");
+    const btn = document.createElement("button");
     btn.className = "stats-drill-back-btn";
     btn.id = btnId;
     btn.textContent = "◀ Back";
@@ -846,7 +848,7 @@ function renderBackButton(container, btnId, onClick) {
         fontWeight: "bold"
     });
 
-    var mapContainer = document.getElementById("map");
+    const mapContainer = document.getElementById("map");
     mapContainer.appendChild(btn);
 
     btn.addEventListener("click", function (e) {
@@ -858,10 +860,10 @@ function renderBackButton(container, btnId, onClick) {
 }
 
 function attachDrillDownListeners(container, selector, onDrillDown) {
-    var elements = container.querySelectorAll(selector);
+    const elements = container.querySelectorAll(selector);
     
     // Check if device supports hover (desktop/mouse devices)
-    var hasHover = window.matchMedia("(hover: hover)").matches;
+    const hasHover = window.matchMedia("(hover: hover)").matches;
     
     elements.forEach(function (el) {
         el.style.cursor = "pointer";
@@ -870,7 +872,7 @@ function attachDrillDownListeners(container, selector, onDrillDown) {
         el.onclick = function (evt) {
             if (evt && evt.stopPropagation) evt.stopPropagation();
 
-            var text = this.textContent;
+            const text = this.textContent;
             if (text && onDrillDown) {
                 onDrillDown(text);
             }
@@ -894,7 +896,7 @@ function attachDrillDownListeners(container, selector, onDrillDown) {
 
 function highlightSiteOnMap(coords, properties, dsKeyOrVal) {
     if (utils.highlightLocation) {
-        var dsKey = dsKeyOrVal;
+        let dsKey = dsKeyOrVal;
         
         // Use explicitly assigned specialDsKey if available (e.g., from AirNow data)
         if (properties && properties.specialDsKey) {
@@ -926,10 +928,10 @@ function resetPlotContainer(container, observerProp) {
 function attachResizeObserver(container, observerProp) {
     if (!container) return;
 
-    var prevWidth = container.offsetWidth;
-    var ro = new ResizeObserver(utils.debounce(function () {
+    let prevWidth = container.offsetWidth;
+    const ro = new ResizeObserver(utils.debounce(function () {
         if (container.offsetParent) {
-            var currentWidth = container.offsetWidth;
+            const currentWidth = container.offsetWidth;
             if (currentWidth !== prevWidth) {
                 prevWidth = currentWidth;
                 Plotly.Plots.resize(container);
@@ -942,11 +944,11 @@ function attachResizeObserver(container, observerProp) {
 
 function renderPlotMessage(container, message) {
     if (!container) return;
-    var msg = message || "No data available or no layers selected.";
+    const msg = message || "No data available or no layers selected.";
 
     resetPlotContainer(container);
 
-    var div = document.createElement("div");
+    const div = document.createElement("div");
     div.className = "stats-empty-msg-plot";
     Object.assign(div.style, {
         display: "flex",
@@ -963,18 +965,19 @@ function renderPlotMessage(container, message) {
     container.appendChild(div);
 }
 
+
 function clearPlotMessage(container) {
     if (!container) return;
-    var msg = container.querySelector(".stats-empty-msg-plot");
+    const msg = container.querySelector(".stats-empty-msg-plot");
     if (msg) {
         msg.remove();
     }
 }
 
 function getDatasetInfo() {
-    var el = document.getElementById("MapDataSelect");
-    var val = el ? el.value : "";
-    var key = val;
+    const el = document.getElementById("MapDataSelect");
+    const val = el ? el.value : "";
+    let key = val;
     // Mapping
     if (val === "gam-v2") key = "gam_v2";
     else if (val === "gam-v1") key = "gam_v1";

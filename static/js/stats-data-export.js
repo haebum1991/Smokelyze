@@ -1,4 +1,5 @@
 
+
 import * as utils from "./utils.js";
 import { auth, onAuthStateChanged } from "./fb-init.js";
 import { loadedGeoJSON, loadSourceData } from "./loader.js";
@@ -10,9 +11,9 @@ function convertToCSV(geoJSON) {
         return null;
     }
 
-    var f = geoJSON.features;
-    var p = f.map(function (fi) {
-        var props = Object.assign({}, fi.properties);
+    const f = geoJSON.features;
+    const p = f.map(function (fi) {
+        const props = Object.assign({}, fi.properties);
         // Add longitude and latitude from coordinates if available (for Point features)
         if (fi.geometry && fi.geometry.type === "Point" && Array.isArray(fi.geometry.coordinates)) {
             props.lon = fi.geometry.coordinates[0];
@@ -22,16 +23,16 @@ function convertToCSV(geoJSON) {
     });
 
     // Collect all unique keys
-    var keySet = new Set();
+    const keySet = new Set();
     p.forEach(function (i) {
         Object.keys(i).forEach(function (k) { keySet.add(k); });
     });
 
-    var keys = Array.from(keySet);
+    const keys = Array.from(keySet);
 
     // Reorder keys: Put lon and lat after site_name
-    var header = [];
-    var added = new Set();
+    const header = [];
+    const added = new Set();
 
     // Find site_name and insert lon, lat right after it
     keys.forEach(function (k) {
@@ -53,27 +54,28 @@ function convertToCSV(geoJSON) {
     });
 
     // Characters for safety
-    var COMMA = String.fromCharCode(44); // ,
-    var NEWLINE = String.fromCharCode(10); // 
+    const COMMA = String.fromCharCode(44); // ,
+    const NEWLINE = String.fromCharCode(10); // 
 
 
-    var QUOTE = String.fromCharCode(34); // "
-    var CR = String.fromCharCode(13); // 
+    const QUOTE = String.fromCharCode(34); // "
+    const CR = String.fromCharCode(13); // 
+
 
     // Create CSV content
-    var csvRows = [];
+    const csvRows = [];
     csvRows.push(header.join(COMMA)); // Header row
 
     p.forEach(function (i) {
-        var row = header.map(function (key) {
-            var val = i[key];
+        const row = header.map(function (key) {
+            let val = i[key];
             if (val === undefined || val === null) {
                 val = "";
             } else {
-                var strVal = String(val);
+                const strVal = String(val);
 
                 // Check for special characters using indexOf
-                var needsQuotes = false;
+                let needsQuotes = false;
                 if (strVal.indexOf(COMMA) !== -1) needsQuotes = true;
                 if (strVal.indexOf(QUOTE) !== -1) needsQuotes = true;
                 if (strVal.indexOf(NEWLINE) !== -1) needsQuotes = true;
@@ -81,7 +83,7 @@ function convertToCSV(geoJSON) {
 
                 if (needsQuotes) {
                     // Replace quotes with double quotes: strVal.split('"').join('""')
-                    var escaped = strVal.split(QUOTE).join(QUOTE + QUOTE);
+                    const escaped = strVal.split(QUOTE).join(QUOTE + QUOTE);
                     val = QUOTE + escaped + QUOTE;
                 }
             }
@@ -94,11 +96,11 @@ function convertToCSV(geoJSON) {
 }
 
 function downloadCSV(filename, csvContent) {
-    var mimeType = "text/csv;charset=utf-8;";
-    var blob = new Blob([csvContent], { type: mimeType });
-    var link = document.createElement("a");
+    const mimeType = "text/csv;charset=utf-8;";
+    const blob = new Blob([csvContent], { type: mimeType });
+    const link = document.createElement("a");
     if (link.download !== undefined) {
-        var url = URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
         link.setAttribute("href", url);
         link.setAttribute("download", filename);
         link.style.visibility = "hidden";
@@ -115,21 +117,21 @@ async function handleDownload() {
         return;
     }
 
-    var select = document.getElementById("MapDataSelect");
+    const select = document.getElementById("MapDataSelect");
     if (!select) return;
 
-    var dataset = select.value;
+    const dataset = select.value;
     if (!dataset) return;
 
-    var dateInput = document.getElementById("datePicker");
-    var date = dateInput ? dateInput.value : "data";
-    var sourceKey = DATASET_SOURCE_MAP[dataset] || dataset;
-    var loadedData = loadedGeoJSON ? loadedGeoJSON[sourceKey] : null;
+    const dateInput = document.getElementById("datePicker");
+    const date = dateInput ? dateInput.value : "data";
+    const sourceKey = DATASET_SOURCE_MAP[dataset] || dataset;
+    let loadedData = loadedGeoJSON ? loadedGeoJSON[sourceKey] : null;
 
     // [Added] Fetch on demand logic
     if (loadSourceData) {
-        var btn = document.getElementById("ExportBtnDaily");
-        var originalText = "";
+        const btn = document.getElementById("ExportBtnDaily");
+        let originalText = "";
         if (btn) {
             originalText = btn.textContent;
             btn.textContent = "...";
@@ -155,7 +157,7 @@ async function handleDownload() {
         return;
     }
 
-    var csv = convertToCSV(loadedData);
+    const csv = convertToCSV(loadedData);
     if (csv) {
         downloadCSV(dataset + "_" + date + ".csv", csv);
     } else {
@@ -166,10 +168,10 @@ async function handleDownload() {
 export function initExportButton() {
     if (document.getElementById("ExportBtnDaily")) return;
 
-    var select = document.getElementById("MapDataSelect");
+    const select = document.getElementById("MapDataSelect");
     if (!select) {
-        var observer = new MutationObserver(function (mutations, obs) {
-            var s = document.getElementById("MapDataSelect");
+        const observer = new MutationObserver(function (mutations, obs) {
+            const s = document.getElementById("MapDataSelect");
             if (s) {
                 obs.disconnect();
                 initExportButton();
@@ -179,7 +181,7 @@ export function initExportButton() {
         return;
     }
 
-    var btn = document.createElement("button");
+    const btn = document.createElement("button");
     btn.id = "ExportBtnDaily";
     btn.textContent = "⬇ .CSV";
     btn.type = "button";
@@ -202,7 +204,7 @@ export function initExportButton() {
 
     btn.addEventListener("click", handleDownload);
 
-    var parent = select.parentNode;
+    const parent = select.parentNode;
 
     if (parent.id === "ExportBtnWrapper") {
         if (!document.getElementById("ExportBtnDaily")) {
@@ -211,7 +213,7 @@ export function initExportButton() {
         return;
     }
 
-    var wrapper = document.createElement("div");
+    const wrapper = document.createElement("div");
     wrapper.id = "ExportBtnWrapper";
     wrapper.style.display = "flex";
     wrapper.style.alignItems = "center";
@@ -231,7 +233,7 @@ export function initExportButton() {
     btn.style.flex = "0 0 auto";
     btn.style.whiteSpace = "nowrap";
     btn.style.marginLeft = "0";
-    
+
     // Initial check
     updateAuthButton(btn, auth.currentUser, "⬇ .CSV");
 }

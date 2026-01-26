@@ -29,29 +29,29 @@ export const geolocate = (typeof maplibregl !== "undefined") ? new maplibregl.Ge
 }) : null;
 
 // [Added] Map Coordinate Display
-(function initCoordinateDisplay() {
+(() => {
   const mapContainer = document.getElementById("map");
   if (!mapContainer) return;
 
-  var coordsDiv = document.createElement("div");
+  const coordsDiv = document.createElement("div");
   coordsDiv.id = "map-coordinate-display";
   mapContainer.appendChild(coordsDiv);
 
   if (map) {
-    map.on("mousemove", function (e) {
+    map.on("mousemove", (e) => {
       coordsDiv.style.display = "block";
       coordsDiv.innerText = `Lat: ${e.lngLat.lat.toFixed(3)}
 Lon: ${e.lngLat.lng.toFixed(3)}`;
     });
 
-    map.on("mouseout", function () {
+    map.on("mouseout", () => {
       coordsDiv.style.display = "none";
     });
   }
 })();
 
 if (map) {
-  map.on("load", function () {
+  map.on("load", () => {
     // Register functional pulsing symbols
     if (iconPulsingNews) {
       map.addImage("pulsing-news", iconPulsingNews(map, 60));
@@ -108,19 +108,18 @@ if (map) {
       });
     }
 
-    var hoverPopup = new maplibregl.Popup({
+    const hoverPopup = new maplibregl.Popup({
       closeButton: false,
       closeOnClick: false
     });
 
-    map.on("mousemove", "states-fill", function (e) {
-      var allPriorityIds = getAllInteractiveLayerIds();
-      allPriorityIds = allPriorityIds.filter(function (id) {
-        return id !== "smoke-fill" && id !== "burn-fill";
-      });
-      var f1 = map.queryRenderedFeatures(e.point, { layers: allPriorityIds });
+    map.on("mousemove", "states-fill", (e) => {
+      let allPriorityIds = getAllInteractiveLayerIds();
+      allPriorityIds = allPriorityIds.filter(id => id !== "smoke-fill" && id !== "burn-fill");
 
-      if (f1 && f1.length > 0) {
+      const f1 = map.queryRenderedFeatures(e.point, { layers: allPriorityIds });
+
+      if (f1?.length > 0) {
         map.getCanvas().style.cursor = "pointer";
         map.setFilter("states-hover", ["==", ["get", "ID"], ""]);
         hoverPopup.remove();
@@ -128,11 +127,11 @@ if (map) {
       }
 
       map.getCanvas().style.cursor = "pointer";
-      var f2 = e.features && e.features[0];
+      const f2 = e.features?.[0];
       if (!f2) return;
 
-      var p = f2.properties || {};
-      var id = p.ID;
+      const p = f2.properties || {};
+      const { ID: id } = p;
 
       map.setFilter("states-hover", ["==", ["get", "ID"], id]);
 
@@ -141,7 +140,7 @@ if (map) {
       }
     });
 
-    map.on("mouseleave", "states-fill", function () {
+    map.on("mouseleave", "states-fill", () => {
       map.getCanvas().style.cursor = "";
       map.setFilter("states-hover", ["==", ["get", "ID"], ""]);
       hoverPopup.remove();
@@ -169,7 +168,7 @@ if (map) {
     if (newsBtn) {
       e.stopPropagation();
       const url = newsBtn.getAttribute("data-link");
-      if (url && url.startsWith("http")) {
+      if (url?.startsWith("http")) {
         window.open(url, "_blank", "noopener,noreferrer");
       } else {
         console.warn("Blocked potentially unsafe URL:", url);
@@ -185,7 +184,7 @@ if (map) {
       const lon = parseFloat(newsLocBtn.getAttribute("data-lon"));
       const lat = parseFloat(newsLocBtn.getAttribute("data-lat"));
       const idx = parseInt(newsLocBtn.getAttribute("data-idx"));
-      var feats = getLoadedNewsFeatures();
+      const feats = getLoadedNewsFeatures();
       if (highlightLocation && feats) {
         highlightLocation([lon, lat], feats[idx].properties, "wildfire_news");
       }
@@ -195,10 +194,10 @@ if (map) {
 }
 
 // Init colors on DOMContentLoaded
-document.addEventListener("DOMContentLoaded", function () {
-  var dsSelect = document.getElementById("MapDataSelect");
+document.addEventListener("DOMContentLoaded", () => {
+  const dsSelect = document.getElementById("MapDataSelect");
   if (dsSelect) {
-    dsSelect.addEventListener("change", function () {
+    dsSelect.addEventListener("change", () => {
       setTimeout(updateLayerToggleColors, 50);
       if (updateStateColors) setTimeout(updateStateColors, 100);
     });

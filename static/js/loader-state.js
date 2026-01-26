@@ -28,7 +28,7 @@ export function setLoadedNewsFeatures(val) {
 
 export function initializeMetrics() {
     if (metricsInitialized || !LAYER_TEMPLATES) return;
-    LAYER_TEMPLATES.forEach(function (tmpl) {
+    LAYER_TEMPLATES.forEach(tmpl => {
         metricsMap[tmpl.id] = tmpl.field;
         if (tmpl.decimals === 0) {
             COUNT_METRICS.push(tmpl.id);
@@ -39,12 +39,12 @@ export function initializeMetrics() {
 
 export function clearModelStats() {
     if (!regionStats) return;
-    var stats = regionStats;
-    var keysToClear = Object.keys(metricsMap).concat(["label_display"]);
+    const stats = regionStats;
+    const keysToClear = Object.keys(metricsMap).concat(["label_display"]);
 
-    Object.keys(stats).forEach(function (state) {
+    Object.keys(stats).forEach(state => {
         if (!stats[state]) return;
-        keysToClear.forEach(function (k) {
+        keysToClear.forEach(k => {
             if (stats[state][k] !== undefined) {
                 delete stats[state][k];
             }
@@ -68,34 +68,33 @@ export function resetLoadedSources(updateWildfireNewsList) {
 }
 
 export function mergeModelStats(modelStats) {
-    Object.keys(modelStats).forEach(function (state) {
-        var existing = regionStats[state] || {};
-        regionStats[state] = Object.assign({}, existing, modelStats[state]);
+    Object.keys(modelStats).forEach(state => {
+        const existing = regionStats[state] || {};
+        regionStats[state] = { ...existing, ...modelStats[state] };
     });
 }
 
 export function getSiteStatsForState(targetState) {
-    var loaded = loadedGeoJSON;
+    const loaded = loadedGeoJSON;
     if (!loaded) return {};
 
-    var siteStats = {};
-    var localMetricsMap = {};
+    const siteStats = {};
+    const localMetricsMap = {};
 
     if (LAYER_TEMPLATES) {
-        LAYER_TEMPLATES.forEach(function (tmpl) {
+        LAYER_TEMPLATES.forEach(tmpl => {
             localMetricsMap[tmpl.id] = tmpl.field;
         });
     }
 
-    var dsMap = DATASET_SOURCE_MAP || {};
+    const dsMap = DATASET_SOURCE_MAP || {};
 
-    Object.keys(loaded).forEach(function (sourceKey) {
+    Object.keys(loaded).forEach(sourceKey => {
         // Match sourceKey against activeSources.
         // Match if sourceKey is exact ID, or starts with ID_ (AirNow hourly cache)
-        var matchedAct = null;
+        let matchedAct = null;
         if (activeSources) {
-            for (var i = 0; i < activeSources.length; i++) {
-                var act = activeSources[i];
+            for (const act of activeSources) {
                 // 1. sourceKey exactly matches the active source ID (standard/model data)
                 // 2. sourceKey is the specific version/timestamp currently loaded for this source (AirNow)
                 if (sourceKey === act || (loadedSources[act] && sourceKey === loadedSources[act])) {
@@ -106,18 +105,18 @@ export function getSiteStatsForState(targetState) {
         }
         if (!matchedAct) return;
 
-        var fc = loaded[sourceKey];
+        const fc = loaded[sourceKey];
         if (!fc || !fc.features) return;
 
-        var dsKey = Object.keys(dsMap).find(function (k) { return dsMap[k] === matchedAct; }) || matchedAct;
+        const dsKey = Object.keys(dsMap).find(k => dsMap[k] === matchedAct) || matchedAct;
 
 
-        fc.features.forEach(function (fi) {
-            var p = fi.properties;
+        fc.features.forEach(fi => {
+            const p = fi.properties;
             if (!p.state) return;
             if (p.state !== targetState) return;
 
-            var id = p.AQS || p.AQS_O3 || p.AQS_PM || p.site_name || p.ID;
+            const id = p.AQS || p.AQS_O3 || p.AQS_PM || p.site_name || p.ID;
             if (id === undefined || id === null || id === "") return;
 
             if (!siteStats[id]) {
@@ -127,9 +126,9 @@ export function getSiteStatsForState(targetState) {
                 };
             }
 
-            Object.keys(localMetricsMap).forEach(function (mKey) {
-                var fieldDef = localMetricsMap[mKey];
-                var fieldName = (typeof fieldDef === "function") ? fieldDef(dsKey) : fieldDef;
+            Object.keys(localMetricsMap).forEach(mKey => {
+                const fieldDef = localMetricsMap[mKey];
+                const fieldName = (typeof fieldDef === "function") ? fieldDef(dsKey) : fieldDef;
 
                 if (p[fieldName] !== undefined) {
                     siteStats[id][mKey] = p[fieldName];

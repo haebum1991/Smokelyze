@@ -396,7 +396,7 @@ function renderDataTable() {
 /**
  * Handle Query: Fetch AQS data and render table
  */
-window.handleQuery = async function () {
+async function handleQuery() {
     if (!auth.currentUser) {
         showAuthOverlay();
         return;
@@ -653,18 +653,11 @@ function applyDateRange() {
     renderDataTable();
 }
 
-// Expose to window for HTML onclick
-window.resetDateRange = resetDateRange;
-window.applyDateRange = applyDateRange;
-
-// Expose to window for HTML onclick
-window.initLocationMap = initLocationMap;
-
 
 /**
  * Exposed functions for HTML
  */
-window.changePage = function (delta) {
+function changePage(delta) {
     const newPage = currentPage + delta;
     if (newPage >= 1 && newPage <= totalPages) {
         currentPage = newPage;
@@ -674,9 +667,9 @@ window.changePage = function (delta) {
         const container = document.querySelector(".datadb-table-container");
         if (container) container.scrollTop = 0;
     }
-};
+}
 
-window.downloadCSV = function () {
+function downloadCSV() {
 
     if (!auth.currentUser) {
         showAuthOverlay();
@@ -704,7 +697,8 @@ window.downloadCSV = function () {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-};
+}
+
 
 /**
  * Initialize event listeners
@@ -721,7 +715,36 @@ function initQueryBuilder() {
     if (stateSelect) {
         stateSelect.addEventListener("change", updateAQS);
     }
+    
+    // Button Listeners
+    const btnImport = document.getElementById("DatadbDataTableBtnImport");
+    if (btnImport) btnImport.addEventListener("click", handleQuery);
 
+    const btnDownload = document.getElementById("DatadbDataTableBtnDownload");
+    if (btnDownload) btnDownload.addEventListener("click", downloadCSV);
+
+    const btnDefault = document.getElementById("DatadbDataTableBtnDateDefault");
+    if (btnDefault) btnDefault.addEventListener("click", resetDateRange);
+
+    const btnSetRange = document.getElementById("DatadbDataTableBtnDateSetRange");
+    if (btnSetRange) btnSetRange.addEventListener("click", applyDateRange);
+
+    const btnPrev = document.getElementById("DatadbDataTableBtnPrev");
+    if (btnPrev) btnPrev.addEventListener("click", () => changePage(-1));
+
+    const btnNext = document.getElementById("DatadbDataTableBtnNext");
+    if (btnNext) btnNext.addEventListener("click", () => changePage(1));
+
+    // Custom Event Listeners (Tab Switching)
+    window.addEventListener("tabOpenLocation", () => {
+        // Debounce or just check visibility logic is inside initLocationMap usually
+        if (initLocationMap) initLocationMap();
+    });
+
+    window.addEventListener("tabOpenPlots", () => {
+        if (drawAQSPlots) drawAQSPlots(currentTableData, currentDatasetId, currentAqs);
+    });
+    
     onAuthStateChanged(auth, (user) => {
         updateAuthButton("DatadbDataTableBtnImport", user, "Import data");
         updateAuthButton("DatadbDataTableBtnDownload", user, "Download CSV");
@@ -729,13 +752,6 @@ function initQueryBuilder() {
         updateAuthButton("DatadbDataTableBtnDateSetRange", user, "Set range");
     });
 }
-
-/**
- * Exposed functions for HTML
- */
-window.renderAQSPlots = function () {
-    drawAQSPlots(currentTableData, currentDatasetId, currentAqs);
-};
 
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initQueryBuilder);

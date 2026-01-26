@@ -9,27 +9,21 @@ import {
 import { renderHeatmap } from "./stats-plot-yr-heat.js";
 import { renderLinePlot } from "./stats-plot-yr-line.js";
 
-export var yearStatsCache = {
+export const yearStatsCache = {
     burn: {},
     smoke: {},
     fire: {}
 };
 
-
-function loadYearGeneric(options) {
-    var isoDate = options.isoDate;
-    var regionIDs = options.regionIDs;
-    var dataset = options.dataset;
-    var urlFunc = options.urlFunc;
-    var fallbackData = options.fallbackData;
-    var initStatsFunc = options.initStatsFunc;
-    var parseFunc = options.parseFunc;
-    var layerId = options.layerId;
-    var monthKey = options.month || "all";
-    var cacheKey = options.cacheKey;
+const loadYearGeneric = (options) => {
+    const {
+        isoDate, regionIDs, dataset, urlFunc,
+        fallbackData, initStatsFunc, parseFunc,
+        layerId, month = "all", cacheKey
+    } = options;
 
     if (layerId) {
-        var checkbox = document.getElementById(layerId);
+        const checkbox = document.getElementById(layerId);
         if (checkbox && !checkbox.checked) {
             return Promise.resolve(initStatsFunc(regionIDs));
         }
@@ -40,70 +34,70 @@ function loadYearGeneric(options) {
         return Promise.resolve({});
     }
 
-    var year = isoDate.slice(0, 4);
-    if (cacheKey && yearStatsCache[cacheKey] && yearStatsCache[cacheKey][year]) {
-        var cachedData = yearStatsCache[cacheKey][year];
-        var cachedStats = initStatsFunc(regionIDs);
-        parseFunc(cachedData, regionIDs, cachedStats, monthKey);
+    const year = isoDate.slice(0, 4);
+    if (cacheKey && yearStatsCache[cacheKey]?.[year]) {
+        const cachedData = yearStatsCache[cacheKey][year];
+        const cachedStats = initStatsFunc(regionIDs);
+        parseFunc(cachedData, regionIDs, cachedStats, month);
         return Promise.resolve(cachedStats);
     }
 
-    var url = urlFunc(dataset, isoDate);
+    const url = urlFunc(dataset, isoDate);
     if (!url) {
         console.error("Invalid date:", isoDate);
         return Promise.resolve({});
     }
 
-    var stats = initStatsFunc(regionIDs);
+    const stats = initStatsFunc(regionIDs);
 
-    return utils.fetchJson(url, fallbackData).then(function (data) {
+    return utils.fetchJson(url, fallbackData).then(data => {
         if (cacheKey && yearStatsCache[cacheKey]) {
             yearStatsCache[cacheKey][year] = data;
         }
-        parseFunc(data, regionIDs, stats, monthKey);
+        parseFunc(data, regionIDs, stats, month);
         return stats;
     });
-}
+};
 
-function parseBurnYearly(data, regionIDs, stats, monthKey) {
+const parseBurnYearly = (data, regionIDs, stats, monthKey) => {
     if (!Array.isArray(data) || data.length === 0) return;
-    var targetMonth = monthKey === "all" ? 13 : Number(monthKey);
-    var row = data.find(function (d) {
-        return Number(d.month) === targetMonth;
-    });
+    const targetMonth = monthKey === "all" ? 13 : Number(monthKey);
+    const row = data.find(d => Number(d.month) === targetMonth);
     if (!row || typeof row !== "object") return;
-    regionIDs.forEach(function (id) {
+
+    regionIDs.forEach(id => {
         if (Object.prototype.hasOwnProperty.call(row, id)) {
-            var v = row[id];
+            const v = row[id];
             stats[id] = Number(v) || 0;
         }
     });
-}
+};
 
-function parseSmokeYearly(data, regionIDs, stats, monthKey) {
+const parseSmokeYearly = (data, regionIDs, stats, monthKey) => {
     if (!Array.isArray(data) || data.length === 0) return;
-    var targetMonth = monthKey === "all" ? 13 : Number(monthKey);
-    data.forEach(function (item) {
+    const targetMonth = monthKey === "all" ? 13 : Number(monthKey);
+    data.forEach(item => {
         if (Number(item.month) !== targetMonth) return;
-        var cat = String(item.category || "").toLowerCase();
-        if (!(cat === "light" || cat === "medium" || cat === "heavy")) return;
-        regionIDs.forEach(function (id) {
+        const cat = String(item.category || "").toLowerCase();
+        if (!["light", "medium", "heavy"].includes(cat)) return;
+
+        regionIDs.forEach(id => {
             if (item[id] !== undefined) {
                 stats[id][cat] = Number(item[id]) || 0;
             }
         });
     });
-}
+};
 
-function parseFireYearly(data, regionIDs, stats, monthKey) {
+const parseFireYearly = (data, regionIDs, stats, monthKey) => {
     if (!Array.isArray(data) || data.length === 0) return;
-    var targetMonth = monthKey === "all" ? 13 : Number(monthKey);
-    data.forEach(function (item) {
+    const targetMonth = monthKey === "all" ? 13 : Number(monthKey);
+    data.forEach(item => {
         if (Number(item.month) !== targetMonth) return;
-        var cat = String(item.category || "").toLowerCase();
-        regionIDs.forEach(function (id) {
+        const cat = String(item.category || "").toLowerCase();
+        regionIDs.forEach(id => {
             if (!Object.prototype.hasOwnProperty.call(item, id)) return;
-            var v = Number(item[id]) || 0;
+            const v = Number(item[id]) || 0;
             if (cat === "n_fires") {
                 stats[id].count = v;
             } else if (cat === "frp") {
@@ -112,12 +106,12 @@ function parseFireYearly(data, regionIDs, stats, monthKey) {
             }
         });
     });
-}
+};
 
 export function loadYearBurn(isoDate, regionIDs, monthKey) {
     return loadYearGeneric({
-        isoDate: isoDate,
-        regionIDs: regionIDs,
+        isoDate,
+        regionIDs,
         dataset: DATA_IMPORT_METHOD.burn,
         urlFunc: utils.urlByYearJson,
         fallbackData: [],
@@ -131,8 +125,8 @@ export function loadYearBurn(isoDate, regionIDs, monthKey) {
 
 export function loadYearSmoke(isoDate, regionIDs, monthKey) {
     return loadYearGeneric({
-        isoDate: isoDate,
-        regionIDs: regionIDs,
+        isoDate,
+        regionIDs,
         dataset: DATA_IMPORT_METHOD.smoke,
         urlFunc: utils.urlByYearJson,
         fallbackData: [],
@@ -146,8 +140,8 @@ export function loadYearSmoke(isoDate, regionIDs, monthKey) {
 
 export function loadYearFire(isoDate, regionIDs, monthKey) {
     return loadYearGeneric({
-        isoDate: isoDate,
-        regionIDs: regionIDs,
+        isoDate,
+        regionIDs,
         dataset: DATA_IMPORT_METHOD.fire,
         urlFunc: utils.urlByYearJson,
         fallbackData: [],
@@ -161,14 +155,14 @@ export function loadYearFire(isoDate, regionIDs, monthKey) {
 
 export function updateYearStats(isoDate, regionIDs, monthKey) {
     setCurrentMonthKey(monthKey);
-    var tableYear = document.getElementById("StatsInputYear");
-    var tableMonth = monthKey || "all";
+    const tableYear = document.getElementById("StatsInputYear");
+    const tableMonth = monthKey || "all";
 
     if (tableYear) {
-        var year = isoDate.slice(0, 4);
+        const year = isoDate.slice(0, 4);
         if (tableYear.dataset.yearValue !== year) {
             tableYear.dataset.yearValue = year;
-            tableYear.innerHTML = '<span class="slot-roll">' + utils.ESML(year) + "</span>";
+            tableYear.innerHTML = `<span class="slot-roll">${utils.ESML(year)}</span>`;
         }
     }
 
@@ -177,10 +171,10 @@ export function updateYearStats(isoDate, regionIDs, monthKey) {
         loadYearSmoke(isoDate, regionIDs, tableMonth),
         loadYearFire(isoDate, regionIDs, tableMonth)
     ])
-        .then(function (results) {
-            var burnStats = results[0] || createBurnStats(regionIDs);
-            var smokeStats = results[1] || createSmokeStats(regionIDs);
-            var fireStats = results[2] || createFireStats(regionIDs);
+        .then(results => {
+            const burnStats = results[0] || createBurnStats(regionIDs);
+            const smokeStats = results[1] || createSmokeStats(regionIDs);
+            const fireStats = results[2] || createFireStats(regionIDs);
 
             renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, "StatsRegionBodyYear");
 
@@ -189,7 +183,7 @@ export function updateYearStats(isoDate, regionIDs, monthKey) {
                 if (renderHeatmap) renderHeatmap("stats-plot-for-heatmap-year");
             }
         })
-        .catch(function (err) {
+        .catch(err => {
             console.error("Error updating yearly stats:", err);
         });
 }

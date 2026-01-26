@@ -3,18 +3,18 @@ import { ExcludeLayerGroups, DATASET_SOURCE_MAP } from "./layers-def.js";
 import { ESML, highlightLocation } from "./utils.js";
 import { loadedGeoJSON } from "./loader.js";
 
-var MAX_RESULTS = 50;
+const MAX_RESULTS = 50;
 
 function getSearchableData() {
     if (!loadedGeoJSON) return [];
 
-    var select = document.getElementById("MapDataSelect");
+    const select = document.getElementById("MapDataSelect");
     if (!select) return [];
 
-    var dataset = select.value;
-    var sourceKey = DATASET_SOURCE_MAP[dataset] || dataset;
+    const dataset = select.value;
+    const sourceKey = DATASET_SOURCE_MAP[dataset] || dataset;
 
-    var geoData = loadedGeoJSON[sourceKey];
+    const geoData = loadedGeoJSON[sourceKey];
     if (!geoData || !geoData.features) return [];
 
     return geoData.features;
@@ -23,11 +23,11 @@ function getSearchableData() {
 function highlightText(text, query) {
     if (!query) return ESML(text);
     // Escape regex special chars in query to prevent crashes
-    var safeQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
-    var parts = text.split(new RegExp("(" + safeQuery + ")", "gi"));
+    const safeQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+    const parts = text.split(new RegExp("(" + safeQuery + ")", "gi"));
 
     return parts.map(function (part) {
-        var escaped = ESML(part);
+        const escaped = ESML(part);
         if (part.toLowerCase() === query.toLowerCase()) {
             return "<strong style='color: Red;'>" + escaped + "</strong>";
         }
@@ -38,17 +38,17 @@ function highlightText(text, query) {
 export function injectSearchUI() {
     if (document.getElementById("SiteSearchWrapper")) return;
 
-    var targetSelect = document.getElementById("MapDataSelect");
+    const targetSelect = document.getElementById("MapDataSelect");
     if (!targetSelect) return;
 
-    var wrapper = document.createElement("div");
+    const wrapper = document.createElement("div");
     wrapper.id = "SiteSearchWrapper";
     Object.assign(wrapper.style, {
         position: "relative",
         width: "100%"
     });
 
-    var label = document.createElement("label");
+    const label = document.createElement("label");
     label.textContent = "Site search (name, AQS, ...):";
     label.setAttribute("for", "stats-site-search-input");
     Object.assign(label.style, {
@@ -56,7 +56,7 @@ export function injectSearchUI() {
         color: "var(--text-main)"
     });
 
-    var input = document.createElement("input");
+    const input = document.createElement("input");
     input.id = "stats-site-search-input";
     input.type = "text";
     input.placeholder = "Type to search...";
@@ -71,7 +71,7 @@ export function injectSearchUI() {
         fontSize: "1.6rem"
     });
 
-    var resultsList = document.createElement("ul");
+    const resultsList = document.createElement("ul");
     resultsList.id = "stats-site-search-results";
     Object.assign(resultsList.style, {
         position: "absolute",
@@ -96,8 +96,8 @@ export function injectSearchUI() {
     wrapper.appendChild(input);
     wrapper.appendChild(resultsList);
 
-    var appendTarget = targetSelect;
-    var exportWrapper = document.getElementById("ExportBtnWrapper");
+    let appendTarget = targetSelect;
+    const exportWrapper = document.getElementById("ExportBtnWrapper");
     if (exportWrapper && exportWrapper.contains(targetSelect)) {
         appendTarget = exportWrapper;
     }
@@ -108,14 +108,14 @@ export function injectSearchUI() {
         appendTarget.parentNode.appendChild(wrapper);
     }
 
-    var selectedIndex = -1;
+    let selectedIndex = -1;
 
     // --- Event Delegation for Results List ---
     resultsList.addEventListener("click", function (e) {
-        var li = e.target.closest("li");
+        const li = e.target.closest("li");
         if (!li) return;
 
-        var index = parseInt(li.getAttribute("data-index"), 10);
+        const index = parseInt(li.getAttribute("data-index"), 10);
         if (isNaN(index)) return;
 
         if (li.featureData) {
@@ -126,19 +126,19 @@ export function injectSearchUI() {
     });
 
     resultsList.addEventListener("mouseover", function (e) {
-        var li = e.target.closest("li");
+        const li = e.target.closest("li");
         if (!li) return;
         // clear previous selected
-        var current = resultsList.querySelector("li[style*='background-color: yellow']");
+        const current = resultsList.querySelector("li[style*='background-color: yellow']");
         if (current) current.style.backgroundColor = "transparent";
 
-        var currentClass = resultsList.querySelector(".selected");
+        const currentClass = resultsList.querySelector(".selected");
         if (currentClass) currentClass.classList.remove("selected");
 
         li.style.backgroundColor = "Yellow";
 
-        var all = resultsList.querySelectorAll("li");
-        for (var i = 0; i < all.length; i++) {
+        const all = resultsList.querySelectorAll("li");
+        for (let i = 0; i < all.length; i++) {
             if (all[i] === li) {
                 selectedIndex = i;
                 break;
@@ -147,7 +147,7 @@ export function injectSearchUI() {
     });
 
     resultsList.addEventListener("mouseleave", function () {
-        var current = resultsList.querySelector("li[style*='background-color: yellow']");
+        const current = resultsList.querySelector("li[style*='background-color: yellow']");
         if (current) current.style.backgroundColor = "transparent";
         selectedIndex = -1;
     });
@@ -164,7 +164,7 @@ export function injectSearchUI() {
     }
 
     input.addEventListener("keydown", function (e) {
-        var items = resultsList.querySelectorAll("li");
+        const items = resultsList.querySelectorAll("li");
         if (items.length === 0) return;
 
         if (e.key === "ArrowDown" || (e.key === "Tab" && !e.shiftKey)) {
@@ -182,19 +182,19 @@ export function injectSearchUI() {
             if (selectedIndex >= 0 && selectedIndex < items.length) {
                 items[selectedIndex].click();
             } else {
-                var val = input.value;
+                const val = input.value;
                 if (!val) return;
 
-                var f = getSearchableData();
-                for (var i = 0; i < f.length; i++) {
-                    var p = f[i].properties;
+                const f = getSearchableData();
+                for (let i = 0; i < f.length; i++) {
+                    const p = f[i].properties;
                     if (!p) continue;
 
-                    var state = p.state || "";
-                    var aqs = p.AQS_O3 || p.AQS || "";
-                    var name = p.site_name || p.name || "";
+                    const state = p.state || "";
+                    const aqs = p.AQS_O3 || p.AQS || "";
+                    const name = p.site_name || p.name || "";
 
-                    var displayString = "";
+                    let displayString = "";
                     if (state) displayString += "[" + state + "] ";
                     if (name) displayString += name + " ";
                     if (aqs) displayString += "(" + aqs + ")";
@@ -218,7 +218,7 @@ export function injectSearchUI() {
     });
 
     input.addEventListener("input", function (e) {
-        var query = e.target.value.trim().toLowerCase();
+        const query = e.target.value.trim().toLowerCase();
 
         if (query.length > 0) {
             input.setAttribute("autocomplete", "off");
@@ -233,23 +233,23 @@ export function injectSearchUI() {
             return;
         }
 
-        var f = getSearchableData();
-        var matches = [];
-        for (var i = 0; i < f.length; i++) {
+        const f = getSearchableData();
+        const matches = [];
+        for (let i = 0; i < f.length; i++) {
             if (matches.length >= MAX_RESULTS) break;
 
-            var p = f[i].properties;
+            const p = f[i].properties;
             if (!p) continue;
 
-            var state = (p.state || "").toLowerCase();
-            var aqs = (p.AQS_O3 || p.AQS || "").toString().toLowerCase();
-            var name = (p.site_name || p.name || "").toLowerCase();
+            const state = (p.state || "").toLowerCase();
+            const aqs = (p.AQS_O3 || p.AQS || "").toString().toLowerCase();
+            const name = (p.site_name || p.name || "").toLowerCase();
 
-            var display = "";
+            let display = "";
             if (p.state) display += "[" + p.state + "] ";
             if (p.site_name || p.name) display += (p.site_name || p.name) + " ";
             if (p.AQS_O3 || p.AQS) display += "(" + (p.AQS_O3 || p.AQS) + ")";
-            var displayLower = display.toLowerCase();
+            const displayLower = display.toLowerCase();
 
             if (state.includes(query) || aqs.includes(query) || name.includes(query) || displayLower.includes(query)) {
                 matches.push({
@@ -267,19 +267,19 @@ export function injectSearchUI() {
     });
 
     input.addEventListener("change", function (e) {
-        var val = e.target.value;
+        const val = e.target.value;
         if (!val) return;
 
-        var f = getSearchableData();
-        for (var i = 0; i < f.length; i++) {
-            var p = f[i].properties;
+        const f = getSearchableData();
+        for (let i = 0; i < f.length; i++) {
+            const p = f[i].properties;
             if (!p) continue;
 
-            var state = p.state || "";
-            var aqs = p.AQS_O3 || p.AQS || "";
-            var name = p.site_name || p.name || "";
+            const state = p.state || "";
+            const aqs = p.AQS_O3 || p.AQS || "";
+            const name = p.site_name || p.name || "";
 
-            var displayString = "";
+            let displayString = "";
             if (state) displayString += "[" + state + "] ";
             if (name) displayString += name + " ";
             if (aqs) displayString += "(" + aqs + ")";
@@ -307,10 +307,10 @@ function renderResults(matches, query, listElement) {
         return;
     }
 
-    var fragment = document.createDocumentFragment();
+    const fragment = document.createDocumentFragment();
 
     matches.forEach(function (match, idx) {
-        var li = document.createElement("li");
+        const li = document.createElement("li");
         Object.assign(li.style, {
             padding: "0.4rem 0.6rem",
             cursor: "pointer",
@@ -321,7 +321,8 @@ function renderResults(matches, query, listElement) {
         li.setAttribute("data-index", idx);
         li.featureData = match.feature;
 
-        var text = "";
+        let text = "";
+        // ... (omitted)
         if (match.display.state) text += "[" + match.display.state + "] ";
         if (match.display.name) text += match.display.name + " ";
         if (match.display.aqs) text += "(" + match.display.aqs + ")";
@@ -338,11 +339,11 @@ function renderResults(matches, query, listElement) {
 function selectSite(f) {
     if (!f || !f.geometry || !f.geometry.coordinates) return;
 
-    var select = document.getElementById("MapDataSelect");
-    var coords = f.geometry.coordinates;
-    var sourceKey = null;
+    const select = document.getElementById("MapDataSelect");
+    const coords = f.geometry.coordinates;
+    let sourceKey = null;
     if (select) {
-        var dataset = select.value;
+        const dataset = select.value;
         sourceKey = DATASET_SOURCE_MAP[dataset] || dataset;
     }
 
@@ -353,16 +354,16 @@ function selectSite(f) {
 
 function init() {
     function updateVisibility() {
-        var searchWrapper = document.getElementById("SiteSearchWrapper");
+        const searchWrapper = document.getElementById("SiteSearchWrapper");
         if (!searchWrapper) return;
 
-        var checkboxes = document.querySelectorAll("input[type=checkbox][id^='layer-']");
-        var hasActiveLayer = false;
-        var EXCLUDED = ExcludeLayerGroups.searchSite;
+        const checkboxes = document.querySelectorAll("input[type=checkbox][id^='layer-']");
+        let hasActiveLayer = false;
+        const EXCLUDED = ExcludeLayerGroups.searchSite;
 
-        for (var i = 0; i < checkboxes.length; i++) {
-            var cb = checkboxes[i];
-            var shortId = cb.id.replace("layer-", "");
+        for (let i = 0; i < checkboxes.length; i++) {
+            const cb = checkboxes[i];
+            const shortId = cb.id.replace("layer-", "");
             if (EXCLUDED.includes(shortId)) continue;
 
             if (cb.checked) {
@@ -379,7 +380,7 @@ function init() {
     }
 
     function setupCheckboxListeners() {
-        var checkboxes = document.querySelectorAll("input[type=checkbox][id^='layer-']");
+        const checkboxes = document.querySelectorAll("input[type=checkbox][id^='layer-']");
         checkboxes.forEach(function (cb) {
             cb.addEventListener("change", updateVisibility);
         });
@@ -390,7 +391,7 @@ function init() {
         setupCheckboxListeners();
         updateVisibility();
     } else {
-        var observer = new MutationObserver(function (mutations, obs) {
+        const observer = new MutationObserver(function (mutations, obs) {
             if (document.getElementById("MapDataSelect")) {
                 obs.disconnect();
                 injectSearchUI();

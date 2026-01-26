@@ -1,14 +1,14 @@
 
 import { savePatch, read, initStateColorToggle } from "./ui-state.js";
 import { onDescDrawerOpen } from "./ui-param-desc.js";
-import { 
-  clearHighlight, 
-  setOnSetNewsDrawer, 
-  setOnSetStatsDrawer, 
-  setOnSetDescDrawer, 
-  setOnSetMapPostDrawer, 
-  setOnSetAccordionCollapsed, 
-  ESML 
+import {
+    clearHighlight,
+    setOnSetNewsDrawer,
+    setOnSetStatsDrawer,
+    setOnSetDescDrawer,
+    setOnSetMapPostDrawer,
+    setOnSetAccordionCollapsed,
+    ESML
 } from "./utils.js";
 
 // --- Component: Modern Toggle Switch ---
@@ -69,18 +69,18 @@ input:checked + .toggle-switch-slider:before {
 }
 `;
 
-function injectSwitchCSS() {
+const injectSwitchCSS = () => {
     if (document.getElementById("toggle-switch-component-style")) return;
     const style = document.createElement("style");
     style.id = "toggle-switch-component-style";
     style.textContent = SWITCH_STYLE;
     document.head.appendChild(style);
-}
+};
 
 /**
  * Creates the HTML string for a modern toggle switch.
  */
-export function createSwitchHTML(id, label, checked = false) {
+export const createSwitchHTML = (id, label, checked = false) => {
     injectSwitchCSS();
     const isChecked = checked ? "checked" : "";
     return `
@@ -92,12 +92,12 @@ export function createSwitchHTML(id, label, checked = false) {
       <span>${ESML(label)}</span>
     </div>
   `.trim();
-}
+};
 
 /**
  * Creates and appends a switch element to a parent.
  */
-export function appendSwitch(parent, options) {
+export const appendSwitch = (parent, options) => {
     injectSwitchCSS();
     if (!parent) return;
     const temp = document.createElement("div");
@@ -107,70 +107,45 @@ export function appendSwitch(parent, options) {
 
     if (options.onChange) {
         const input = switchEl.querySelector("input");
-        input.addEventListener("change", (e) => options.onChange(e.target.checked));
+        input?.addEventListener("change", (e) => options.onChange(e.target.checked));
     }
     return switchEl;
-}
+};
 
 /**
  * Helper: Close other drawers (especially on mobile)
- * Ensures that only one drawer is open at a time on small screens.
  */
- 
 const LAYERS_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>`;
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
-export function closeAllExcept(activeId) {
-    if (activeId !== "stats") {
-        const drawer = document.getElementById("FigurePageDrawer");
-        const btn = document.getElementById("FigurePageToggle");
-        if (drawer?.classList.contains("open")) {
-            drawer.classList.remove("open");
-            btn?.classList.remove("active");
-            if (btn) btn.textContent = "Stats. ▶";
-            document.body.classList.remove("FigurePage-drawer-open");
+export const closeAllExcept = (activeId) => {
+    const drawers = [
+        { id: "stats", drawer: "FigurePageDrawer", btn: "FigurePageToggle", cls: "FigurePage-drawer-open", txtOpen: "Stats. ▶", txtClosed: "Stats. ◀" },
+        { id: "desc", drawer: "DescDrawer", btn: "DescToggle", cls: null, txtOpen: "◀ Desc.", txtClosed: "▶ Desc." },
+        { id: "news", drawer: "WFnewsDrawer", btn: "WFnewsToggle", cls: "WFnews-drawer-open" },
+        { id: "MapPost", drawer: "MapPostDrawer", btn: "MapPostToggle", cls: "MapPost-drawer-open" }
+    ];
+
+    drawers.forEach(({ id, drawer, btn, cls, txtOpen }) => {
+        if (id !== activeId) {
+            const drawerEl = document.getElementById(drawer);
+            const btnEl = document.getElementById(btn);
+            if (drawerEl?.classList.contains("open")) {
+                drawerEl.classList.remove("open");
+                btnEl?.classList.remove("active");
+                if (txtOpen && btnEl) btnEl.textContent = txtOpen;
+                if (cls) document.body.classList.remove(cls);
+                if (["news", "MapPost"].includes(id) && btnEl) btnEl.style.display = "block";
+            }
         }
-    }
-    if (activeId !== "desc") {
-        const drawer = document.getElementById("DescDrawer");
-        const btn = document.getElementById("DescToggle");
-        if (drawer?.classList.contains("open")) {
-            drawer.classList.remove("open");
-            btn?.classList.remove("active");
-            if (btn) btn.textContent = "◀ Desc.";
-        }
-    }
-    if (activeId !== "news") {
-        const drawer = document.getElementById("WFnewsDrawer");
-        const btn = document.getElementById("WFnewsToggle");
-        if (drawer?.classList.contains("open")) {
-            drawer.classList.remove("open");
-            document.body.classList.remove("WFnews-drawer-open");
-            if (btn) btn.style.display = "block";
-        }
-    }
-    if (activeId !== "MapPost") {
-        const drawer = document.getElementById("MapPostDrawer");
-        const btn = document.getElementById("MapPostToggle");
-        if (drawer?.classList.contains("open")) {
-            drawer.classList.remove("open");
-            document.body.classList.remove("MapPost-drawer-open");
-            if (btn) btn.style.display = "block";
-        }
-    }
-}
+    });
+};
 
 /**
  * Helper: Add swipe-to-close functionality (Modularized)
- * @param {HTMLElement} el The element to add swipe to
  */
-export function addSwipeClose(el, options = {}) {
-    const {
-        direction = "right",
-        threshold = 60,
-        onClose = () => { },
-        maxWidth = 1024
-    } = options;
+export const addSwipeClose = (el, options = {}) => {
+    const { direction = "right", threshold = 60, onClose = () => { }, maxWidth = 1024 } = options;
 
     let touchStartX = 0;
     let touchMoveX = 0;
@@ -187,8 +162,6 @@ export function addSwipeClose(el, options = {}) {
 
         touchMoveX = e.touches[0].clientX;
         const deltaX = touchMoveX - touchStartX;
-
-        // Check if movement is in the closing direction
         const isClosingMove = (direction === "right" && deltaX > 0) || (direction === "left" && deltaX < 0);
 
         if (isClosingMove) {
@@ -210,23 +183,19 @@ export function addSwipeClose(el, options = {}) {
         const reachedThreshold = (direction === "right" && deltaX > threshold) ||
             (direction === "left" && deltaX < -threshold);
 
-        if (reachedThreshold) {
-            onClose();
-        }
+        if (reachedThreshold) onClose();
 
         el.style.transform = "";
         touchStartX = 0;
         touchMoveX = 0;
         isDragging = false;
     });
-}
+};
 
 /**
  * Helper: Close button click handler (Modularized)
- * @param {string|HTMLElement} btnId The ID or target button element
- * @param {Function} onClose Callback function when clicked
  */
-export function addCloseHandler(btnId, onClose) {
+export const addCloseHandler = (btnId, onClose) => {
     const btn = typeof btnId === "string" ? document.getElementById(btnId) : btnId;
     if (!btn) return;
     btn.addEventListener("click", (e) => {
@@ -234,69 +203,56 @@ export function addCloseHandler(btnId, onClose) {
         e.stopPropagation();
         onClose();
     });
-}
+};
 
 /**
- * 1. Accordion Toggle (Layer Panel on the right)
+ * 1. Accordion Toggle
  */
-export function setAccordionCollapsed(collapsed) {
+export const setAccordionCollapsed = (collapsed) => {
     const page = document.getElementById("AccordionPage");
     const btn = document.getElementById("AccordionToggle");
     if (!page || !btn) return;
 
     if (collapsed) {
         page.classList.add("collapsed");
-        btn.style.display = "flex"; // 패널 닫히면 열기 버튼 보임
+        btn.style.display = "flex";
     } else {
         page.classList.remove("collapsed");
-        btn.style.display = "none"; // 패널 열리면 열기 버튼 숨김 (패널 내 X 버튼 사용)
+        btn.style.display = "none";
     }
-    if (savePatch) savePatch({ accordionCollapsed: collapsed });
-}
+    savePatch?.({ accordionCollapsed: collapsed });
+};
 
-export function initAccordion() {
+export const initAccordion = () => {
     const page = document.getElementById("AccordionPage");
     const openBtn = document.getElementById("AccordionToggle");
     const closeBtn = document.getElementById("AccordionClose");
     if (!page || !openBtn) return;
 
-    // 열기 버튼 클릭 시
     openBtn.addEventListener("click", () => setAccordionCollapsed(false));
+    if (closeBtn) closeBtn.addEventListener("click", () => setAccordionCollapsed(true));
 
-    // 패널 내 닫기 버튼 클릭 시
-    if (closeBtn) {
-        closeBtn.addEventListener("click", () => setAccordionCollapsed(true));
-    }
+    addSwipeClose(page, { direction: "right", onClose: () => setAccordionCollapsed(true) });
 
-    // Swipe-to-close
-    addSwipeClose(page, {
-        direction: "right",
-        onClose: () => setAccordionCollapsed(true)
-    });
-    
-    // Inject State Choropleth toggle
     const StateChoroplethContainer = document.getElementById("ToggleSwitchStateChoropleth");
     if (StateChoroplethContainer) {
         appendSwitch(StateChoroplethContainer, {
             id: "MapBtnStateChoropleth",
             label: "State Choropleth",
-            checked: true // Default
+            checked: true
         });
         initStateColorToggle();
     }
-    
-    if (read) {
-        const s = read();
-        const isCollapsed = s.accordionCollapsed !== undefined ? s.accordionCollapsed : true;
-        setAccordionCollapsed(isCollapsed);
-    }
-}
 
+    const s = read?.();
+    const isCollapsed = s?.accordionCollapsed ?? true;
+    setAccordionCollapsed(isCollapsed);
+};
 
 /**
- * 2. Stats Drawer (Left Side)
+ * 2. Stats Drawer
  */
-export function setStatsDrawer(open) {
+export const setStatsDrawer = (open) => {
     const btn = document.getElementById("FigurePageToggle");
     const drawer = document.getElementById("FigurePageDrawer");
     if (!btn || !drawer) return;
@@ -309,32 +265,26 @@ export function setStatsDrawer(open) {
 
     if (actualOpen && window.innerWidth <= 1024) {
         closeAllExcept("stats");
-        if (clearHighlight) clearHighlight();
+        clearHighlight?.();
     }
-}
+};
 
-export function initStatsDrawer() {
+export const initStatsDrawer = () => {
     const btn = document.getElementById("FigurePageToggle");
     const drawer = document.getElementById("FigurePageDrawer");
     const closeBtn = document.getElementById("FigurePageDrawerClose");
     if (!btn || !drawer) return;
 
-    btn.textContent = "Stats. ▶"; // Initial label
+    btn.textContent = "Stats. ▶";
     btn.addEventListener("click", () => setStatsDrawer());
     addCloseHandler(closeBtn, () => setStatsDrawer(false));
-
-    // Swipe-to-close (Left-side drawer, swipe left to close)
-    addSwipeClose(drawer, {
-        direction: "left",
-        onClose: () => setStatsDrawer(false)
-    });
-}
-
+    addSwipeClose(drawer, { direction: "left", onClose: () => setStatsDrawer(false) });
+};
 
 /**
- * 3. Desc Drawer (Description / Right Side)
+ * 3. Desc Drawer
  */
-export function setDescDrawer(open) {
+export const setDescDrawer = (open) => {
     const btn = document.getElementById("DescToggle");
     const drawer = document.getElementById("DescDrawer");
     if (!btn || !drawer) return;
@@ -346,41 +296,32 @@ export function setDescDrawer(open) {
         btn.textContent = "▶ Desc.";
         if (window.innerWidth <= 1024) {
             closeAllExcept("desc");
-            if (clearHighlight) clearHighlight();
+            clearHighlight?.();
         }
-        // Notify Desc module if it needs to refresh content
-        if (onDescDrawerOpen) {
-            onDescDrawerOpen();
-        }
+        onDescDrawerOpen?.();
     } else {
         drawer.classList.remove("open");
         btn.classList.remove("active");
         btn.textContent = "◀ Desc.";
     }
-}
+};
 
-export function initDescDrawer() {
+export const initDescDrawer = () => {
     const btn = document.getElementById("DescToggle");
     const drawer = document.getElementById("DescDrawer");
     const closeBtn = document.getElementById("DescDrawerClose");
     if (!btn || !drawer) return;
 
-    btn.textContent = "◀ Desc."; // Initial label
+    btn.textContent = "◀ Desc.";
     btn.addEventListener("click", () => setDescDrawer());
     addCloseHandler(closeBtn, () => setDescDrawer(false));
-
-    // Swipe-to-close (Right-side drawer, swipe right to close)
-    addSwipeClose(drawer, {
-        direction: "right",
-        onClose: () => setDescDrawer(false)
-    });
-}
-
+    addSwipeClose(drawer, { direction: "right", onClose: () => setDescDrawer(false) });
+};
 
 /**
- * 4. Wildfire News Drawer (Floating on the left)
+ * 4. Wildfire News Drawer
  */
-export function setNewsDrawer(open) {
+export const setNewsDrawer = (open) => {
     const btn = document.getElementById("WFnewsToggle");
     const drawer = document.getElementById("WFnewsDrawer");
     if (!btn || !drawer) return;
@@ -393,7 +334,7 @@ export function setNewsDrawer(open) {
         btn.style.display = "none";
         if (window.innerWidth <= 1024) {
             closeAllExcept("news");
-            if (clearHighlight) clearHighlight();
+            clearHighlight?.();
         }
     } else {
         if (!drawer.classList.contains("open")) return;
@@ -401,9 +342,9 @@ export function setNewsDrawer(open) {
         document.body.classList.remove("WFnews-drawer-open");
         btn.style.display = "block";
     }
-}
+};
 
-export function initNewsDrawer() {
+export const initNewsDrawer = () => {
     const btn = document.getElementById("WFnewsToggle");
     const drawer = document.getElementById("WFnewsDrawer");
     const closeBtn = document.getElementById("WFnewsDrawerClose");
@@ -411,18 +352,13 @@ export function initNewsDrawer() {
 
     btn.addEventListener("click", () => setNewsDrawer());
     addCloseHandler(closeBtn, () => setNewsDrawer(false));
-
-    // Swipe-to-close (Left-side drawer, swipe left to close)
-    addSwipeClose(drawer, {
-        direction: "left",
-        onClose: () => setNewsDrawer(false)
-    });
-}
+    addSwipeClose(drawer, { direction: "left", onClose: () => setNewsDrawer(false) });
+};
 
 /**
  * 5. MapPost Drawer
  */
-export function setMapPostDrawer(open) {
+export const setMapPostDrawer = (open) => {
     const btn = document.getElementById("MapPostToggle");
     const drawer = document.getElementById("MapPostDrawer");
     if (!drawer) return;
@@ -435,7 +371,7 @@ export function setMapPostDrawer(open) {
         if (btn) btn.style.display = "none";
         if (window.innerWidth <= 1024) {
             closeAllExcept("MapPost");
-            if (clearHighlight) clearHighlight();
+            clearHighlight?.();
         }
     } else {
         if (!drawer.classList.contains("open")) return;
@@ -443,9 +379,9 @@ export function setMapPostDrawer(open) {
         document.body.classList.remove("MapPost-drawer-open");
         if (btn) btn.style.display = "block";
     }
-}
+};
 
-export function initMapPostDrawer() {
+export const initMapPostDrawer = () => {
     const btn = document.getElementById("MapPostToggle");
     const drawer = document.getElementById("MapPostDrawer");
     const closeBtn = document.getElementById("MapPostDrawerClose");
@@ -453,18 +389,13 @@ export function initMapPostDrawer() {
 
     if (btn) btn.addEventListener("click", () => setMapPostDrawer());
     addCloseHandler(closeBtn, () => setMapPostDrawer(false));
-
-    // Swipe-to-close (Left-side drawer, swipe left to close)
-    addSwipeClose(drawer, {
-        direction: "left",
-        onClose: () => setMapPostDrawer(false)
-    });
-}
+    addSwipeClose(drawer, { direction: "left", onClose: () => setMapPostDrawer(false) });
+};
 
 /**
  * 6. Checkbox & Drawer Sync Logic
  */
-export function initCheckboxDrawerSync() {
+export const initCheckboxDrawerSync = () => {
     const newsCb = document.getElementById("layer-wildfire-news");
     const MapPostCb = document.getElementById("layer-MapPost");
     if (!newsCb || !MapPostCb) return;
@@ -473,11 +404,8 @@ export function initCheckboxDrawerSync() {
 
     newsCb.addEventListener("change", () => {
         if (newsCb.checked) {
-            // Auto-open only on Desktop and if no legend is currently displayed
             const isLegendOn = document.getElementById("MapLegend")?.style.display === "block";
-            if (!isMobile && !isLegendOn) {
-                setNewsDrawer(true);
-            }
+            if (!isMobile && !isLegendOn) setNewsDrawer(true);
             setMapPostDrawer(false);
         } else {
             setNewsDrawer(false);
@@ -486,39 +414,33 @@ export function initCheckboxDrawerSync() {
 
     MapPostCb.addEventListener("change", () => {
         if (MapPostCb.checked) {
-            // Auto-open only on Desktop and if no legend is currently displayed
             const isLegendOn = document.getElementById("MapLegend")?.style.display === "block";
-            if (!isMobile && !isLegendOn) {
-                setMapPostDrawer(true);
-            }
+            if (!isMobile && !isLegendOn) setMapPostDrawer(true);
             setNewsDrawer(false);
         } else {
             setMapPostDrawer(false);
         }
     });
 
-    // Initial sync on load - also block auto-open on mobile
     setTimeout(() => {
         if (isMobile) return;
-
         if (newsCb.checked && !MapPostCb.checked) setNewsDrawer(true);
         if (!newsCb.checked && MapPostCb.checked) setMapPostDrawer(true);
     }, 500);
-}
+};
 
 /**
  * Main Initialization
  */
-export function initAll() {
+export const initAll = () => {
     initAccordion();
     initStatsDrawer();
     initDescDrawer();
     initNewsDrawer();
     initMapPostDrawer();
     initCheckboxDrawerSync();
-}
+};
 
-// Run on load
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initAll);
 } else {

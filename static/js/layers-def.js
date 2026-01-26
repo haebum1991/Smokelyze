@@ -227,10 +227,10 @@ export const DATASET_SOURCE_MAP = {
 
 export function makeStepExpr(valueField, breaks, colors, nullVal) {
     if (!breaks || breaks.length === 0) return colors[0];
-    var fallback = (nullVal !== undefined) ? nullVal : "rgba(0, 0, 0, 0)";
-    var stepExpr = ["step", ["to-number", ["get", valueField]]];
+    const fallback = (nullVal !== undefined) ? nullVal : "rgba(0, 0, 0, 0)";
+    const stepExpr = ["step", ["to-number", ["get", valueField]]];
     stepExpr.push(colors[0]);
-    for (var i = 0; i < breaks.length; i++) {
+    for (let i = 0; i < breaks.length; i++) {
         stepExpr.push(breaks[i]);
         stepExpr.push(colors[i + 1]);
     }
@@ -245,22 +245,21 @@ export function makeStepExpr(valueField, breaks, colors, nullVal) {
 }
 
 export function makeSizeLegendItems(breaks, radii) {
-    var items = [{ label: "< " + breaks[0], radius: radii[0] }];
-    for (var i = 0; i < breaks.length; i++) {
-        var label = (i === breaks.length - 1) ? "> " + breaks[i] : breaks[i] + " to " + breaks[i + 1];
-        items.push({ label: label, radius: radii[i + 1] });
+    const items = [{ label: `< ${breaks[0]}`, radius: radii[0] }];
+    for (let i = 0; i < breaks.length; i++) {
+        const label = (i === breaks.length - 1) ? `> ${breaks[i]}` : `${breaks[i]} to ${breaks[i + 1]}`;
+        items.push({ label, radius: radii[i + 1] });
     }
     return items;
 }
 
-export function getLayerDef(key, sourceKey, fieldName, breaks, colors, opts) {
-    opts = opts || {};
-    var type = opts.type || "circle";
+export function getLayerDef(key, sourceKey, fieldName, breaks, colors, opts = {}) {
+    const type = opts.type || "circle";
 
-    var layerSpec;
+    let layerSpec;
     if (type === "symbol") {
         layerSpec = {
-            id: key + "-symbol",
+            id: `${key}-symbol`,
             type: "symbol",
             source: sourceKey,
             layout: {
@@ -277,7 +276,7 @@ export function getLayerDef(key, sourceKey, fieldName, breaks, colors, opts) {
             }
         };
     } else {
-        var defaultRadius = [
+        const defaultRadius = [
             "interpolate", ["linear"], ["zoom"],
             1, 3,
             3, 6,
@@ -285,12 +284,12 @@ export function getLayerDef(key, sourceKey, fieldName, breaks, colors, opts) {
             9, 14,
             12, 18
         ];
-        var radius = (opts.radius !== undefined) ? opts.radius : defaultRadius;
-        var strokeWidth = (opts.strokeWidth !== undefined) ? opts.strokeWidth : 1;
-        var strokeColor = opts.strokeColor || "black";
+        const radius = (opts.radius !== undefined) ? opts.radius : defaultRadius;
+        const strokeWidth = (opts.strokeWidth !== undefined) ? opts.strokeWidth : 1;
+        const strokeColor = opts.strokeColor || "black";
 
         layerSpec = {
-            id: key + "-circle",
+            id: `${key}-circle`,
             type: "circle",
             source: sourceKey,
             paint: {
@@ -308,8 +307,8 @@ export function getLayerDef(key, sourceKey, fieldName, breaks, colors, opts) {
         hoverOn: layerSpec.id,
         legend: {
             title: opts.title || fieldName,
-            breaks: breaks,
-            colors: colors,
+            breaks,
+            colors,
             labels: opts.labels || null
         },
         dsKey: opts.dsKey
@@ -387,44 +386,44 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "fire", field: "fireFrp", title: "FRP (MW)", breaks: BREAKS_FRP, colors: "#fd8d3c", decimals: 1, manualLayer: true }
 ];
 
-export const LAYER_DEFS = (function () {
-    var defs = {};
+export const LAYER_DEFS = (() => {
+    const defs = {};
 
-    LAYER_TEMPLATES.forEach(function (tmpl) {
-
+    LAYER_TEMPLATES.forEach(tmpl => {
         if (tmpl.manualLayer) {
             if (tmpl.duration && DATA_IMPORT_METHOD[tmpl.id]) {
                 DATA_IMPORT_METHOD[tmpl.id].duration = tmpl.duration;
             }
             return;
         }
-        var supported = tmpl.datasets || Object.keys(DATASET_SOURCE_MAP);
+        const supported = tmpl.datasets || Object.keys(DATASET_SOURCE_MAP);
 
-        supported.forEach(function (dsKey) {
+        supported.forEach(dsKey => {
             if (!DATASET_SOURCE_MAP[dsKey]) return;
-            var sourceKey = DATASET_SOURCE_MAP[dsKey];
-            var key = (tmpl.id === dsKey) ? tmpl.id : (tmpl.id + "-" + dsKey);
-            var fieldName = typeof tmpl.field === "function" ? tmpl.field(dsKey) : tmpl.field;
-            var breaks = typeof tmpl.breaks === "function" ? tmpl.breaks(dsKey) : tmpl.breaks;
-            var title = typeof tmpl.title === "function" ? tmpl.title(dsKey) : tmpl.title;
-            
+            const sourceKey = DATASET_SOURCE_MAP[dsKey];
+            const key = (tmpl.id === dsKey) ? tmpl.id : `${tmpl.id}-${dsKey}`;
+            const fieldName = typeof tmpl.field === "function" ? tmpl.field(dsKey) : tmpl.field;
+            const breaks = typeof tmpl.breaks === "function" ? tmpl.breaks(dsKey) : tmpl.breaks;
+            const title = typeof tmpl.title === "function" ? tmpl.title(dsKey) : tmpl.title;
+
             // Propagate duration to the raw source within DATA_IMPORT_METHOD
             if (tmpl.duration && DATA_IMPORT_METHOD[sourceKey]) {
                 DATA_IMPORT_METHOD[sourceKey].duration = tmpl.duration;
             }
-            
-            var opts = Object.assign({}, tmpl, {
-                title: title,
+
+            const opts = {
+                ...tmpl,
+                title,
                 labels: tmpl.labelParams,
-                dsKey: dsKey
-            });
+                dsKey
+            };
 
             defs[key] = getLayerDef(key, sourceKey, fieldName, breaks, tmpl.colors, opts);
         });
     });
 
     // Satellite data
-    var smokeTmpl = LAYER_TEMPLATES.find(function (t) { return t.id === "smoke"; });
+    const smokeTmpl = LAYER_TEMPLATES.find(t => t.id === "smoke");
     if (smokeTmpl) {
         defs.smoke = {
             layers: [
@@ -459,13 +458,12 @@ export const LAYER_DEFS = (function () {
         };
     }
 
-    var fireTmpl = LAYER_TEMPLATES.find(function (t) { return t.id === "fire" && t.field === "fireCount"; });
-    var frpTmpl = LAYER_TEMPLATES.find(function (t) { return t.id === "fire" && t.field === "fireFrp"; });
+    const fireTmpl = LAYER_TEMPLATES.find(t => t.id === "fire" && t.field === "fireCount");
+    const frpTmpl = LAYER_TEMPLATES.find(t => t.id === "fire" && t.field === "fireFrp");
 
     if (fireTmpl && frpTmpl) {
-    
-        var frpRadii = [2, 4, 6, 8, 10];
-        
+        const frpRadii = [2, 4, 6, 8, 10];
+
         defs.fire = {
             layers: [
                 {
@@ -496,7 +494,7 @@ export const LAYER_DEFS = (function () {
         };
     }
 
-    var burnTmpl = LAYER_TEMPLATES.find(function (t) { return t.id === "burn"; });
+    const burnTmpl = LAYER_TEMPLATES.find(t => t.id === "burn");
     if (burnTmpl) {
         defs.burn = {
             layers: [

@@ -123,7 +123,7 @@ title: ""
         <br>
 
         <div class="datadb-query-form" style="display: flex; justify-content: flex-end;">
-          <button class="datadb-query-btn" id="DatadbDataTableBtnImport" onclick="handleQuery()">Import data</button>
+          <button class="datadb-query-btn" id="DatadbDataTableBtnImport">Import data</button>
         </div>
         
         <!-- Query Content / Results -->
@@ -162,8 +162,7 @@ title: ""
             Latitude: <span id="DatadbLocationLat" style="color: var(--card-shadow);">-</span><br>
             <br>
             <!-- Embedded Map Container -->
-            <div id="DatadbLocationMap"
-              style="width: 100%; height: 40rem; border-radius: var(--border-radius-0p8rem);">
+            <div id="DatadbLocationMap" style="width: 100%; height: 40rem; border-radius: var(--border-radius-0p8rem);">
             </div>
           </div>
           
@@ -175,7 +174,7 @@ title: ""
           <!-- Data Table Section -->
           <div id="DatadbDataTableSection" class="datadb-tab-content nested-sub-tab-content">
             <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
-              <button class="datadb-query-btn" id="DatadbDataTableBtnDownload" onclick="downloadCSV()">Download CSV</button>
+              <button class="datadb-query-btn" id="DatadbDataTableBtnDownload">Download CSV</button>
             </div>
             
             <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin-bottom: 1.5rem;">
@@ -189,8 +188,8 @@ title: ""
               </div>
               
               <!-- Buttons -->
-              <button class="datadb-query-btn" id="DatadbDataTableBtnDateDefault" onclick="resetDateRange()">Default range</button>
-              <button class="datadb-query-btn" id="DatadbDataTableBtnDateSetRange" onclick="applyDateRange()">Set range</button>
+              <button class="datadb-query-btn" id="DatadbDataTableBtnDateDefault">Default range</button>
+              <button class="datadb-query-btn" id="DatadbDataTableBtnDateSetRange">Set range</button>
             </div>
             
             <div class="datadb-table-container">
@@ -202,9 +201,9 @@ title: ""
               </table>
             </div>
             <div id="DatadbDataTablePagination" class="datadb-pagination" style="display: none;">
-              <button id="DatadbDataTableBtnPrev" class="datadb-page-btn" onclick="changePage(-1)">Previous</button>
+              <button id="DatadbDataTableBtnPrev" class="datadb-page-btn">Previous</button>
               <span id="DatadbDataTablePageInfo">Page 1 of 1</span>
-              <button id="DatadbDataTableBtnNext" class="datadb-page-btn" onclick="changePage(1)">Next</button>
+              <button id="DatadbDataTableBtnNext" class="datadb-page-btn">Next</button>
             </div>
           </div>
 
@@ -279,7 +278,7 @@ title: ""
           <br>
           
           <div class="datadb-query-form" style="display: flex; justify-content: flex-end;">
-            <button class="datadb-query-btn" id="DatadbReportTableBtnGenerate" onclick="generateReport()">
+            <button class="datadb-query-btn" id="DatadbReportTableBtnGenerate">
               Generate Report
             </button>
           </div>
@@ -289,7 +288,7 @@ title: ""
             <hr>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
               <h3 id="DatadbReportTableTitle" style="font-size: 1.4rem;">Report Results</h3>
-              <button class="datadb-query-btn" id="DatadbReportTableBtnDownload" onclick="downloadReportCSV()">Download CSV</button>
+              <button class="datadb-query-btn" id="DatadbReportTableBtnDownload">Download CSV</button>
             </div>
 
             <div class="datadb-table-container">
@@ -302,9 +301,9 @@ title: ""
             </div>
 
             <div id="DatadbReportTablePagination" class="datadb-pagination" style="display: none;">
-              <button id="DatadbReportTableBtnPrev" class="datadb-page-btn" onclick="changeReportPage(-1)">Previous</button>
+              <button id="DatadbReportTableBtnPrev" class="datadb-page-btn">Previous</button>
               <span id="DatadbReportTablePageInfo">Page 1 of 1</span>
-              <button id="DatadbReportTableBtnNext" class="datadb-page-btn" onclick="changeReportPage(1)">Next</button>
+              <button id="DatadbReportTableBtnNext" class="datadb-page-btn">Next</button>
             </div>
           </div>
           
@@ -385,21 +384,12 @@ title: ""
     
     // Initialize map when Location tab is opened
     if (tabName === "DatadbLocationSection") {
-      // Use setTimeout to ensure the container is visible before initializing map
-      setTimeout(() => {
-        if (window.initLocationMap) {
-          window.initLocationMap();
-        }
-      }, 100);
+      window.dispatchEvent(new CustomEvent("tabOpenLocation"));
     }
-    
+
     // Render plots when Plots tab is opened
     if (tabName === "DatadbPlotsSection") {
-      setTimeout(() => {
-        if (window.renderAQSPlots) {
-          window.renderAQSPlots();
-        }
-      }, 100);
+      window.dispatchEvent(new CustomEvent("tabOpenPlots"));
     }
   }
 </script>

@@ -2,7 +2,7 @@
 /**
  * 비즈니스 로직: 데이터 로딩, 관련 이벤트 바인딩, 각 모듈(Fetcher, State, UI) 간의 실행 순서를 제어
  */
- 
+
 import * as utils from "./utils.js";
 import { DATA_IMPORT_METHOD, ExcludeLayerGroups, DATASET_SOURCE_MAP } from "./layers-def.js";
 import { map } from "./map-init.js";
@@ -38,7 +38,7 @@ export async function loadSourceData(sourceKey, isoDate) {
         if (ds && ds.source) {
             map.getSource(ds.source)?.setData(EMPTY_FC);
         }
-        
+
         clearModelStats();
         return;
     }
@@ -61,7 +61,7 @@ export async function loadSourceData(sourceKey, isoDate) {
 
     const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
     if (!ds) return;
-    
+
     ensureLayers();
 
     if (ds.firebase) {
@@ -250,62 +250,62 @@ export async function loadSourceData(sourceKey, isoDate) {
         const STATS_SOURCES = ExcludeLayerGroups.statsSources;
 
         if (STATS_SOURCES.includes(sourceKey) && data.features) {
-            var stateSums = {};
-            var computedStatsByState = {};
+            const stateSums = {};
+            const computedStatsByState = {};
 
             stateSums["US"] = {};
             stateSums["US_conus"] = {};
 
-            Object.keys(metricsMap).forEach(function (k) {
+            Object.keys(metricsMap).forEach(k => {
                 stateSums["US"][k] = { sum: 0, count: 0 };
                 stateSums["US_conus"][k] = { sum: 0, count: 0 };
             });
 
-            var keysToReset = [];
-            Object.keys(metricsMap).forEach(function (key) {
-                var p = metricsMap[key];
-                var fieldName = (typeof p === "function") ? p(sourceKey) : p;
+            const keysToReset = [];
+            Object.keys(metricsMap).forEach(key => {
+                const p = metricsMap[key];
+                const fieldName = (typeof p === "function") ? p(sourceKey) : p;
                 keysToReset.push(fieldName);
             });
 
-            Object.keys(regionStats).forEach(function (st) {
+            Object.keys(regionStats).forEach(st => {
                 if (!regionStats[st]) return;
-                keysToReset.forEach(function (k) {
+                keysToReset.forEach(k => {
                     if (regionStats[st][k] !== undefined) {
                         regionStats[st][k] = null;
                     }
                 });
             });
 
-            var dsMap = DATASET_SOURCE_MAP || {};
-            var dsKey = Object.keys(dsMap).find(function (k) { return dsMap[k] === sourceKey; }) || sourceKey;
+            const dsMap = DATASET_SOURCE_MAP || {};
+            const dsKey = Object.keys(dsMap).find(k => dsMap[k] === sourceKey) || sourceKey;
 
-            var resolvedMetrics = [];
-            Object.keys(metricsMap).forEach(function (key) {
-                var p = metricsMap[key];
-                var fieldName = (typeof p === "function") ? p(dsKey) : p;
-                resolvedMetrics.push({ key: key, field: fieldName });
+            const resolvedMetrics = [];
+            Object.keys(metricsMap).forEach(key => {
+                const p = metricsMap[key];
+                const fieldName = (typeof p === "function") ? p(dsKey) : p;
+                resolvedMetrics.push({ key, field: fieldName });
             });
 
-            data.features.forEach(function (fi) {
-                var s = fi.properties.state;
+            data.features.forEach(fi => {
+                const s = fi.properties.state;
                 if (!s) return;
 
                 if (!stateSums[s]) {
                     stateSums[s] = {};
-                    Object.keys(metricsMap).forEach(function (k) {
+                    Object.keys(metricsMap).forEach(k => {
                         stateSums[s][k] = { sum: 0, count: 0 };
                     });
                 }
 
-                var p = fi.properties;
-                var isConus = (s !== "Alaska" && s !== "Hawaii" && s !== "Canada" && s !== "Mexico");
+                const p = fi.properties;
+                const isConus = (s !== "Alaska" && s !== "Hawaii" && s !== "Canada" && s !== "Mexico");
 
-                resolvedMetrics.forEach(function (m) {
-                    var val = p[m.field];
+                resolvedMetrics.forEach(m => {
+                    const val = p[m.field];
 
                     if (val !== undefined && val !== null && !isNaN(Number(val))) {
-                        var v = Number(val);
+                        const v = Number(val);
                         stateSums[s][m.key].sum += v;
                         stateSums[s][m.key].count++;
 
@@ -318,8 +318,8 @@ export async function loadSourceData(sourceKey, isoDate) {
                         }
 
                         if (m.key.startsWith("ExcDays")) {
-                            var inc1 = (v === 1 ? 1 : 0);
-                            var inc2 = (v === 2 ? 1 : 0);
+                            const inc1 = (v === 1 ? 1 : 0);
+                            const inc2 = (v === 2 ? 1 : 0);
 
                             stateSums[s][m.key].c1 = (stateSums[s][m.key].c1 || 0) + inc1;
                             stateSums[s][m.key].c2 = (stateSums[s][m.key].c2 || 0) + inc2;
@@ -336,24 +336,24 @@ export async function loadSourceData(sourceKey, isoDate) {
                 });
             });
 
-            Object.keys(stateSums).forEach(function (state) {
-                var metricObj = stateSums[state];
-                var newStats = {};
-                var hasData = false;
+            Object.keys(stateSums).forEach(st => {
+                const metricObj = stateSums[st];
+                const newStats = {};
+                let hasData = false;
 
-                Object.keys(metricsMap).forEach(function (key) {
-                    var item = metricObj[key];
+                Object.keys(metricsMap).forEach(key => {
+                    const item = metricObj[key];
 
                     if (item && item.count > 0) {
                         if (COUNT_METRICS.includes(key)) {
-                            newStats[key] = item.sum + " / " + item.count;
+                            newStats[key] = `${item.sum} / ${item.count}`;
                         } else {
                             newStats[key] = item.sum / item.count;
                         }
 
                         if (key.startsWith("ExcDays")) {
-                            newStats[key + "_c1"] = item.c1 || 0;
-                            newStats[key + "_c2"] = item.c2 || 0;
+                            newStats[`${key}_c1`] = item.c1 || 0;
+                            newStats[`${key}_c2`] = item.c2 || 0;
                         }
                         hasData = true;
                     } else {
@@ -367,7 +367,7 @@ export async function loadSourceData(sourceKey, isoDate) {
                     } else {
                         newStats.label_display = "TMAX (°C)";
                     }
-                    computedStatsByState[state] = newStats;
+                    computedStatsByState[st] = newStats;
                 }
             });
 
@@ -376,7 +376,7 @@ export async function loadSourceData(sourceKey, isoDate) {
         }
 
     } catch (e) {
-        console.warn("loadSourceData failed [" + sourceKey + "]: ", e);
+        console.warn(`loadSourceData failed [${sourceKey}]: `, e);
         handleLoadingError(sourceKey, isoDate, ds);
     }
 }
@@ -389,14 +389,14 @@ function handleLoadingError(sourceKey, isoDate, ds = null) {
     document.querySelectorAll("input[type=checkbox][id^='layer-']").forEach(cb => {
         const shortId = cb.id.replace("layer-", "");
         const currentDataset = document.getElementById("MapDataSelect")?.value;
-        const config = DATA_IMPORT_METHOD[shortId + "-" + currentDataset] || DATA_IMPORT_METHOD[shortId];
+        const config = DATA_IMPORT_METHOD[`${shortId}-${currentDataset}`] || DATA_IMPORT_METHOD[shortId];
         if (config && config.source === sourceKey) {
             cb.checked = false;
         }
     });
 
     // 2. Clear Source data if config is provided
-    if (ds && ds.source) {
+    if (ds?.source) {
         map.getSource(ds.source)?.setData(EMPTY_FC);
     }
 
@@ -477,7 +477,7 @@ export async function updateAllActiveSources() {
             if (!cb.checked) return;
 
             const shortId = cb.id.replace("layer-", "");
-            const contextKey = shortId + "-" + currentDataset;
+            const contextKey = `${shortId}-${currentDataset}`;
             const globalKey = shortId;
 
             activeShortIds.add(shortId);
@@ -490,25 +490,25 @@ export async function updateAllActiveSources() {
                 targetConfig = DATA_IMPORT_METHOD[globalKey];
             }
 
-            if (targetConfig && targetConfig.source) {
+            if (targetConfig?.source) {
                 sourcesToLoad.add(targetConfig.source);
             }
         });
-        
+
         // Update activeSources in state so drill-down stats (AQS) can find data
         activeSources.length = 0;
         sourcesToLoad.forEach(s => activeSources.push(s));
-        
+
         const publishedSources = ExcludeLayerGroups.statsSources;
         const tryingToLoadPublished = Array.from(sourcesToLoad).some(s => publishedSources.includes(s));
-        
+
         // 로그인 안 되어 있고 Published data 로드 시도 시 데이터 클리어
         if (!auth.currentUser && tryingToLoadPublished) {
 
             // Clear all published source data to remove any cached state colors/data
             publishedSources.forEach(sourceKey => {
                 const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
-                if (ds && ds.source) {
+                if (ds?.source) {
                     map.getSource(ds.source)?.setData(EMPTY_FC);
                 }
                 // Clear from loaded state
@@ -520,14 +520,14 @@ export async function updateAllActiveSources() {
             // Clear all model stats to remove state colors
             clearModelStats();
         }
-        
+
         // previous code before adding AirNow data
         // const promises = [];
         // sourcesToLoad.forEach(sourceKey => {
         //     promises.push(loadSourceData(sourceKey, isoDate));
         // });
         // await Promise.all(promises);
-        
+
         // ---- [External data] Hourly vs Daily load synchronization ----
         const promises = [];
         let hasHourly = false;
@@ -558,11 +558,11 @@ export async function updateAllActiveSources() {
 
         applyLayerToggles();
         refreshSearchUIVisibility();
-        
+
         if (typeof triggerRefresh === "function") {
             triggerRefresh();
         }
-        
+
     } catch (e) {
         console.error("updateAllActiveSources failed", e);
     } finally {
@@ -573,7 +573,7 @@ export async function updateAllActiveSources() {
 export function bindEvents() {
     const datePicker = document.getElementById("datePicker");
     if (datePicker) {
-        const onDateChange = utils.debounce(function (e) {
+        const onDateChange = utils.debounce((e) => {
             if (saveDate) saveDate(e.target.value);
             resetLoadedSources(updateWildfireNewsList);
             updateAllActiveSources();
@@ -584,10 +584,10 @@ export function bindEvents() {
 
     const dataSelect = document.getElementById("MapDataSelect");
     if (dataSelect) {
-        dataSelect.addEventListener("change", function () {
-            var newVal = dataSelect.value;
-            if (state && state.currentHighlight) {
-                var newSourceKey = DATASET_SOURCE_MAP[newVal] || newVal;
+        dataSelect.addEventListener("change", () => {
+            const newVal = dataSelect.value;
+            if (state?.currentHighlight) {
+                const newSourceKey = DATASET_SOURCE_MAP[newVal] || newVal;
                 state.currentHighlight.dsKey = newVal;
                 state.currentHighlight.dataSource = newSourceKey;
             }
@@ -596,21 +596,21 @@ export function bindEvents() {
             updateAllActiveSources();
         });
     }
-    
-    const onLayerChange = utils.debounce(function () {
+
+    const onLayerChange = utils.debounce(() => {
         updateAllActiveSources();
     }, 200);
-    
+
     document.querySelectorAll("input[type=checkbox][id^='layer-']").forEach(cb => {
-        cb.addEventListener("change", function () {
+        cb.addEventListener("change", () => {
             const shortId = cb.id.replace("layer-", "");
             if (saveLayerFlag) saveLayerFlag(shortId, cb.checked);
-            
+
             // Published data 체크 시 로그인 확인 (사용자 클릭 이벤트 내에서 처리)
             if (cb.checked && !auth.currentUser) {
                 const publishedSources = ExcludeLayerGroups.statsSources;
                 const currentDataset = document.getElementById("MapDataSelect")?.value;
-                const contextKey = shortId + "-" + currentDataset;
+                const contextKey = `${shortId}-${currentDataset}`;
                 const globalKey = shortId;
 
                 let targetConfig = null;
@@ -621,26 +621,26 @@ export function bindEvents() {
                 }
 
                 // Published data인 경우 오버레이 표시
-                if (targetConfig && targetConfig.source && publishedSources.includes(targetConfig.source)) {
+                if (targetConfig?.source && publishedSources.includes(targetConfig.source)) {
                     utils.showAuthOverlay();
                 }
             }
-            
+
             if (!cb.checked && ExcludeLayerGroups.satelliteLayers.indexOf(shortId) !== -1) {
                 if (typeof clearPlotSelectionForLayer === "function") {
                     clearPlotSelectionForLayer(cb.id);
                 }
             }
-            
+
             onLayerChange();
         });
     });
-    
+
     // ---- [External data] AirNow ----
     // AirNow time picker event listener
     const timePicker = document.getElementById("timePicker");
     if (timePicker) {
-        timePicker.addEventListener("change", utils.debounce(async function () {
+        timePicker.addEventListener("change", utils.debounce(async () => {
             if (airnowHasActiveLayers()) {
                 toggleSpinner(true);
                 try {

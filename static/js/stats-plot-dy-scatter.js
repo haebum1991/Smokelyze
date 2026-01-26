@@ -14,25 +14,24 @@ import {
     attachResizeObserver
 } from "./stats-common.js";
 
-var currentDailyDetailStateScatter = null;
+let currentDailyDetailStateScatter = null;
 
 export function renderDailyScatter(containerId) {
-    var container = document.getElementById(containerId);
+    const container = document.getElementById(containerId);
     if (!container) return;
 
-    var theme = getPlotTheme();
-    var fontSize = parseInt(theme.fontSize, 10);
-    var isDetailMode = !!currentDailyDetailStateScatter;
+    const theme = getPlotTheme();
+    const fontSize = parseInt(theme.fontSize, 10);
+    const isDetailMode = !!currentDailyDetailStateScatter;
 
-    var activeCheckboxes = Array.from(document.querySelectorAll("input[type=checkbox][id^='layer-']:checked"))
-        .filter(function (cb) {
-
+    const activeCheckboxes = Array.from(document.querySelectorAll("input[type=checkbox][id^='layer-']:checked"))
+        .filter(cb => {
             // 체크박스: burn, smoke, fire, wildfire-news의 경우는 제외
-            var id = cb.id.replace("layer-", "");
-            var EXCLUDED = ExcludeLayerGroups.plotScatter;
+            const id = cb.id.replace("layer-", "");
+            const EXCLUDED = ExcludeLayerGroups.plotScatter;
             if (EXCLUDED.includes(id)) return false;
 
-            var lbl = cb.closest("label");
+            const lbl = cb.closest("label");
             return lbl && lbl.style.display !== "none";
         });
 
@@ -43,39 +42,35 @@ export function renderDailyScatter(containerId) {
         return;
     }
 
-    var dsInfo = getDatasetInfo();
-    var dsVal = dsInfo.value;
-    var dsKey = dsInfo.key;
-    var rawData = loadedGeoJSON ? loadedGeoJSON[dsKey] : null;
+    const { value: dsVal, key: dsKey } = getDatasetInfo();
+    const rawData = loadedGeoJSON?.[dsKey];
 
-    if (!rawData || !rawData.features) {
+    if (!rawData?.features) {
         renderPlotMessage(container, theme.messages.scatter);
-        renderBackButton(container, "stats-back-btn-scatter", isDetailMode ? function () {
+        renderBackButton(container, "stats-back-btn-scatter", isDetailMode ? () => {
             currentDailyDetailStateScatter = null;
             renderDailyScatter(containerId);
         } : null);
         return;
     }
 
-    var f1 = rawData.features;
+    let f1 = rawData.features;
     if (isDetailMode) {
-        f1 = f1.filter(function (fi) {
-            return fi.properties.state === currentDailyDetailStateScatter;
-        });
+        f1 = f1.filter(fi => fi.properties.state === currentDailyDetailStateScatter);
     }
 
-    var yKey = "MDA8O3";
-    var xKey = "MDA8O3_pred";
-    var xKey2 = null;
-    var primLabel = "";
-    var secLabel = "";
+    let yKey = "MDA8O3";
+    let xKey = "MDA8O3_pred";
+    let xKey2 = null;
+    let primLabel = "";
+    let secLabel = "";
 
-    var yTitle = "Observed MDA8 O3 (ppb)";
-    var xTitle = "Predicted MDA8 O3 (ppb)";
+    let yTitle = "Observed MDA8 O3 (ppb)";
+    let xTitle = "Predicted MDA8 O3 (ppb)";
 
     // Smoke column keys
-    var smokeKeyPrim = "smoke";
-    var smokeKeySec = "smoke";
+    let smokeKeyPrim = "smoke";
+    let smokeKeySec = "smoke";
 
     if (dsVal === "gam-v2") {
         xKey2 = "edm_MDA8O3_pred";
@@ -96,35 +91,32 @@ export function renderDailyScatter(containerId) {
         smokeKeySec = "smoke_m1p0m";
     }
 
-    var stateKey = "state"
-    var siteKey = "site_name"
-    var aqsKey = (dsVal === "pm-cbsa") ? "AQS_PM" : "AQS_O3";
-    var traces = [];
+    const stateKey = "state";
+    const siteKey = "site_name";
+    const aqsKey = (dsVal === "pm-cbsa") ? "AQS_PM" : "AQS_O3";
+    const traces = [];
 
-    function getDataSplitBySmoke(feats, xK, yK, sKey) {
-        var nonSmoke = { x: [], y: [], text: [], customdata: [] };
-        var smoke = { x: [], y: [], text: [], customdata: [] };
+    const getDataSplitBySmoke = (feats, xK, yK, sKey) => {
+        const nonSmoke = { x: [], y: [], text: [], customdata: [] };
+        const smoke = { x: [], y: [], text: [], customdata: [] };
 
-        feats.forEach(function (fi) {
-            var p = fi.properties;
-            var xv = p[xK];
-            var yv = p[yK];
+        feats.forEach(fi => {
+            const p = fi.properties;
+            const xv = p[xK];
+            const yv = p[yK];
 
-            var s = p.smoke;
+            let s = p.smoke;
             if (sKey && p[sKey] !== undefined) {
                 s = p[sKey];
             }
 
             if (xv !== undefined && xv !== null && yv !== undefined && yv !== null) {
-                var ptName = p[siteKey] || "";
-                var ptState = p[stateKey] || "";
-                var ptAQS = p[aqsKey] || "";
+                const ptName = p[siteKey] || "";
+                const ptState = p[stateKey] || "";
+                const ptAQS = p[aqsKey] || "";
 
                 // Combine info into a single text string for hover
-                var hoverText =
-                    "State: " + ESML(ptState) + "<br>" +
-                    "AQS: " + ESML(ptAQS) + "<br>" +
-                    "Site name: " + ESML(ptName);
+                const hoverText = `State: ${ESML(ptState)}<br>AQS: ${ESML(ptAQS)}<br>Site name: ${ESML(ptName)}`;
 
                 if (Number(s) === 1) {
                     // Smoke
@@ -141,50 +133,38 @@ export function renderDailyScatter(containerId) {
                 }
             }
         });
-        return { nonSmoke: nonSmoke, smoke: smoke };
-    }
+        return { nonSmoke, smoke };
+    };
 
     // Pre-define hover templates
-    var hoverEMBER = "%{text}<br>" +
-        yTitle + ": %{y:.0f}<br>" +
-        xTitle + ": %{x:.1f}<extra></extra>";
+    const hoverEMBER = `${yTitle}: %{y:.0f}<br>${xTitle}: %{x:.1f}<br>%{text}<extra></extra>`;
+
+    let plot_title = `Comparison by AQS: Obs. vs Pred. <br> (date: ${currentDate()}, source: ${ESML(dsVal)})`;
+    let hover1 = `${yTitle}: %{y:.1f}<br>${xTitle}${primLabel ? ` (${primLabel})` : ""}: %{x:.2f}<br>%{text}<extra></extra>`;
+    let hover2 = `${yTitle}: %{y:.1f}<br>${xTitle} (${secLabel}): %{x:.2f}<br>%{text}<extra></extra>`;
 
     if (dsVal === "pm-cbsa") {
-        var plot_title = "Comparison by AQS: PM2.5 vs Smoke PM2.5 <br> (date: " + currentDate() + ", source: " + ESML(dsVal) + ")"
-        var hover1 = "%{text}<br>" +
-            yTitle + ": %{y:.1f}<br>" +
-            xTitle + (primLabel ? " (" + primLabel + ")" : "") + ": %{x:.2f}<extra></extra>";
-        var hover2 = "%{text}<br>" +
-            yTitle + ": %{y:.1f}<br>" +
-            xTitle + " (" + secLabel + "): %{x:.2f}<extra></extra>";
+        plot_title = `Comparison by AQS: PM2.5 vs Smoke PM2.5 <br> (date: ${currentDate()}, source: ${ESML(dsVal)})`;
     } else {
-        var plot_title = "Comparison by AQS: Obs. vs Pred. <br> (date: " + currentDate() + ", source: " + ESML(dsVal) + ")"
-        var hover1 = "%{text}<br>" +
-            yTitle + ": %{y:.0f}<br>" +
-            xTitle + (primLabel ? " (" + primLabel + ")" : "") + ": %{x:.1f}<extra></extra>";
-        var hover2 = "%{text}<br>" +
-            yTitle + ": %{y:.0f}<br>" +
-            xTitle + " (" + secLabel + "): %{x:.1f}<extra></extra>";
+        hover1 = `${yTitle}: %{y:.0f}<br>${xTitle}${primLabel ? ` (${primLabel})` : ""}: %{x:.1f}<br>%{text}<extra></extra>`;
+        hover2 = `${yTitle}: %{y:.0f}<br>${xTitle} (${secLabel}): %{x:.1f}<br>%{text}<extra></extra>`;
     }
 
     if (dsVal === "epa-ember") {
-        var data1 = { x: [], y: [], text: [], customdata: [] };
+        const data1 = { x: [], y: [], text: [], customdata: [] };
 
-        f1.forEach(function (fi) {
-            var p = fi.properties;
-            var xv = p[xKey];
-            var yv = p[yKey];
+        f1.forEach(fi => {
+            const p = fi.properties;
+            const xv = p[xKey];
+            const yv = p[yKey];
             if (xv !== undefined && xv !== null && yv !== undefined && yv !== null) {
                 data1.x.push(xv);
                 data1.y.push(yv);
 
-                var ptName = p[siteKey] || "";
-                var ptState = p[stateKey] || "";
-                var ptAQS = p[aqsKey] || "";
-                var hoverText =
-                    "State: " + ESML(ptState) + "<br>" +
-                    "AQS: " + ESML(ptAQS) + "<br>" +
-                    "Site name: " + ESML(ptName);
+                const ptName = p[siteKey] || "";
+                const ptState = p[stateKey] || "";
+                const ptAQS = p[aqsKey] || "";
+                const hoverText = `State: ${ESML(ptState)}<br>AQS: ${ESML(ptAQS)}<br>Site name: ${ESML(ptName)}`;
 
                 data1.text.push(hoverText);
                 data1.customdata.push(p);
@@ -211,9 +191,7 @@ export function renderDailyScatter(containerId) {
         }
     } else {
         // Standard Logic with potential Dual Models
-
-        // --- Model 1 ---
-        var data1 = getDataSplitBySmoke(f1, xKey, yKey, smokeKeyPrim);
+        const data1 = getDataSplitBySmoke(f1, xKey, yKey, smokeKeyPrim);
 
         if (data1.nonSmoke.x.length > 0 && dsVal !== "pm-cbsa") {
             traces.push({
@@ -221,7 +199,7 @@ export function renderDailyScatter(containerId) {
                 y: data1.nonSmoke.y,
                 mode: "markers",
                 type: "scatter",
-                name: "Non-smoke day" + (primLabel ? " (" + primLabel + ")" : ""),
+                name: `Non-smoke day${primLabel ? ` (${primLabel})` : ""}`,
                 text: data1.nonSmoke.text,
                 customdata: data1.nonSmoke.customdata,
                 marker: {
@@ -240,7 +218,7 @@ export function renderDailyScatter(containerId) {
                 y: data1.smoke.y,
                 mode: "markers",
                 type: "scatter",
-                name: "Smoke day" + (primLabel ? " (" + primLabel + ")" : ""),
+                name: `Smoke day${primLabel ? ` (${primLabel})` : ""}`,
                 text: data1.smoke.text,
                 customdata: data1.smoke.customdata,
                 marker: {
@@ -255,7 +233,7 @@ export function renderDailyScatter(containerId) {
 
         // --- Model 2 (if exists) ---
         if (xKey2) {
-            var data2 = getDataSplitBySmoke(f1, xKey2, yKey, smokeKeySec);
+            const data2 = getDataSplitBySmoke(f1, xKey2, yKey, smokeKeySec);
 
             if (data2.nonSmoke.x.length > 0 && dsVal !== "pm-cbsa") {
                 traces.push({
@@ -263,7 +241,7 @@ export function renderDailyScatter(containerId) {
                     y: data2.nonSmoke.y,
                     mode: "markers",
                     type: "scatter",
-                    name: "Non-smoke day (" + secLabel + ")",
+                    name: `Non-smoke day (${secLabel})`,
                     text: data2.nonSmoke.text,
                     customdata: data2.nonSmoke.customdata,
                     marker: {
@@ -282,7 +260,7 @@ export function renderDailyScatter(containerId) {
                     y: data2.smoke.y,
                     mode: "markers",
                     type: "scatter",
-                    name: "Smoke day (" + secLabel + ")",
+                    name: `Smoke day (${secLabel})`,
                     text: data2.smoke.text,
                     customdata: data2.smoke.customdata,
                     marker: {
@@ -297,20 +275,18 @@ export function renderDailyScatter(containerId) {
         }
     }
 
-    var minVal = null;
-    var maxVal = null;
+    let minVal = null;
+    let maxVal = null;
 
     if (traces.length > 0) {
-        var allVals = [];
-        traces.forEach(function (t) {
-            if (t.x) allVals = allVals.concat(t.x);
-            if (t.y) allVals = allVals.concat(t.y);
+        let allVals = [];
+        traces.forEach(t => {
+            if (t.x) allVals = [...allVals, ...t.x];
+            if (t.y) allVals = [...allVals, ...t.y];
         });
         if (allVals.length > 0) {
-            minVal = Math.min(...allVals);
-            maxVal = Math.max(...allVals);
-            minVal = minVal - 5;
-            maxVal = maxVal + 5;
+            minVal = Math.min(...allVals) - 5;
+            maxVal = Math.max(...allVals) + 5;
         }
     }
 
@@ -330,14 +306,14 @@ export function renderDailyScatter(containerId) {
 
     if (traces.length === 0) {
         renderPlotMessage(container, theme.messages.scatter);
-        renderBackButton(container, "stats-back-btn-scatter", isDetailMode ? function () {
+        renderBackButton(container, "stats-back-btn-scatter", isDetailMode ? () => {
             currentDailyDetailStateScatter = null;
             renderDailyScatter(containerId);
         } : null);
         return;
     }
 
-    var layout = {
+    const layout = {
         paper_bgcolor: theme.paper_bgcolor,
         plot_bgcolor: theme.plot_bgcolor,
         title: {
@@ -346,7 +322,8 @@ export function renderDailyScatter(containerId) {
             x: 0.5,
             xanchor: "center"
         },
-        xaxis: Object.assign({}, getSpikeLayout(theme), {
+        xaxis: {
+            ...getSpikeLayout(theme),
             title: { text: xTitle, font: { size: fontSize, color: theme.axisText } },
             tickfont: { size: fontSize * 0.8, color: theme.axisText },
             gridcolor: theme.grid,
@@ -354,8 +331,9 @@ export function renderDailyScatter(containerId) {
             linecolor: theme.axisText,
             mirror: true,
             range: [minVal, maxVal]
-        }),
-        yaxis: Object.assign({}, getSpikeLayout(theme), {
+        },
+        yaxis: {
+            ...getSpikeLayout(theme),
             title: { text: yTitle, font: { size: fontSize, color: theme.axisText } },
             tickfont: { size: fontSize * 0.8, color: theme.axisText },
             gridcolor: theme.grid,
@@ -363,7 +341,7 @@ export function renderDailyScatter(containerId) {
             linecolor: theme.axisText,
             mirror: true,
             range: [minVal, maxVal]
-        }),
+        },
         legend: {
             orientation: "v",
             y: 0,
@@ -406,41 +384,34 @@ export function renderDailyScatter(containerId) {
         margin: { t: 70, r: 50, b: 50, l: 50 }
     };
 
-    var filename = "scatter_" + (isDetailMode ? currentDailyDetailStateScatter : "allstate") + "_" + currentDate();
-    var config = getPlotlyConfig(filename);
+    const filename = `scatter_${isDetailMode ? currentDailyDetailStateScatter : "allstate"}_${currentDate()}`;
+    const config = getPlotlyConfig(filename);
 
     clearPlotMessage(container);
-    Plotly.react(container, traces, layout, config).then(function () {
-
-        container.on("plotly_click", function (data) {
+    Plotly.react(container, traces, layout, config).then(() => {
+        container.on("plotly_click", (data) => {
             if (data.points.length > 0) {
-                var pt = data.points[0];
-                var props = pt.customdata;
-                if (props) {
-                    if (highlightLocation) {
-
-                        var s = f1.find(f => f.properties === props);
-
-                        if (!s && props.ID) {
-                            s = f1.find(f => f.properties.ID === props.ID);
-                        }
-
-                        if (s && s.geometry) {
-                            highlightSiteOnMap(s.geometry.coordinates, props, dsInfo.key);
-                        }
+                const pt = data.points[0];
+                const props = pt.customdata;
+                if (props && highlightLocation) {
+                    let s = f1.find(f => f.properties === props);
+                    if (!s && props.ID) {
+                        s = f1.find(f => f.properties.ID === props.ID);
+                    }
+                    if (s?.geometry) {
+                        highlightSiteOnMap(s.geometry.coordinates, props, dsInfo.key);
                     }
                 }
             }
         });
 
         attachResizeObserver(container, "_scatterObserver");
-        renderBackButton(container, "stats-back-btn-scatter", isDetailMode ? function () {
+        renderBackButton(container, "stats-back-btn-scatter", isDetailMode ? () => {
             currentDailyDetailStateScatter = null;
             renderDailyScatter(containerId);
         } : null);
-
     });
-};
+}
 
 // Export reset for ui-reset.js
 export function resetState() {

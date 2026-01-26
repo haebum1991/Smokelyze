@@ -15,7 +15,7 @@ import { regionStats } from "./layers-state.js";
 export function initGlobalTooltip() {
     if (document.getElementById("MapTooltip")) return;
 
-    var style = document.createElement("style");
+    const style = document.createElement("style");
     style.innerHTML = `
       #MapTooltip {
         z-index: var(--z-MapTooltip);  
@@ -80,7 +80,7 @@ export function initGlobalTooltip() {
     `;
 
     document.head.appendChild(style);
-    var tooltipDiv = document.createElement("div");
+    const tooltipDiv = document.createElement("div");
     tooltipDiv.id = "MapTooltip";
     document.body.appendChild(tooltipDiv);
 }

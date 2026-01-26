@@ -97,7 +97,15 @@ function applyTraceStyle(trace, styleKey, theme) {
 /**
  * Main function to render all AQS plots
  */
-export function renderAQSPlots(tableData, dsId, aqs) {
+// Store current data for re-rendering on theme change
+let _cachedTableData = null;
+let _cachedDsId = null;
+let _cachedAqs = null;
+
+/**
+ * Internal function that performs the actual plotting
+ */
+function _innerRenderAQSPlots(tableData, dsId, aqs) {
     const theme = getPlotTheme();
 
     if (!tableData || tableData.length === 0) {
@@ -120,6 +128,52 @@ export function renderAQSPlots(tableData, dsId, aqs) {
     // 4. Prepare Annual Exceedance Plot
     renderAnnualExceedancePlot(theme, dsId, aqs, tableData);
 }
+
+/**
+ * Main wrapper function to cache data and call internal render
+ */
+export function renderAQSPlots(tableData, dsId, aqs) {
+    _cachedTableData = tableData;
+    _cachedDsId = dsId;
+    _cachedAqs = aqs;
+    _innerRenderAQSPlots(tableData, dsId, aqs);
+}
+
+// Dedicated Theme Listener for AQS Plots
+window.addEventListener("themeChanged", function () {
+    // Only run if we actually have data loaded
+    if (!_cachedTableData) return;
+
+    const selector = [
+        "#DatadbPlot1",
+        "#DatadbPlot2",
+        "#DatadbPlot3",
+        "#DatadbPlot4"
+    ].join(", ");
+
+    const targets = document.querySelectorAll(selector);
+    if (targets.length === 0) return;
+
+    // 1. Fade Out
+    targets.forEach(function (el) {
+        el.style.transition = "opacity 0.3s ease";
+        el.style.opacity = "0";
+    });
+
+    setTimeout(function () {
+        // 2. Redraw with new theme (using cached data)
+        _innerRenderAQSPlots(_cachedTableData, _cachedDsId, _cachedAqs);
+
+        // 3. Fade In
+        setTimeout(function () {
+            const activeTargets = document.querySelectorAll(selector);
+            activeTargets.forEach(function (el) {
+                el.style.opacity = "1";
+            });
+        }, 150);
+    }, 300);
+});
+
 
 function renderDailyTimeSeriesPlot(theme, dsId, aqs, tableData) {
     const container = document.getElementById("DatadbPlot1");

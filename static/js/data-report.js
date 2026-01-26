@@ -277,7 +277,7 @@ async function loadStateData(datasetId, state, config) {
 /**
  * Core Logic: Generate Report
  */
-window.generateReport = async function () {
+async function generateReport() {
 
     if (!auth.currentUser) {
         showAuthOverlay();
@@ -347,7 +347,7 @@ window.generateReport = async function () {
         btn.textContent = originalText;
         btn.disabled = false;
     }
-};
+}
 
 /**
  * Logic to calculate metrics (Mirrors R switch case)
@@ -530,15 +530,15 @@ function renderDatadbReportTable() {
     document.getElementById("DatadbReportTableBtnNext").disabled = (currentPage === totalPages);
 }
 
-window.changeReportPage = function (delta) {
+function changeReportPage(delta) {
     currentPage += delta;
     renderDatadbReportTable();
-};
+}
 
 /**
  * Export CSV
  */
-window.downloadReportCSV = function () {
+function downloadReportCSV() {
     
     if (!auth.currentUser) {
         showAuthOverlay();
@@ -576,7 +576,7 @@ window.downloadReportCSV = function () {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-};
+}
 
 // --- Initialization ---
 function initReport() {
@@ -595,6 +595,19 @@ function initReport() {
     }
 
     periodRadios.forEach(r => r.addEventListener("change", handlePeriodChange));
+    
+    // Button Event Listeners
+    const btnGenerate = document.getElementById("DatadbReportTableBtnGenerate");
+    if (btnGenerate) btnGenerate.addEventListener("click", generateReport);
+
+    const btnDownload = document.getElementById("DatadbReportTableBtnDownload");
+    if (btnDownload) btnDownload.addEventListener("click", downloadReportCSV);
+
+    const btnPrev = document.getElementById("DatadbReportTableBtnPrev");
+    if (btnPrev) btnPrev.addEventListener("click", () => changeReportPage(-1));
+
+    const btnNext = document.getElementById("DatadbReportTableBtnNext");
+    if (btnNext) btnNext.addEventListener("click", () => changeReportPage(1));
     
     onAuthStateChanged(auth, (user) => {
         updateAuthButton("DatadbReportTableBtnGenerate", user, "Generate Report");

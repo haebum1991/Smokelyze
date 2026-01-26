@@ -104,27 +104,27 @@ export function updateLegend(activeStack) {
  * Feature: Layer Color Indicators
  */
 export function updateLayerToggleColors() {
-    var dataset = document.getElementById("MapDataSelect")?.value;
+    const dataset = document.getElementById("MapDataSelect")?.value;
     if (!dataset) return;
 
-    function getGradientStyle(colors) {
+    const getGradientStyle = (colors) => {
         if (!colors || colors.length === 0) return "transparent";
-        var valid = colors.filter(c => !c.includes("rgba") || !c.includes(", 0)"));
+        let valid = colors.filter(c => !c.includes("rgba") || !c.includes(", 0)"));
         if (valid.length === 0 && colors.length > 0) valid = [colors[colors.length - 1]];
         if (valid.length === 1) return valid[0];
         return `linear-gradient(to right, ${valid.join(", ")})`;
-    }
+    };
 
-    var checkboxes = document.querySelectorAll("input[type=checkbox][id^='layer-']");
-    checkboxes.forEach(function (cb) {
-        var shortId = cb.id.replace("layer-", "");
-        var dot = cb.parentElement.querySelector(".layer-dot");
+    const checkboxes = document.querySelectorAll("input[type=checkbox][id^='layer-']");
+    checkboxes.forEach(cb => {
+        const shortId = cb.id.replace("layer-", "");
+        const dot = cb.parentElement.querySelector(".layer-dot");
         if (!dot) return;
 
-        var fullKey = LAYER_DEFS[shortId] ? shortId : shortId + "-" + dataset;
-        var layerDef = LAYER_DEFS[fullKey];
+        const fullKey = LAYER_DEFS[shortId] ? shortId : `${shortId}-${dataset}`;
+        const layerDef = LAYER_DEFS[fullKey];
 
-        if (layerDef && layerDef.legend && layerDef.legend.colors) {
+        if (layerDef?.legend?.colors) {
             dot.style.background = getGradientStyle(layerDef.legend.colors);
         } else {
             dot.style.background = "transparent";
@@ -142,51 +142,50 @@ export function updateStateColors() {
         return;
     }
 
-    var EXCLUDED = ExcludeLayerGroups.stateChoropleth;
-    var stack = activeLayerStack.filter(id => EXCLUDED.indexOf(id) === -1);
+    const EXCLUDED = ExcludeLayerGroups.stateChoropleth;
+    const stack = activeLayerStack.filter(id => !EXCLUDED.includes(id));
 
     if (stack.length === 0) {
         if (map.getLayer("states-fill")) map.setPaintProperty("states-fill", "fill-opacity", 0);
         return;
     }
-    var topId = stack[stack.length - 1];
+    const topId = stack[stack.length - 1];
 
-    var dataset = document.getElementById("MapDataSelect")?.value;
-    var fullKey = LAYER_DEFS[topId] ? topId : topId + "-" + dataset;
-    var def = LAYER_DEFS[fullKey];
+    const dataset = document.getElementById("MapDataSelect")?.value;
+    const fullKey = LAYER_DEFS[topId] ? topId : `${topId}-${dataset}`;
+    const def = LAYER_DEFS[fullKey];
 
-    if (!def || !def.legend || !def.legend.breaks || !def.legend.colors) {
+    if (!def?.legend?.breaks || !def?.legend?.colors) {
         if (map.getLayer("states-fill")) map.setPaintProperty("states-fill", "fill-opacity", 0);
         return;
     }
 
-    var breaks = def.legend.breaks;
-    var colors = def.legend.colors;
+    const { breaks, colors } = def.legend;
 
-    function getColor(val) {
+    const getColor = (val) => {
         if (val === null || val === undefined || isNaN(val)) return null;
-        for (var i = 0; i < breaks.length; i++) {
+        for (let i = 0; i < breaks.length; i++) {
             if (val < breaks[i]) return colors[i];
         }
         return colors[colors.length - 1];
-    }
+    };
 
-    var rules = [];
-    var hasData = false;
+    const rules = [];
+    let hasData = false;
 
-    Object.keys(regionStats).forEach(function (stateName) {
-        var stats = regionStats[stateName];
+    Object.keys(regionStats).forEach(stateName => {
+        const stats = regionStats[stateName];
         if (!stats) return;
 
         const tmpl = LAYER_TEMPLATES.find(t => t.id === topId);
-        const key = (tmpl && tmpl.manualLayer) ? tmpl.field : topId;
-        var val = stats[key];
+        const key = tmpl?.manualLayer ? tmpl.field : topId;
+        const val = stats[key];
 
         if (val === null || val === undefined || val === "" || val === "NA") return;
         if (typeof val === "string" && val.includes("/")) return;
 
-        var numVal = Number(val);
-        var c = getColor(numVal);
+        const numVal = Number(val);
+        const c = getColor(numVal);
         if (c) {
             rules.push(stateName);
             rules.push(c);
@@ -195,7 +194,7 @@ export function updateStateColors() {
     });
 
     if (hasData) {
-        var matchExpr = ["match", ["coalesce", ["get", "ID"], ["get", "name"], ["get", "NAME"], ["get", "STUSPS"], ""]];
+        const matchExpr = ["match", ["coalesce", ["get", "ID"], ["get", "name"], ["get", "NAME"], ["get", "STUSPS"], ""]];
         rules.forEach(r => matchExpr.push(r));
         matchExpr.push("rgba(0,0,0,0)"); // Default
 
