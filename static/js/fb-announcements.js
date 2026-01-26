@@ -18,7 +18,11 @@ const state = {
     lastDoc: null,
     hasNext: false,
     isFirstPage: true,
-    totalCount: 0
+    totalCount: 0,
+    
+    // Optimization: Cache and loading state
+    pageCache: {},
+    isLoading: false
 };
 
 const db = fb.db;
@@ -317,57 +321,79 @@ async function fetchTotalCount() {
 }
 
 async function loadPage(direction, forceHome = false) {
+    if (state.isLoading) return;
+
     if (forceHome) {
         state.currentPage = 1;
         state.firstDoc = null;
         state.lastDoc = null;
+        state.pageCache = {};
     }
 
-    let q;
-    if (direction === 1 && state.lastDoc) {
-        // Next page
-        q = query(AnnouncementCol, orderBy("createdAt", "desc"), startAfter(state.lastDoc), limit(state.pageSize + 1));
-    } else if (direction === -1 && state.firstDoc) {
-        // Prev page
-        q = query(AnnouncementCol, orderBy("createdAt", "desc"), endBefore(state.firstDoc), limitToLast(state.pageSize));
-    } else {
-        // Initial load or refresh current page
-        q = query(AnnouncementCol, orderBy("createdAt", "desc"), limit(state.pageSize + 1));
-        state.currentPage = 1;
+    const targetPage = state.currentPage + direction;
+
+    // Use cache if available for non-initial loads
+    if (direction !== 0 && state.pageCache[targetPage]) {
+        state.currentPage = targetPage;
+        state.RecentIds = state.pageCache[targetPage].ids;
+        state.hasNext = state.pageCache[targetPage].hasNext;
+        renderAnnouncementList();
+        return;
     }
 
-    const snapshot = await getDocs(q);
-    const docs = snapshot.docs;
+    state.isLoading = true;
+    try {
+        let q;
+        if (direction === 1 && state.lastDoc) {
+            q = query(AnnouncementCol, orderBy("createdAt", "desc"), startAfter(state.lastDoc), limit(state.pageSize + 1));
+        } else if (direction === -1 && state.firstDoc) {
+            q = query(AnnouncementCol, orderBy("createdAt", "desc"), endBefore(state.firstDoc), limitToLast(state.pageSize));
+        } else {
+            q = query(AnnouncementCol, orderBy("createdAt", "desc"), limit(state.pageSize + 1));
+            state.currentPage = 1;
+        }
 
-    if (docs.length === 0 && state.currentPage > 1) {
-        return loadPage(-1);
+        const snapshot = await getDocs(q);
+        const docs = snapshot.docs;
+
+        if (docs.length === 0 && state.currentPage > 1) {
+            state.isLoading = false;
+            return loadPage(-1);
+        }
+
+        if (direction >= 0) {
+            state.hasNext = docs.length > state.pageSize;
+            if (state.hasNext) docs.pop();
+        } else {
+            state.hasNext = true;
+        }
+
+        state.RecentIds = [];
+        docs.forEach(d => {
+            const id = d.id;
+            state.AnnouncementData[id] = d.data();
+            state.RecentIds.push(id);
+        });
+
+        // Store in cache
+        state.pageCache[targetPage] = {
+            ids: state.RecentIds,
+            hasNext: state.hasNext
+        };
+
+        state.firstDoc = docs[0] || null;
+        state.lastDoc = docs[docs.length - 1] || null;
+
+        if (direction !== 0) {
+            state.currentPage = targetPage;
+        }
+
+        renderAnnouncementList();
+    } catch (e) {
+        console.error("loadPage failed:", e);
+    } finally {
+        state.isLoading = false;
     }
-
-    // Determine Has Next
-    if (direction >= 0) {
-        state.hasNext = docs.length > state.pageSize;
-        if (state.hasNext) docs.pop();
-    } else {
-        state.hasNext = true;
-    }
-
-    // Update state
-    state.RecentIds = [];
-    state.AnnouncementData = {};
-    docs.forEach(d => {
-        const id = d.id;
-        state.AnnouncementData[id] = d.data();
-        state.RecentIds.push(id);
-    });
-
-    state.firstDoc = docs[0] || null;
-    state.lastDoc = docs[docs.length - 1] || null;
-
-    if (direction !== 0) {
-        state.currentPage += direction;
-    }
-
-    renderAnnouncementList();
 }
 
 // --- 8. Initialization ---
@@ -393,9 +419,14 @@ fb.onAuthStateChanged(fb.auth, async (user) => {
 });
 
 bindEvents();
+
+// Consolidated Init
 (async () => {
-    await fetchTotalCount();
-    renderAnnouncementList(); // Update pagination info immediately
-    await loadPage(0);
+    try {
+        await fetchTotalCount();
+        await loadPage(0);
+    } catch (e) {
+        console.error("Init failed:", e);
+    }
 })();
 

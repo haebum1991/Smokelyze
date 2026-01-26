@@ -13,7 +13,7 @@
   "scripts": {
     "build": "hugo && npm run minify",
     "minify": "npm run minify:js && npm run minify:css",
-    "minify:js": "find public/js -name '*.js' -exec npx terser {} -o {} -c -m ';'",
+    "minify:js": "find public/js -name '*.js' -exec npx terser {} -o {} -c \"pure_funcs=['console.log']\" -m ';'",
     "minify:css": "find public/css -name '*.css' -exec npx clean-css-cli -o {} {} ';'"
   }
 }

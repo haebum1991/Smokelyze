@@ -23,7 +23,8 @@ const state = {
     MarkerIds: new Set(),
     previewMarker: null,
     isMapPostMode: false,
-    dbRefs: {}
+    dbRefs: {},
+    lastRecentIdsStr: ""
 };
 
 const db = fb.db;
@@ -804,10 +805,24 @@ function startRecentPostsListener() {
         state.RecentIds = ids;
         mapUpdateGeoJSON();
 
-        // Also fetch all replies for these specific top 20 MapPosts
+        // [Optimization] Only restart reply listener if the set of IDs has actually changed
+        const currentIdsStr = JSON.stringify(ids);
+        if (currentIdsStr === state.lastRecentIdsStr) {
+            
+            console.log("Without any server communication.");
+            
+            // Still update UI in case only data changed (likes, etc)
+            renderMapPostList();
+            if (state.viewingDocId) renderMapPostDetail(state.viewingDocId);
+            return;
+        }
+        
+        console.log("Being reloaded from the server.");
+        state.lastRecentIdsStr = currentIdsStr;
+
         if (state.unsubscribeRecentReplies) state.unsubscribeRecentReplies();
+
         if (ids.length > 0) {
-            // Security: Added viewers filter to match rules and avoid Permission Denied
             const rq = query(MapPostCol,
                 where("type", "==", "reply"),
                 where("rootId", "in", ids),
@@ -838,29 +853,33 @@ function startRecentPostsListener() {
 
 // --- 11. Final Initialization ---
 state.currentUser = auth.currentUser;
+
+// Consolidated Listener Control
+const initMapPostListener = utils.debounce(() => {
+    startRecentPostsListener();
+}, 200);
+
 onAuthStateChanged(auth, (user) => {
     const oldUid = state.currentUser ? state.currentUser.uid : null;
     state.currentUser = user;
     const newUid = user ? user.uid : null;
 
-    // Re-render to update edit/delete button visibility
     renderMapPostList();
     if (state.viewingDocId) renderMapPostDetail(state.viewingDocId);
-    
-    // Update global write/submit buttons
+
     updateAuthButton("MapPostBtnWrite", user, "Write");
     updateAuthButton("MapPostBtnSubmit", user, state.editingDocId ? "Update" : "Submit");
-    
-    // Important: Re-start listener if user changed (login/logout) 
+
     if (oldUid !== newUid) {
-        startRecentPostsListener();
+        initMapPostListener();
     }
 });
 
-startRecentPostsListener();
-
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startRecentPostsListener);
-else startRecentPostsListener();
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initMapPostListener);
+} else {
+    initMapPostListener();
+}
 
 export {
     renderMapPostDetail as showMapPostDetail,
