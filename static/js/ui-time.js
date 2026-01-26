@@ -53,7 +53,7 @@ export function initTimeButtons() {
 }
 
 export function showTimeControls() {
-    const ids = ["timePicker", "onMapMinus1h", "onMapPlus1h", "StatsInputMinus1h", "StatsInputPlus1h"];
+    const ids = ["timePicker", "timezoneLabel", "onMapMinus1h", "onMapPlus1h", "StatsInputMinus1h", "StatsInputPlus1h"];
     ids.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = "block";
@@ -69,7 +69,7 @@ export function showTimeControls() {
 }
 
 export function hideTimeControls() {
-    const ids = ["timePicker", "onMapMinus1h", "onMapPlus1h", "StatsInputMinus1h", "StatsInputPlus1h"];
+    const ids = ["timePicker", "timezoneLabel", "onMapMinus1h", "onMapPlus1h", "StatsInputMinus1h", "StatsInputPlus1h"];
     ids.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = "none";
@@ -96,6 +96,14 @@ export function initTimePicker() {
 
     const utcHour = localToUTC(localHour);
     airnowSetCurrentTime(utcHour);
+    
+    const selectedDate = new Date();
+    const tzAbbr = new Intl.DateTimeFormat("en-US", { timeZoneName: "short" })
+        .formatToParts(selectedDate)
+        .find(part => part.type === "timeZoneName").value;
+
+    const tzLabel = document.getElementById("timezoneLabel");
+    if (tzLabel) tzLabel.textContent = tzAbbr;
 
     timePicker.addEventListener("change", () => {
         const selectedLocalHour = parseInt(timePicker.value);

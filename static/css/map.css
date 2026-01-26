@@ -483,10 +483,11 @@ details[open] summary {
   #onMapMinus1h { order: 4; }
   #datePicker { order: 5; }
   #timePicker { order: 6; }
-  #onMapPlus1h { order: 7; }
-  #onMapPlus1d { order: 8; }
-  #onMapPlus1m { order: 9; }
-  #onMapPlus1y { order: 10; display: none; }
+  #timezoneLabel { order: 7; }
+  #onMapPlus1h { order: 8; }
+  #onMapPlus1d { order: 9; }
+  #onMapPlus1m { order: 10; }
+  #onMapPlus1y { order: 11; display: none; }
   
   .accordion {
     width: 50vw;
