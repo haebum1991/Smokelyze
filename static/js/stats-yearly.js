@@ -15,7 +15,7 @@ export const yearStatsCache = {
     fire: {}
 };
 
-const loadYearGeneric = (options) => {
+function loadYearGeneric(options) {
     const {
         isoDate, regionIDs, dataset, urlFunc,
         fallbackData, initStatsFunc, parseFunc,
@@ -57,9 +57,9 @@ const loadYearGeneric = (options) => {
         parseFunc(data, regionIDs, stats, month);
         return stats;
     });
-};
+}
 
-const parseBurnYearly = (data, regionIDs, stats, monthKey) => {
+function parseBurnYearly(data, regionIDs, stats, monthKey) {
     if (!Array.isArray(data) || data.length === 0) return;
     const targetMonth = monthKey === "all" ? 13 : Number(monthKey);
     const row = data.find(d => Number(d.month) === targetMonth);
@@ -71,9 +71,9 @@ const parseBurnYearly = (data, regionIDs, stats, monthKey) => {
             stats[id] = Number(v) || 0;
         }
     });
-};
+}
 
-const parseSmokeYearly = (data, regionIDs, stats, monthKey) => {
+function parseSmokeYearly(data, regionIDs, stats, monthKey) {
     if (!Array.isArray(data) || data.length === 0) return;
     const targetMonth = monthKey === "all" ? 13 : Number(monthKey);
     data.forEach(item => {
@@ -87,9 +87,9 @@ const parseSmokeYearly = (data, regionIDs, stats, monthKey) => {
             }
         });
     });
-};
+}
 
-const parseFireYearly = (data, regionIDs, stats, monthKey) => {
+function parseFireYearly(data, regionIDs, stats, monthKey) {
     if (!Array.isArray(data) || data.length === 0) return;
     const targetMonth = monthKey === "all" ? 13 : Number(monthKey);
     data.forEach(item => {
@@ -106,7 +106,7 @@ const parseFireYearly = (data, regionIDs, stats, monthKey) => {
             }
         });
     });
-};
+}
 
 export function loadYearBurn(isoDate, regionIDs, monthKey) {
     return loadYearGeneric({

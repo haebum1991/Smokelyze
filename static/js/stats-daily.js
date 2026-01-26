@@ -19,7 +19,7 @@ const dailyCache = {
     fire: {}
 };
 
-const loadDailyGeneric = (options) => {
+function loadDailyGeneric(options) {
     const {
         isoDate, regionIDs, dataset, urlFunc,
         fallbackData, initStatsFunc, parseFunc,
@@ -62,9 +62,9 @@ const loadDailyGeneric = (options) => {
         parseFunc(data, regionSet, stats);
         return stats;
     });
-};
+}
 
-const parseBurnDaily = (data, regionSet, stats) => {
+function parseBurnDaily(data, regionSet, stats) {
     if (data?.features && Array.isArray(data.features)) {
         data.features.forEach(fi => {
             const p = fi.properties || {};
@@ -74,9 +74,9 @@ const parseBurnDaily = (data, regionSet, stats) => {
             stats[id] += area;
         });
     }
-};
+}
 
-const parseSmokeDaily = (data, regionSet, stats) => {
+function parseSmokeDaily(data, regionSet, stats) {
     if (Array.isArray(data)) {
         data.forEach(item => {
             const id = item.ID;
@@ -88,9 +88,9 @@ const parseSmokeDaily = (data, regionSet, stats) => {
             }
         });
     }
-};
+}
 
-const parseFireDaily = (data, regionSet, stats) => {
+function parseFireDaily(data, regionSet, stats) {
     if (Array.isArray(data)) {
         data.forEach(item => {
             const id = item.ID;
@@ -102,7 +102,7 @@ const parseFireDaily = (data, regionSet, stats) => {
             stats[id].n += 1;
         });
     }
-};
+}
 
 export function loadDailyBurn(isoDate, regionIDs) {
     if (modelStatsCache?.burn) {

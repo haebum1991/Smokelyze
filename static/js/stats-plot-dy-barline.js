@@ -22,54 +22,56 @@ let currentDailyDetailStateBarLine = null;
 // ============================================
 // Optimized Style Map (Shared constants)
 // ============================================
-const getStyleMap = (theme) => ({
-  "airnow-pm25": { type: "scatter", color: theme.axisText, dash: "solid", marker: { symbol: "square", size: 8, color: theme.paper_bgcolor, line: { width: 2, color: theme.axisText } } },
-  "airnow-ozone": { type: "scatter", color: "green", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "green" } } },
-  "airnow-no2": { type: "scatter", color: "cyan", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "green" } } },
-
-  "mda8-obs": { type: "scatter", color: "green", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "green" } } },
-
-  "mda8-pred": { type: "scatter", color: "magenta", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "magenta" } } },
-  "smo": { type: "scatter", color: "#4169E1", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#4169E1" } } },
-  "resids": { type: "scatter", color: "cyan", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "cyan" } } },
-  "resids-quant": { type: "bar", color: "cyan" },
-
-  "mda8-pred-edm": { type: "scatter", color: "magenta", dash: "dot", marker: { symbol: "square", size: 8, color: "magenta", line: { width: 2, color: "magenta" } } },
-  "smo-edm": { type: "scatter", color: "#4169E1", dash: "dot", marker: { symbol: "square", size: 8, color: "#4169E1", line: { width: 2, color: "#4169E1" } } },
-  "resids-edm": { type: "scatter", color: "cyan", dash: "dot", marker: { symbol: "square", size: 8, color: "cyan", line: { width: 2, color: "cyan" } } },
-  "resids-quant-edm": { type: "bar", color: "skyblue" },
-
-  "pm25-obs": { type: "scatter", color: theme.axisText, dash: "solid", marker: { symbol: "square", size: 8, color: theme.paper_bgcolor, line: { width: 2, color: theme.axisText } } },
-  "pm25-quant": { type: "bar", color: theme.paper_bgcolor, marker: { line: { color: theme.axisText, width: 2 } } },
-  "pm25-crit": { type: "bar", color: "#FFC300" },
-
-  "pm25-crit-m0p5m": { type: "bar", color: "#FFC300" },
-  "pm25-crit-m1p0m": { type: "bar", color: "darkred" },
-  "pm25-smoke-m0p5m": { type: "bar", color: "#4169E1", marker: { line: { color: theme.axisText, width: 2 } } },
-  "pm25-smoke-m1p0m": { type: "bar", color: "cyan", marker: { line: { color: theme.axisText, width: 2 } } },
-
-  "tmax": { type: "scatter", color: "red", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "red" } } },
-  "srad": { type: "scatter", color: "orange", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "orange" } } },
-
-  "smokeday": { type: "bar", color: "red" },
-  "smokeday-975": { type: "bar", color: "green" },
-  "smokeday-975-edm": { type: "bar", color: "blue" },
-  "smokeday-m0p5m": { type: "bar", color: "red" },
-  "smokeday-m1p0m": { type: "bar", color: "green" },
-
-  "ExcDays": { type: "bar", splitColors: ["green", "red"], marker: { line: { color: theme.axisText, width: 2 } } },
-  "ExcDays-edm": { type: "bar", splitColors: ["darkgreen", "darkred"], marker: { line: { color: theme.plot_bordercol, width: 2 } } },
-  "ExcDays-m0p5m": { type: "bar", splitColors: ["green", "red"], marker: { line: { color: theme.axisText, width: 2 } } },
-  "ExcDays-m1p0m": { type: "bar", splitColors: ["darkgreen", "darkred"], marker: { line: { color: theme.plot_bordercol, width: 2 } } },
-
-  "smokeLight": { type: "bar", color: "#ddd", marker: { line: { color: theme.axisText, width: 2 } } },
-  "smokeMedium": { type: "bar", color: "#999", marker: { line: { color: theme.axisText, width: 2 } } },
-  "smokeHeavy": { type: "bar", color: "#555", marker: { line: { color: theme.axisText, width: 2 } } },
-
-  "fireCount": { type: "bar", color: "orange" },
-  "fireFrp": { type: "scatter", color: "red", dash: "solid" },
-  "burn": { type: "bar", color: "darkred", marker: { line: { color: theme.axisText, width: 2 } } }
-});
+function getStyleMap(theme) {
+  return {
+    "airnow-pm25": { type: "scatter", color: theme.axisText, dash: "solid", marker: { symbol: "square", size: 8, color: theme.paper_bgcolor, line: { width: 2, color: theme.axisText } } },
+    "airnow-ozone": { type: "scatter", color: "green", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "green" } } },
+    "airnow-no2": { type: "scatter", color: "cyan", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "green" } } },
+  
+    "mda8-obs": { type: "scatter", color: "green", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "green" } } },
+  
+    "mda8-pred": { type: "scatter", color: "magenta", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "magenta" } } },
+    "smo": { type: "scatter", color: "#4169E1", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#4169E1" } } },
+    "resids": { type: "scatter", color: "cyan", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "cyan" } } },
+    "resids-quant": { type: "bar", color: "cyan" },
+  
+    "mda8-pred-edm": { type: "scatter", color: "magenta", dash: "dot", marker: { symbol: "square", size: 8, color: "magenta", line: { width: 2, color: "magenta" } } },
+    "smo-edm": { type: "scatter", color: "#4169E1", dash: "dot", marker: { symbol: "square", size: 8, color: "#4169E1", line: { width: 2, color: "#4169E1" } } },
+    "resids-edm": { type: "scatter", color: "cyan", dash: "dot", marker: { symbol: "square", size: 8, color: "cyan", line: { width: 2, color: "cyan" } } },
+    "resids-quant-edm": { type: "bar", color: "skyblue" },
+  
+    "pm25-obs": { type: "scatter", color: theme.axisText, dash: "solid", marker: { symbol: "square", size: 8, color: theme.paper_bgcolor, line: { width: 2, color: theme.axisText } } },
+    "pm25-quant": { type: "bar", color: theme.paper_bgcolor, marker: { line: { color: theme.axisText, width: 2 } } },
+    "pm25-crit": { type: "bar", color: "#FFC300" },
+  
+    "pm25-crit-m0p5m": { type: "bar", color: "#FFC300" },
+    "pm25-crit-m1p0m": { type: "bar", color: "darkred" },
+    "pm25-smoke-m0p5m": { type: "bar", color: "#4169E1", marker: { line: { color: theme.axisText, width: 2 } } },
+    "pm25-smoke-m1p0m": { type: "bar", color: "cyan", marker: { line: { color: theme.axisText, width: 2 } } },
+  
+    "tmax": { type: "scatter", color: "red", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "red" } } },
+    "srad": { type: "scatter", color: "orange", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "orange" } } },
+  
+    "smokeday": { type: "bar", color: "red" },
+    "smokeday-975": { type: "bar", color: "green" },
+    "smokeday-975-edm": { type: "bar", color: "blue" },
+    "smokeday-m0p5m": { type: "bar", color: "red" },
+    "smokeday-m1p0m": { type: "bar", color: "green" },
+  
+    "ExcDays": { type: "bar", splitColors: ["green", "red"], marker: { line: { color: theme.axisText, width: 2 } } },
+    "ExcDays-edm": { type: "bar", splitColors: ["darkgreen", "darkred"], marker: { line: { color: theme.plot_bordercol, width: 2 } } },
+    "ExcDays-m0p5m": { type: "bar", splitColors: ["green", "red"], marker: { line: { color: theme.axisText, width: 2 } } },
+    "ExcDays-m1p0m": { type: "bar", splitColors: ["darkgreen", "darkred"], marker: { line: { color: theme.plot_bordercol, width: 2 } } },
+  
+    "smokeLight": { type: "bar", color: "#ddd", marker: { line: { color: theme.axisText, width: 2 } } },
+    "smokeMedium": { type: "bar", color: "#999", marker: { line: { color: theme.axisText, width: 2 } } },
+    "smokeHeavy": { type: "bar", color: "#555", marker: { line: { color: theme.axisText, width: 2 } } },
+  
+    "fireCount": { type: "bar", color: "orange" },
+    "fireFrp": { type: "scatter", color: "red", dash: "solid" },
+    "burn": { type: "bar", color: "darkred", marker: { line: { color: theme.axisText, width: 2 } } }
+  };
+}
 
 const GROUPS = [
   {

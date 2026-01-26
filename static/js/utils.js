@@ -6,7 +6,7 @@ import { auth } from "./fb-init.js";
 import { loadedGeoJSON, loadedSources } from "./loader-state.js";
 import { DATA_IMPORT_METHOD } from "./layers-def.js";
 
-const getCacheBuster = (isoDate) => {
+function getCacheBuster(isoDate) {
   const now = new Date();
   const y = now.getFullYear();
   const m = pad2(now.getMonth() + 1);
@@ -17,30 +17,30 @@ const getCacheBuster = (isoDate) => {
     return `?v=${Math.floor(Date.now() / 3600000)}`;
   }
   return "";
-};
+}
 
 export let onSetNewsDrawer = null;
-export const setOnSetNewsDrawer = (fn) => { onSetNewsDrawer = fn; };
+export function setOnSetNewsDrawer(fn) { onSetNewsDrawer = fn; }
 
 export let onSetStatsDrawer = null;
-export const setOnSetStatsDrawer = (fn) => { onSetStatsDrawer = fn; };
+export function setOnSetStatsDrawer(fn) { onSetStatsDrawer = fn; }
 
 export let onSetDescDrawer = null;
-export const setOnSetDescDrawer = (fn) => { onSetDescDrawer = fn; };
+export function setOnSetDescDrawer(fn) { onSetDescDrawer = fn; }
 
 export let onSetMapPostDrawer = null;
-export const setOnSetMapPostDrawer = (fn) => { onSetMapPostDrawer = fn; };
+export function setOnSetMapPostDrawer(fn) { onSetMapPostDrawer = fn; }
 
 export let onSetAccordionCollapsed = null;
-export const setOnSetAccordionCollapsed = (fn) => { onSetAccordionCollapsed = fn; };
+export function setOnSetAccordionCollapsed(fn) { onSetAccordionCollapsed = fn; }
 
-const triggerDrawerClose = () => {
+function triggerDrawerClose() {
   if (onSetNewsDrawer) onSetNewsDrawer(false);
   if (onSetStatsDrawer) onSetStatsDrawer(false);
   if (onSetDescDrawer) onSetDescDrawer(false);
   if (onSetMapPostDrawer) onSetMapPostDrawer(false);
   if (onSetAccordionCollapsed) onSetAccordionCollapsed(true);
-};
+}
 
 /**
  * AuthOverlay를 표시하는 유틸리티 함수
@@ -53,7 +53,7 @@ export function showAuthOverlay() {
   }
 }
 
-export const pad2 = (n) => (n < 10 ? `0${n}` : String(n));
+export function pad2(n) { return n < 10 ? `0${n}` : String(n); }
 
 export function formatDate(d) {
   if (!d || isNaN(d.getTime())) return "NA";
@@ -365,7 +365,7 @@ export function highlightLocation(coords, p, dataSource) {
         tooltip.style.display = "block";
 
         // Sync position function
-        const syncTooltip = () => {
+        const syncTooltip = function () {
           const point = mapLocal.project(coords);
           const canvas = mapLocal.getCanvas();
           const rect = canvas.getBoundingClientRect();

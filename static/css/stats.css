@@ -25,9 +25,10 @@
   z-index: var(--z-FigurePage-toggle);
   font-size: 2rem;
   font-weight: bold;
-  display: block;
-
-  max-width: max-content;
+  
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
 
   position: absolute;
   bottom: -4.5rem;
@@ -41,6 +42,19 @@
   cursor: pointer;
 
   transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
+}
+
+.FigurePage-toggle .chevron,
+.Desc-toggle .chevron {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.FigurePage-toggle.active .chevron {
+  transform: rotate(180deg);
+}
+
+.Desc-toggle.active .chevron {
+  transform: rotate(180deg);
 }
 
 @media (hover: hover) {
@@ -587,9 +601,10 @@ tr.stats-state-row-ca.show {
   z-index: var(--z-FigurePage-toggle);
   font-size: 2rem;
   font-weight: bold;
-  display: block;
-
-  max-width: max-content;
+  
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
 
   position: absolute;
   bottom: -4.5rem;

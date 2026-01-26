@@ -635,7 +635,7 @@ details[open] summary {
   color: var(--text-heading);
 }
 
-#MapPostModalClose {
+.MapPost-modal-close {
   background: none;
   border: none;
   font-size: 2.5rem;

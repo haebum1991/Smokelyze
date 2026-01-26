@@ -15,11 +15,11 @@ import {
 } from "./stats-common.js";
 import { yearStatsCache } from "./stats-yearly.js";
 
-export const currentPlotHide = (containerId) => {
+export function currentPlotHide(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = "";
-};
+}
 
 export function renderLinePlot(containerId) {
     const container = document.getElementById(containerId);

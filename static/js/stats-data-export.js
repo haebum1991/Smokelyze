@@ -110,7 +110,7 @@ function downloadCSV(filename, csvContent) {
     }
 }
 
-async function handleDownload() {
+export async function handleDownload() {
 
     if (!auth.currentUser) {
         utils.showAuthOverlay();
@@ -237,8 +237,6 @@ export function initExportButton() {
     // Initial check
     updateAuthButton(btn, auth.currentUser, "⬇ .CSV");
 }
-
-export { handleDownload };
 
 // Auto-init
 if (document.readyState === "loading") {

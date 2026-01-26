@@ -691,7 +691,7 @@ async function clickOnDelete(id) {
     }
 }
 
-function handleMapPostModeToggle(force) {
+export function handleMapPostModeToggle(force) {
     state.isMapPostMode = (force !== undefined) ? force : !state.isMapPostMode;
     const mapEl = document.getElementById("map");
     if (state.isMapPostMode) {
@@ -864,7 +864,6 @@ else startRecentPostsListener();
 
 export {
     renderMapPostDetail as showMapPostDetail,
-    renderMapPostList as updateMapPostList,
-    handleMapPostModeToggle
+    renderMapPostList as updateMapPostList
 };
 

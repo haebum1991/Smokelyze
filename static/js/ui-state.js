@@ -13,24 +13,24 @@ try {
   // Ignore
 }
 
-export const read = () => {
+export function read() {
   try {
     return JSON.parse(S.getItem(KEY) || "{}");
   } catch (e) {
     return {};
   }
-};
+}
 
-export const write = (newState) => {
+export function write(newState) {
   S.setItem(KEY, JSON.stringify(newState || {}));
-};
+}
 
-export const savePatch = (patch) => {
+export function savePatch(patch) {
   const cur = read();
   write({ ...cur, ...patch });
-};
+}
 
-export const restoreUI = () => {
+export function restoreUI() {
   const s = read();
 
   // Date
@@ -58,9 +58,9 @@ export const restoreUI = () => {
 
   // State Color
   setStateColorEnabled(typeof s.stateColorEnabled === "boolean" ? s.stateColorEnabled : true);
-};
+}
 
-export const restoreView = (map) => {
+export function restoreView(map) {
   const s = read();
   if (!map || !s.view) return;
   try {
@@ -73,9 +73,9 @@ export const restoreView = (map) => {
   } catch (e) {
     // Ignore
   }
-};
+}
 
-export const bindViewAutosave = (map) => {
+export function bindViewAutosave(map) {
   if (!map) return;
   map.on("moveend", () => {
     const { lng, lat } = map.getCenter();
@@ -101,27 +101,27 @@ export const bindViewAutosave = (map) => {
       });
     });
   });
-};
+}
 
-export const saveDate = (isoDate) => {
+export function saveDate(isoDate) {
   if (typeof isoDate === "string" && isoDate.length >= 8) {
     savePatch({ date: isoDate });
   }
-};
+}
 
-export const saveLayerFlag = (key, on) => {
+export function saveLayerFlag(key, on) {
   const s = read();
   const layers = { ...(s.layers || {}) };
   layers[key] = !!on;
   savePatch({ layers });
-};
+}
 
-export const saveGlobalStateColor = (enabled) => {
+export function saveGlobalStateColor(enabled) {
   setStateColorEnabled(enabled);
   savePatch({ stateColorEnabled: !!enabled });
-};
+}
 
-export const bindAccordionAutosave = () => {
+export function bindAccordionAutosave() {
   const detailsList = document.querySelectorAll(".accordion details");
   if (!detailsList.length) return;
 
@@ -133,20 +133,20 @@ export const bindAccordionAutosave = () => {
       savePatch({ accordion: acc });
     });
   });
-};
+}
 
-export const clearAll = () => {
+export function clearAll() {
   try {
     S.removeItem(KEY);
   } catch (e) {
     // Ignore
   }
-};
+}
 
 // Shared runtime state
 export const state = {};
 
-export const initStateColorToggle = () => {
+export function initStateColorToggle() {
   const btn = document.getElementById("MapBtnStateChoropleth");
   if (!btn) return;
 
@@ -172,9 +172,9 @@ export const initStateColorToggle = () => {
   };
 
   btn.addEventListener(btn.type === "checkbox" ? "change" : "click", handler);
-};
+}
 
-export const resetGlobalStateColor = () => {
+export function resetGlobalStateColor() {
   const btn = document.getElementById("MapBtnStateChoropleth");
   if (btn) {
     if (btn.type === "checkbox") btn.checked = true;
@@ -183,5 +183,5 @@ export const resetGlobalStateColor = () => {
 
   setStateColorEnabled(true);
   updateStateColors?.();
-};
+}
 

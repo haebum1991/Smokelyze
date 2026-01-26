@@ -10,13 +10,13 @@ import { EMPTY_FC } from "./layers-constants.js";
 import { updateLegend, updateStateColors } from "./layers-colors.js";
 import { map, activeLayerStack, setCachedActiveLayerIds, setActiveLayerStack } from "./layers-state.js";
 
-export const addSourceIfMissing = (sourceId) => {
+export function addSourceIfMissing(sourceId) {
     if (!map.getSource(sourceId)) {
         map.addSource(sourceId, { type: "geojson", data: EMPTY_FC, generateId: true });
     }
-};
+}
 
-export const addLayerIfMissing = (layerSpec, sourceId) => {
+export function addLayerIfMissing(layerSpec, sourceId) {
     if (!map.getLayer(layerSpec.id)) {
         const def = {
             ...layerSpec,
@@ -27,9 +27,9 @@ export const addLayerIfMissing = (layerSpec, sourceId) => {
         };
         map.addLayer(def);
     }
-};
+}
 
-export const bindHover = (layerId, getHTML) => {
+export function bindHover(layerId, getHTML) {
     const tooltip = document.getElementById("MapTooltip");
     if (!tooltip) return;
 
@@ -63,9 +63,9 @@ export const bindHover = (layerId, getHTML) => {
         map.getCanvas().style.cursor = "";
         tooltip.style.display = "none";
     });
-};
+}
 
-export const bindClick = (layerId, dataSource) => {
+export function bindClick(layerId, dataSource) {
     map.on("click", layerId, (e) => {
         e.preventDefault();
         const f = e.features?.[0];
@@ -76,17 +76,17 @@ export const bindClick = (layerId, dataSource) => {
 
         highlightLocation?.(coords, f.properties, sourceKey);
     });
-};
+}
 
-export const getAllInteractiveLayerIds = () => {
+export function getAllInteractiveLayerIds() {
     const ids = [];
     Object.values(LAYER_DEFS).forEach(def => {
         def?.layers?.forEach(l => ids.push(l.id));
     });
     return ids;
-};
+}
 
-export const ensureLayers = () => {
+export function ensureLayers() {
     if (!map) return;
 
     // External data sources
@@ -118,9 +118,9 @@ export const ensureLayers = () => {
             }
         }
     });
-};
+}
 
-export const applyLayerToggles = () => {
+export function applyLayerToggles() {
     if (!map) return;
 
     // 1. Hide all layers first
@@ -210,5 +210,5 @@ export const applyLayerToggles = () => {
 
     updateLegend(newStack);
     updateStateColors?.();
-};
+}
 

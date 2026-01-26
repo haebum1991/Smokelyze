@@ -1,0 +1,56 @@
+
+---
+title: ""
+---
+
+<link rel="stylesheet" href="/css/board.css">
+<link rel="stylesheet" href="/css/map.css">
+<link rel="stylesheet" href="/css/stats.css">
+<link rel="stylesheet" href="/css/data.css">
+
+<h1>Announcements & Updates</h1>
+
+<button class="reply-btn-submit" id="BoardBtnWrite" style="display: none;">+ Write Announcement</button>
+<hr>
+
+<div id="BoardPagination" class="datadb-pagination">
+    <button id="BoardBtnPrev" class="datadb-page-btn" style="visibility: hidden;">&lt;</button>
+    <span id="BoardPageInfo" style="visibility: hidden;"></span>
+    <button id="BoardBtnNext" class="datadb-page-btn" style="visibility: hidden;">&gt;</button>
+</div>
+    
+<div class="board-list" id="BoardList"></div>
+
+<!-- Board Modal (Reusing MapPost Style) -->
+<div class="MapPost-modal-overlay" id="BoardModalOverlay" style="display:none;">
+    <div class="MapPost-modal">
+        <div class="MapPost-modal-header">
+            <h3 id="BoardModalTitle">New Announcement</h3>
+            <button class="MapPost-modal-close" id="BoardModalClose">&times;</button>
+        </div>
+
+        <div id="BoardModalViewBody" style="display:flex; flex:1; flex-direction:column;"></div>
+
+        <div id="BoardModalEditBody" style="display:flex; flex:1; flex-direction:column;">
+            <div class="MapPost-modal-body">
+                <div class="MapPost-form-group">
+                    <label for="BoardFormTitle">Title <small id="BoardTitleCounter" style="float: right;">0/100</small></label>
+                    <input type="text" id="BoardFormTitle" placeholder="Enter title...">
+                </div>
+                <div class="MapPost-form-group">
+                    <label for="BoardFormContent">Content<small id="BoardContentCounter" style="float: right;">0/2000</small></label>
+                    <textarea id="BoardFormContent" placeholder="Enter details..."></textarea>
+                </div>
+            </div>
+            <div class="MapPost-modal-footer">
+                <div class="reply-btn-wrapper">
+                    <button class="reply-btn-submit" id="BoardBtnSubmit">Submit</button>
+                    <button class="reply-btn-cancel" id="BoardBtnCancel">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="/js/fb-announcements.js"></script>
+

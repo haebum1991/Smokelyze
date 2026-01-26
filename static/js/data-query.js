@@ -30,6 +30,7 @@ let mapLibraryLoaded = false; // Track if MapLibre GL is loaded
 let mapLibraryLoading = false; // Track if library is currently loading
 let defaultDateStart = null; // Store original min date
 let defaultDateEnd = null; // Store original max date
+let pendingFlyTo = false; // Flag to trigger map movement only after import
 
 // Pagination State
 const ROWS_PER_PAGE = 15;
@@ -455,6 +456,7 @@ async function handleQuery() {
             }
 
             renderDataTable();
+            pendingFlyTo = true;
             document.getElementById("DatadbDataTableWrapper").style.display = "block";
 
             // Default to Metadata tab on new query
@@ -542,11 +544,17 @@ async function initLocationMap() {
     }
 
     if (locationMap) {
-        locationMap.flyTo({
-            center: [currentLocationData.lon, currentLocationData.lat],
-            zoom: 8,
-            essential: true
-        });
+        locationMap.resize(); // Always fix alignment
+
+        if (pendingFlyTo) {
+            locationMap.flyTo({
+                center: [currentLocationData.lon, currentLocationData.lat],
+                zoom: 8,
+                essential: true
+            });
+            pendingFlyTo = false; // Reset flag
+        }
+
         refreshLocationMarker();
         return;
     }

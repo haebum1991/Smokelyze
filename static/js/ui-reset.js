@@ -11,9 +11,9 @@ import { resetState as resetBarLine } from "./stats-plot-dy-barline.js";
 import { resetState as resetParCoords } from "./stats-plot-dy-parcoords.js";
 import { resetState as resetScatter } from "./stats-plot-dy-scatter.js";
 
-const numOr = (x, d) => (typeof x === "number" && isFinite(x)) ? x : d;
+function numOr(x, d) { return (typeof x === "number" && isFinite(x)) ? x : d; }
 
-export const resetUIAndData = () => {
+export function resetUIAndData() {
   // 1) Clear states
   clearAll?.();
   clearHighlight?.();
@@ -53,10 +53,10 @@ export const resetUIAndData = () => {
 
   const searchWrapper = document.getElementById("SiteSearchWrapper");
   if (searchWrapper) searchWrapper.style.display = "none";
-};
+}
 
 // 맵뷰를 리셋
-export const resetMapViewToDefault = () => {
+export function resetMapViewToDefault() {
   if (!map) return;
 
   const cfg = mapConfig || {};
@@ -86,13 +86,13 @@ export const resetMapViewToDefault = () => {
       padding
     });
   }
-};
+}
 
-export const resetAccordionDetails = () => {
+export function resetAccordionDetails() {
   document.querySelectorAll(".accordion details").forEach(el => {
     if (el.hasAttribute("open")) el.removeAttribute("open");
   });
-};
+}
 
 export class resetViewControl {
   onAdd(map) {

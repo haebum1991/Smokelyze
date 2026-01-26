@@ -13,19 +13,19 @@ import { airnowSetCurrentTime } from "./airnow.js";
  * @param {number} localHour - Local hour (0-23)
  * @returns {number} UTC hour (0-23)
  */
-const localToUTC = (localHour) => {
+function localToUTC(localHour) {
     const now = new Date();
     const localDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), localHour, 0, 0);
     return localDate.getUTCHours();
-};
+}
 
-export const utcToLocal = (utcHour) => {
+export function utcToLocal(utcHour) {
     const now = new Date();
     const utcDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), utcHour, 0, 0));
     return utcDate.getHours();
-};
+}
 
-export const shiftTime = (hours) => {
+export function shiftTime(hours) {
     const timePicker = document.getElementById("timePicker");
     if (!timePicker) return;
 
@@ -37,9 +37,9 @@ export const shiftTime = (hours) => {
     const utcHour = localToUTC(newLocalHour);
     airnowSetCurrentTime(utcHour);
     timePicker.dispatchEvent(new Event("change", { bubbles: true }));
-};
+}
 
-export const initTimeButtons = () => {
+export function initTimeButtons() {
     const pairs = [
         ["minus1h", -1],
         ["plus1h", 1]
@@ -50,9 +50,9 @@ export const initTimeButtons = () => {
             el.addEventListener("click", () => shiftTime(h));
         });
     });
-};
+}
 
-export const showTimeControls = () => {
+export function showTimeControls() {
     const ids = ["timePicker", "onMapMinus1h", "onMapPlus1h", "StatsInputMinus1h", "StatsInputPlus1h"];
     ids.forEach(id => {
         const el = document.getElementById(id);
@@ -66,9 +66,9 @@ export const showTimeControls = () => {
             if (el) el.style.setProperty("display", "none", "important");
         });
     }
-};
+}
 
-export const hideTimeControls = () => {
+export function hideTimeControls() {
     const ids = ["timePicker", "onMapMinus1h", "onMapPlus1h", "StatsInputMinus1h", "StatsInputPlus1h"];
     ids.forEach(id => {
         const el = document.getElementById(id);
@@ -82,9 +82,9 @@ export const hideTimeControls = () => {
             if (el) el.style.setProperty("display", "block", "important");
         });
     }
-};
+}
 
-export const initTimePicker = () => {
+export function initTimePicker() {
     const timePicker = document.getElementById("timePicker");
     if (!timePicker) return;
 
@@ -102,5 +102,5 @@ export const initTimePicker = () => {
         const utcHour = localToUTC(selectedLocalHour);
         airnowSetCurrentTime(utcHour);
     });
-};
+}
 

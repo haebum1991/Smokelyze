@@ -40,43 +40,12 @@ export const caStates = [
 
 export const regionIDs = ["US_conus", "US", ...usStates, "Canada", ...caStates, "Mexico"];
 
-export const createBurnStats = (regionIDs) => { const out = {}; regionIDs.forEach(id => { out[id] = null; }); return out; };
-export const createSmokeStats = (regionIDs) => { const out = {}; regionIDs.forEach(id => { out[id] = { light: null, medium: null, heavy: null }; }); return out; };
-export const createFireStats = (regionIDs) => { const out = {}; regionIDs.forEach(id => { out[id] = { count: null, frpTotal: null, n: 0 }; }); return out; };
-export const createModelStats = (regionIDs) => { const out = {}; regionIDs.forEach(id => { out[id] = {}; }); return out; };
+export function createBurnStats(regionIDs) { const out = {}; regionIDs.forEach(id => { out[id] = null; }); return out; }
+export function createSmokeStats(regionIDs) { const out = {}; regionIDs.forEach(id => { out[id] = { light: null, medium: null, heavy: null }; }); return out; }
+export function createFireStats(regionIDs) { const out = {}; regionIDs.forEach(id => { out[id] = { count: null, frpTotal: null, n: 0 }; }); return out; }
+export function createModelStats(regionIDs) { const out = {}; regionIDs.forEach(id => { out[id] = {}; }); return out; }
 
-export {
-    setupExpandControls,
-    setupPlotClickHandlers,
-    getActiveModelLayers,
-    rebuildStatsHeader,
-    getModelStatsCells,
-    renderStatsTable,
-    clearPlotSelectionForLayer,
-    updateStickyHeaderOffsets,
-    setupDrawerResizer,
-    updateAllStats,
-    triggerRefresh,
-    bindEvents,
-    setupPlotTabs,
-    getPlotTheme,
-    getMetricInfo,
-    extractUnit,
-    getStandardMetrics,
-    isMetricVisible,
-    getSpikeLayout,
-    getPlotlyConfig,
-    renderBackButton,
-    renderPlotMessage,
-    attachDrillDownListeners,
-    highlightSiteOnMap,
-    resetPlotContainer,
-    attachResizeObserver,
-    clearPlotMessage,
-    getDatasetInfo
-};
-
-function setupExpandControls(tbody, scopeKey) {
+export function setupExpandControls(tbody, scopeKey) {
     const applyExpand = (target, expanded) => {
         const selector = `.stats-expand-btn[stats-data-target='${target}']`;
         const btn = tbody.querySelector(selector);
@@ -104,7 +73,7 @@ function setupExpandControls(tbody, scopeKey) {
     });
 }
 
-function setupPlotClickHandlers(tbody, scopeKey) {
+export function setupPlotClickHandlers(tbody, scopeKey) {
     if (scopeKey !== "year") return;
     if (currentMonthKey !== "all") return;
 
@@ -158,7 +127,7 @@ function setupPlotClickHandlers(tbody, scopeKey) {
 /**
  * Get all active layers for the Model Stats table, grouped by their category (e.g., Dataset or AirNow).
  */
-function getActiveModelLayers() {
+export function getActiveModelLayers() {
     const layers = [];
     const templates = LAYER_TEMPLATES || [];
 
@@ -197,7 +166,7 @@ function getActiveModelLayers() {
  * Rebuilds the thead element for the stats table based on active layers.
  * Groups columns logically and uses rowspans/colspans for a clean look.
  */
-function rebuildStatsHeader(thead, activeModelLayers) {
+export function rebuildStatsHeader(thead, activeModelLayers) {
     thead.innerHTML = "";
 
     const tr1 = document.createElement("tr");
@@ -272,7 +241,7 @@ function rebuildStatsHeader(thead, activeModelLayers) {
     thead.appendChild(tr2);
 }
 
-function getModelStatsCells(regionID, modelStats, activeLayers) {
+export function getModelStatsCells(regionID, modelStats, activeLayers) {
     let html = "";
     const stats = modelStats[regionID] || {};
 
@@ -315,7 +284,7 @@ function getModelStatsCells(regionID, modelStats, activeLayers) {
     return html;
 }
 
-function renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, tableID, modelStats) {
+export function renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, tableID, modelStats) {
     const tbody = document.getElementById(tableID);
     if (!tbody) return;
     const thead = tbody.previousElementSibling;
@@ -450,7 +419,7 @@ function renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, tableID, 
     setTimeout(updateStickyHeaderOffsets, 0);
 }
 
-function clearPlotSelectionForLayer(layerId) {
+export function clearPlotSelectionForLayer(layerId) {
     if (!selectedRegionsByMetric) return;
     let metricsToClear = [];
     if (layerId === "layer-burn") metricsToClear = ["burn"];
@@ -459,7 +428,7 @@ function clearPlotSelectionForLayer(layerId) {
     metricsToClear.forEach(m => { delete selectedRegionsByMetric[m]; });
 }
 
-function updateStickyHeaderOffsets() {
+export function updateStickyHeaderOffsets() {
     const tables = document.querySelectorAll(".stats-region-table-date, .stats-region-table-year");
     tables.forEach(table => {
         const thead = table.querySelector("thead");
@@ -477,7 +446,7 @@ function updateStickyHeaderOffsets() {
     });
 }
 
-function setupDrawerResizer() {
+export function setupDrawerResizer() {
     const resizer = document.getElementById("DrawerResizer");
     const drawer = document.getElementById("FigurePageDrawer");
     if (!resizer || !drawer) return;
@@ -505,20 +474,20 @@ function setupDrawerResizer() {
     };
 }
 
-function updateAllStats(isoDate, regionIDs, monthKey) {
+export function updateAllStats(isoDate, regionIDs, monthKey) {
     if (onUpdateDailyStats) onUpdateDailyStats(isoDate, regionIDs);
     if (onUpdateYearStats) onUpdateYearStats(isoDate, regionIDs, monthKey);
 }
 
 // [추가] 외부에서 테이블 갱신을 트리거하기 위한 함수
-function triggerRefresh() {
+export function triggerRefresh() {
     const isoDate = utils.currentDate();
     const activeMonthBtn = document.querySelector(".stats-tab-month-main .stats-tab-month-sub.active");
     const monthKey = activeMonthBtn ? activeMonthBtn.getAttribute("stats-table-month") : "all";
     updateAllStats(isoDate, regionIDs, monthKey);
 }
 
-function bindEvents() {
+export function bindEvents() {
     // Tabs logic
     const tabs = document.querySelectorAll(".stats-tab-sub");
     const panels = document.querySelectorAll(".stats-container");
@@ -571,7 +540,7 @@ function bindEvents() {
 }
 
 // Plot tabs logic
-function setupPlotTabs() {
+export function setupPlotTabs() {
     const plotTabs = document.querySelectorAll(".stats-plot-tab-sub");
     const activeTab = document.querySelector(".stats-plot-tab-sub.active");
     if (activeTab) {
@@ -648,7 +617,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Common Plot Logic (Theme, Metrics, Config)
 // ----------------------------------------------------
 
-function getPlotTheme() {
+export function getPlotTheme() {
     const styles = getComputedStyle(document.documentElement);
     const v = (name) => styles.getPropertyValue(name).trim();
 
@@ -738,7 +707,7 @@ function getPlotTheme() {
     };
 }
 
-function getMetricInfo(metricKey) {
+export function getMetricInfo(metricKey) {
 
     const templates = LAYER_TEMPLATES || [];
     const tmpl = templates.find(function (t) { return t.field === metricKey; });
@@ -752,7 +721,7 @@ function getMetricInfo(metricKey) {
     return { title: metricKey, y: metricKey, decimals: 0 };
 }
 
-function extractUnit(title) {
+export function extractUnit(title) {
     const regex = /\(([^)]+)\)$/;
     const match = title.match(regex);
     if (match && match[1]) {
@@ -761,14 +730,14 @@ function extractUnit(title) {
     return "";
 }
 
-function getStandardMetrics() {
+export function getStandardMetrics() {
     const templates = LAYER_TEMPLATES || [];
     return templates
         .filter(function (t) { return t.manualLayer === true; })
         .map(function (t) { return t.field; });
 }
 
-function isMetricVisible(metricField) {
+export function isMetricVisible(metricField) {
     const templates = LAYER_TEMPLATES || [];
     const tmpl = templates.find(function (t) { return t.field === metricField; });
     if (!tmpl) return false;
@@ -779,7 +748,7 @@ function isMetricVisible(metricField) {
     return checkbox && checkbox.checked;
 }
 
-function getSpikeLayout(theme) {
+export function getSpikeLayout(theme) {
     return {
         showspikes: true,
         spikemode: "toaxis+across+marker",
@@ -790,7 +759,7 @@ function getSpikeLayout(theme) {
     };
 }
 
-function getPlotlyConfig(filename) {
+export function getPlotlyConfig(filename) {
     const isMobile = window.innerWidth <= 1024;
     const buttonsToRemove = [
         "zoom2d", "pan2d", "select2d", "lasso2d", "zoomIn2d", "zoomOut2d",
@@ -820,7 +789,7 @@ function getPlotlyConfig(filename) {
     return conf;
 }
 
-function renderBackButton(container, btnId, onClick) {
+export function renderBackButton(container, btnId, onClick) {
     const existing = document.getElementById(btnId);
     if (existing) existing.remove();
 
@@ -859,7 +828,7 @@ function renderBackButton(container, btnId, onClick) {
     return btn;
 }
 
-function attachDrillDownListeners(container, selector, onDrillDown) {
+export function attachDrillDownListeners(container, selector, onDrillDown) {
     const elements = container.querySelectorAll(selector);
     
     // Check if device supports hover (desktop/mouse devices)
@@ -894,7 +863,7 @@ function attachDrillDownListeners(container, selector, onDrillDown) {
     });
 }
 
-function highlightSiteOnMap(coords, properties, dsKeyOrVal) {
+export function highlightSiteOnMap(coords, properties, dsKeyOrVal) {
     if (utils.highlightLocation) {
         let dsKey = dsKeyOrVal;
         
@@ -913,7 +882,7 @@ function highlightSiteOnMap(coords, properties, dsKeyOrVal) {
     }
 }
 
-function resetPlotContainer(container, observerProp) {
+export function resetPlotContainer(container, observerProp) {
     if (!container) return;
     if (observerProp && container[observerProp]) {
         container[observerProp].disconnect();
@@ -925,7 +894,7 @@ function resetPlotContainer(container, observerProp) {
     container.innerHTML = "";
 }
 
-function attachResizeObserver(container, observerProp) {
+export function attachResizeObserver(container, observerProp) {
     if (!container) return;
 
     let prevWidth = container.offsetWidth;
@@ -942,7 +911,7 @@ function attachResizeObserver(container, observerProp) {
     if (observerProp) container[observerProp] = ro;
 }
 
-function renderPlotMessage(container, message) {
+export function renderPlotMessage(container, message) {
     if (!container) return;
     const msg = message || "No data available or no layers selected.";
 
@@ -966,7 +935,7 @@ function renderPlotMessage(container, message) {
 }
 
 
-function clearPlotMessage(container) {
+export function clearPlotMessage(container) {
     if (!container) return;
     const msg = container.querySelector(".stats-empty-msg-plot");
     if (msg) {
@@ -974,7 +943,7 @@ function clearPlotMessage(container) {
     }
 }
 
-function getDatasetInfo() {
+export function getDatasetInfo() {
     const el = document.getElementById("MapDataSelect");
     const val = el ? el.value : "";
     let key = val;
