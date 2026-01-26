@@ -749,7 +749,7 @@ tr.stats-state-row-ca.show {
 
 /* Wildfire News Extra Drawer - Premium Floating Style */
 .WFnews-toggle {
-  z-index: var(--z-WFnews-drawer);
+  z-index: var(--z-WFnews-toggle);
   cursor: pointer;
   font-size: 1.6rem;
   font-weight: bold;
@@ -789,7 +789,7 @@ tr.stats-state-row-ca.show {
 }
 
 .MapPost-toggle {
-  z-index: var(--z-WFnews-drawer);
+  z-index: var(--z-WFnews-toggle);
   cursor: pointer;
   font-size: 1.6rem;
   font-weight: bold;

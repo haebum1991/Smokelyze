@@ -419,7 +419,11 @@ function handleLoadingError(sourceKey, isoDate, ds = null) {
         showErrorToast(`
           No data found for this date (${utils.ESML(isoDate)}) and dataset (${utils.ESML(sourceKey)}).
           <br>
-          Please see the detail information [Desc.] for the valid data period of [Published] data.`);
+          Please see the detail information 
+          <svg width="24" height="24" style="vertical-align: middle; stroke: white; fill: none; stroke-width: 2;">
+            <use xlink:href="#icon-desc" />
+          </svg>
+          for the valid data period of <span style="color: #FFD700; font-weight: bold;">[Published]</span> data.`);
     } else {
         showErrorToast(`No data found for this date (${utils.ESML(isoDate)}) and dataset (${utils.ESML(sourceKey)})`);
     }

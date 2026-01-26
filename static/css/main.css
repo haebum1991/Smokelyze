@@ -26,7 +26,8 @@
   /* z-Index: Map Page */
   --z-map-legend: 1000;
   --z-toolbar-date: 1000;
-  --z-MapTooltip: 1100;
+  --z-WFnews-toggle: 1100;
+  --z-MapTooltip: 1101;
   --z-accordion-toggle: 1200;
   --z-accordion: 1201;
   --z-WFnews-drawer: 1300;
