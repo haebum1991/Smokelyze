@@ -1,4 +1,4 @@
-const CACHE_NAME = "v-20260126-1400"; // R에서 자동으로 생성된 버전
+const CACHE_NAME = "v-20260126-1437"; // R에서 자동으로 생성된 버전
 const OFFLINE_URL = "/offline/";
 
 const requiredFiles = [
@@ -8,7 +8,7 @@ const requiredFiles = [
     "/css/main.css",
     "/css/color-dark.css",
     "/js/ui-init.js",
-    "/images/Smokelyze_logo.webp"
+    "/images/smokelyze_logo.webp"
 ];
 
 self.addEventListener("install", event => {

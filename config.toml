@@ -89,7 +89,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
   MathJaxVersion = "2.7.5"
 
   [params.logo]
-  url = "Smokelyze_logo.webp"
+  url = "smokelyze_logo.webp"
   width = 50
   height = 50
   alt = "Logo"
