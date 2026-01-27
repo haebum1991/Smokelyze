@@ -92,7 +92,7 @@ def fetch_merra2_daily(target_date_str):
 
     # --- CRITICAL FIX: Force the Image to use the R-grid projection ---
     # Without this, GEE defaults to a [1, 0, 0, 0, 1, 0] transform which causes offsets.
-    combined_img = combined_img.setDefaultProjection(r_proj).resample("nearest")
+    combined_img = combined_img.setDefaultProjection(r_proj)
 
     print(f"Sampling MERRA-2 for {target_date_str} using FIXED R-projection...")
     
