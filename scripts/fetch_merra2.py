@@ -96,9 +96,6 @@ def fetch_merra2_daily(target_date_str):
         
         return f.setGeometry(ee.Geometry.Point([snapped_lon, snapped_lat]))
 
-    mask = combined_img.select(["T2MAX", "SRAD", "QV2M"]).gte(0)
-    combined_img = combined_img.updateMask(mask)
-
     snapped_fc = aqs_fc.map(match_r_cell_selection)
 
     print(f"Sampling MERRA-2 for {target_date_str} using Snapped R-Pixel Centers...")
