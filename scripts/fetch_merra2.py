@@ -95,12 +95,12 @@ def fetch_merra2_daily(target_date_str):
     
     # Sample at AQS points using the EXACT R-grid projection definition.
     # We apply this directly in sampleRegions to ensure discrete nearest-neighbor extraction.
-    sampled_data = combined_img.sampleRegions(
+    sampled_data = combined_img.reduceRegions(
         collection=aqs_fc,
-        properties=list(aqs_fc.first().propertyNames().getInfo()),
-        projection=ee.Projection("EPSG:4326", r_grid_transform),
-        tileScale=4,
-        geometries=True
+        reducer=ee.Reducer.first(),
+        crs="EPSG:4326",
+        crsTransform=r_grid_transform,
+        tileScale=4
     )
     
     # Attach the date to each result
