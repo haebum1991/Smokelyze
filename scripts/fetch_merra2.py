@@ -79,26 +79,23 @@ def fetch_merra2_daily(target_date_str):
     
     combined_img = t2max.addBands(srad).addBands(slv_means)
     
-    # --- R-Compatibility Grid Definition ---
+    # --- EXACT R-Compatibility Grid Alignment ---
+    # R [raster] package with extent(-180, 180, -90, 90) and 361 rows.
+    res_x = 0.625
+    res_y = 180.0 / 361.0
     r_grid_transform = [
-        0.625, 0, -180,           # X: scale, shear, offset
-        0, -(180.0 / 361.0), 90   # Y: shear, scale, offset
+        res_x, 0, -180 + (res_x / 2.0),
+        0, -res_y, 90 - (res_y / 2.0)
     ]
+
+    print(f"Sampling MERRA-2 for {target_date_str} using corrected R-pixel centers...")
     
-    # Reproject NASA data into this specific R-style grid
-    combined_img_r = combined_img.reproject(
-        crs="EPSG:4326",
-        crsTransform=r_grid_transform
-    )
-    
-    print(f"Sampling MERRA-2 for {target_date_str} using EXACT R-compatible logic...")
-    
-    # Sample at AQS points on the reprojected grid
-    # scale=1 forces GEE to pick the single pixel at that location
-    sampled_data = combined_img_r.sampleRegions(
+    # Sample at AQS points using the EXACT R-grid projection definition.
+    # We apply this directly in sampleRegions to ensure discrete nearest-neighbor extraction.
+    sampled_data = combined_img.sampleRegions(
         collection=aqs_fc,
         properties=list(aqs_fc.first().propertyNames().getInfo()),
-        scale=1,  
+        projection=ee.Projection("EPSG:4326", r_grid_transform),
         tileScale=4,
         geometries=True
     )
@@ -106,7 +103,6 @@ def fetch_merra2_daily(target_date_str):
     # Attach the date to each result
     final_results = sampled_data.map(lambda f: f.set("date", target_date_str))
     
-    # Fetch results
     return final_results.getInfo()
 
 def upload_to_gcs(bucket_name, blob_name, data, content_type):
