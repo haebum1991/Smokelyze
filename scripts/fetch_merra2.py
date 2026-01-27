@@ -79,22 +79,21 @@ def fetch_merra2_daily(target_date_str):
     
     combined_img = t2max.addBands(srad).addBands(slv_means)
     
-    # --- EXACT R-Compatibility Grid Alignment ---
+     # --- EXACT R-Compatibility Grid Alignment ---
     # R [raster] package with extent(-180, 180, -90, 90) and 361 rows.
     res_x = 0.625
     res_y = 180.0 / 361.0
     
     r_grid_transform = [
-        res_x, 0, -180 + (res_x / 2.0),
-        0, -res_y, 90 - (res_y / 2.0)
+        res_x, 0, -180,
+        0, -res_y, 90
     ]
     r_proj = ee.Projection("EPSG:4326", r_grid_transform)
 
-    # --- CRITICAL FIX: Force the Image to use the R-grid projection ---
-    # Without this, GEE defaults to a [1, 0, 0, 0, 1, 0] transform which causes offsets.
+    # --- Force the Image to use the R-grid projection ---
     combined_img = combined_img.setDefaultProjection(r_proj)
 
-    print(f"Sampling MERRA-2 for {target_date_str} using FIXED R-projection...")
+    print(f"Sampling MERRA-2 for {target_date_str} using Surgical R-Match (reduceRegions)...")
     
     # Check again if projection is now fixed (Debugging)
     try:
@@ -103,14 +102,12 @@ def fetch_merra2_daily(target_date_str):
     except:
         pass
 
-    # Sample at AQS points using the EXACT R-grid projection definition.
-    # We apply this directly in sampleRegions to ensure discrete nearest-neighbor extraction.
-    sampled_data = combined_img.sampleRegions(
+    # Using reduceRegions with Reducer.first() is the canonical way 
+    sampled_data = combined_img.reduceRegions(
         collection=aqs_fc,
-        properties=list(aqs_fc.first().propertyNames().getInfo()),
-        projection=r_proj, # Use exact R projection during sampling
-        tileScale=4,
-        geometries=True
+        reducer=ee.Reducer.first(),
+        crs=r_proj,
+        tileScale=4
     )
     
     # Attach the date to each result
