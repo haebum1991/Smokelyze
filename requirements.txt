@@ -5,4 +5,5 @@ shapely
 pyogrio
 google-cloud-storage
 feedparser
+earthengine-api
 

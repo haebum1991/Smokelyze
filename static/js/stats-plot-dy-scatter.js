@@ -399,7 +399,7 @@ export function renderDailyScatter(containerId) {
                         s = f1.find(f => f.properties.ID === props.ID);
                     }
                     if (s?.geometry) {
-                        highlightSiteOnMap(s.geometry.coordinates, props, dsInfo.key);
+                        highlightSiteOnMap(s.geometry.coordinates, props, dsKey);
                     }
                 }
             }
