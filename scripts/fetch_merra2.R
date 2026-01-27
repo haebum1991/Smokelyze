@@ -1,142 +1,106 @@
 
-import os
-import sys
+library(reticulate)
+library(raster)
+library(jsonlite)
+library(googleCloudStorageR)
+library(httr)
 
-# --- Windows Compatibility Patch (MUST BE AT THE VERY TOP) ---
-if os.name == "nt":
-    try:
-        import fcntl
-    except ImportError:
-        from types import ModuleType
-        mock_fcntl = ModuleType("fcntl")
-        mock_fcntl.ioctl = lambda *args, **kwargs: None
-        sys.modules["fcntl"] = mock_fcntl
-        print("Note: Mocking fcntl and ioctl for Windows compatibility.")
+# --- GEE 및 GCS 설정 ---
+# GitHub Actions에서는 이미 등록된 gcs-key.json을 사용합니다.
+Sys.setenv(GCS_AUTH_FILE = Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
 
-import ee
-import json
-import gzip
-import argparse
-from datetime import datetime, timedelta
-from google.cloud import storage
+init_gee <- function() {
+  ee <- import("ee")
+  # 서비스 계정 인증 (Python 라이브러리 활용)
+  key_path <- Sys.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+  if (key_path != "" && file.exists(key_path)) {
+    auth <- import("google.oauth2.service_account")
+    credentials <- auth$Credentials$from_service_account_file(key_path)
+    scoped_credentials <- credentials$with_scopes(list("https://www.googleapis.com/auth/earthengine"))
+    ee$Initialize(scoped_credentials, project = "pmo3smoketool")
+  } else {
+    ee$Initialize()
+  }
+  return(ee)
+}
 
-# ==========================================
-# Configuration
-# ==========================================
-GCS_BUCKET_NAME = "smokelyze_bucket"
-AQS_LIST_PATH = "static/aqs_list_gam_v2.geojson.gz"
+fetch_merra2_r <- function(target_date) {
+  ee <- init_gee()
+  
+  date_start <- target_date
+  date_end <- as.character(as.Date(target_date) + 1)
+  
+  # 1. GEE에서 이미지 컬렉션 로드
+  slv_col <- ee$ImageCollection("NASA/GSFC/MERRA/slv/2")$filterDate(date_start, date_end)
+  rad_col <- ee$ImageCollection("NASA/GSFC/MERRA/rad/2")$filterDate(date_start, date_end)
+  
+  # 2. 통계 계산 (기존 Python과 동일하게 T2MAX, SRAD 등)
+  t2max <- slv_col$select("T2M")$max()$rename("T2MAX")
+  srad <- rad_col$select("SWGDN")$mean()$rename("SRAD")
+  slv_vars <- c("U10M", "V10M", "U500", "V500", "QV2M")
+  slv_means <- slv_col$select(slv_vars)$mean()
+  
+  combined_img <- t2max$addBands(srad)$addBands(slv_means)
+  
+  # 3. GEE 데이터를 R의 Raster로 가져오기 위해 샘플링 (논문 지점들)
+  # AQS 사이트 리스트 로드
+  aqs_list <- jsonlite::fromJSON("static/aqs_list_gam_v2.geojson.gz", simplifyVector = FALSE)
+  
+  # GEE의 getRegion을 사용하여 데이터를 "raw"하게 가져옵니다.
+  # 이는 NetCDF를 읽어오는 것과 유사한 효과를 줍니다.
+  sites_fc <- ee$FeatureCollection(lapply(aqs_list$features, function(f) {
+    props <- f$properties
+    # AQS 속성 누락 방지
+    if(is.null(props$AQS)) props$AQS <- props$ID 
+    ee$Feature(ee$Geometry$Point(f$geometry$coordinates), props)
+  }))
+  
+  # --- 사용자님의 R [raster] 로직 재현 ---
+  # GEE에서 전체 영역을 사용자님의 361x576 그리드 데이터로 변환
+  # (이 부분이 논문과 똑같이 "어긋난" 결과를 만들어내는 핵심입니다.)
+  
+  # 180도 범위를 361행으로 나누는 그리드 정의 (사용자님 로직)
+  r_grid_transform <- list(0.625, 0, -180, 0, -(180/361), 90)
+  
+  combined_img_r <- combined_img$reproject(
+    crs = "EPSG:4326",
+    crsTransform = r_grid_transform
+  )
+  
+  # 4. 샘플링 실행
+  results <- combined_img_r$sampleRegions(
+    collection = sites_fc,
+    properties = list("AQS", "State", "County", "City"), # 필요한 속성들
+    scale = 1, # Nearest neighbor 효과
+    geometries = TRUE
+  )$getInfo()
+  
+  # 5. 결과 가공 및 GCS 업로드
+  for(i in seq_along(results$features)) {
+    results$features[[i]]$properties$date <- target_date
+  }
+  
+  # GeoJSON.gz 생성
+  output_json <- jsonlite::toJSON(results, auto_unbox = TRUE)
+  gz_file <- gzfile("temp_merra2.geojson.gz", "wb")
+  writeBin(charToRaw(output_json), gz_file)
+  close(gz_file)
+  
+  # GCS 업로드
+  year_str <- substr(target_date, 1, 4)
+  dest_path <- sprintf("merra2_date_geojson/%s/merra2_%s.geojson.gz", year_str, gsub("-", "", target_date))
+  
+  gcs_upload("temp_merra2.geojson.gz", 
+             bucket = "smokelyze_bucket", 
+             name = dest_path,
+             type = "application/gzip")
+  
+  unlink("temp_merra2.geojson.gz")
+  message("Uploaded to GCS: ", dest_path)
+}
 
-def init_gee(project_id=None):
-    try:
-        # GitHub Actions의 gcs-key.json 경로 (GOOGLE_APPLICATION_CREDENTIALS)
-        key_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
-        
-        if key_path and os.path.exists(key_path):
-            print(f"Initializing GEE with Service Account: {key_path}")
-            from google.oauth2 import service_account
-            credentials = service_account.Credentials.from_service_account_file(key_path)
-            # Earth Engine 전용 스코프 추가
-            scoped_credentials = credentials.with_scopes(["https://www.googleapis.com/auth/earthengine"])
-            ee.Initialize(scoped_credentials, project=project_id)
-        else:
-            # 로컬 환경 (개인 계정 인증용)
-            if project_id:
-                ee.Initialize(project=project_id)
-            else:
-                ee.Initialize()
-        print("GEE initialized successfully.")
-    except Exception as e:
-        print(f"GEE Initialization Failed: {e}")
-        raise e
-
-def fetch_merra2_daily(target_date_str):
-    target_date = datetime.strptime(target_date_str, "%Y-%m-%d")
-    next_date = target_date + timedelta(days=1)
-    date_range_end = next_date.strftime("%Y-%m-%d")
-    
-    if not os.path.exists(AQS_LIST_PATH):
-        raise FileNotFoundError(f"AQS list not found at {AQS_LIST_PATH}")
-
-    with gzip.open(AQS_LIST_PATH, "rt", encoding="utf-8") as f:
-        aqs_geojson = json.load(f)
-    
-    features = []
-    for feat in aqs_geojson["features"]:
-        props = feat["properties"]
-        lon, lat = feat["geometry"]["coordinates"]
-        features.append(ee.Feature(ee.Geometry.Point([lon, lat]), props))
-    
-    aqs_fc = ee.FeatureCollection(features)
-    
-    slv_col = ee.ImageCollection("NASA/GSFC/MERRA/slv/2").filterDate(target_date_str, date_range_end)
-    rad_col = ee.ImageCollection("NASA/GSFC/MERRA/rad/2").filterDate(target_date_str, date_range_end)
-    
-    t2max = slv_col.select("T2M").max().rename("T2MAX")
-    srad = rad_col.select("SWGDN").mean().rename("SRAD")
-    
-    slv_vars = ["U10M", "V10M", "U500", "V500", "QV2M"]
-    slv_means = slv_col.select(slv_vars).mean()
-    
-    combined_img = t2max.addBands(srad).addBands(slv_means)
-    
-    print(f"Sampling MERRA-2 (SLV & RAD) for {target_date_str}...")
-    sampled_results = combined_img.sampleRegions(
-        collection=aqs_fc,
-        scale=50000,
-        geometries=True
-    ).getInfo()
-    
-    return sampled_results
-
-def upload_to_gcs(bucket_name, blob_name, data, content_type):
-    try:
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(bucket_name)
-        blob = bucket.blob(blob_name)
-        blob.upload_from_string(data, content_type=content_type)
-        print(f"Uploaded to gs://{bucket_name}/{blob_name}")
-    except Exception as e:
-        print(f"GCS Upload Error: {e}")
-
-def process_and_upload_merra2(data, date_str):
-    year_str = date_str[:4]
-    for feature in data["features"]:
-        feature["properties"]["date"] = date_str
-    
-    output_geojson = {
-        "type": "FeatureCollection",
-        "properties": {
-            "date": date_str,
-            "source": "NASA/MERRA-2 (SLV & RAD)",
-            "generated_at": datetime.now().isoformat()
-        },
-        "features": data["features"]
-    }
-    
-    json_str = json.dumps(output_geojson, ensure_ascii=False)
-    gzip_data = gzip.compress(json_str.encode("utf-8"))
-    blob_name = f"merra2_date_geojson/{year_str}/merra2_{date_str}.geojson.gz"
-    upload_to_gcs(GCS_BUCKET_NAME, blob_name, gzip_data, "application/gzip")
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Fetch daily MERRA-2 data for AQS sites.")
-    parser.add_argument("--date", type=str, help="Target date (YYYY-MM-DD). Default is 31 days ago.")
-    parser.add_argument("--project", type=str, help="GCP Project ID for GEE initialization.")
-    
-    args = parser.parse_args()
-    
-    # Default to 31 days ago due to MERRA-2 latency
-    if not args.date:
-        target_dt = datetime.now() - timedelta(days=31)
-        target_date_str = target_dt.strftime("%Y-%m-%d")
-    else:
-        target_date_str = args.date
-        
-    try:
-        init_gee(project_id=args.project)
-        data = fetch_merra2_daily(target_date_str)
-        process_and_upload_merra2(data, target_date_str)
-    except Exception as e:
-        print(f"FAILED: {e}")
-        sys.exit(1)
+# 실행
+args <- commandArgs(trailingOnly = TRUE)
+target_date <- if(length(args) > 0) args[1] else as.character(Sys.Date() - 31)
+fetch_merra2_r(target_date)
 
