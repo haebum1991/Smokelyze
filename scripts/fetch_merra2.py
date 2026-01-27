@@ -87,8 +87,8 @@ def fetch_merra2_daily(target_date_str):
     # Origin_X = -180 + (0.625 / 2) = -179.6875
     # Origin_Y = 90 - (res_y / 2)
     r_grid_transform = [
-        res_x, 0, -180 + (res_x / 2.0),
-        0, -res_y, 90 - (res_y / 2.0)
+        res_x, 0, -180,
+        0, -res_y, 90
     ]
 
     print(f"Sampling MERRA-2 for {target_date_str} using corrected R-pixel centers...")
