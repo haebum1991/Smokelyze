@@ -105,6 +105,6 @@ if __name__ == "__main__":
     
     data = fetch_merra2_exact(args.date)
     year_str = args.date[:4]
-    blob_name = f"merra2_date_geojson/{year_str}/merra2_{args.date.replace("-", "")}.geojson.gz"
+    blob_name = f"merra2_date_geojson/{year_str}/merra2_{args.date.replace('-', '')}.geojson.gz"
     upload_to_gcs("smokelyze_bucket", blob_name, data)
 
