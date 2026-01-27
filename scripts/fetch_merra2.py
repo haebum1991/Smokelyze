@@ -97,11 +97,13 @@ def upload_to_gcs(bucket_name, blob_name, data):
     print(f"Uploaded to gs://{bucket_name}/{blob_name}")
 
 if __name__ == "__main__":
-    init_gee()
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--date", type=str, default=(datetime.now() - timedelta(days=31)).strftime("%Y-%m-%d"))
+    parser.add_argument("--project", type=str, default="pmo3smoketool", help="GEE Project ID")
+    parser.add_argument("--date", type=str, default=(datetime.now() - timedelta(days=31)).strftime("%Y-%m-%d"), help="Target date YYYY-MM-DD")
     args = parser.parse_args()
+    
+    init_gee(args.project)
     
     data = fetch_merra2_exact(args.date)
     year_str = args.date[:4]
