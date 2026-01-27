@@ -84,8 +84,8 @@ def fetch_merra2_daily(target_date_str):
     res_x = 0.625
     res_y = 0.498615
     
-    origin_x = -179.6875
-    origin_y = 89.7506925
+    origin_x = -179.68750
+    origin_y = 89.75069
     
     r_grid_transform = [
         res_x, 0, origin_x,
