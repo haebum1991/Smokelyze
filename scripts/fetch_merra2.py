@@ -80,13 +80,57 @@ def fetch_merra2_daily(target_date_str):
     combined_img = t2max.addBands(srad).addBands(slv_means)
     
     print(f"Sampling MERRA-2 (SLV & RAD) for {target_date_str}...")
-    sampled_results = combined_img.sampleRegions(
-        collection=aqs_fc,
-        scale=50000,
-        geometries=True
-    ).getInfo()
     
-    return sampled_results
+    # --- R-Compatibility Patch: Grid Misalignment Correction ---
+    # The original R [raster] implementation used extent(-180, 180, -90, 90) with 361 rows,
+    # which caused an edge-alignment shift. To match those values exactly:
+    # We shift the sampling points by half a pixel (Lon: -0.3125, Lat: -0.25)
+    
+    def apply_r_shift(f):
+        # Subtract half-pixel to land in the same neighborhood R [raster] package chose
+        # Lon shift: 0.625 / 2 = 0.3125
+        # Lat shift: 0.5 / 2 = 0.25
+        coords = f.geometry().coordinates()
+        new_point = ee.Geometry.Point([
+            ee.Number(coords.get(0)).subtract(0.3125),
+            ee.Number(coords.get(1)).subtract(0.25)
+        ])
+        return f.setGeometry(new_point)
+
+    shifted_aqs = aqs_fc.map(apply_r_shift)
+    
+    # Sample at the shifted coordinates to match R [extract] results
+    sampled_data = combined_img.sampleRegions(
+        collection=shifted_aqs,
+        properties=list(aqs_fc.first().propertyNames().getInfo()),
+        scale=combined_img.projection().nominalScale(),
+        tileScale=4
+    )
+    
+    # Restore the original point geometries for the final GeoJSON output
+    # By merging the sampled properties back into the original aqs_list points
+    def restore_geometry(f):
+        site_id = f.get("AQS")
+        # Find matching feature from sampled_data by AQS ID
+        data_match = sampled_data.filter(ee.Filter.eq("AQS", site_id)).first()
+        # Merge properties into original feature (which has correct center geometry)
+        return f.set(data_match.toDictionary()).set("date", target_date_str)
+
+    # Note: Using join is more efficient than mapping a filter for large collections
+    # But for a small site list, this simple mapping is fine.
+    results = sampled_data.map(lambda f: f.setGeometry(
+        # However, a simpler way: just shift back after sampling.
+        f.setGeometry(ee.Geometry.Point([
+            ee.Number(f.geometry().coordinates().get(0)).add(0.3125),
+            ee.Number(f.geometry().coordinates().get(1)).add(0.25)
+        ]))
+    ))
+    
+    # Final cleanup: Add date to all features
+    final_results = results.map(lambda f: f.set("date", target_date_str))
+    
+    # Fetch results
+    return final_results.getInfo()
 
 def upload_to_gcs(bucket_name, blob_name, data, content_type):
     try:
