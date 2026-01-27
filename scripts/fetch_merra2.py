@@ -84,27 +84,31 @@ def fetch_merra2_daily(target_date_str):
     res_x = 0.625
     res_y = 180.0 / 361.0
     
-    # Origin_X = -180 + (0.625 / 2) = -179.6875
-    # Origin_Y = 90 - (res_y / 2)
     r_grid_transform = [
         res_x, 0, -180 + (res_x / 2.0),
         0, -res_y, 90 - (res_y / 2.0)
     ]
+    r_proj = ee.Projection("EPSG:4326", r_grid_transform)
 
-    print(f"Sampling MERRA-2 for {target_date_str} using corrected R-pixel centers...")
+    # --- CRITICAL FIX: Force the Image to use the R-grid projection ---
+    # Without this, GEE defaults to a [1, 0, 0, 0, 1, 0] transform which causes offsets.
+    combined_img = combined_img.setDefaultProjection(r_proj)
+
+    print(f"Sampling MERRA-2 for {target_date_str} using FIXED R-projection...")
     
-    # GEE가 실제로 어떤 영점과 해상도를 인식하고 있는지 확인 (디버깅용)
+    # Check again if projection is now fixed (Debugging)
     try:
-        print("GEE Actual Projection:", combined_img.projection().getInfo())
-    except Exception as e:
-        print("Could not get projection info (Composite Image):", e)
-        
+        current_proj = combined_img.projection().getInfo()
+        print("GEE Fixed Projection:", current_proj["transform"])
+    except:
+        pass
+
     # Sample at AQS points using the EXACT R-grid projection definition.
     # We apply this directly in sampleRegions to ensure discrete nearest-neighbor extraction.
     sampled_data = combined_img.sampleRegions(
         collection=aqs_fc,
         properties=list(aqs_fc.first().propertyNames().getInfo()),
-        projection=ee.Projection("EPSG:4326", r_grid_transform),
+        projection=r_proj, # Use exact R projection during sampling
         tileScale=4,
         geometries=True
     )
