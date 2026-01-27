@@ -79,22 +79,13 @@ def fetch_merra2_daily(target_date_str):
     
     combined_img = t2max.addBands(srad).addBands(slv_means)
     
-    # --- EXACT R-Compatibility Grid Alignment ---
-    res_x = 0.625
-    res_y = 180.0 / 361.0
     # --- FINAL R-METADATA SYNCHRONIZATION ---
     # Based on verified R metadata: Center of first pixel is (-179.6875, 89.75069)
-    # This means the Top-Left Edge is exactly (-180, 90).
     res_x = 0.625
     res_y = 180.0 / 361.0
     r_grid_transform = [res_x, 0, -180.0, 0, -res_y, 90.0]
 
-    # --- R-Compatibility Masking ---
-    non_vector_bands = ["T2MAX", "SRAD", "QV2M"]
-    for b in non_vector_bands:
-        combined_img = combined_img.updateMask(combined_img.select(b).gte(0))
-
-    print(f"Sampling MERRA-2 for {target_date_str} using EXACT R-metadata grid...")
+    print(f"Sampling MERRA-2 for {target_date_str} using CLEAN R-metadata grid...")
     
     sampled_data = combined_img.reduceRegions(
         collection=aqs_fc,
