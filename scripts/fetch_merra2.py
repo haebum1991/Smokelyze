@@ -82,17 +82,23 @@ def fetch_merra2_daily(target_date_str):
     # --- EXACT R-Compatibility Grid Alignment ---
     # R [raster] package with extent(-180, 180, -90, 90) and 361 rows.
     res_x = 0.625
-    res_y = 0.5
+    res_y = 180.0 / 361.0
     
     # Origin_X = -180 + (0.625 / 2) = -179.6875
     # Origin_Y = 90 - (res_y / 2)
     r_grid_transform = [
-        res_x, 0, -180,
-        0, -res_y, 90
+        res_x, 0, -180 + (res_x / 2.0),
+        0, -res_y, 90 - (res_y / 2.0)
     ]
 
     print(f"Sampling MERRA-2 for {target_date_str} using corrected R-pixel centers...")
     
+    # GEE가 실제로 어떤 영점과 해상도를 인식하고 있는지 확인 (디버깅용)
+    try:
+        print("GEE Actual Projection:", combined_img.projection().getInfo())
+    except Exception as e:
+        print("Could not get projection info (Composite Image):", e)
+        
     # Sample at AQS points using the EXACT R-grid projection definition.
     # We apply this directly in sampleRegions to ensure discrete nearest-neighbor extraction.
     sampled_data = combined_img.sampleRegions(
