@@ -82,18 +82,19 @@ def fetch_merra2_daily(target_date_str):
     # --- EXACT R-Compatibility Grid Alignment ---
     res_x = 0.625
     res_y = 180.0 / 361.0
-    r_grid_transform = [
-        res_x, 0, -180 + (res_x / 2.0),
-        0, -res_y, 90 - (res_y / 2.0)
-    ]
+    # --- FINAL R-METADATA SYNCHRONIZATION ---
+    # Based on verified R metadata: Center of first pixel is (-179.6875, 89.75069)
+    # This means the Top-Left Edge is exactly (-180, 90).
+    res_x = 0.625
+    res_y = 180.0 / 361.0
+    r_grid_transform = [res_x, 0, -180.0, 0, -res_y, 90.0]
 
     # --- R-Compatibility Masking ---
-    # According to R logic: values < 0 should be masked (NA) for non-wind bands
     non_vector_bands = ["T2MAX", "SRAD", "QV2M"]
     for b in non_vector_bands:
         combined_img = combined_img.updateMask(combined_img.select(b).gte(0))
 
-    print(f"Sampling MERRA-2 for {target_date_str} using FINAL R-equivalent (reduceRegions) logic...")
+    print(f"Sampling MERRA-2 for {target_date_str} using EXACT R-metadata grid...")
     
     sampled_data = combined_img.reduceRegions(
         collection=aqs_fc,
