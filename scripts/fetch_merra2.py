@@ -28,13 +28,25 @@ AQS_LIST_PATH = "static/aqs_list_gam_v2.geojson.gz"
 
 def init_gee(project_id=None):
     try:
-        if project_id:
-            ee.Initialize(project=project_id)
+        # GitHub Actions의 gcs-key.json 경로 (GOOGLE_APPLICATION_CREDENTIALS)
+        key_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+        
+        if key_path and os.path.exists(key_path):
+            print(f"Initializing GEE with Service Account: {key_path}")
+            from google.oauth2 import service_account
+            credentials = service_account.Credentials.from_service_account_file(key_path)
+            # Earth Engine 전용 스코프 추가
+            scoped_credentials = credentials.with_scopes(["https://www.googleapis.com/auth/earthengine"])
+            ee.Initialize(scoped_credentials, project=project_id)
         else:
-            ee.Initialize()
+            # 로컬 환경 (개인 계정 인증용)
+            if project_id:
+                ee.Initialize(project=project_id)
+            else:
+                ee.Initialize()
         print("GEE initialized successfully.")
     except Exception as e:
-        print("GEE initialization failed. Ensure you have authenticated or provided a service account key.")
+        print(f"GEE Initialization Failed: {e}")
         raise e
 
 def fetch_merra2_daily(target_date_str):

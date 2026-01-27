@@ -4,6 +4,7 @@ geopandas
 shapely
 pyogrio
 google-cloud-storage
+google-auth
 feedparser
 earthengine-api
 
