@@ -80,17 +80,15 @@ def fetch_merra2_daily(target_date_str):
     combined_img = t2max.addBands(srad).addBands(slv_means)
     
     # --- R-Compatibility Grid Definition ---
-    combined_img = combined_img.resample("nearest")
-
-    # 2. Define the exact grid transform from the R script:
     # Extent: [-180, 180, -90, 90], Matrix: 576 cols, 361 rows
-    # This matches the R calculation: resolution = (180/361)
+    # X_scale = 360 / 576 = 0.625
+    # Y_scale = 180 / 361 (Negative for top-to-bottom direction)
     r_grid_transform = [
-        0.625, 0, -180,           # X scale, X shear, X offset
-        0, -(180.0 / 361.0), 90   # Y shear, Y scale, Y offset
+        0.625, 0, -180,           # X scale, X shear, X offset (Left)
+        0, -(180.0 / 361.0), 90   # Y shear, Y scale, Y offset (Top)
     ]
     
-    # 3. Reproject the NASA data into this specific R-style grid
+    # Reproject NASA data into this specific R-style grid
     combined_img_r = combined_img.reproject(
         crs="EPSG:4326",
         crsTransform=r_grid_transform
@@ -98,7 +96,8 @@ def fetch_merra2_daily(target_date_str):
     
     print(f"Sampling MERRA-2 for {target_date_str} using EXACT R-compatible logic...")
     
-    # 4. Sample at AQS points on the reprojected grid
+    # Sample at AQS points on the reprojected grid
+    # scale=1 forces GEE to pick the single pixel at that location
     sampled_data = combined_img_r.sampleRegions(
         collection=aqs_fc,
         properties=list(aqs_fc.first().propertyNames().getInfo()),
