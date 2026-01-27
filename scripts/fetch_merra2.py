@@ -79,36 +79,14 @@ def fetch_merra2_daily(target_date_str):
     
     combined_img = t2max.addBands(srad).addBands(slv_means)
     
-    # --- R-Compatibility Grid Definition ---
-    # creates a specific grid where the resolution is 180/361.
-    r_grid_transform = [
-        0.625, 0, -180,           # X: scale, shear, offset
-        0, -(180.0 / 361.0), 90   # Y: shear, scale, offset
-    ]
-    
-    # Reproject the NASA data into this R-style grid
-    combined_img_r = combined_img.reproject(
-        crs="EPSG:4326",
-        crsTransform=r_grid_transform
-    )
-    
-    print(f"Sampling MERRA-2 for {target_date_str} using EXACT R-compatible logic...")
-    
-    # Sample at original AQS coordinates, but on the reprojected R-grid.
-    # scale=1 ensures we pick the raw pixel value at the location.
-    sampled_data = combined_img_r.sampleRegions(
+    print(f"Sampling MERRA-2 (SLV & RAD) for {target_date_str}...")
+    sampled_results = combined_img.sampleRegions(
         collection=aqs_fc,
-        properties=list(aqs_fc.first().propertyNames().getInfo()),
-        scale=1,  
-        tileScale=4,
+        scale=50000,
         geometries=True
-    )
+    ).getInfo()
     
-    # Attach the date to each result
-    final_results = sampled_data.map(lambda f: f.set("date", target_date_str))
-    
-    # Fetch and return results
-    return final_results.getInfo()
+    return sampled_results
 
 def upload_to_gcs(bucket_name, blob_name, data, content_type):
     try:
