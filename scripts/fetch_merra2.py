@@ -80,7 +80,6 @@ def fetch_merra2_daily(target_date_str):
     combined_img = t2max.addBands(srad).addBands(slv_means)
     
     # --- EXACT R-Compatibility Grid Alignment ---
-    # R [raster] package with extent(-180, 180, -90, 90) and 361 rows.
     res_x = 0.625
     res_y = 180.0 / 361.0
     r_grid_transform = [
@@ -88,16 +87,20 @@ def fetch_merra2_daily(target_date_str):
         0, -res_y, 90 - (res_y / 2.0)
     ]
 
-    print(f"Sampling MERRA-2 for {target_date_str} using corrected R-pixel centers...")
+    # --- R-Compatibility Masking ---
+    # According to R logic: values < 0 should be masked (NA) for non-wind bands
+    non_vector_bands = ["T2MAX", "SRAD", "QV2M"]
+    for b in non_vector_bands:
+        combined_img = combined_img.updateMask(combined_img.select(b).gte(0))
+
+    print(f"Sampling MERRA-2 for {target_date_str} using FINAL R-equivalent (reduceRegions) logic...")
     
-    # Sample at AQS points using the EXACT R-grid projection definition.
-    # We apply this directly in sampleRegions to ensure discrete nearest-neighbor extraction.
-    sampled_data = combined_img.sampleRegions(
+    sampled_data = combined_img.reduceRegions(
         collection=aqs_fc,
-        properties=list(aqs_fc.first().propertyNames().getInfo()),
-        projection=ee.Projection("EPSG:4326", r_grid_transform),
-        tileScale=4,
-        geometries=True
+        reducer=ee.Reducer.first(),
+        crs="EPSG:4326",
+        crsTransform=r_grid_transform,
+        tileScale=4
     )
     
     # Attach the date to each result
