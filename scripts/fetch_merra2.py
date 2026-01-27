@@ -79,27 +79,34 @@ def fetch_merra2_daily(target_date_str):
     
     combined_img = t2max.addBands(srad).addBands(slv_means)
     
-    # --- EXACT R-Compatibility Grid Alignment ---
-    # R [raster] package with extent(-180, 180, -90, 90) and 361 rows.
-    res_x = 0.625
-    res_y = 180 / 361
-    
-    origin_x = -179.6875
-    origin_y = 89.7506925
-    
-    r_grid_transform = [
-        res_x, 0, origin_x,
-        0, -res_y, origin_y
-    ]
+    # --- EXACT R-LOGIC EMULATION (Surgical Match) ---
+    res_x = 360.0 / 576.0 # 0.625
+    res_y = 180.0 / 361.0 # 0.4986149...
 
-    print(f"Sampling MERRA-2 for {target_date_str} using corrected R-pixel centers...")
+    def match_r_cell_selection(f):
+        coords = f.geometry().coordinates()
+        lon = ee.Number(coords.get(0))
+        lat = ee.Number(coords.get(1))
+        
+        col_idx = lon.add(180).divide(res_x).floor()
+        row_idx = ee.Number(90).subtract(lat).divide(res_y).floor()
+        
+        snapped_lon = col_idx.add(0.5).multiply(res_x).subtract(180)
+        snapped_lat = ee.Number(90).subtract(row_idx.add(0.5).multiply(res_y))
+        
+        return f.setGeometry(ee.Geometry.Point([snapped_lon, snapped_lat]))
+
+    mask = combined_img.select(["T2MAX", "SRAD", "QV2M"]).gte(0)
+    combined_img = combined_img.updateMask(mask)
+
+    snapped_fc = aqs_fc.map(match_r_cell_selection)
+
+    print(f"Sampling MERRA-2 for {target_date_str} using Snapped R-Pixel Centers...")
     
-    # Sample at AQS points using the EXACT R-grid projection definition.
-    # We apply this directly in sampleRegions to ensure discrete nearest-neighbor extraction.
     sampled_data = combined_img.sampleRegions(
-        collection=aqs_fc,
+        collection=snapped_fc,
         properties=list(aqs_fc.first().propertyNames().getInfo()),
-        projection=ee.Projection("EPSG:4326", r_grid_transform),
+        scale=1,
         tileScale=4,
         geometries=True
     )
