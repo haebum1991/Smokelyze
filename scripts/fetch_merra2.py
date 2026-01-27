@@ -80,27 +80,29 @@ def fetch_merra2_daily(target_date_str):
     combined_img = t2max.addBands(srad).addBands(slv_means)
     
     # --- R-Compatibility Grid Definition ---
-    # Extent: [-180, 180, -90, 90], Dimensions: [576, 361]
-    # This involves a slight vertical stretch (180/361) and a half-pixel alignment shift.
+    combined_img = combined_img.resample("nearest")
+
+    # 2. Define the exact grid transform from the R script:
+    # Extent: [-180, 180, -90, 90], Matrix: 576 cols, 361 rows
+    # This matches the R calculation: resolution = (180/361)
     r_grid_transform = [
         0.625, 0, -180,           # X scale, X shear, X offset
         0, -(180.0 / 361.0), 90   # Y shear, Y scale, Y offset
     ]
     
-    # Reproject the MERRA-2 data into this "R-style" grid
-    # We use nearest-neighbor (implicit in sampling) to match R [extract] behavior
+    # 3. Reproject the NASA data into this specific R-style grid
     combined_img_r = combined_img.reproject(
         crs="EPSG:4326",
         crsTransform=r_grid_transform
     )
     
-    print(f"Sampling MERRA-2 for {target_date_str} using R-compatible grid...")
+    print(f"Sampling MERRA-2 for {target_date_str} using EXACT R-compatible logic...")
     
-    # Sample at original AQS coordinates, but on the reprojected R-grid
+    # 4. Sample at AQS points on the reprojected grid
     sampled_data = combined_img_r.sampleRegions(
         collection=aqs_fc,
         properties=list(aqs_fc.first().propertyNames().getInfo()),
-        scale=1,
+        scale=1,  
         tileScale=4,
         geometries=True
     )
