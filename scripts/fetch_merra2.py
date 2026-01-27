@@ -79,44 +79,34 @@ def fetch_merra2_daily(target_date_str):
     
     combined_img = t2max.addBands(srad).addBands(slv_means)
     
-    print(f"Sampling MERRA-2 (SLV & RAD) for {target_date_str}...")
-    # --- R-Compatibility Patch: Grid Misalignment Correction ---
-    # The original R [raster] implementation used extent(-180, 180, -90, 90) with 361 rows,
-    # which caused an edge-alignment shift. To match those values exactly:
-    # We shift the sampling points by half a pixel (Lon: -0.3125, Lat: -0.25)
+    # --- R-Compatibility Grid Definition ---
+    # Extent: [-180, 180, -90, 90], Dimensions: [576, 361]
+    # This involves a slight vertical stretch (180/361) and a half-pixel alignment shift.
+    r_grid_transform = [
+        0.625, 0, -180,           # X scale, X shear, X offset
+        0, -(180.0 / 361.0), 90   # Y shear, Y scale, Y offset
+    ]
     
-    def apply_r_shift(f):
-        # R [raster] package with 361 rows and 576 cols over -180:180, -90:90
-        # creates a grid that is linearly displaced from the NASA center points.
-        # Longitude shift is constant: -0.3125 (0.625 / 2)
-        # Latitude shift is linear: -0.25 at South Pole, 0 at Equator, +0.25 at North Pole
-        lon = ee.Number(f.geometry().coordinates().get(0))
-        lat = ee.Number(f.geometry().coordinates().get(1))
-        
-        new_lon = lon.subtract(0.3125)
-        new_lat = lat.add(lat.divide(360)) 
-        
-        return f.setGeometry(ee.Geometry.Point([new_lon, new_lat]))
-
-    shifted_aqs = aqs_fc.map(apply_r_shift)
+    # Reproject the MERRA-2 data into this "R-style" grid
+    # We use nearest-neighbor (implicit in sampling) to match R [extract] behavior
+    combined_img_r = combined_img.reproject(
+        crs="EPSG:4326",
+        crsTransform=r_grid_transform
+    )
     
-    # Sample at the shifted coordinates to match R [extract] results
-    sampled_data = combined_img.sampleRegions(
-        collection=shifted_aqs,
+    print(f"Sampling MERRA-2 for {target_date_str} using R-compatible grid...")
+    
+    # Sample at original AQS coordinates, but on the reprojected R-grid
+    sampled_data = combined_img_r.sampleRegions(
+        collection=aqs_fc,
         properties=list(aqs_fc.first().propertyNames().getInfo()),
-        scale=combined_img.projection().nominalScale(),
+        scale=1,
         tileScale=4,
         geometries=True
     )
     
-    # Final cleanup: Attach original properties and set correct AQS center geometry
-    def finalize_feature(f):
-        # We restore the ORIGINAL geometry from aqs_fc based on AQS ID
-        site_id = f.get("AQS")
-        original_site = aqs_fc.filter(ee.Filter.eq("AQS", site_id)).first()
-        return f.setGeometry(original_site.geometry()).set("date", target_date_str)
-
-    final_results = sampled_data.map(finalize_feature)
+    # Final cleanup: Attach date
+    final_results = sampled_data.map(lambda f: f.set("date", target_date_str))
     
     # Fetch results
     return final_results.getInfo()
@@ -172,4 +162,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"FAILED: {e}")
         sys.exit(1)
+
 
