@@ -82,42 +82,24 @@ def fetch_merra2_daily(target_date_str):
     # --- EXACT R-Compatibility Grid Alignment ---
     # R [raster] package with extent(-180, 180, -90, 90) and 361 rows.
     res_x = 0.625
-    res_y = 180.0 / 361.0
+    res_y = 0.498615
+    
+    origin_x = -179.6875
+    origin_y = 89.7506925
     
     r_grid_transform = [
-        res_x, 0, -180,
-        0, -res_y, 90
+        res_x, 0, origin_x,
+        0, -res_y, origin_y
     ]
-    r_proj = ee.Projection("EPSG:4326", r_grid_transform)
 
-    # --- Force the Image to use the R-grid projection ---
-    combined_img = combined_img.setDefaultProjection(r_proj)
-
-    # --- SURGICAL SNAPPING: Move each point to the EXACT R-pixel center ---
-    def snap_to_r_grid(f):
-        coords = f.geometry().coordinates()
-        lon = ee.Number(coords.get(0))
-        lat = ee.Number(coords.get(1))
-        
-        # R-grid math: Snap to the center of the matching pixel box
-        # col_idx = floor((lon + 180) / res_x) -> center_lon = -180 + (col_idx + 0.5) * res_x
-        snapped_lon = lon.add(180).divide(res_x).floor().add(0.5).multiply(res_x).subtract(180)
-        # row_idx = floor((90 - lat) / res_y) -> center_lat = 90 - (row_idx + 0.5) * res_y
-        snapped_lat = ee.Number(90).subtract(lat).divide(res_y).floor().add(0.5).multiply(res_y).multiply(-1).add(90)
-        
-        return f.setGeometry(ee.Geometry.Point([snapped_lon, snapped_lat]))
-
-    snapped_fc = aqs_fc.map(snap_to_r_grid)
-
-    print(f"Sampling MERRA-2 for {target_date_str} using Snapped R-Grids...")
+    print(f"Sampling MERRA-2 for {target_date_str} using corrected R-pixel centers...")
     
-    # Now sample from the image using the snapped points. 
-    # Since points are at pixel centers, result is guaranteed discrete.
+    # Sample at AQS points using the EXACT R-grid projection definition.
+    # We apply this directly in sampleRegions to ensure discrete nearest-neighbor extraction.
     sampled_data = combined_img.sampleRegions(
-        collection=snapped_fc,
+        collection=aqs_fc,
         properties=list(aqs_fc.first().propertyNames().getInfo()),
-        projection=r_proj,
-        scale=1, # Already at pixel centers, so scale 1 is safe/fast
+        projection=ee.Projection("EPSG:4326", r_grid_transform),
         tileScale=4,
         geometries=True
     )
