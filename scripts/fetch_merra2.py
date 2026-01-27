@@ -1,162 +1,110 @@
 
-import os
-import sys
-
-# --- Windows Compatibility Patch (MUST BE AT THE VERY TOP) ---
-if os.name == "nt":
-    try:
-        import fcntl
-    except ImportError:
-        from types import ModuleType
-        mock_fcntl = ModuleType("fcntl")
-        mock_fcntl.ioctl = lambda *args, **kwargs: None
-        sys.modules["fcntl"] = mock_fcntl
-        print("Note: Mocking fcntl and ioctl for Windows compatibility.")
-
 import ee
+import os
 import json
-import gzip
-import argparse
+import numpy as np
+import pandas as pd
 from datetime import datetime, timedelta
 from google.cloud import storage
+import gzip
+import io
 
-# ==========================================
-# Configuration
-# ==========================================
-GCS_BUCKET_NAME = "smokelyze_bucket"
-AQS_LIST_PATH = "static/aqs_list_gam_v2.geojson.gz"
-
-def init_gee(project_id=None):
+# --- GEE 초기화 ---
+def init_gee(project_id="pmo3smoketool"):
     try:
-        # GitHub Actions의 gcs-key.json 경로 (GOOGLE_APPLICATION_CREDENTIALS)
         key_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
-        
         if key_path and os.path.exists(key_path):
-            print(f"Initializing GEE with Service Account: {key_path}")
             from google.oauth2 import service_account
             credentials = service_account.Credentials.from_service_account_file(key_path)
-            # Earth Engine 전용 스코프 추가
             scoped_credentials = credentials.with_scopes(["https://www.googleapis.com/auth/earthengine"])
             ee.Initialize(scoped_credentials, project=project_id)
         else:
-            # 로컬 환경 (개인 계정 인증용)
-            if project_id:
-                ee.Initialize(project=project_id)
-            else:
-                ee.Initialize()
-        print("GEE initialized successfully.")
+            ee.Initialize(project=project_id)
+        print("GEE Initialized.")
     except Exception as e:
-        print(f"GEE Initialization Failed: {e}")
+        print(f"GEE Init Failed: {e}")
         raise e
 
-def fetch_merra2_daily(target_date_str):
-    target_date = datetime.strptime(target_date_str, "%Y-%m-%d")
-    next_date = target_date + timedelta(days=1)
-    date_range_end = next_date.strftime("%Y-%m-%d")
+def fetch_merra2_exact(target_date_str):
+    date_start = target_date_str
+    date_end = (datetime.strptime(target_date_str, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
     
-    if not os.path.exists(AQS_LIST_PATH):
-        raise FileNotFoundError(f"AQS list not found at {AQS_LIST_PATH}")
-
-    with gzip.open(AQS_LIST_PATH, "rt", encoding="utf-8") as f:
-        aqs_geojson = json.load(f)
-    
-    features = []
-    for feat in aqs_geojson["features"]:
-        props = feat["properties"]
-        lon, lat = feat["geometry"]["coordinates"]
-        features.append(ee.Feature(ee.Geometry.Point([lon, lat]), props))
-    
-    aqs_fc = ee.FeatureCollection(features)
-    
-    slv_col = ee.ImageCollection("NASA/GSFC/MERRA/slv/2").filterDate(target_date_str, date_range_end)
-    rad_col = ee.ImageCollection("NASA/GSFC/MERRA/rad/2").filterDate(target_date_str, date_range_end)
+    # 1. GEE 이미지 컬렉션 로드
+    slv_col = ee.ImageCollection("NASA/GSFC/MERRA/slv/2").filterDate(date_start, date_end)
+    rad_col = ee.ImageCollection("NASA/GSFC/MERRA/rad/2").filterDate(date_start, date_end)
     
     t2max = slv_col.select("T2M").max().rename("T2MAX")
     srad = rad_col.select("SWGDN").mean().rename("SRAD")
-    
     slv_vars = ["U10M", "V10M", "U500", "V500", "QV2M"]
     slv_means = slv_col.select(slv_vars).mean()
     
     combined_img = t2max.addBands(srad).addBands(slv_means)
     
-    # --- EXACT R-Compatibility Grid Alignment ---
-    # R [raster] package with extent(-180, 180, -90, 90) and 361 rows.
+    # 2. 전 세계 데이터를 행렬로 다운로드 (GEE의 getRegion 사용)
+    # R과 똑같은 그리드 규격 (361 x 576)
+    # GEE에서 픽셀 센터들을 직접 계산해서 가져옵니다.
+    print(f"Downloading MERRA-2 Grid for {target_date_str}...")
+    
+    # AQS 사이트 정보 로드
+    with gzip.open("static/aqs_list_gam_v2.geojson.gz", "rt") as f:
+        aqs_data = json.load(f)
+    
+    # --- R-Logic Emulation (Mathematical Indexing) ---
+    # R Raster Grid Parameters
     res_x = 0.625
     res_y = 180.0 / 361.0
     
-    # Origin_X = -180 + (0.625 / 2) = -179.6875
-    # Origin_Y = 90 - (res_y / 2)
-    r_grid_transform = [
-        res_x, 0, -180 + (res_x / 2.0),
-        0, -res_y, 90 - (res_y / 2.0)
-    ]
+    # 각 AQS 좌표에 대해 R이 선택했을 픽셀 센터를 찾아냅니다.
+    def get_r_pixel_center(lat, lon):
+        row_idx = np.floor((90.0 - lat) / res_y)
+        col_idx = np.floor((lon + 180.0) / res_x)
+        center_lat = 90.0 - (row_idx * res_y) - (res_y / 2.0)
+        center_lon = -180.0 + (col_idx * res_x) + (res_x / 2.0)
+        return [center_lon, center_lat]
 
-    print(f"Sampling MERRA-2 for {target_date_str} using corrected R-pixel centers...")
+    # 모든 사이트를 "R이 바라보는 픽셀 중심"으로 이동시킵니다.
+    shifted_points = []
+    for f in aqs_data["features"]:
+        coords = f["geometry"]["coordinates"]
+        center_coords = get_r_pixel_center(coords[1], coords[0])
+        shifted_points.append(ee.Feature(ee.Geometry.Point(center_coords), f["properties"]))
     
-    # Sample at AQS points using the EXACT R-grid projection definition.
-    # We apply this directly in sampleRegions to ensure discrete nearest-neighbor extraction.
-    sampled_data = combined_img.sampleRegions(
-        collection=aqs_fc,
-        properties=list(aqs_fc.first().propertyNames().getInfo()),
-        projection=ee.Projection("EPSG:4326", r_grid_transform),
+    sites_fc = ee.FeatureCollection(shifted_points)
+    
+    results = combined_img.sampleRegions(
+        collection=sites_fc,
+        scale=1,
         tileScale=4,
         geometries=True
-    )
+    ).getInfo()
     
-    # Attach the date to each result
-    final_results = sampled_data.map(lambda f: f.set("date", target_date_str))
-    
-    return final_results.getInfo()
+    # 날짜 주입 및 반환
+    for feature in results["features"]:
+        feature["properties"]["date"] = target_date_str
+        
+    return results
 
-def upload_to_gcs(bucket_name, blob_name, data, content_type):
-    try:
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(bucket_name)
-        blob = bucket.blob(blob_name)
-        blob.upload_from_string(data, content_type=content_type)
-        print(f"Uploaded to gs://{bucket_name}/{blob_name}")
-    except Exception as e:
-        print(f"GCS Upload Error: {e}")
-
-def process_and_upload_merra2(data, date_str):
-    year_str = date_str[:4]
-    for feature in data["features"]:
-        feature["properties"]["date"] = date_str
+def upload_to_gcs(bucket_name, blob_name, data):
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
     
-    output_geojson = {
-        "type": "FeatureCollection",
-        "properties": {
-            "date": date_str,
-            "source": "NASA/MERRA-2 (SLV & RAD)",
-            "generated_at": datetime.now().isoformat()
-        },
-        "features": data["features"]
-    }
+    output = io.BytesIO()
+    with gzip.GzipFile(fileobj=output, mode="w") as f:
+        f.write(json.dumps(data).encode("utf-8"))
     
-    json_str = json.dumps(output_geojson, ensure_ascii=False)
-    gzip_data = gzip.compress(json_str.encode("utf-8"))
-    blob_name = f"merra2_date_geojson/{year_str}/merra2_{date_str}.geojson.gz"
-    upload_to_gcs(GCS_BUCKET_NAME, blob_name, gzip_data, "application/gzip")
+    blob.upload_from_string(output.getvalue(), content_type="application/x-gzip")
+    print(f"Uploaded to gs://{bucket_name}/{blob_name}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Fetch daily MERRA-2 data for AQS sites.")
-    parser.add_argument("--date", type=str, help="Target date (YYYY-MM-DD). Default is 31 days ago.")
-    parser.add_argument("--project", type=str, help="GCP Project ID for GEE initialization.")
-    
+    init_gee()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--date", type=str, default=(datetime.now() - timedelta(days=31)).strftime("%Y-%m-%d"))
     args = parser.parse_args()
     
-    # Default to 31 days ago due to MERRA-2 latency
-    if not args.date:
-        target_dt = datetime.now() - timedelta(days=31)
-        target_date_str = target_dt.strftime("%Y-%m-%d")
-    else:
-        target_date_str = args.date
-        
-    try:
-        init_gee(project_id=args.project)
-        data = fetch_merra2_daily(target_date_str)
-        process_and_upload_merra2(data, target_date_str)
-    except Exception as e:
-        print(f"FAILED: {e}")
-        sys.exit(1)
+    data = fetch_merra2_exact(args.date)
+    year_str = args.date[:4]
+    blob_name = f"merra2_date_geojson/{year_str}/merra2_{args.date.replace("-", "")}.geojson.gz"
+    upload_to_gcs("smokelyze_bucket", blob_name, data)
 
