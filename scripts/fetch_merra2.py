@@ -79,46 +79,32 @@ def fetch_merra2_daily(target_date_str):
     
     combined_img = t2max.addBands(srad).addBands(slv_means)
     
-    # --- FINAL R-COMPATIBILITY: INDEX MATCHING SIMULATION ---
-    # Instead of reprojecting, we map AQS points to the exact NASA indices R would pick.
-    # R [raster] Row matching logic: row = floor((90 - lat) / (180/361))
-    # R [raster] Col matching logic: col = floor((lon + 180) / 0.625)
+    # --- EXACT R-Compatibility Grid Alignment ---
+    # R [raster] package with extent(-180, 180, -90, 90) and 361 rows.
+    res_x = 0.625
+    res_y = 180.0 / 361.0
     
-    def match_r_cell_selection(f):
-        coords = f.geometry().coordinates()
-        lon = ee.Number(coords.get(0))
-        lat = ee.Number(coords.get(1))
-        
-        r_row_idx = (ee.Number(90).subtract(lat)).divide(180.0/361.0).floor()
-        
-        target_lat = ee.Number(90).subtract(r_row_idx.multiply(0.5))
-        
-        r_col_idx = (lon.add(180)).divide(0.625).floor()
-        
-        target_lon = ee.Number(-180).add(r_col_idx.multiply(0.625)).add(0.3125)
-        
-        return f.setGeometry(ee.Geometry.Point([target_lon, target_lat]))
+    # Origin_X = -180 + (0.625 / 2) = -179.6875
+    # Origin_Y = 90 - (res_y / 2)
+    r_grid_transform = [
+        res_x, 0, -180 + (res_x / 2.0),
+        0, -res_y, 90 - (res_y / 2.0)
+    ]
 
-    print(f"Sampling MERRA-2 for {target_date_str} using CLEAN R-Cell Matching logic...")
+    print(f"Sampling MERRA-2 for {target_date_str} using corrected R-pixel centers...")
     
-    # Map each site to its corresponding R-style cell center on the NASA grid
-    aligned_aqs = aqs_fc.map(match_r_cell_selection)
-    
-    # Sample from the combined image at these aligned points
-    # scale=1 ensures we pick the single nearest pixel (which is now perfectly centered)
+    # Sample at AQS points using the EXACT R-grid projection definition.
+    # We apply this directly in sampleRegions to ensure discrete nearest-neighbor extraction.
     sampled_data = combined_img.sampleRegions(
-        collection=aligned_aqs,
+        collection=aqs_fc,
         properties=list(aqs_fc.first().propertyNames().getInfo()),
-        scale=1,
+        projection=ee.Projection("EPSG:4326", r_grid_transform),
         tileScale=4,
         geometries=True
     )
     
-    # Attach date and return original site geometry for valid dashboard display
-    def restore_and_date(f):
-        return f.set("date", target_date_str)
-
-    final_results = sampled_data.map(restore_and_date)
+    # Attach the date to each result
+    final_results = sampled_data.map(lambda f: f.set("date", target_date_str))
     
     return final_results.getInfo()
 
