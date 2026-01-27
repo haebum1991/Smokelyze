@@ -79,31 +79,30 @@ def fetch_merra2_daily(target_date_str):
     
     combined_img = t2max.addBands(srad).addBands(slv_means)
     
-    # --- EXACT R-LOGIC EMULATION (Surgical Match) ---
-    res_x = 360.0 / 576.0 # 0.625
-    res_y = 180.0 / 361.0 # 0.4986149...
-
-    def match_r_cell_selection(f):
-        coords = f.geometry().coordinates()
-        lon = ee.Number(coords.get(0))
-        lat = ee.Number(coords.get(1))
-        
-        col_idx = lon.add(180).divide(res_x).floor()
-        row_idx = ee.Number(90).subtract(lat).divide(res_y).floor()
-        
-        snapped_lon = col_idx.add(0.5).multiply(res_x).subtract(180)
-        snapped_lat = ee.Number(90).subtract(row_idx.add(0.5).multiply(res_y))
-        
-        return f.setGeometry(ee.Geometry.Point([snapped_lon, snapped_lat]))
-
-    snapped_fc = aqs_fc.map(match_r_cell_selection)
-
-    print(f"Sampling MERRA-2 for {target_date_str} using Snapped R-Pixel Centers...")
+    # --- R-style 그리드 정의 (Reprojection) ---
+    # R에서 extent(-180, 180, -90, 90)와 matrix(576x361)를 사용했을 때의 그리드입니다.
+    # res_x = 360 / 576 = 0.625
+    # res_y = 180 / 361 = 0.4986149584...
+    res_x = 360.0 / 576.0 
+    res_y = 180.0 / 361.0
     
-    sampled_data = combined_img.sampleRegions(
-        collection=snapped_fc,
+    # GEE Transform: [xScale, xShearing, xTranslation, yShearing, yScale, yTranslation]
+    # xTranslation, yTranslation은 픽셀의 좌측 상단(Top-Left) 좌표입니다. (R extent의 시작점)
+    # R의 raster(matrix) + extent(xmin, xmax, ymin, ymax)는 픽셀 중심이 아닌 경계를 기준으로 합니다.
+    r_transform = [res_x, 0, -180.0, 0, -res_y, 90.0]
+    r_projection = ee.Projection("EPSG:4326", r_transform)
+
+    print(f"Sampling MERRA-2 for {target_date_str} after reprojecting to R-style grid...")
+    
+    # R에서처럼 "원본 수신 후 Reprojection" 하는 로직을 GEE 내부에서 수행합니다.
+    # Nearest Neighbor 보간을 사용하여 R의 단순 매트릭스 할당과 동일한 효과를 냅니다.
+    reprojected_img = combined_img.reproject(crs=r_projection)
+    
+    # Sample at AQS points using the EXACT R-grid projection definition.
+    sampled_data = reprojected_img.sampleRegions(
+        collection=aqs_fc,
         properties=list(aqs_fc.first().propertyNames().getInfo()),
-        scale=1,
+        projection=r_projection,
         tileScale=4,
         geometries=True
     )
@@ -125,8 +124,21 @@ def upload_to_gcs(bucket_name, blob_name, data, content_type):
 
 def process_and_upload_merra2(data, date_str):
     year_str = date_str[:4]
+    # R 코드 logic: 풍속/기압 변수 제외하고 음수는 NA(None) 처리
+    allowed_negative = [
+        "U10M", "V10M", "U500", "V500", "U850", "V850", 
+        "U250", "V250", "U50M", "V50M", "OMEGA500"
+    ]
+    
     for feature in data["features"]:
-        feature["properties"]["date"] = date_str
+        props = feature["properties"]
+        props["date"] = date_str
+        
+        # 음수 값 필터링 (데이터 정제)
+        for key in list(props.keys()):
+            val = props[key]
+            if key not in allowed_negative and isinstance(val, (int, float)) and val < 0:
+                props[key] = None
     
     output_geojson = {
         "type": "FeatureCollection",
