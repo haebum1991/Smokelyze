@@ -80,15 +80,13 @@ def fetch_merra2_daily(target_date_str):
     combined_img = t2max.addBands(srad).addBands(slv_means)
     
     # --- R-Compatibility Grid Definition ---
-    # Extent: [-180, 180, -90, 90], Matrix: 576 cols, 361 rows
-    # X_scale = 360 / 576 = 0.625
-    # Y_scale = 180 / 361 (Negative for top-to-bottom direction)
+    # creates a specific grid where the resolution is 180/361.
     r_grid_transform = [
-        0.625, 0, -180,           # X scale, X shear, X offset (Left)
-        0, -(180.0 / 361.0), 90   # Y shear, Y scale, Y offset (Top)
+        0.625, 0, -180,           # X: scale, shear, offset
+        0, -(180.0 / 361.0), 90   # Y: shear, scale, offset
     ]
     
-    # Reproject NASA data into this specific R-style grid
+    # Reproject the NASA data into this R-style grid
     combined_img_r = combined_img.reproject(
         crs="EPSG:4326",
         crsTransform=r_grid_transform
@@ -96,8 +94,8 @@ def fetch_merra2_daily(target_date_str):
     
     print(f"Sampling MERRA-2 for {target_date_str} using EXACT R-compatible logic...")
     
-    # Sample at AQS points on the reprojected grid
-    # scale=1 forces GEE to pick the single pixel at that location
+    # Sample at original AQS coordinates, but on the reprojected R-grid.
+    # scale=1 ensures we pick the raw pixel value at the location.
     sampled_data = combined_img_r.sampleRegions(
         collection=aqs_fc,
         properties=list(aqs_fc.first().propertyNames().getInfo()),
@@ -106,10 +104,10 @@ def fetch_merra2_daily(target_date_str):
         geometries=True
     )
     
-    # Final cleanup: Attach date
+    # Attach the date to each result
     final_results = sampled_data.map(lambda f: f.set("date", target_date_str))
     
-    # Fetch results
+    # Fetch and return results
     return final_results.getInfo()
 
 def upload_to_gcs(bucket_name, blob_name, data, content_type):
@@ -163,5 +161,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"FAILED: {e}")
         sys.exit(1)
-
 
