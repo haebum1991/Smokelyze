@@ -82,7 +82,7 @@ def fetch_merra2_daily(target_date_str):
     # --- EXACT R-Compatibility Grid Alignment ---
     # R [raster] package with extent(-180, 180, -90, 90) and 361 rows.
     res_x = 0.625
-    res_y = 180.0 / 361.0
+    res_y = 0.5
     
     # Origin_X = -180 + (0.625 / 2) = -179.6875
     # Origin_Y = 90 - (res_y / 2)
