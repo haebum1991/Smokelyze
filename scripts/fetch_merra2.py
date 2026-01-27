@@ -86,15 +86,17 @@ def fetch_merra2_daily(target_date_str):
     # We shift the sampling points by half a pixel (Lon: -0.3125, Lat: -0.25)
     
     def apply_r_shift(f):
-        # Subtract half-pixel to land in the same neighborhood R [raster] package chose
-        # Lon shift: 0.625 / 2 = 0.3125
-        # Lat shift: 0.5 / 2 = 0.25
-        coords = f.geometry().coordinates()
-        new_point = ee.Geometry.Point([
-            ee.Number(coords.get(0)).subtract(0.3125),
-            ee.Number(coords.get(1)).subtract(0.25)
-        ])
-        return f.setGeometry(new_point)
+        # R [raster] package with 361 rows and 576 cols over -180:180, -90:90
+        # creates a grid that is linearly displaced from the NASA center points.
+        # Longitude shift is constant: -0.3125 (0.625 / 2)
+        # Latitude shift is linear: -0.25 at South Pole, 0 at Equator, +0.25 at North Pole
+        lon = ee.Number(f.geometry().coordinates().get(0))
+        lat = ee.Number(f.geometry().coordinates().get(1))
+        
+        new_lon = lon.subtract(0.3125)
+        new_lat = lat.add(lat.divide(360)) 
+        
+        return f.setGeometry(ee.Geometry.Point([new_lon, new_lat]))
 
     shifted_aqs = aqs_fc.map(apply_r_shift)
     
@@ -104,21 +106,17 @@ def fetch_merra2_daily(target_date_str):
         properties=list(aqs_fc.first().propertyNames().getInfo()),
         scale=combined_img.projection().nominalScale(),
         tileScale=4,
-        geometries=True  # Ensure we keep distance-shifted geometries for restoration
+        geometries=True
     )
     
-    # Restore the original point geometries (shift back) for the final GeoJSON output
-    def restore_geometry(f):
-        coords = f.geometry().coordinates()
-        return f.setGeometry(ee.Geometry.Point([
-            ee.Number(coords.get(0)).add(0.3125),
-            ee.Number(coords.get(1)).add(0.25)
-        ]))
+    # Final cleanup: Attach original properties and set correct AQS center geometry
+    def finalize_feature(f):
+        # We restore the ORIGINAL geometry from aqs_fc based on AQS ID
+        site_id = f.get("AQS")
+        original_site = aqs_fc.filter(ee.Filter.eq("AQS", site_id)).first()
+        return f.setGeometry(original_site.geometry()).set("date", target_date_str)
 
-    results = sampled_data.map(restore_geometry)
-    
-    # Final cleanup: Add date to all features
-    final_results = results.map(lambda f: f.set("date", target_date_str))
+    final_results = sampled_data.map(finalize_feature)
     
     # Fetch results
     return final_results.getInfo()
