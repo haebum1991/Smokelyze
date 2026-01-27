@@ -84,30 +84,35 @@ def fetch_merra2_daily(target_date_str):
     res_x = 0.625
     res_y = 180.0 / 361.0
     
-    # Origin_X = -180 + (0.625 / 2) = -179.6875
-    # Origin_Y = 90 - (res_y / 2)
     r_grid_transform = [
         res_x, 0, -180,
         0, -res_y, 90
     ]
-    print(f"Sampling MERRA-2 for {target_date_str} using corrected R-pixel centers...")
+    r_proj = ee.Projection("EPSG:4326", r_grid_transform)
+
+    # --- Force the Image to use the R-grid projection ---
+    combined_img = combined_img.setDefaultProjection(r_proj)
+
+    # --- SURGICAL SNAPPING: Move each point to the EXACT R-pixel center ---
+    def snap_to_r_grid(f):
+        # 1. Transform geographic point to R-grid pixel coordinates
+        pixel_coords = r_proj.project(f.geometry()).coordinates()
+        # 2. Snap to the center of that pixel (floor + 0.5)
+        snapped_pixel = pixel_coords.map(lambda c: ee.Number(c).floor().add(0.5))
+        # 3. Transform back to geographic [lon, lat]
+        return f.setGeometry(r_proj.unproject(ee.Geometry.Point(snapped_pixel)))
+
+    snapped_fc = aqs_fc.map(snap_to_r_grid)
+
+    print(f"Sampling MERRA-2 for {target_date_str} using Snapped R-Grids...")
     
-    proj = ee.Projection("EPSG:4326", r_grid_transform)
-
-    snapped_fc = aqs_fc.map(
-        lambda f: f.setGeometry(
-            ee.Geometry.Point(
-                proj.transform(f.geometry().coordinates())
-            )
-        )
-    )
-
-    # Sample at AQS points using the EXACT R-grid projection definition.
-    # We apply this directly in sampleRegions to ensure discrete nearest-neighbor extraction.
+    # Now sample from the image using the snapped points. 
+    # Since points are at pixel centers, result is guaranteed discrete.
     sampled_data = combined_img.sampleRegions(
         collection=snapped_fc,
         properties=list(aqs_fc.first().propertyNames().getInfo()),
-        projection=proj,
+        projection=r_proj,
+        scale=1, # Already at pixel centers, so scale 1 is safe/fast
         tileScale=4,
         geometries=True
     )
