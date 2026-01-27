@@ -95,12 +95,17 @@ def fetch_merra2_daily(target_date_str):
 
     # --- SURGICAL SNAPPING: Move each point to the EXACT R-pixel center ---
     def snap_to_r_grid(f):
-        # 1. Transform geographic point to R-grid pixel coordinates
-        pixel_coords = r_proj.project(f.geometry()).coordinates()
-        # 2. Snap to the center of that pixel (floor + 0.5)
-        snapped_pixel = pixel_coords.map(lambda c: ee.Number(c).floor().add(0.5))
-        # 3. Transform back to geographic [lon, lat]
-        return f.setGeometry(r_proj.unproject(ee.Geometry.Point(snapped_pixel)))
+        coords = f.geometry().coordinates()
+        lon = ee.Number(coords.get(0))
+        lat = ee.Number(coords.get(1))
+        
+        # R-grid math: Snap to the center of the matching pixel box
+        # col_idx = floor((lon + 180) / res_x) -> center_lon = -180 + (col_idx + 0.5) * res_x
+        snapped_lon = lon.add(180).divide(res_x).floor().add(0.5).multiply(res_x).subtract(180)
+        # row_idx = floor((90 - lat) / res_y) -> center_lat = 90 - (row_idx + 0.5) * res_y
+        snapped_lat = ee.Number(90).subtract(lat).divide(res_y).floor().add(0.5).multiply(res_y).multiply(-1).add(90)
+        
+        return f.setGeometry(ee.Geometry.Point([snapped_lon, snapped_lat]))
 
     snapped_fc = aqs_fc.map(snap_to_r_grid)
 
