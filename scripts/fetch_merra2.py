@@ -61,6 +61,19 @@ def fetch_merra2_daily(target_date_str):
     with gzip.open(AQS_LIST_PATH, "rt", encoding="utf-8") as f:
         aqs_geojson = json.load(f)
     
+    # --- Restore Image Collection & Processing ---
+    slv_col = ee.ImageCollection("NASA/GSFC/MERRA/slv/2").filterDate(target_date_str, date_range_end)
+    rad_col = ee.ImageCollection("NASA/GSFC/MERRA/rad/2").filterDate(target_date_str, date_range_end)
+    
+    # Process Bands
+    t2max = slv_col.select("T2M").max().rename("T2MAX")
+    srad = rad_col.select("SWGDN").mean().rename("SRAD")
+    
+    slv_vars = ["U10M", "V10M", "U500", "V500", "QV2M"]
+    slv_means = slv_col.select(slv_vars).mean()
+    
+    combined_img = t2max.addBands(srad).addBands(slv_means)
+    
     # --- ULTIMATE REPRODUCIBILITY STRATEGY: Raw Array Indexing ---
     # Instead of asking GEE to sample (which involves projection magic),
     # we download the raw 361x576 global grid and manually pick pixels
