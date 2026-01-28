@@ -1,4 +1,5 @@
 
+
 import os
 import sys
 
@@ -60,57 +61,79 @@ def fetch_merra2_daily(target_date_str):
     with gzip.open(AQS_LIST_PATH, "rt", encoding="utf-8") as f:
         aqs_geojson = json.load(f)
     
-    features = []
+    # --- ULTIMATE REPRODUCIBILITY STRATEGY: Raw Array Indexing ---
+    # Instead of asking GEE to sample (which involves projection magic),
+    # we download the raw 361x576 global grid and manually pick pixels
+    # using the exact arithmetic formula R uses.
+    
+    print(f"Downloading raw MERRA-2 global grid (361x576) for {target_date_str}...")
+    
+    # Define Global Extent for MERRA-2
+    # The raw data is typically -180 to 180, -90 to 90.
+    global_geom = ee.Geometry.Rectangle([-180, -90, 180, 90], "EPSG:4326", False)
+    
+    # Sample the entire world as a rectangle arrays
+    # This returns a dictionary of 2D arrays (values[row][col])
+    raw_arrays = combined_img.sampleRectangle(region=global_geom).getInfo()["properties"]
+    
+    # R Raster Calculation Constants
+    R_NROW = 361
+    R_NCOL = 576
+    R_X_RES = 0.625
+    R_Y_RES = 180.0 / 361.0  # ~0.498614958
+    
+    def get_r_raster_value(lat, lon, band_key):
+        # 1. Calculate Row (Y) Index
+        # R formula: row = 1 + trunc((ymax - y) / yres) -> We use 0-based index
+        # 0-based row = floor((90 - lat) / y_res)
+        # Clamp to 0 ~ 360 to handle edge cases (like exactly -90)
+        row_idx = int((90 - lat) / R_Y_RES)
+        if row_idx >= R_NROW: row_idx = R_NROW - 1
+        if row_idx < 0: row_idx = 0
+            
+        # 2. Calculate Col (X) Index
+        # 0-based col = floor((lon - xmin) / x_res) -> xmin is -180
+        col_idx = int((lon + 180) / R_X_RES)
+        if col_idx >= R_NCOL: col_idx = R_NCOL - 1
+        if col_idx < 0: col_idx = 0
+            
+        # 3. Retrieve value
+        return raw_arrays[band_key][row_idx][col_idx]
+
+    print("Extracting values using R-simulation logic...")
+    
+    final_features = []
+    
+    # Iterate through local features (no longer using GEE FeatureCollection for sampling)
     for feat in aqs_geojson["features"]:
         props = feat["properties"]
-        lon, lat = feat["geometry"]["coordinates"]
-        features.append(ee.Feature(ee.Geometry.Point([lon, lat]), props))
-    
-    aqs_fc = ee.FeatureCollection(features)
-    
-    slv_col = ee.ImageCollection("NASA/GSFC/MERRA/slv/2").filterDate(target_date_str, date_range_end)
-    rad_col = ee.ImageCollection("NASA/GSFC/MERRA/rad/2").filterDate(target_date_str, date_range_end)
-    
-    t2max = slv_col.select("T2M").max().rename("T2MAX")
-    srad = rad_col.select("SWGDN").mean().rename("SRAD")
-    
-    slv_vars = ["U10M", "V10M", "U500", "V500", "QV2M"]
-    slv_means = slv_col.select(slv_vars).mean()
-    
-    combined_img = t2max.addBands(srad).addBands(slv_means)
-    
-    # --- R-style 그리드 정의 (Reprojection) ---
-    # R에서 extent(-180, 180, -90, 90)와 matrix(576x361)를 사용했을 때의 그리드입니다.
-    # res_x = 360 / 576 = 0.625
-    # res_y = 180 / 361 = 0.4986149584...
-    res_x = 360.0 / 576.0 
-    res_y = 180.0 / 361.0
-    
-    # GEE Transform: [xScale, xShearing, xTranslation, yShearing, yScale, yTranslation]
-    # xTranslation, yTranslation은 픽셀의 좌측 상단(Top-Left) 좌표입니다. (R extent의 시작점)
-    # R의 raster(matrix) + extent(xmin, xmax, ymin, ymax)는 픽셀 중심이 아닌 경계를 기준으로 합니다.
-    r_transform = [res_x, 0, -180.0, 0, -res_y, 90.0]
-    r_projection = ee.Projection("EPSG:4326", r_transform)
-
-    print(f"Sampling MERRA-2 for {target_date_str} after reprojecting to R-style grid...")
-    
-    # R에서처럼 "원본 수신 후 Reprojection" 하는 로직을 GEE 내부에서 수행합니다.
-    # Nearest Neighbor 보간을 사용하여 R의 단순 매트릭스 할당과 동일한 효과를 냅니다.
-    reprojected_img = combined_img.reproject(crs=r_projection)
-    
-    # Sample at AQS points using the EXACT R-grid projection definition.
-    sampled_data = reprojected_img.sampleRegions(
-        collection=aqs_fc,
-        properties=list(aqs_fc.first().propertyNames().getInfo()),
-        projection=r_projection,
-        tileScale=4,
-        geometries=True
-    )
-    
-    # Attach the date to each result
-    final_results = sampled_data.map(lambda f: f.set("date", target_date_str))
-    
-    return final_results.getInfo()
+        geom = feat["geometry"]["coordinates"] # [lon, lat]
+        lon, lat = geom[0], geom[1]
+        
+        # Attach Date
+        props["date"] = target_date_str
+        
+        # Extract Variables
+        try:
+            props["T2MAX"] = get_r_raster_value(lat, lon, "T2MAX")
+            props["SRAD"] = get_r_raster_value(lat, lon, "SRAD")
+            props["U10M"] = get_r_raster_value(lat, lon, "U10M")
+            props["V10M"] = get_r_raster_value(lat, lon, "V10M")
+            props["U500"] = get_r_raster_value(lat, lon, "U500")
+            props["V500"] = get_r_raster_value(lat, lon, "V500")
+            props["QV2M"] = get_r_raster_value(lat, lon, "QV2M")
+        except Exception as e:
+            print(f"Error extracting for point {lat}, {lon}: {e}")
+            # Fill with None or handle error
+            pass
+            
+        final_features.append({
+            "type": "Feature",
+            "geometry": feat["geometry"],
+            "properties": props
+        })
+        
+    return {"type": "FeatureCollection", "features": final_features}
 
 def upload_to_gcs(bucket_name, blob_name, data, content_type):
     try:
@@ -124,21 +147,8 @@ def upload_to_gcs(bucket_name, blob_name, data, content_type):
 
 def process_and_upload_merra2(data, date_str):
     year_str = date_str[:4]
-    # R 코드 logic: 풍속/기압 변수 제외하고 음수는 NA(None) 처리
-    allowed_negative = [
-        "U10M", "V10M", "U500", "V500", "U850", "V850", 
-        "U250", "V250", "U50M", "V50M", "OMEGA500"
-    ]
-    
     for feature in data["features"]:
-        props = feature["properties"]
-        props["date"] = date_str
-        
-        # 음수 값 필터링 (데이터 정제)
-        for key in list(props.keys()):
-            val = props[key]
-            if key not in allowed_negative and isinstance(val, (int, float)) and val < 0:
-                props[key] = None
+        feature["properties"]["date"] = date_str
     
     output_geojson = {
         "type": "FeatureCollection",
@@ -176,4 +186,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"FAILED: {e}")
         sys.exit(1)
+
+
 
