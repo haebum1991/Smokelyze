@@ -26,8 +26,8 @@ export function initGlobalTooltip() {
         left: var(--toolbar-date-width) !important; 
         
         pointer-events: none;
-        display: none;  
-        max-width: max-content;
+        display: none;
+        max-width: 20vw;
         padding: 1rem;
         
         color: var(--text-main);
@@ -285,7 +285,8 @@ export function generatePopupHTML(p, dataSource, isLocked) {
         <div style="${rowStyle}"><b>FRP (MW):</b> <b style="color: var(--card-shadow)";>${ESML(String(p["FRP"]))}</b></div>
         <div style="${rowStyle}"><b>Method:</b> ${ESML(p["Method"])}</div>
         <div style="${rowStyle}"><b>Satellite:</b> ${ESML(p["Satellite"])}</div>
-        <div style="${rowStyle}"><b>Ecosystem:</b> ${ESML(p["Ecosystem"])}</div>`;
+        <div style="${rowStyle}"><b>Ecosystem:</b> ${ESML(p["Ecosystem"])}</div>
+        <div style="${rowStyle}"><b>Scan time (UTC):</b> ${ESML((p["ScanTimes"] || "").replace(" UTC", ""))}</div>`;
     }
     
     if (dataSource === "burn") {
