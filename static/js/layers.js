@@ -7,7 +7,7 @@ import { restoreView, bindViewAutosave } from "./ui-state.js";
 import { getLoadedNewsFeatures } from "./loader.js";
 import { iconPulsingNews, iconPulsingFire, iconPulsingAlert } from "./layers-icon.js";
 import { initGlobalTooltip, stateHoverHTML } from "./layers-tooltip.js";
-import { updateLayerToggleColors, updateStateColors } from "./layers-colors.js";
+import { updateLayerToggleColors, updateStateShading } from "./layers-colors.js";
 import { ensureLayers, applyLayerToggles, getAllInteractiveLayerIds } from "./layers-handler.js";
 import { map, _cachedActiveLayerIds } from "./layers-state.js";
 
@@ -199,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (dsSelect) {
     dsSelect.addEventListener("change", () => {
       setTimeout(updateLayerToggleColors, 50);
-      if (updateStateColors) setTimeout(updateStateColors, 100);
+      if (updateStateShading) setTimeout(updateStateShading, 100);
     });
   }
   setTimeout(updateLayerToggleColors, 100);

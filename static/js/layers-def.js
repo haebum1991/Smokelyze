@@ -11,8 +11,8 @@ export const ExcludeLayerGroups = {
   // [layers-handler.js] > [applyLayerToggles] > [EXCLUDED]
   legend: ["wildfire-news", "wildfire-nifc", "MapPost"],
 
-  // [layers-colors.js] > [updateStateColors] > [EXCLUDED]
-  stateChoropleth: ["smoke", "wildfire-news", "wildfire-nifc", "MapPost"],
+  // [layers-colors.js] > [updateStateShading] > [EXCLUDED]
+  stateShading: ["smoke", "wildfire-news", "wildfire-nifc", "MapPost"],
 
   // [layers-tooltip.js] > [stateHoverHTML] > [EXCLUDED]
   stateHover: ["wildfire-news", "wildfire-nifc", "MapPost"],

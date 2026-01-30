@@ -4,7 +4,7 @@ import { map, mapConfig } from "./map-init.js";
 import { applyLayerToggles } from "./layers-handler.js";
 import { EMPTY_FC } from "./layers-constants.js";
 import { activeLayerStack } from "./layers-state.js";
-import { clearAll, resetGlobalStateColor } from "./ui-state.js";
+import { clearAll, resetGlobalStateShading } from "./ui-state.js";
 import { clearHighlight } from "./utils.js";
 import { resetLoadedSources } from "./loader.js";
 import { resetState as resetBarLine } from "./stats-plot-dy-barline.js";
@@ -17,7 +17,7 @@ export function resetUIAndData() {
   // 1) Clear states
   clearAll?.();
   clearHighlight?.();
-  resetGlobalStateColor?.();
+  resetGlobalStateShading?.();
 
   // 2) Reset Loader cache
   resetLoadedSources?.();

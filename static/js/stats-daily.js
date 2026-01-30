@@ -8,7 +8,7 @@ import { modelStatsCache } from "./loader.js";
 import { renderDailyBarLine } from "./stats-plot-dy-barline.js";
 import { renderParCoords } from "./stats-plot-dy-parcoords.js";
 import { renderDailyScatter } from "./stats-plot-dy-scatter.js";
-import { updateStateColors } from "./layers-colors.js";
+import { updateStateShading } from "./layers-colors.js";
 import { airnowGetCurrentTime } from "./airnow.js";
 import { utcToLocal } from "./ui-time.js";
 
@@ -237,9 +237,9 @@ export function updateDailyStats(isoDate, regionIDs) {
 
             saveRegionStats(regionIDs, burnStats, smokeStats, fireStats);
 
-            // Update state colors after satellite stats are loaded
-            if (typeof updateStateColors === "function") {
-                updateStateColors();
+            // Update state shading after satellite stats are loaded
+            if (typeof updateStateShading === "function") {
+                updateStateShading();
             }
 
             c.renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, "StatsRegionBodyDate", modelStats);

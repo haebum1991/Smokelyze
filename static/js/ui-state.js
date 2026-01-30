@@ -1,6 +1,6 @@
 
-import { setStateColorEnabled, stateColorEnabled } from "./layers-state.js";
-import { updateStateColors } from "./layers-colors.js";
+import { setStateShadingEnabled, StateShadingEnabled } from "./layers-state.js";
+import { updateStateShading } from "./layers-colors.js";
 
 const KEY = "mapStateV1";
 const S = sessionStorage;
@@ -56,8 +56,8 @@ export function restoreUI() {
     });
   }
 
-  // State Color
-  setStateColorEnabled(typeof s.stateColorEnabled === "boolean" ? s.stateColorEnabled : true);
+  // State Shading
+  setStateShadingEnabled(typeof s.StateShadingEnabled === "boolean" ? s.StateShadingEnabled : true);
 }
 
 export function restoreView(map) {
@@ -116,9 +116,9 @@ export function saveLayerFlag(key, on) {
   savePatch({ layers });
 }
 
-export function saveGlobalStateColor(enabled) {
-  setStateColorEnabled(enabled);
-  savePatch({ stateColorEnabled: !!enabled });
+export function saveGlobalStateShading(enabled) {
+  setStateShadingEnabled(enabled);
+  savePatch({ StateShadingEnabled: !!enabled });
 }
 
 export function bindAccordionAutosave() {
@@ -146,13 +146,13 @@ export function clearAll() {
 // Shared runtime state
 export const state = {};
 
-export function initStateColorToggle() {
-  const btn = document.getElementById("MapBtnStateChoropleth");
+export function initStateShadingToggle() {
+  const btn = document.getElementById("MapBtnStateShading");
   if (!btn) return;
 
   if (btn.type === "checkbox") {
-    btn.checked = !!stateColorEnabled;
-  } else if (!stateColorEnabled) {
+    btn.checked = !!StateShadingEnabled;
+  } else if (!StateShadingEnabled) {
     btn.classList.add("disabled");
   }
 
@@ -167,21 +167,21 @@ export function initStateColorToggle() {
       else btn.classList.add("disabled");
     }
 
-    saveGlobalStateColor(nextEnabled);
-    updateStateColors?.();
+    saveGlobalStateShading(nextEnabled);
+    updateStateShading?.();
   };
 
   btn.addEventListener(btn.type === "checkbox" ? "change" : "click", handler);
 }
 
-export function resetGlobalStateColor() {
-  const btn = document.getElementById("MapBtnStateChoropleth");
+export function resetGlobalStateShading() {
+  const btn = document.getElementById("MapBtnStateShading");
   if (btn) {
     if (btn.type === "checkbox") btn.checked = true;
     else btn.classList.remove("disabled");
   }
 
-  setStateColorEnabled(true);
-  updateStateColors?.();
+  setStateShadingEnabled(true);
+  updateStateShading?.();
 }
 

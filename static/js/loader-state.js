@@ -4,7 +4,7 @@
  */
  
 import { regionStats } from "./layers-state.js";
-import { updateStateColors } from "./layers-colors.js";
+import { updateStateShading } from "./layers-colors.js";
 import { LAYER_TEMPLATES, DATASET_SOURCE_MAP } from "./layers-def.js";
 
 // Internal state
@@ -51,8 +51,8 @@ export function clearModelStats() {
         });
     });
 
-    if (updateStateColors) {
-        updateStateColors();
+    if (updateStateShading) {
+        updateStateShading();
     }
     console.log("Model stats cleared.");
 }

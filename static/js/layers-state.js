@@ -9,10 +9,10 @@ export { map };
 export let activeLayerStack = [];
 export let regionStats = {};
 export let _cachedActiveLayerIds = [];
-export let stateColorEnabled = true;
+export let StateShadingEnabled = true;
 
-export function setStateColorEnabled(enabled) {
-    stateColorEnabled = !!enabled;
+export function setStateShadingEnabled(enabled) {
+    StateShadingEnabled = !!enabled;
 }
 
 export function setActiveLayerStack(stack) {

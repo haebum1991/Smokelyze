@@ -3,7 +3,7 @@ import { ESML } from "./utils.js";
 import { initUIPulsingIcons } from "./layers-icon.js";
 
 const DescData = {
-    "realtime-data": [
+    "desc-realtime": [
         { 
           id: "wildfire-news",
           title: "WF news", 
@@ -43,7 +43,7 @@ const DescData = {
                 "Only registered users can create or reply to MapPost. </li></ul>"
         }
     ],
-    "airnow-data": [
+    "desc-airnow": [
         {
             id: "airnow-pm25",
             title: "PM2.5-hr",
@@ -69,7 +69,7 @@ const DescData = {
                 "<li>Typically has a <b style='color: var(--card-shadow);'>1-2 hour reporting delay</b> from the current local time.</li></ul>"
         },
     ],
-    "satellite-data": [
+    "desc-satellite": [
         {
           id: "smoke",
           title: "HMS-smoke",
@@ -103,7 +103,7 @@ const DescData = {
                 "and is updated on an as-available basis. </ul></li>"
         },
     ],
-    "published-intro": [
+    "desc-published-intro": [
         {
           id: "general-info",
           title: "General information",
@@ -167,7 +167,7 @@ const DescData = {
                 "<a href='https://doi.org/10.1016/j.dib.2024.111208' target='_blank'>https://doi.org/10.1016/j.dib.2024.111208</a></li></ul></li></ul>"
         }
     ],
-    "published-gam-v2": [
+    "desc-published-gam-v2": [
         {
           id: "citation",
           title: "Citation",
@@ -196,7 +196,7 @@ const DescData = {
         { id: "ExcDays", title: "Exc. day", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 97.5th percentile residual) = caused by smoke" },
         { id: "ExcDays-edm", title: "Exc. day (EDM)", desc: "Exceedance days (> 70 ppb) (EDM version): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 97.5th percentile residual) = caused by smoke" }
     ],
-    "published-gam-v1": [
+    "desc-published-gam-v1": [
         {
           id: "citation",
           title: "Citation",
@@ -219,7 +219,7 @@ const DescData = {
         { id: "smokeday-975", title: "SMO > 97.5th", desc: "[Smoke day] & [SMO > 97.5th percentile residual]" },
         { id: "ExcDays", title: "Exc. day", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 97.5th percentile residual) = caused by smoke" }
     ],
-    "published-pm-cbsa": [
+    "desc-published-pm-cbsa": [
         {
           id: "citation",
           title: "Citation",
@@ -238,7 +238,7 @@ const DescData = {
         { id: "ExcDays-m0p5m", title: "Exc. day m0p5m", desc: "Exceedance days (> 9 ug m⁻³): <br> - with minimal SMO = not caused by smoke <br> - with significant smoke PM2.5 (m0p5m) (case with smoke PM2.5 > 0) = caused by smoke" },
         { id: "ExcDays-m1p0m", title: "Exc. day m1p0m", desc: "Exceedance days (> 9 ug m⁻³): <br> - with minimal SMO = not caused by smoke <br> - with significant smoke PM2.5 (m0p5m) (case with smoke PM2.5 > 0) = caused by smoke" }
     ],
-    "published-epa-ember": [
+    "desc-published-epa-ember": [
         {
           id: "citation",
           title: "Citation",
@@ -315,20 +315,20 @@ function switchGroup(group) {
         btn.classList.toggle("active", btn.getAttribute("Desc-group") === group);
     });
 
-    if (group === "published") {
+    if (group === "LyrGroupPublished") {
         subTabContainer.style.display = "flex";
         const activeSub = subTabContainer.querySelector(".Desc-tab-sub-btn.active") || subTabBtns[0];
         activeSub.classList.add("active");
         renderParamDesc(activeSub.getAttribute("Desc-ds"));
-    } else if (group === "airnow") {
+    } else if (group === "LyrGroupAirnow") {
         subTabContainer.style.display = "none";
-        renderParamDesc("airnow-data");
-    } else if (group === "realtime") {
+        renderParamDesc("desc-airnow");
+    } else if (group === "LyrGroupRealtime") {
         subTabContainer.style.display = "none";
-        renderParamDesc("realtime-data");
-    } else if (group === "satellite") {
+        renderParamDesc("desc-realtime");
+    } else if (group === "LyrGroupSatellite") {
         subTabContainer.style.display = "none";
-        renderParamDesc("satellite-data");
+        renderParamDesc("desc-satellite");
     }
 }
 

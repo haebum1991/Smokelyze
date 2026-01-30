@@ -20,7 +20,7 @@ import {
     airnowSetCurrentTime,
     airnowGetActiveCoverages
 } from "./airnow.js";
-import { updateStateColors } from "./layers-colors.js";
+import { updateStateShading } from "./layers-colors.js";
 import { triggerRefresh } from "./stats-common.js";
 import { showErrorToast } from "./loader-ui.js";
 import { hideTimeControls } from "./ui-time.js";
@@ -63,7 +63,7 @@ export async function airnowLoadData(isoDate) {
     const activeCoverages = airnowGetActiveCoverages();
 
     if (activeCoverages.length === 0) {
-        updateStateColors();
+        updateStateShading();
         if (typeof triggerRefresh === "function") triggerRefresh();
         return;
     }
@@ -163,8 +163,8 @@ export async function airnowLoadData(isoDate) {
 
         await Promise.all(promises);
         
-        // Refresh state colors to reflect new AirNow stats
-        updateStateColors();
+        // Refresh state shading to reflect new AirNow stats
+        updateStateShading();
         
         // Refresh stats table and plots
         if (typeof triggerRefresh === "function") {

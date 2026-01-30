@@ -1,5 +1,5 @@
 
-import { savePatch, read, initStateColorToggle } from "./ui-state.js";
+import { savePatch, read, initStateShadingToggle } from "./ui-state.js";
 import { onDescDrawerOpen } from "./ui-param-desc.js";
 import {
     clearHighlight,
@@ -233,14 +233,14 @@ export function initAccordion() {
 
     addSwipeClose(page, { direction: "right", onClose: () => setAccordionCollapsed(true) });
 
-    const StateChoroplethContainer = document.getElementById("ToggleSwitchStateChoropleth");
-    if (StateChoroplethContainer) {
-        appendSwitch(StateChoroplethContainer, {
-            id: "MapBtnStateChoropleth",
-            label: "State Choropleth",
+    const StateShadingContainer = document.getElementById("ToggleSwitchStateShading");
+    if (StateShadingContainer) {
+        appendSwitch(StateShadingContainer, {
+            id: "MapBtnStateShading",
+            label: "State Shading",
             checked: true
         });
-        initStateColorToggle();
+        initStateShadingToggle();
     }
 
     const s = read?.();

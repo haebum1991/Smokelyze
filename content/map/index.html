@@ -177,27 +177,27 @@ title: ""
         </button>
       </div>
       
-      <!-- State Color Toggle (Injected via JS) -->
-      <div id="ToggleSwitchStateChoropleth"></div>
+      <!-- State Shading Toggle (Injected via JS) -->
+      <div id="ToggleSwitchStateShading"></div>
       
       <details open>
-        <summary>Real-time WF</summary>
+        <summary>Near Realtime</summary>
         <label>
           <input type="checkbox" id="layer-wildfire-news" checked>
           WF news
-          <canvas class="ui-pulsing-icon" data-type="news" width="30" height="30"
+          <canvas class="ui-pulsing-icon" data-type="news" width="24" height="24"
             style="vertical-align:middle; margin-right:0.4rem;"></canvas>
         </label>
         <label>
           <input type="checkbox" id="layer-wildfire-nifc" checked>
           WF incident locations
-          <canvas class="ui-pulsing-icon" data-type="fire" width="30" height="30"
+          <canvas class="ui-pulsing-icon" data-type="fire" width="24" height="24"
             style="vertical-align:middle; margin-right:0.4rem;"></canvas>
         </label>
         <label>
           <input type="checkbox" id="layer-MapPost">
           MapPost
-          <canvas class="ui-pulsing-icon" data-type="alert" width="30" height="30"
+          <canvas class="ui-pulsing-icon" data-type="alert" width="24" height="24"
             style="vertical-align:middle; margin-right:0.4rem;"></canvas>
           <hr style="margin-top: 0.2rem; margin-bottom: 0.2rem;">
         </label>
@@ -299,23 +299,23 @@ title: ""
 
 <div class="Desc-drawer" id="DescDrawer">
   <div class="Desc-drawer-header">
-    <h3>Descriptions</h3>
+    <h3>Layer Descriptions</h3>
     <button class="Desc-drawer-close" id="DescDrawerClose">×</button>
   </div>
 
   <div class="Desc-tab-main">
-    <button class="Desc-tab-main-btn active" Desc-group="realtime">Real-time WF</button>
-    <button class="Desc-tab-main-btn" Desc-group="airnow">AirNow</button>
-    <button class="Desc-tab-main-btn" Desc-group="satellite">Satellite</button>
-    <button class="Desc-tab-main-btn" Desc-group="published">Published</button>
+    <button class="Desc-tab-main-btn active" Desc-group="LyrGroupRealtime">Near Realtime</button>
+    <button class="Desc-tab-main-btn" Desc-group="LyrGroupAirnow">AirNow</button>
+    <button class="Desc-tab-main-btn" Desc-group="LyrGroupSatellite">Satellite</button>
+    <button class="Desc-tab-main-btn" Desc-group="LyrGroupPublished">Published</button>
   </div>
 
   <div class="Desc-tab-sub" id="DescSubTabs">
-    <button class="Desc-tab-sub-btn active" Desc-ds="published-intro">Introduction</button>
-    <button class="Desc-tab-sub-btn" Desc-ds="published-gam-v2">UW GAM-v2</button>
-    <button class="Desc-tab-sub-btn" Desc-ds="published-gam-v1">UW GAM-v1</button>
-    <button class="Desc-tab-sub-btn" Desc-ds="published-pm-cbsa">UW Smoke PM2.5</button>
-    <button class="Desc-tab-sub-btn" Desc-ds="published-epa-ember">EPA EMBER</button>
+    <button class="Desc-tab-sub-btn active" Desc-ds="desc-published-intro">Introduction</button>
+    <button class="Desc-tab-sub-btn" Desc-ds="desc-published-gam-v2">UW GAM-v2</button>
+    <button class="Desc-tab-sub-btn" Desc-ds="desc-published-gam-v1">UW GAM-v1</button>
+    <button class="Desc-tab-sub-btn" Desc-ds="desc-published-pm-cbsa">UW Smoke PM2.5</button>
+    <button class="Desc-tab-sub-btn" Desc-ds="desc-published-epa-ember">EPA EMBER</button>
   </div>
 
   <div class="Desc-content" id="DescContent">

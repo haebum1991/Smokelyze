@@ -509,7 +509,7 @@ export async function updateAllActiveSources() {
         // 로그인 안 되어 있고 Published data 로드 시도 시 데이터 클리어
         if (!auth.currentUser && tryingToLoadPublished) {
 
-            // Clear all published source data to remove any cached state colors/data
+            // Clear all published source data to remove any cached state shading/data
             publishedSources.forEach(sourceKey => {
                 const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
                 if (ds?.source) {
@@ -521,7 +521,7 @@ export async function updateAllActiveSources() {
                 delete modelStatsCache[sourceKey];
             });
 
-            // Clear all model stats to remove state colors
+            // Clear all model stats to remove state shading
             clearModelStats();
         }
 

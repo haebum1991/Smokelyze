@@ -7,7 +7,7 @@ import { DATA_IMPORT_METHOD, ExcludeLayerGroups, DATASET_SOURCE_MAP, LAYER_DEFS 
 import { highlightLocation } from "./utils.js";
 import { state } from "./ui-state.js";
 import { EMPTY_FC } from "./layers-constants.js";
-import { updateLegend, updateStateColors } from "./layers-colors.js";
+import { updateLegend, updateStateShading } from "./layers-colors.js";
 import { map, activeLayerStack, setCachedActiveLayerIds, setActiveLayerStack } from "./layers-state.js";
 
 export function addSourceIfMissing(sourceId) {
@@ -209,6 +209,6 @@ export function applyLayerToggles() {
     }
 
     updateLegend(newStack);
-    updateStateColors?.();
+    updateStateShading?.();
 }
 
