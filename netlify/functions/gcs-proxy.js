@@ -174,9 +174,15 @@ exports.handler = async (event) => {
     const [buf] = await file.download();
     const isGzipped = buf.length >= 2 && buf[0] === 0x1f && buf[1] === 0x8b;
 
+    const currentYear = new Date().getFullYear();
+    const isDynamicYearly = (
+      (path.startsWith("noaa_hms_smoke_year_json/") && path.includes(`_${currentYear}.json`)) ||
+      (path.startsWith("noaa_hms_fire_year_json/") && path.includes(`_${currentYear}.json`))
+    );
+
     const headers = {
       ...corsHeaders,
-      "Cache-Control": path.startsWith("realtime/")
+      "Cache-Control": (path.startsWith("realtime/") || isDynamicYearly)
         ? "public, max-age=3600, must-revalidate"
         : "public, max-age=2592000",
     };
