@@ -38,7 +38,8 @@ const PUBLIC_PREFIXES = [
   "noaa_hms_fire_date_json",
   "noaa_hms_fire_year_json",
   "modis_burn_area_date_geojson",
-  "modis_burn_area_year_json"
+  "modis_burn_area_year_json",
+  "airnow_date_geojson"
 ];
 
 function dlog(...args) { if (DEBUG) console.log.apply(console, args); }
@@ -93,7 +94,8 @@ function extractGcsPath(event) {
     "noaa_hms_smoke_year_json",
     "noaa_hms_fire_date_geojson",
     "noaa_hms_fire_date_json",
-    "noaa_hms_fire_year_json"
+    "noaa_hms_fire_year_json",
+    "airnow_date_geojson"
   ];
 
   let rawPath = "";

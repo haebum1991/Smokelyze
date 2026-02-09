@@ -12,7 +12,8 @@ const DescData = {
                 "Since precise incident coordinates are rarely available in news feeds, articles are assigned to <b style='color: var(--card-shadow);'>representative state-level locations</b>. " +
                 "To ensure visibility when multiple articles share the same state, a <b style='color: var(--card-shadow);'>small random jitter</b> is applied to prevent markers from overlapping. " +
                 "All collected articles are consolidated in the <b style='color: var(--card-shadow);'>side drawer</b> for easy browsing, ensuring that news across all regions can be accessed regardless of map localization." +
-                "<br><ul><li><b style='color: var(--card-shadow);'>" +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Every 6 hours</b></li>" +
+                "<li><b style='color: var(--card-shadow);'>" +
                 "In our app, this data is available starting from 2018-01-01. </b>" +
                 "It is updated daily, and the data is collected every 6 hours. </li>" +
                 "<li>Depending on the keywords used for collection, irrelevant news articles may be included in the results.</li></ul>"
@@ -27,7 +28,8 @@ const DescData = {
                 "including <em>incident name</em>, <em>fire cause</em>, and <em>burn area (acres)</em>. " +
                 "This data includes <b style='color: var(--card-shadow);'>precise discovery coordinates</b> as reported by fire management agencies via the Integrated Reporting of Wildland-Fire Information (IRWIN). " +
                 "The system captures a wide range of incident types and categories, ensuring a comprehensive overview of fire events across the region." +
-                "<br><ul><li><b style='color: var(--card-shadow);'>" +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Every 6 hours</b></li>" +
+                "<li><b style='color: var(--card-shadow);'>" +
                 "In our app, this data is available starting from 2018-01-01. </b>" +
                 "It is updated daily, and the data is collected every 6 hours. </ul></li>"
         },
@@ -38,34 +40,51 @@ const DescData = {
                 "Users can pin a location and add a title and detailed content. " +
                 "Other members can also reply to MapPost to foster discussion. " +
                 "To add a MapPost, toggle the MapPost layer and click [+MapPost] button (or Right-click on the map)." +
-                "<br><ul><li><b style='color: var(--card-shadow);'>" +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Real-time</b></li>" +
+                "<li><b style='color: var(--card-shadow);'>" +
                 "In our app, this data is managed in real-time. </b>" +
                 "Only registered users can create or reply to MapPost. </li></ul>"
         }
     ],
     "desc-airnow": [
         {
-            id: "airnow-pm25",
-            title: "PM2.5-hr",
-            desc: "<b>PM2.5</b> provides real-time hourly fine particulate matter concentrations from the US EPA AirNow network via the RSIG server. " +
-                "This data is crucial for identifying immediate smoke impacts and tracking air quality trends as they happen. " +
-                "<br><ul><li><b style='color: var(--card-shadow);'>Real-time hourly data</b>: Updated every hour.</li>" +
-                "<li>Typically has a <b style='color: var(--card-shadow);'>1-2 hour reporting delay</b> from the current local time.</li></ul>"
+            id: "airnow-daily-mda8",
+            title: "Obs MDA8",
+            desc: "<b>Obs MDA8</b> provides the maximum daily 8-hour average ozone concentrations from the US EPA AirNow network. " +
+                "MDA8 is the primary metric used for ozone air quality standards and health assessments. " +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b></li>" +
+                "<li>Typically has a <b style='color: var(--card-shadow);'>1-day reporting delay</b> from the current date.</li></ul>"
+        },
+        {
+            id: "airnow-daily-pm25",
+            title: "Obs PM2.5",
+            desc: "<b>Obs PM2.5</b> provides 24-hour averaged fine particulate matter concentrations from the US EPA AirNow network. " +
+                "This daily data is useful for assessing longer-term air quality trends and compliance with daily air quality standards. " +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b></li>" +
+                "<li>Typically has a <b style='color: var(--card-shadow);'>1-day reporting delay</b> from the current date.</li></ul>"
         },
         {
             id: "airnow-ozone",
-            title: "O3-hr",
-            desc: "<b>O3</b> provides real-time hourly ground-level ozone (O3) concentrations. " +
+            title: "Obs O3 (hourly)",
+            desc: "<b>Obs O3 (hourly)</b> provides real-time hourly ground-level ozone (O3) concentrations from the US EPA AirNow network via the RSIG server. " +
                 "Ground-level ozone is formed by chemical reactions between pollutants and sunlight, often exacerbated by wildfire emissions. " +
-                "<br><ul><li><b style='color: var(--card-shadow);'>Real-time hourly data</b>: Updated every hour.</li>" +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Hourly</b></li>" +
+                "<li>Typically has a <b style='color: var(--card-shadow);'>1-2 hour reporting delay</b> from the current local time.</li></ul>"
+        },
+        {
+            id: "airnow-pm25",
+            title: "Obs PM2.5 (hourly)",
+            desc: "<b>Obs PM2.5 (hourly)</b> provides real-time hourly fine particulate matter (PM2.5) concentrations from the US EPA AirNow network via the RSIG server. " +
+                "This data is crucial for identifying immediate smoke impacts and tracking air quality trends as they happen. " +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Hourly</b></li>" +
                 "<li>Typically has a <b style='color: var(--card-shadow);'>1-2 hour reporting delay</b> from the current local time.</li></ul>"
         },
         {
             id: "airnow-no2",
-            title: "NO2-hr",
-            desc: "<b>NO2</b> provides real-time hourly nitrogen dioxide (NO2) concentrations. " +
+            title: "Obs NO2 (hourly)",
+            desc: "<b>Obs NO2 (hourly)</b> provides real-time hourly nitrogen dioxide (NO2) concentrations from the US EPA AirNow network via the RSIG server. " +
                 "NO2 is a primary pollutant from combustion sources and is a key precursor to ozone and secondary particulate matter formation. " +
-                "<br><ul><li><b style='color: var(--card-shadow);'>Real-time hourly data</b>: Updated every hour.</li>" +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Hourly</b></li>" +
                 "<li>Typically has a <b style='color: var(--card-shadow);'>1-2 hour reporting delay</b> from the current local time.</li></ul>"
         },
     ],
@@ -75,7 +94,8 @@ const DescData = {
           title: "HMS-smoke",
           desc: "<b>NOAA-HMS Smoke Plumes</b> are satellite-derived products highlighting areas of overhead smoke. " +
                 "Statistical summaries represent the coverage area (km²) within administrative boundaries. " +
-                "<br><ul><li><b style='color: var(--card-shadow);'>" +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b></li>" +
+                "<li><b style='color: var(--card-shadow);'>" +
                 "In our app, this data is available starting from 2018-01-01. </b>" +
                 "Due to the NOAA HMS processing cycle, " +
                 "Finalized data are typically published at 11:00-13:00 UTC on the following day, " +
@@ -87,7 +107,8 @@ const DescData = {
           desc: "<b>NOAA-HMS Fire Points</b> represent thermal anomalies and Fire Radiative Power (FRP). " +
                 "The points are <b style='color: var(--card-shadow);'>spatially aggregated at 0.001 degree (~ 0.1 km) resolution</b> to ensure clarity and prevent overlapping markers. " +
                 "And then. the <b style='color: var(--card-shadow);'>regional statistics</b> (fire points and FRP) are computed. " +
-                "<br><ul><li><b style='color: var(--card-shadow);'>" +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b></li>" +
+                "<li><b style='color: var(--card-shadow);'>" +
                 "In our app, this data is available starting from 2018-01-01. </b>" + 
                 "Due to the NOAA HMS processing cycle, " +
                 "Finalized data are typically published at 11:00-13:00 UTC on the following day, " +
@@ -98,7 +119,8 @@ const DescData = {
           title: "MODIS area burned",
           desc: "<b>MODIS Burned Area (MCD64A1)</b> identifies the historical footprint of fire-impacted terrain. " +
                 "This 500m resolution dataset highlights monthly changes in surface reflectance associated with burning. " +
-                "<br><ul><li><b style='color: var(--card-shadow);'>" +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Manual/On-demand</b></li>" +
+                "<li><b style='color: var(--card-shadow);'>" +
                 "In our app, this data is available starting from 2018-01-01, </b>" + 
                 "and is updated on an as-available basis. </ul></li>"
         },

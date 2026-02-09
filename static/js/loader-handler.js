@@ -8,7 +8,7 @@ import { DATA_IMPORT_METHOD, ExcludeLayerGroups, DATASET_SOURCE_MAP } from "./la
 import { map } from "./map-init.js";
 import { saveDate, saveLayerFlag, state } from "./ui-state.js";
 import { auth } from "./fb-init.js";
-import { triggerRefresh, clearPlotSelectionForLayer } from "./stats-common.js";
+import { triggerRefresh, clearPlotSelectionForLayer, usStates, caStates } from "./stats-common.js";
 import { ensureLayers, applyLayerToggles } from "./layers-handler.js";
 import { EMPTY_FC } from "./layers-constants.js";
 import { regionStats } from "./layers-state.js";
@@ -29,10 +29,10 @@ import { airnowHasActiveLayers } from "./airnow.js";
 export async function loadSourceData(sourceKey, isoDate) {
     initializeMetrics();
 
-    const publishedSources = ExcludeLayerGroups.statsSources;
-    const isPublishedData = publishedSources.includes(sourceKey);
+    const restrictedSources = ExcludeLayerGroups.restrictedSources;
+    const isRestrictedData = restrictedSources.includes(sourceKey);
 
-    if (isPublishedData && !auth.currentUser) {
+    if (isRestrictedData && !auth.currentUser) {
         console.warn(`Blocking data load for ${sourceKey} - Login required for Published Data.`);
         const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
         if (ds && ds.source) {
@@ -247,18 +247,22 @@ export async function loadSourceData(sourceKey, isoDate) {
             }
         }
 
-        const STATS_SOURCES = ExcludeLayerGroups.statsSources;
+        const restrictedSources = ExcludeLayerGroups.restrictedSources;
+        const publicStatsSources = ExcludeLayerGroups.publicStatsSources;
+        const allStatsSources = [...restrictedSources, ...publicStatsSources];
 
-        if (STATS_SOURCES.includes(sourceKey) && data.features) {
+        if (allStatsSources.includes(sourceKey) && data.features) {
             const stateSums = {};
             const computedStatsByState = {};
 
             stateSums["US"] = {};
             stateSums["US_conus"] = {};
+            stateSums["Canada"] = {};
 
             Object.keys(metricsMap).forEach(k => {
                 stateSums["US"][k] = { sum: 0, count: 0 };
                 stateSums["US_conus"][k] = { sum: 0, count: 0 };
+                stateSums["Canada"][k] = { sum: 0, count: 0 };
             });
 
             const keysToReset = [];
@@ -309,12 +313,21 @@ export async function loadSourceData(sourceKey, isoDate) {
                         stateSums[s][m.key].sum += v;
                         stateSums[s][m.key].count++;
 
-                        stateSums["US"][m.key].sum += v;
-                        stateSums["US"][m.key].count++;
+                        // Aggregate to regional totals
+                        const isUSState = usStates.includes(s);
+                        const isCAState = caStates.includes(s);
 
-                        if (isConus) {
-                            stateSums["US_conus"][m.key].sum += v;
-                            stateSums["US_conus"][m.key].count++;
+                        if (isUSState) {
+                            stateSums["US"][m.key].sum += v;
+                            stateSums["US"][m.key].count++;
+
+                            if (isConus) {
+                                stateSums["US_conus"][m.key].sum += v;
+                                stateSums["US_conus"][m.key].count++;
+                            }
+                        } else if (isCAState) {
+                            stateSums["Canada"][m.key].sum += v;
+                            stateSums["Canada"][m.key].count++;
                         }
 
                         if (m.key.startsWith("ExcDays")) {
@@ -324,12 +337,17 @@ export async function loadSourceData(sourceKey, isoDate) {
                             stateSums[s][m.key].c1 = (stateSums[s][m.key].c1 || 0) + inc1;
                             stateSums[s][m.key].c2 = (stateSums[s][m.key].c2 || 0) + inc2;
 
-                            stateSums["US"][m.key].c1 = (stateSums["US"][m.key].c1 || 0) + inc1;
-                            stateSums["US"][m.key].c2 = (stateSums["US"][m.key].c2 || 0) + inc2;
+                            if (isUSState) {
+                                stateSums["US"][m.key].c1 = (stateSums["US"][m.key].c1 || 0) + inc1;
+                                stateSums["US"][m.key].c2 = (stateSums["US"][m.key].c2 || 0) + inc2;
 
-                            if (isConus) {
-                                stateSums["US_conus"][m.key].c1 = (stateSums["US_conus"][m.key].c1 || 0) + inc1;
-                                stateSums["US_conus"][m.key].c2 = (stateSums["US_conus"][m.key].c2 || 0) + inc2;
+                                if (isConus) {
+                                    stateSums["US_conus"][m.key].c1 = (stateSums["US_conus"][m.key].c1 || 0) + inc1;
+                                    stateSums["US_conus"][m.key].c2 = (stateSums["US_conus"][m.key].c2 || 0) + inc2;
+                                }
+                            } else if (isCAState) {
+                                stateSums["Canada"][m.key].c1 = (stateSums["Canada"][m.key].c1 || 0) + inc1;
+                                stateSums["Canada"][m.key].c2 = (stateSums["Canada"][m.key].c2 || 0) + inc2;
                             }
                         }
                     }
@@ -415,7 +433,7 @@ function handleLoadingError(sourceKey, isoDate, ds = null) {
           <br>
           "HMS-smoke" and "HMS-fire" are automatically updated everyday, but 
           the latest data is from the previous day.`);
-    } else if (ExcludeLayerGroups.statsSources.includes(sourceKey)) {
+    } else if (ExcludeLayerGroups.restrictedSources.includes(sourceKey)) {
         showErrorToast(`
           No data found for this date (${utils.ESML(isoDate)}) and dataset (${utils.ESML(sourceKey)}).
           <br>
@@ -432,7 +450,11 @@ function handleLoadingError(sourceKey, isoDate, ds = null) {
         updateWildfireNewsList([]);
     }
 
-    if (ExcludeLayerGroups.statsSources.includes(sourceKey)) {
+    const restrictedSources = ExcludeLayerGroups.restrictedSources;
+    const publicStatsSources = ExcludeLayerGroups.publicStatsSources;
+    const allStatsSources = [...restrictedSources, ...publicStatsSources];
+
+    if (allStatsSources.includes(sourceKey)) {
         clearModelStats();
     }
 
@@ -468,6 +490,8 @@ export function refreshSearchUIVisibility() {
 }
 
 export async function updateAllActiveSources() {
+    if (!map || !map.isStyleLoaded()) return;
+    
     toggleSpinner(true);
     try {
         const isoDate = utils.currentDate();
@@ -503,14 +527,14 @@ export async function updateAllActiveSources() {
         activeSources.length = 0;
         sourcesToLoad.forEach(s => activeSources.push(s));
 
-        const publishedSources = ExcludeLayerGroups.statsSources;
-        const tryingToLoadPublished = Array.from(sourcesToLoad).some(s => publishedSources.includes(s));
+        const restrictedSources = ExcludeLayerGroups.restrictedSources;
+        const tryingToLoadRestricted = Array.from(sourcesToLoad).some(s => restrictedSources.includes(s));
 
-        // 로그인 안 되어 있고 Published data 로드 시도 시 데이터 클리어
-        if (!auth.currentUser && tryingToLoadPublished) {
+        // 로그인 안 되어 있고 제한된 데이터 로드 시도 시 데이터 클리어
+        if (!auth.currentUser && tryingToLoadRestricted) {
 
-            // Clear all published source data to remove any cached state shading/data
-            publishedSources.forEach(sourceKey => {
+            // Clear all restricted source data to remove any cached state shading/data
+            restrictedSources.forEach(sourceKey => {
                 const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
                 if (ds?.source) {
                     map.getSource(ds.source)?.setData(EMPTY_FC);
@@ -559,7 +583,8 @@ export async function updateAllActiveSources() {
             if (typeof hideTimeControls === "function") hideTimeControls();
         }
         // ---- [External data] Hourly vs Daily load synchronization ----
-
+        
+        ensureLayers(); // Ensure layers exist before toggling visibility
         applyLayerToggles();
         refreshSearchUIVisibility();
 
@@ -612,7 +637,7 @@ export function bindEvents() {
 
             // Published data 체크 시 로그인 확인 (사용자 클릭 이벤트 내에서 처리)
             if (cb.checked && !auth.currentUser) {
-                const publishedSources = ExcludeLayerGroups.statsSources;
+                const restrictedSources = ExcludeLayerGroups.restrictedSources;
                 const currentDataset = document.getElementById("MapDataSelect")?.value;
                 const contextKey = `${shortId}-${currentDataset}`;
                 const globalKey = shortId;
@@ -625,7 +650,7 @@ export function bindEvents() {
                 }
 
                 // Published data인 경우 오버레이 표시
-                if (targetConfig?.source && publishedSources.includes(targetConfig.source)) {
+                if (targetConfig?.source && restrictedSources.includes(targetConfig.source)) {
                     utils.showAuthOverlay();
                 }
             }

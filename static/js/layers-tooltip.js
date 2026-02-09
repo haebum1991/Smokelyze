@@ -219,7 +219,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
       if (dataSource === "airnow-pm25") {
           AirnowHtml += `
           <div style="${rowStyle}"> 
-            <b>Obs PM2.5 (ug m⁻³):</b> 
+            <b>Obs PM2.5 (hourly) (ug m⁻³):</b> 
             <b style="color: var(--card-shadow);">
               ${ESML(smartFmt(p["pm25(ug/m3)"], "pm25(ug/m3)", dataSource))}
             </b>
@@ -234,7 +234,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
       if (dataSource === "airnow-ozone") {
           AirnowHtml += `
           <div style="${rowStyle}"> 
-            <b>Obs O3 (ppb):</b> 
+            <b>Obs O3 (hourly) (ppb):</b> 
             <b style="color: var(--card-shadow);">
               ${ESML(smartFmt(p["ozone(ppb)"], "ozone(ppb)", dataSource))}
             </b>
@@ -249,7 +249,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
       if (dataSource === "airnow-no2") {
           AirnowHtml += `
           <div style="${rowStyle}"> 
-            <b>Obs NO2 (ppb):</b> 
+            <b>Obs NO2 (hourly) (ppb):</b> 
             <b style="color: var(--card-shadow);">
               ${ESML(smartFmt(p["no2(ppb)"], "no2(ppb)", dataSource))}
             </b>
@@ -267,6 +267,50 @@ export function generatePopupHTML(p, dataSource, isLocked) {
           <div style="${rowStyle}"><b>Timestamp:</b> ${ESML(p["timestamp(utc)"] || "NA")}</div>
           `;
     }
+    
+    if (dataSource === "airnow_daily") {
+      let AirnowHtml = `
+            ${closeBtn}
+            <div style="${rowStyleHead}"><b>AirNow (Daily)</b></div>
+            <hr style="${hrStyle}">
+            `;
+      
+      // Always show PM2.5 (NA if missing)
+      const pm25Value = (p["PM2.5"] !== undefined && p["PM2.5"] !== null)
+        ? ESML(smartFmt(p["PM2.5"], "PM2.5", dataSource))
+        : "NA";
+      AirnowHtml += `
+            <div style="${rowStyle}"> 
+              <b>Obs PM2.5 (ug m⁻³):</b> 
+              <b style="color: var(--card-shadow);">
+                ${pm25Value}
+              </b>
+            </div>
+            `;
+            
+      // Always show MDA8 O3 (NA if missing)
+      const mda8Value = (p["MDA8O3"] !== undefined && p["MDA8O3"] !== null)
+        ? ESML(smartFmt(p["MDA8O3"], "MDA8O3", dataSource))
+        : "NA";
+      AirnowHtml += `
+            <div style="${rowStyle}"> 
+              <b>Obs MDA8 (ppb):</b> 
+              <b style="color: var(--card-shadow);">
+                ${mda8Value}
+              </b>
+            </div>
+            `;
+
+      return AirnowHtml += `
+            <hr style="${hrStyle}">
+            <div style="${rowStyle}"><b>State:</b> ${ESML(p["state"] || "NA")}</div>
+            <div style="${rowStyle}"><b>AQS:</b> ${ESML(p["AQS"] || "NA")}</div>
+            <div style="${rowStyle}"><b>Latitude:</b> ${ESML(smartFmt(p["lat"], "lat", dataSource, 3))}</div>
+            <div style="${rowStyle}"><b>Longitude:</b> ${ESML(smartFmt(p["lon"], "lon", dataSource, 3))}</div>
+            <div style="${rowStyle}"><b>Date:</b> ${ESML(p["date"] || "NA")}</div>
+            `;
+    }
+    
     // ---- [External data] AirNow ----
   
     if (dataSource === "smoke") {

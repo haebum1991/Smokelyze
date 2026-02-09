@@ -3,6 +3,7 @@
  * AirNow Data Module
  * Handles fetching, parsing, and styling of AirNow real-time hourly data from EPA RSIG server
  * All functions prefixed with airnow for modularity
+ * https://ofmpub.epa.gov/rsig/rsigserver?SERVICE=wcs&VERSION=1.0.0&REQUEST=GetCapabilities
  */
 
 import { LAYER_TEMPLATES } from "./layers-def.js";

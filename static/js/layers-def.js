@@ -30,15 +30,17 @@ export const ExcludeLayerGroups = {
 
   // ========= Find by [source] =========
   // [loader.js] > [loadSourceData] > [GZIP_DATASETS]
-  formatGzip: ["gam_v2", "gam_v1", "pm_cbsa", "epa_ember", "wildfire_news", "wildfire_nifc", "smoke", "fire"],
+  formatGzip: ["gam_v2", "gam_v1", "pm_cbsa", "epa_ember", "wildfire_news", "wildfire_nifc", "smoke", "fire", "airnow_daily"],
 
   // [loader.js] > [loadSourceData] > [CALC_SOURCES]
   calcSources: ["gam_v2", "gam_v1", "epa_ember"],
 
-  // [loader.js] > [loadSourceData] > [STATS_SOURCES] & [publishedSources]
-  // [loader.js] > [updateAllActiveSources] > [STATS_SOURCES] & [publishedSources]
-  statsSources: ["gam_v2", "gam_v1", "pm_cbsa", "epa_ember"]
+  // [loader.js] > [loadSourceData] > Authentication required (Published data)
+  // [loader.js] > [updateAllActiveSources] > Clear on logout
+  restrictedSources: ["gam_v2", "gam_v1", "pm_cbsa", "epa_ember"],
 
+  // [loader.js] > [loadSourceData] > Calculate state-level statistics (Public data)
+  publicStatsSources: ["airnow_daily"]
 };
 
 import { generatePopupHTML } from "./layers-tooltip.js";
@@ -90,8 +92,17 @@ export const DATA_IMPORT_METHOD = {
       coverage: "airnow.no2",
       hourly: true
   },
+  "airnow_daily": {
+      key: "airnow_daily",
+      source: "airnow_daily",
+      prefix: "airnow_",
+      gzfileBaseUrlDate: "/airnow_date_geojson"
+    },
   // ---- [External data] AirNow ----
   
+  "airnow-daily-pm25": { key: "airnow-daily-pm25", source: "airnow_daily" },
+  "airnow-daily-mda8": { key: "airnow-daily-mda8", source: "airnow_daily" },
+    
   "smoke": {
       key: "smoke",
       source: "smoke",
@@ -218,6 +229,8 @@ export const DATASET_SOURCE_MAP = {
     "airnow-pm25": "airnow-pm25",
     "airnow-ozone": "airnow-ozone",
     "airnow-no2": "airnow-no2",
+    "airnow-daily-pm25": "airnow_daily",
+    "airnow-daily-mda8": "airnow_daily",
     // ---- [External data] AirNow ----
     
     "wildfire-news": "wildfire_news",
@@ -322,9 +335,12 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "MapPost", field: "title", breaks: [], colors: ["red"], title: "MapPost", datasets: ["MapPost"], type: "symbol", iconImage: "pulsing-alert" },
     
     // ---- [External data] AirNow ----
-    { duration: "hourly", id: "airnow-pm25", field: "pm25(ug/m3)", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "AirNow PM2.5-hr (µg m⁻³)", decimals: 1, datasets: ["airnow-pm25"], hourly: true },
-    { duration: "hourly", id: "airnow-ozone", field: "ozone(ppb)", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "AirNow O3-hr (ppb)", decimals: 1, datasets: ["airnow-ozone"], hourly: true },
-    { duration: "hourly", id: "airnow-no2", field: "no2(ppb)", breaks: BREAKS_NO2, colors: PALETTE_EPA, title: "AirNow NO2-hr (ppb)", decimals: 1, datasets: ["airnow-no2"], hourly: true },
+    { duration: "hourly", id: "airnow-pm25", field: "pm25(ug/m3)", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "AirNow Obs PM2.5 (hourly) (µg m⁻³)", decimals: 1, datasets: ["airnow-pm25"], hourly: true },
+    { duration: "hourly", id: "airnow-ozone", field: "ozone(ppb)", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "AirNow Obs O3 (hourly) (ppb)", decimals: 1, datasets: ["airnow-ozone"], hourly: true },
+    { duration: "hourly", id: "airnow-no2", field: "no2(ppb)", breaks: BREAKS_NO2, colors: PALETTE_EPA, title: "AirNow Obs NO2 (hourly) (ppb)", decimals: 1, datasets: ["airnow-no2"], hourly: true },
+
+    { duration: "daily", id: "airnow-daily-pm25", field: "PM2.5", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "AirNow Obs PM2.5 (µg m⁻³)", decimals: 1, datasets: ["airnow-daily-pm25"] },
+    { duration: "daily", id: "airnow-daily-mda8", field: "MDA8O3", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "AirNow Obs MDA8 (ppb)", decimals: 1, datasets: ["airnow-daily-mda8"] },
 
     // --- MDA8 Ozone ---
     { duration: "daily", id: "mda8-obs", field: "MDA8O3", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "Obs MDA8 (ppb)", decimals: 1, datasets: ["gam-v2", "gam-v1", "epa-ember"] },

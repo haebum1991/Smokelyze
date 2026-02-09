@@ -115,7 +115,7 @@ if (map) {
 
     map.on("mousemove", "states-fill", (e) => {
       let allPriorityIds = getAllInteractiveLayerIds();
-      allPriorityIds = allPriorityIds.filter(id => id !== "smoke-fill" && id !== "burn-fill");
+      allPriorityIds = allPriorityIds.filter(id => id !== "smoke-fill" && id !== "burn-fill" && map.getLayer(id));
 
       const f1 = map.queryRenderedFeatures(e.point, { layers: allPriorityIds });
 
