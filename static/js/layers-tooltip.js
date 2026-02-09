@@ -275,19 +275,6 @@ export function generatePopupHTML(p, dataSource, isLocked) {
             <hr style="${hrStyle}">
             `;
       
-      // Always show PM2.5 (NA if missing)
-      const pm25Value = (p["PM2.5"] !== undefined && p["PM2.5"] !== null)
-        ? ESML(smartFmt(p["PM2.5"], "PM2.5", dataSource))
-        : "NA";
-      AirnowHtml += `
-            <div style="${rowStyle}"> 
-              <b>Obs PM2.5 (ug m⁻³):</b> 
-              <b style="color: var(--card-shadow);">
-                ${pm25Value}
-              </b>
-            </div>
-            `;
-            
       // Always show MDA8 O3 (NA if missing)
       const mda8Value = (p["MDA8O3"] !== undefined && p["MDA8O3"] !== null)
         ? ESML(smartFmt(p["MDA8O3"], "MDA8O3", dataSource))
@@ -297,6 +284,19 @@ export function generatePopupHTML(p, dataSource, isLocked) {
               <b>Obs MDA8 (ppb):</b> 
               <b style="color: var(--card-shadow);">
                 ${mda8Value}
+              </b>
+            </div>
+            `;
+            
+      // Always show PM2.5 (NA if missing)
+      const pm25Value = (p["PM2.5"] !== undefined && p["PM2.5"] !== null)
+        ? ESML(smartFmt(p["PM2.5"], "PM2.5", dataSource))
+        : "NA";
+      AirnowHtml += `
+            <div style="${rowStyle}"> 
+              <b>Obs PM2.5 (ug m⁻³):</b> 
+              <b style="color: var(--card-shadow);">
+                ${pm25Value}
               </b>
             </div>
             `;
