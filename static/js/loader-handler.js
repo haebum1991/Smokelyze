@@ -490,8 +490,6 @@ export function refreshSearchUIVisibility() {
 }
 
 export async function updateAllActiveSources() {
-    if (!map || !map.isStyleLoaded()) return;
-    
     toggleSpinner(true);
     try {
         const isoDate = utils.currentDate();

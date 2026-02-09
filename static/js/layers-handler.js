@@ -87,7 +87,7 @@ export function getAllInteractiveLayerIds() {
 }
 
 export function ensureLayers() {
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map) return;
 
     // External data sources
     ["airnow-pm25", "airnow-ozone", "airnow-no2"].forEach(src => addSourceIfMissing(src));
