@@ -15,9 +15,9 @@ import { usStates, caStates } from "./stats-common.js";
 // Utility Functions
 // ============================================
 const AIRNOW_LAYERS = {
-    "layer-airnow-pm25": "airnow.pm25",
-    "layer-airnow-ozone": "airnow.ozone",
-    "layer-airnow-no2": "airnow.no2"
+    "layer-airnow-hourly-pm25": "airnow.pm25",
+    "layer-airnow-hourly-ozone": "airnow.ozone",
+    "layer-airnow-hourly-no2": "airnow.no2"
 };
 
 /**
@@ -188,9 +188,9 @@ export async function airnowCsv2GeoJSON(rows, lonKey = "longitude(deg)", latKey 
         const AQS = siteId.slice(3);
 
         let specialDsKey = null;
-        if (paramCode === "88101" || paramCode === "88502") specialDsKey = "airnow-pm25";
-        else if (paramCode === "44201") specialDsKey = "airnow-ozone";
-        else if (paramCode === "42602") specialDsKey = "airnow-no2";
+        if (paramCode === "88101" || paramCode === "88502") specialDsKey = "airnow-hourly-pm25";
+        else if (paramCode === "44201") specialDsKey = "airnow-hourly-ozone";
+        else if (paramCode === "42602") specialDsKey = "airnow-hourly-no2";
 
         const properties = Object.assign({}, row, {
             paramCode,
@@ -262,9 +262,9 @@ async function airnowEnrichWithState(geojson) {
  */
 export function airnowClearStats() {
     Object.keys(regionStats).forEach(id => {
-        delete regionStats[id]["airnow-pm25"];
-        delete regionStats[id]["airnow-ozone"];
-        delete regionStats[id]["airnow-no2"];
+        delete regionStats[id]["airnow-hourly-pm25"];
+        delete regionStats[id]["airnow-hourly-ozone"];
+        delete regionStats[id]["airnow-hourly-no2"];
     });
 }
 
@@ -281,7 +281,12 @@ export function airnowUpdateStatsMap(geojson, coverage) {
     }
 
     // Convert coverage like "airnow.pm25" to "airnow-pm25" to match stats keys
-    const layerId = coverage.replace(".", "-");
+    const coverageMap = {
+        "airnow.pm25": "airnow-hourly-pm25",
+        "airnow.ozone": "airnow-hourly-ozone",
+        "airnow.no2": "airnow-hourly-no2"
+    };
+    const layerId = coverageMap[coverage];
 
     // Get field name from LAYER_TEMPLATES
     const tmpl = LAYER_TEMPLATES.find(t => t.id === layerId);

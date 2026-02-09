@@ -51,7 +51,7 @@ export function resetUIAndData() {
   applyLayerToggles?.();
   if (activeLayerStack) activeLayerStack.length = 0;
 
-  const searchWrapper = document.getElementById("SiteSearchWrapper");
+  const searchWrapper = document.getElementById("SiteSearchWrapperPublished");
   if (searchWrapper) searchWrapper.style.display = "none";
 }
 

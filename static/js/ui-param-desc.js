@@ -64,7 +64,7 @@ const DescData = {
                 "<li>Typically has a <b style='color: var(--card-shadow);'>1-day reporting delay</b> from the current date.</li></ul>"
         },
         {
-            id: "airnow-ozone",
+            id: "airnow-hourly-ozone",
             title: "Obs O3 (hourly)",
             desc: "<b>Obs O3 (hourly)</b> provides real-time hourly ground-level ozone (O3) concentrations from the US EPA AirNow network via the RSIG server. " +
                 "Ground-level ozone is formed by chemical reactions between pollutants and sunlight, often exacerbated by wildfire emissions. " +
@@ -72,7 +72,7 @@ const DescData = {
                 "<li>Typically has a <b style='color: var(--card-shadow);'>1-2 hour reporting delay</b> from the current local time.</li></ul>"
         },
         {
-            id: "airnow-pm25",
+            id: "airnow-hourly-pm25",
             title: "Obs PM2.5 (hourly)",
             desc: "<b>Obs PM2.5 (hourly)</b> provides real-time hourly fine particulate matter (PM2.5) concentrations from the US EPA AirNow network via the RSIG server. " +
                 "This data is crucial for identifying immediate smoke impacts and tracking air quality trends as they happen. " +
@@ -80,7 +80,7 @@ const DescData = {
                 "<li>Typically has a <b style='color: var(--card-shadow);'>1-2 hour reporting delay</b> from the current local time.</li></ul>"
         },
         {
-            id: "airnow-no2",
+            id: "airnow-hourly-no2",
             title: "Obs NO2 (hourly)",
             desc: "<b>Obs NO2 (hourly)</b> provides real-time hourly nitrogen dioxide (NO2) concentrations from the US EPA AirNow network via the RSIG server. " +
                 "NO2 is a primary pollutant from combustion sources and is a key precursor to ozone and secondary particulate matter formation. " +

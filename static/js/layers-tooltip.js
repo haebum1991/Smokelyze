@@ -216,7 +216,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
           <hr style="${hrStyle}">
           `;
                     
-      if (dataSource === "airnow-pm25") {
+      if (dataSource === "airnow-hourly-pm25") {
           AirnowHtml += `
           <div style="${rowStyle}"> 
             <b>Obs PM2.5 (hourly) (ug m⁻³):</b> 
@@ -231,7 +231,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
           `;
       }
       
-      if (dataSource === "airnow-ozone") {
+      if (dataSource === "airnow-hourly-ozone") {
           AirnowHtml += `
           <div style="${rowStyle}"> 
             <b>Obs O3 (hourly) (ppb):</b> 
@@ -246,7 +246,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
           `;
       }
 
-      if (dataSource === "airnow-no2") {
+      if (dataSource === "airnow-hourly-no2") {
           AirnowHtml += `
           <div style="${rowStyle}"> 
             <b>Obs NO2 (hourly) (ppb):</b> 
@@ -305,9 +305,10 @@ export function generatePopupHTML(p, dataSource, isLocked) {
             <hr style="${hrStyle}">
             <div style="${rowStyle}"><b>State:</b> ${ESML(p["state"] || "NA")}</div>
             <div style="${rowStyle}"><b>AQS:</b> ${ESML(p["AQS"] || "NA")}</div>
+            <div style="${rowStyle}"><b>Site name:</b> ${ESML(p["site_name"] || "NA")}</div>
             <div style="${rowStyle}"><b>Latitude:</b> ${ESML(smartFmt(p["lat"], "lat", dataSource, 3))}</div>
             <div style="${rowStyle}"><b>Longitude:</b> ${ESML(smartFmt(p["lon"], "lon", dataSource, 3))}</div>
-            <div style="${rowStyle}"><b>Date:</b> ${ESML(p["date"] || "NA")}</div>
+            <div style="${rowStyle}"><b>Timestamp:</b> ${ESML(p["date"] || "NA")}</div>
             `;
     }
     

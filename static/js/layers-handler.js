@@ -8,7 +8,13 @@ import { highlightLocation } from "./utils.js";
 import { state } from "./ui-state.js";
 import { EMPTY_FC } from "./layers-constants.js";
 import { updateLegend, updateStateShading } from "./layers-colors.js";
-import { map, activeLayerStack, setCachedActiveLayerIds, setActiveLayerStack } from "./layers-state.js";
+import { 
+    map, 
+    activeLayerStack, 
+    setCachedActiveLayerIds, 
+    setActiveLayerStack, 
+    PointLayersEnabled 
+} from "./layers-state.js";
 
 export function addSourceIfMissing(sourceId) {
     if (!map.getSource(sourceId)) {
@@ -90,7 +96,7 @@ export function ensureLayers() {
     if (!map) return;
 
     // External data sources
-    ["airnow-pm25", "airnow-ozone", "airnow-no2"].forEach(src => addSourceIfMissing(src));
+    ["airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2"].forEach(src => addSourceIfMissing(src));
 
     const backgroundLayers = ExcludeLayerGroups.satelliteLayers;
     const keys = Object.keys(DATA_IMPORT_METHOD).sort((a, b) => {
@@ -187,8 +193,14 @@ export function applyLayerToggles() {
             if (def.legend) legendWillShow = true;
             def.layers.forEach(l => {
                 if (map.getLayer(l.id)) {
-                    map.setLayoutProperty(l.id, "visibility", "visible");
-                    map.moveLayer(l.id);
+                    // Check if Point Layers are disabled and this is a point layer
+                    const isPointLayer = l.type === "circle";
+                    const shouldShow = !isPointLayer || PointLayersEnabled;
+
+                    map.setLayoutProperty(l.id, "visibility", shouldShow ? "visible" : "none");
+                    if (shouldShow) {
+                        map.moveLayer(l.id);
+                    }
                 }
             });
         }

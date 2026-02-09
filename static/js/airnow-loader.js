@@ -53,7 +53,10 @@ export async function airnowLoadData(isoDate) {
     airnowSetCurrentTime(utcHour);
 
     // 2. 로드 시작 전 기존 AirNow 데이터 및 통계 초기화
-    ["airnow-pm25", "airnow-ozone", "airnow-no2"].forEach(sourceId => {
+    ["airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2"].forEach(sourceId => {
+        if (!map.getSource(sourceId)) {
+            map.addSource(sourceId, { type: "geojson", data: EMPTY_FC });
+        }
         const source = map.getSource(sourceId);
         if (source) source.setData(EMPTY_FC);
     });
@@ -72,9 +75,9 @@ export async function airnowLoadData(isoDate) {
 
         // Coverage to source mapping
         const coverageToSource = {
-            "airnow.pm25": "airnow-pm25",
-            "airnow.ozone": "airnow-ozone",
-            "airnow.no2": "airnow-no2"
+            "airnow.pm25": "airnow-hourly-pm25",
+            "airnow.ozone": "airnow-hourly-ozone",
+            "airnow.no2": "airnow-hourly-no2"
         };
         
         // Use fixed BBOX for North America (USA, Canada, Mexico)
@@ -109,7 +112,7 @@ export async function airnowLoadData(isoDate) {
                 const errorMsg = `AirNow ${pollutantName} data is not available for the selected time. Please try a different time (data is usually 1-2 hours delayed).`;
                 showErrorToast(errorMsg);
 
-                const cbId = "layer-" + coverage.replace(".", "-");
+                const cbId = "layer-" + sourceId;
                 const cb = document.getElementById(cbId);
                 if (cb) cb.checked = false;
 
@@ -151,7 +154,7 @@ export async function airnowLoadData(isoDate) {
                 }
                 
                 // Auto-uncheck failed AirNow layer
-                const cbId = "layer-" + coverage.replace(".", "-");
+                const cbId = "layer-" + sourceId;
                 const cb = document.getElementById(cbId);
                 if (cb) cb.checked = false;
                 
@@ -178,7 +181,7 @@ export async function airnowLoadData(isoDate) {
         
     } catch (e) {
         console.error("AirNow data loading failed:", e);
-        ["airnow-pm25", "airnow-ozone", "airnow-no2"].forEach(sourceId => {
+        ["airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2"].forEach(sourceId => {
             const source = map.getSource(sourceId);
             if (source) source.setData(EMPTY_FC);
         });

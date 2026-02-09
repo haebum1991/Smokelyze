@@ -1,31 +1,16 @@
 
 import { ExcludeLayerGroups, DATASET_SOURCE_MAP } from "./layers-def.js";
-import { ESML, highlightLocation } from "./utils.js";
+import { ESML, highlightLocation, clearHighlight } from "./utils.js";
 import { loadedGeoJSON } from "./loader.js";
 
 const MAX_RESULTS = 50;
-
-function getSearchableData() {
-    if (!loadedGeoJSON) return [];
-
-    const select = document.getElementById("MapDataSelect");
-    if (!select) return [];
-
-    const dataset = select.value;
-    const sourceKey = DATASET_SOURCE_MAP[dataset] || dataset;
-
-    const geoData = loadedGeoJSON[sourceKey];
-    if (!geoData || !geoData.features) return [];
-
-    return geoData.features;
-}
 
 function highlightText(text, query) {
     if (!query) return ESML(text);
     // Escape regex special chars in query to prevent crashes
     const safeQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
     const parts = text.split(new RegExp("(" + safeQuery + ")", "gi"));
-
+    
     return parts.map(function (part) {
         const escaped = ESML(part);
         if (part.toLowerCase() === query.toLowerCase()) {
@@ -35,31 +20,24 @@ function highlightText(text, query) {
     }).join("");
 }
 
-export function injectSearchUI() {
-    if (document.getElementById("SiteSearchWrapper")) return;
-
-    const targetSelect = document.getElementById("MapDataSelect");
-    if (!targetSelect) return;
-
+function createSearchUIElement(id, labelText, placeholder) {
     const wrapper = document.createElement("div");
-    wrapper.id = "SiteSearchWrapper";
+    wrapper.id = id;
     Object.assign(wrapper.style, {
         position: "relative",
         width: "100%"
     });
 
     const label = document.createElement("label");
-    label.textContent = "Site search (name, AQS, ...):";
-    label.setAttribute("for", "stats-site-search-input");
+    label.textContent = labelText;
     Object.assign(label.style, {
         display: "block",
         color: "var(--text-main)"
     });
 
     const input = document.createElement("input");
-    input.id = "stats-site-search-input";
     input.type = "text";
-    input.placeholder = "Type to search...";
+    input.placeholder = placeholder;
     Object.assign(input.style, {
         width: "100%",
         padding: "0.4rem",
@@ -72,7 +50,6 @@ export function injectSearchUI() {
     });
 
     const resultsList = document.createElement("ul");
-    resultsList.id = "stats-site-search-results";
     Object.assign(resultsList.style, {
         position: "absolute",
         top: "100%",
@@ -96,211 +73,13 @@ export function injectSearchUI() {
     wrapper.appendChild(input);
     wrapper.appendChild(resultsList);
 
-    let appendTarget = targetSelect;
-    const exportWrapper = document.getElementById("ExportBtnWrapper");
-    if (exportWrapper && exportWrapper.contains(targetSelect)) {
-        appendTarget = exportWrapper;
-    }
-
-    if (appendTarget.nextSibling) {
-        appendTarget.parentNode.insertBefore(wrapper, appendTarget.nextSibling);
-    } else {
-        appendTarget.parentNode.appendChild(wrapper);
-    }
-
-    let selectedIndex = -1;
-
-    // --- Event Delegation for Results List ---
-    resultsList.addEventListener("click", function (e) {
-        const li = e.target.closest("li");
-        if (!li) return;
-
-        const index = parseInt(li.getAttribute("data-index"), 10);
-        if (isNaN(index)) return;
-
-        if (li.featureData) {
-            selectSite(li.featureData);
-            input.value = li.textContent;
-            resultsList.style.display = "none";
-        }
-    });
-
-    resultsList.addEventListener("mouseover", function (e) {
-        const li = e.target.closest("li");
-        if (!li) return;
-        // clear previous selected
-        const current = resultsList.querySelector("li[style*='background-color: yellow']");
-        if (current) current.style.backgroundColor = "transparent";
-
-        const currentClass = resultsList.querySelector(".selected");
-        if (currentClass) currentClass.classList.remove("selected");
-
-        li.style.backgroundColor = "Yellow";
-
-        const all = resultsList.querySelectorAll("li");
-        for (let i = 0; i < all.length; i++) {
-            if (all[i] === li) {
-                selectedIndex = i;
-                break;
-            }
-        }
-    });
-
-    resultsList.addEventListener("mouseleave", function () {
-        const current = resultsList.querySelector("li[style*='background-color: yellow']");
-        if (current) current.style.backgroundColor = "transparent";
-        selectedIndex = -1;
-    });
-
-    function updateSelection(items) {
-        items.forEach(function (item, index) {
-            if (index === selectedIndex) {
-                item.style.backgroundColor = "Yellow";
-                item.scrollIntoView({ block: "nearest" });
-            } else {
-                item.style.backgroundColor = "transparent";
-            }
-        });
-    }
-
-    input.addEventListener("keydown", function (e) {
-        const items = resultsList.querySelectorAll("li");
-        if (items.length === 0) return;
-
-        if (e.key === "ArrowDown" || (e.key === "Tab" && !e.shiftKey)) {
-            e.preventDefault();
-            selectedIndex++;
-            if (selectedIndex >= items.length) selectedIndex = 0;
-            updateSelection(items);
-        } else if (e.key === "ArrowUp") {
-            e.preventDefault();
-            selectedIndex--;
-            if (selectedIndex < 0) selectedIndex = items.length - 1;
-            updateSelection(items);
-        } else if (e.key === "Enter") {
-            e.preventDefault();
-            if (selectedIndex >= 0 && selectedIndex < items.length) {
-                items[selectedIndex].click();
-            } else {
-                const val = input.value;
-                if (!val) return;
-
-                const f = getSearchableData();
-                for (let i = 0; i < f.length; i++) {
-                    const p = f[i].properties;
-                    if (!p) continue;
-
-                    const state = p.state || "";
-                    const aqs = p.AQS_O3 || p.AQS || "";
-                    const name = p.site_name || p.name || "";
-
-                    let displayString = "";
-                    if (state) displayString += "[" + state + "] ";
-                    if (name) displayString += name + " ";
-                    if (aqs) displayString += "(" + aqs + ")";
-                    if (!displayString) displayString = "Unknown Site";
-
-                    if (displayString === val) {
-                        selectSite(f[i]);
-                        input.setAttribute("autocomplete", "off");
-                        resultsList.style.display = "none";
-                        return;
-                    }
-                }
-            }
-        }
-    });
-
-    input.addEventListener("focus", function () {
-        if (input.value.length === 0) {
-            input.setAttribute("autocomplete", "on");
-        }
-    });
-
-    input.addEventListener("input", function (e) {
-        const query = e.target.value.trim().toLowerCase();
-
-        if (query.length > 0) {
-            input.setAttribute("autocomplete", "off");
-        } else {
-            input.setAttribute("autocomplete", "on");
-        }
-
-        selectedIndex = -1;
-
-        if (query.length === 0) {
-            resultsList.style.display = "none";
-            return;
-        }
-
-        const f = getSearchableData();
-        const matches = [];
-        for (let i = 0; i < f.length; i++) {
-            if (matches.length >= MAX_RESULTS) break;
-
-            const p = f[i].properties;
-            if (!p) continue;
-
-            const state = (p.state || "").toLowerCase();
-            const aqs = (p.AQS_O3 || p.AQS || "").toString().toLowerCase();
-            const name = (p.site_name || p.name || "").toLowerCase();
-
-            let display = "";
-            if (p.state) display += "[" + p.state + "] ";
-            if (p.site_name || p.name) display += (p.site_name || p.name) + " ";
-            if (p.AQS_O3 || p.AQS) display += "(" + (p.AQS_O3 || p.AQS) + ")";
-            const displayLower = display.toLowerCase();
-
-            if (state.includes(query) || aqs.includes(query) || name.includes(query) || displayLower.includes(query)) {
-                matches.push({
-                    feature: f[i],
-                    display: {
-                        state: p.state,
-                        aqs: p.AQS_O3 || p.AQS,
-                        name: p.site_name || p.name
-                    }
-                });
-            }
-        }
-
-        renderResults(matches, query, resultsList);
-    });
-
-    input.addEventListener("change", function (e) {
-        const val = e.target.value;
-        if (!val) return;
-
-        const f = getSearchableData();
-        for (let i = 0; i < f.length; i++) {
-            const p = f[i].properties;
-            if (!p) continue;
-
-            const state = p.state || "";
-            const aqs = p.AQS_O3 || p.AQS || "";
-            const name = p.site_name || p.name || "";
-
-            let displayString = "";
-            if (state) displayString += "[" + state + "] ";
-            if (name) displayString += name + " ";
-            if (aqs) displayString += "(" + aqs + ")";
-            if (!displayString) displayString = "Unknown Site";
-
-            if (displayString === val) {
-                selectSite(f[i]);
-                resultsList.style.display = "none";
-                return;
-            }
-        }
-    });
-
-    document.addEventListener("click", function (e) {
-        if (!wrapper.contains(e.target)) {
-            resultsList.style.display = "none";
-        }
-    });
+    return { wrapper, input, resultsList };
 }
 
-function renderResults(matches, query, listElement) {
+/**
+ * Generic result renderer
+ */
+function renderSearchResults(matches, query, listElement, onSelect) {
     listElement.innerHTML = "";
     if (matches.length === 0) {
         listElement.style.display = "none";
@@ -308,7 +87,6 @@ function renderResults(matches, query, listElement) {
     }
 
     const fragment = document.createDocumentFragment();
-
     matches.forEach(function (match, idx) {
         const li = document.createElement("li");
         Object.assign(li.style, {
@@ -318,17 +96,36 @@ function renderResults(matches, query, listElement) {
             fontSize: "1.6rem"
         });
 
-        li.setAttribute("data-index", idx);
-        li.featureData = match.feature;
+        // Initial highlight for the first item
+        if (idx === 0) {
+            li.style.backgroundColor = "Yellow";
+        }
 
+        const p = match.feature.properties;
         let text = "";
-        // ... (omitted)
-        if (match.display.state) text += "[" + match.display.state + "] ";
-        if (match.display.name) text += match.display.name + " ";
-        if (match.display.aqs) text += "(" + match.display.aqs + ")";
-        if (!text) text = "Unknown Site";
+        const label = (match.display.layerLabel || "").trim();
+        const state = (match.display.state || "").trim();
+        const name = (match.display.name || "Unknown Site").trim();
+        const aqs = (match.display.aqs || "").toString().trim();
+
+        if (label) text += "[" + label + "] ";
+        if (state) text += "[" + state + "] ";
+        text += name;
+        if (aqs) text += " (" + aqs + ")";
 
         li.innerHTML = highlightText(text, query);
+
+        li.addEventListener("click", () => {
+            onSelect(match.feature, text);
+            listElement.style.display = "none";
+        });
+
+        li.addEventListener("mouseover", () => {
+            const items = listElement.querySelectorAll("li");
+            items.forEach(item => item.style.backgroundColor = "transparent");
+            li.style.backgroundColor = "Yellow";
+        });
+
         fragment.appendChild(li);
     });
 
@@ -336,74 +133,299 @@ function renderResults(matches, query, listElement) {
     listElement.style.display = "block";
 }
 
-function selectSite(f) {
-    if (!f || !f.geometry || !f.geometry.coordinates) return;
+/**
+ * Handle keyboard events for search inputs
+ */
+function setupKeyboardNavigation(input, listElement) {
+    input.addEventListener("keydown", function (e) {
+        const items = listElement.querySelectorAll("li");
+        if (items.length === 0 || listElement.style.display === "none") return;
 
-    const select = document.getElementById("MapDataSelect");
-    const coords = f.geometry.coordinates;
-    let sourceKey = null;
-    if (select) {
-        const dataset = select.value;
-        sourceKey = DATASET_SOURCE_MAP[dataset] || dataset;
-    }
+        let currentIndex = Array.from(items).findIndex(li => li.style.backgroundColor === "yellow" || li.style.backgroundColor.toLowerCase() === "yellow");
 
-    if (highlightLocation) {
-        highlightLocation(coords, f.properties, sourceKey);
-    }
+        if (e.key === "ArrowDown" || (e.key === "Tab" && !e.shiftKey)) {
+            e.preventDefault();
+            if (currentIndex !== -1) items[currentIndex].style.backgroundColor = "transparent";
+            currentIndex = (currentIndex + 1) % items.length;
+            items[currentIndex].style.backgroundColor = "Yellow";
+            items[currentIndex].scrollIntoView({ block: "nearest" });
+        } else if (e.key === "ArrowUp" || (e.key === "Tab" && e.shiftKey)) {
+            e.preventDefault();
+            if (currentIndex !== -1) items[currentIndex].style.backgroundColor = "transparent";
+            currentIndex = (currentIndex - 1 + items.length) % items.length;
+            items[currentIndex].style.backgroundColor = "Yellow";
+            items[currentIndex].scrollIntoView({ block: "nearest" });
+        } else if (e.key === "Enter") {
+            if (currentIndex !== -1) {
+                e.preventDefault();
+                items[currentIndex].click();
+            }
+        } else if (e.key === "Escape") {
+            listElement.style.display = "none";
+        }
+    });
 }
 
-function init() {
-    function updateVisibility() {
-        const searchWrapper = document.getElementById("SiteSearchWrapper");
-        if (!searchWrapper) return;
+// --- Specific Implementation for Published Data ---
+function getSearchableDataPublished() {
+    if (!loadedGeoJSON) return [];
+    const select = document.getElementById("MapDataSelect");
+    if (!select) return [];
+    const dataset = select.value;
+    const sourceKey = DATASET_SOURCE_MAP[dataset] || dataset;
+    const geoData = loadedGeoJSON[sourceKey];
+    if (!geoData || !geoData.features) return [];
+    return geoData.features.map(f => ({ ...f, _sourceKey: sourceKey }));
+}
 
+function injectSearchUIPublished() {
+    if (document.getElementById("SiteSearchWrapperPublished")) return;
+    const targetSelect = document.getElementById("MapDataSelect");
+    if (!targetSelect) return;
+
+    const { wrapper, input, resultsList } = createSearchUIElement(
+        "SiteSearchInnerWrapperPublished",
+        "Site search (name, AQS, ...):",
+        "Type to search..."
+    );
+
+    let appendTarget = targetSelect;
+    const exportWrapper = document.getElementById("ExportBtnWrapper");
+    if (exportWrapper && exportWrapper.contains(targetSelect)) {
+        appendTarget = exportWrapper;
+    }
+    if (appendTarget.nextSibling) {
+        appendTarget.parentNode.insertBefore(wrapper, appendTarget.nextSibling);
+    } else {
+        appendTarget.parentNode.appendChild(wrapper);
+    }
+    
+    input.parentNode.appendChild(resultsList); // Ensure resultsList is after input
+    setupKeyboardNavigation(input, resultsList);
+    
+    input.addEventListener("input", function (e) {
+        const query = e.target.value.trim().toLowerCase();
+        if (query.length === 0) {
+            resultsList.style.display = "none";
+            return;
+        }
+
+        const features = getSearchableDataPublished();
+        const matches = [];
+        for (let i = 0; i < features.length; i++) {
+            if (matches.length >= MAX_RESULTS) break;
+            const f = features[i];
+            const p = f.properties;
+            const name = (p.site_name || p.name || "").toLowerCase();
+            const aqs = (p.AQS_O3 || p.AQS || "").toString().toLowerCase();
+            const state = (p.state || "").toLowerCase();
+
+            if (name.includes(query) || aqs.includes(query) || state.includes(query)) {
+                matches.push({
+                    feature: f,
+                    display: {
+                        state: p.state,
+                        aqs: p.AQS_O3 || p.AQS,
+                        name: p.site_name || p.name
+                    }
+                });
+            }
+        }
+
+        renderSearchResults(matches, query, resultsList, (feature, text) => {
+            highlightLocation(feature.geometry.coordinates, feature.properties, feature._sourceKey);
+            input.value = text;
+        });
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!wrapper.contains(e.target)) {
+            resultsList.style.display = "none";
+        }
+    });
+}
+
+// --- Specific Implementation for AirNow Data ---
+function getSearchableDataAirNow() {
+    if (!loadedGeoJSON) return [];
+    const allFeatures = [];
+    const airnowCheckboxes = document.querySelectorAll("input[type=checkbox][id^='layer-airnow']");
+    airnowCheckboxes.forEach(checkbox => {
+        if (!checkbox.checked) return;
+        const datasetKey = checkbox.id.replace("layer-", "");
+        const sourceKey = DATASET_SOURCE_MAP[datasetKey] || datasetKey;
+        const actualKey = Object.keys(loadedGeoJSON).find(key => key.startsWith(sourceKey));
+        const geoData = actualKey ? loadedGeoJSON[actualKey] : null;
+        const label = checkbox.parentElement?.textContent?.trim() || null;
+        if (geoData && geoData.features) {
+            geoData.features.forEach(f => {
+                allFeatures.push({ ...f, _layerLabel: label, _sourceKey: sourceKey });
+            });
+        }
+    });
+    return allFeatures;
+}
+
+function injectSearchUIAirNow() {
+    const target = document.getElementById("SiteSearchWrapperAirNow");
+    if (!target || target.children.length > 0) return;
+
+    const { wrapper, input, resultsList } = createSearchUIElement(
+        "SiteSearchInnerWrapperAirNow",
+        "Site search (name, AQS, ...):",
+        "Type to search..."
+    );
+
+    target.appendChild(wrapper);
+    setupKeyboardNavigation(input, resultsList);
+    
+    input.addEventListener("input", function (e) {
+        const query = e.target.value.trim().toLowerCase();
+        if (query.length === 0) {
+            resultsList.style.display = "none";
+            return;
+        }
+
+        const data = getSearchableDataAirNow();
+        const matches = [];
+        for (let i = 0; i < data.length; i++) {
+            if (matches.length >= MAX_RESULTS) break;
+            const f = data[i];
+            const p = f.properties;
+            const name = (p.site_name || p.name || "").toLowerCase();
+            const aqs = (p.AQS_O3 || p.AQS || "").toString().toLowerCase();
+            const state = (p.state || "").toLowerCase();
+            if (name.includes(query) || aqs.includes(query) || state.includes(query)) {
+                matches.push({
+                    feature: f,
+                    display: {
+                        layerLabel: f._layerLabel,
+                        state: p.state,
+                        aqs: p.AQS_O3 || p.AQS,
+                        name: p.site_name || p.name
+                    }
+                });
+            }
+        }
+
+        renderSearchResults(matches, query, resultsList, (feature, text) => {
+            highlightLocation(feature.geometry.coordinates, feature.properties, feature._sourceKey);
+            input.value = text;
+        });
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!wrapper.contains(e.target)) {
+            resultsList.style.display = "none";
+        }
+    });
+}
+
+// --- Visibility Management ---
+export function updateSearchVisibility() {
+    let hasActiveLayer = false;
+    let hasActiveAirNow = false;
+    
+    // 1. Published search visibility
+    const searchWrapper = document.getElementById("SiteSearchWrapperPublished");
+    if (searchWrapper) {
         const checkboxes = document.querySelectorAll("input[type=checkbox][id^='layer-']");
-        let hasActiveLayer = false;
         const EXCLUDED = ExcludeLayerGroups.searchSite;
-
         for (let i = 0; i < checkboxes.length; i++) {
             const cb = checkboxes[i];
             const shortId = cb.id.replace("layer-", "");
             if (EXCLUDED.includes(shortId)) continue;
-
             if (cb.checked) {
                 hasActiveLayer = true;
                 break;
             }
         }
+        searchWrapper.style.display = hasActiveLayer ? "block" : "none";
+    }
 
-        if (hasActiveLayer) {
-            searchWrapper.style.display = "block";
-        } else {
-            searchWrapper.style.display = "none";
+    // 2. AirNow search visibility
+    const airnowSearchWrapper = document.getElementById("SiteSearchWrapperAirNow");
+    if (airnowSearchWrapper) {
+        const airnowCheckboxes = document.querySelectorAll("input[type=checkbox][id^='layer-airnow']");
+        for (let i = 0; i < airnowCheckboxes.length; i++) {
+            if (airnowCheckboxes[i].checked) {
+                hasActiveAirNow = true;
+                break;
+            }
         }
+        airnowSearchWrapper.style.display = hasActiveAirNow ? "block" : "none";
     }
-
-    function setupCheckboxListeners() {
-        const checkboxes = document.querySelectorAll("input[type=checkbox][id^='layer-']");
-        checkboxes.forEach(function (cb) {
-            cb.addEventListener("change", updateVisibility);
-        });
+    
+    // [Refined] Clear highlight/tooltip if no searchable layers are active
+    if (!hasActiveLayer && !hasActiveAirNow) {
+        clearHighlight();
     }
+}
 
-    if (document.getElementById("MapDataSelect")) {
-        injectSearchUI();
-        setupCheckboxListeners();
-        updateVisibility();
+let isCheckboxIntercepted = false;
+function setupGlobalCheckboxObserver() {
+    if (isCheckboxIntercepted) return;
+
+    const descriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "checked");
+    if (!descriptor) return;
+
+    Object.defineProperty(HTMLInputElement.prototype, "checked", {
+        set(val) {
+            descriptor.set.call(this, val);
+            if (this.id && this.id.startsWith("layer-")) {
+                if (val === false) {
+                    updateSearchVisibility();
+                }
+            }
+        },
+        get() {
+            if (!(this instanceof HTMLInputElement)) {
+                return descriptor.get.call(this);
+            }
+            return descriptor.get.call(this);
+        },
+        configurable: true,
+        enumerable: true
+    });
+    isCheckboxIntercepted = true;
+}
+
+// --- Initialization ---
+function init() {
+    setupGlobalCheckboxObserver();
+
+    const mapDataExists = !!document.getElementById("MapDataSelect");
+    const airnowSearchExists = !!document.getElementById("SiteSearchWrapperAirNow");
+
+    if (mapDataExists || airnowSearchExists) {
+        if (mapDataExists) injectSearchUIPublished();
+        if (airnowSearchExists) injectSearchUIAirNow();
+
+        // Initial check
+        updateSearchVisibility();
+
+        // [Refined] Manual listeners removed to wait for data loading.
+        // loaders will call updateSearchVisibility() explicitly when done.
     } else {
-        const observer = new MutationObserver(function (mutations, obs) {
-            if (document.getElementById("MapDataSelect")) {
-                obs.disconnect();
-                injectSearchUI();
-                setupCheckboxListeners();
-                updateVisibility();
+        const observer = new MutationObserver(() => {
+            const currentPublished = document.getElementById("MapDataSelect");
+            const currentAirnow = document.getElementById("SiteSearchWrapperAirNow");
+
+            if (currentPublished) injectSearchUIPublished();
+            if (currentAirnow) injectSearchUIAirNow();
+
+            if (currentPublished || currentAirnow) {
+                updateSearchVisibility();
+
+                // Manual listeners removed to wait for data loading.
+
+                observer.disconnect();
             }
         });
         observer.observe(document.body, { childList: true, subtree: true });
     }
 }
 
-// Auto-init
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
 } else {

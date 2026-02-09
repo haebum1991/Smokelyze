@@ -19,9 +19,15 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
   identifier = "resrc"
 
 [[menu.main]]
+  name = "Announcements"
+  url = "/resrc/announcements/"
+  weight = 1
+  parent = "resrc"
+  
+[[menu.main]]
   name = "Data"
   url = "/resrc/data/"
-  weight = 1
+  weight = 2
   parent = "resrc"
 
 [[menu.main]]
@@ -36,30 +42,6 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
   weight = 4
   parent = "resrc"
 
-[[menu.main]]
-  name = "Board"
-  url = "#"
-  weight = 2
-  identifier = "board"
-
-[[menu.main]]
-  name = "Announcements"
-  url = "/board/announcements/"
-  weight = 1
-  parent = "board"
-
-[[menu.main]]
-  name = "Community"
-  url = "/board/community/"
-  weight = 2
-  parent = "board"
-
-[[menu.main]]
-  name = "Resources"
-  url = "#"
-  weight = 3
-  identifier = "resrc"
-  
 [[menu.main]]
   name = "About"
   url = "#"

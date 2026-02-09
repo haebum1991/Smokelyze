@@ -22,10 +22,10 @@ export const ExcludeLayerGroups = {
 
   // [stats-data-search.js] > [updateVisibility] > [EXCLUDED]
   // [loader.js] > [updateAllActiveSources] > [EXCLUDED]
-  searchSite: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-pm25", "airnow-ozone", "airnow-no2"],
+  searchSite: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2", "airnow-daily-pm25", "airnow-daily-mda8"],
 
   // [stats-plot-dy-scatter.js] > [getActiveModelLayers] > [EXCLUDED]
-  plotScatter: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-pm25", "airnow-ozone", "airnow-no2"],
+  plotScatter: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2", "airnow-daily-pm25", "airnow-daily-mda8"],
 
 
   // ========= Find by [source] =========
@@ -74,21 +74,21 @@ export const DATA_IMPORT_METHOD = {
   },
   
   // ---- [External data] AirNow ----
-  "airnow-pm25": {
-      key: "airnow-pm25",
-      source: "airnow-pm25",
+  "airnow-hourly-pm25": {
+      key: "airnow-hourly-pm25",
+      source: "airnow-hourly-pm25",
       coverage: "airnow.pm25",
       hourly: true
   },
-  "airnow-ozone": {
-      key: "airnow-ozone",
-      source: "airnow-ozone",
+  "airnow-hourly-ozone": {
+      key: "airnow-hourly-ozone",
+      source: "airnow-hourly-ozone",
       coverage: "airnow.ozone",
       hourly: true
   },
-  "airnow-no2": {
-      key: "airnow-no2",
-      source: "airnow-no2",
+  "airnow-hourly-no2": {
+      key: "airnow-hourly-no2",
+      source: "airnow-hourly-no2",
       coverage: "airnow.no2",
       hourly: true
   },
@@ -226,9 +226,9 @@ export const DATASET_SOURCE_MAP = {
     "pm-cbsa": "pm_cbsa",
     
     // ---- [External data] AirNow ----
-    "airnow-pm25": "airnow-pm25",
-    "airnow-ozone": "airnow-ozone",
-    "airnow-no2": "airnow-no2",
+    "airnow-hourly-pm25": "airnow-hourly-pm25",
+    "airnow-hourly-ozone": "airnow-hourly-ozone",
+    "airnow-hourly-no2": "airnow-hourly-no2",
     "airnow-daily-pm25": "airnow_daily",
     "airnow-daily-mda8": "airnow_daily",
     // ---- [External data] AirNow ----
@@ -335,9 +335,9 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "MapPost", field: "title", breaks: [], colors: ["red"], title: "MapPost", datasets: ["MapPost"], type: "symbol", iconImage: "pulsing-alert" },
     
     // ---- [External data] AirNow ----
-    { duration: "hourly", id: "airnow-pm25", field: "pm25(ug/m3)", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "AirNow Obs PM2.5 (hourly) (µg m⁻³)", decimals: 1, datasets: ["airnow-pm25"], hourly: true },
-    { duration: "hourly", id: "airnow-ozone", field: "ozone(ppb)", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "AirNow Obs O3 (hourly) (ppb)", decimals: 1, datasets: ["airnow-ozone"], hourly: true },
-    { duration: "hourly", id: "airnow-no2", field: "no2(ppb)", breaks: BREAKS_NO2, colors: PALETTE_EPA, title: "AirNow Obs NO2 (hourly) (ppb)", decimals: 1, datasets: ["airnow-no2"], hourly: true },
+    { duration: "hourly", id: "airnow-hourly-pm25", field: "pm25(ug/m3)", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "AirNow Obs PM2.5 (hourly) (µg m⁻³)", decimals: 1, datasets: ["airnow-hourly-pm25"], hourly: true },
+    { duration: "hourly", id: "airnow-hourly-ozone", field: "ozone(ppb)", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "AirNow Obs O3 (hourly) (ppb)", decimals: 1, datasets: ["airnow-hourly-ozone"], hourly: true },
+    { duration: "hourly", id: "airnow-hourly-no2", field: "no2(ppb)", breaks: BREAKS_NO2, colors: PALETTE_EPA, title: "AirNow Obs NO2 (hourly) (ppb)", decimals: 1, datasets: ["airnow-hourly-no2"], hourly: true },
 
     { duration: "daily", id: "airnow-daily-pm25", field: "PM2.5", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "AirNow Obs PM2.5 (µg m⁻³)", decimals: 1, datasets: ["airnow-daily-pm25"] },
     { duration: "daily", id: "airnow-daily-mda8", field: "MDA8O3", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "AirNow Obs MDA8 (ppb)", decimals: 1, datasets: ["airnow-daily-mda8"] },

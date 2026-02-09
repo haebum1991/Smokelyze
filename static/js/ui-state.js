@@ -1,5 +1,10 @@
 
-import { setStateShadingEnabled, StateShadingEnabled } from "./layers-state.js";
+import { 
+  setStateShadingEnabled, 
+  StateShadingEnabled, 
+  setPointLayersEnabled, 
+  PointLayersEnabled 
+} from "./layers-state.js";
 import { updateStateShading } from "./layers-colors.js";
 
 const KEY = "mapStateV1";
@@ -58,6 +63,9 @@ export function restoreUI() {
 
   // State Shading
   setStateShadingEnabled(typeof s.StateShadingEnabled === "boolean" ? s.StateShadingEnabled : true);
+
+  // Point Layers
+  setPointLayersEnabled(typeof s.PointLayersEnabled === "boolean" ? s.PointLayersEnabled : true);
 }
 
 export function restoreView(map) {
@@ -121,6 +129,11 @@ export function saveGlobalStateShading(enabled) {
   savePatch({ StateShadingEnabled: !!enabled });
 }
 
+export function saveGlobalPointLayers(enabled) {
+  setPointLayersEnabled(enabled);
+  savePatch({ PointLayersEnabled: !!enabled });
+}
+
 export function bindAccordionAutosave() {
   const detailsList = document.querySelectorAll(".accordion details");
   if (!detailsList.length) return;
@@ -174,6 +187,36 @@ export function initStateShadingToggle() {
   btn.addEventListener(btn.type === "checkbox" ? "change" : "click", handler);
 }
 
+export function initPointLayersToggle() {
+  const btn = document.getElementById("MapBtnPointLayers");
+  if (!btn) return;
+
+  if (btn.type === "checkbox") {
+    btn.checked = !!PointLayersEnabled;
+  } else if (!PointLayersEnabled) {
+    btn.classList.add("disabled");
+  }
+
+  const handler = async () => {
+    let nextEnabled;
+    if (btn.type === "checkbox") {
+      nextEnabled = btn.checked;
+    } else {
+      const currentlyEnabled = !btn.classList.contains("disabled");
+      nextEnabled = !currentlyEnabled;
+      if (nextEnabled) btn.classList.remove("disabled");
+      else btn.classList.add("disabled");
+    }
+
+    saveGlobalPointLayers(nextEnabled);
+    // Trigger layer update
+    const { applyLayerToggles } = await import("./layers-handler.js");
+    applyLayerToggles?.();
+  };
+
+  btn.addEventListener(btn.type === "checkbox" ? "change" : "click", handler);
+}
+
 export function resetGlobalStateShading() {
   const btn = document.getElementById("MapBtnStateShading");
   if (btn) {
@@ -183,5 +226,15 @@ export function resetGlobalStateShading() {
 
   setStateShadingEnabled(true);
   updateStateShading?.();
+}
+
+export function resetGlobalPointLayers() {
+  const btn = document.getElementById("MapBtnPointLayers");
+  if (btn) {
+    if (btn.type === "checkbox") btn.checked = true;
+    else btn.classList.remove("disabled");
+  }
+
+  setPointLayersEnabled(true);
 }
 

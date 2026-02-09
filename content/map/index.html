@@ -180,8 +180,12 @@ title: ""
       <!-- State Shading Toggle (Injected via JS) -->
       <div id="ToggleSwitchStateShading"></div>
       
+      <!-- Point Layers Toggle (Injected via JS) -->
+      <div id="ToggleSwitchPointLayers"></div>
+      <hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
+      
       <details open>
-        <summary>Near Realtime</summary>
+        <summary>Live Updates</summary>
         <label>
           <input type="checkbox" id="layer-wildfire-news" checked>
           WF news
@@ -189,7 +193,7 @@ title: ""
             style="vertical-align:middle; margin-right:0.4rem;"></canvas>
         </label>
         <label>
-          <input type="checkbox" id="layer-wildfire-nifc" checked>
+          <input type="checkbox" id="layer-wildfire-nifc">
           WF incident locations
           <canvas class="ui-pulsing-icon" data-type="fire" width="24" height="24"
             style="vertical-align:middle; margin-right:0.4rem;"></canvas>
@@ -205,12 +209,13 @@ title: ""
       
       <details>
         <summary>AirNow</summary>
+        <div id="SiteSearchWrapperAirNow"></div>
         <label><input type="checkbox" id="layer-airnow-daily-mda8"> Obs MDA8</label>
         <label><input type="checkbox" id="layer-airnow-daily-pm25"> Obs PM2.5</label>
-        <label><input type="checkbox" id="layer-airnow-ozone"> Obs O3 (hourly)</label>
-        <label><input type="checkbox" id="layer-airnow-pm25"> Obs PM2.5 (hourly)</label>
+        <label><input type="checkbox" id="layer-airnow-hourly-ozone"> Obs O3 (hourly)</label>
+        <label><input type="checkbox" id="layer-airnow-hourly-pm25"> Obs PM2.5 (hourly)</label>
         <label>
-          <input type="checkbox" id="layer-airnow-no2"> Obs NO2 (hourly)
+          <input type="checkbox" id="layer-airnow-hourly-no2"> Obs NO2 (hourly)
           <hr style="margin-top: 0.2rem; margin-bottom: 0.2rem;">
         </label>
       </details>
@@ -306,7 +311,7 @@ title: ""
   </div>
 
   <div class="Desc-tab-main">
-    <button class="Desc-tab-main-btn active" Desc-group="LyrGroupRealtime">Near Realtime</button>
+    <button class="Desc-tab-main-btn active" Desc-group="LyrGroupRealtime">Live Updates</button>
     <button class="Desc-tab-main-btn" Desc-group="LyrGroupAirnow">AirNow</button>
     <button class="Desc-tab-main-btn" Desc-group="LyrGroupSatellite">Satellite</button>
     <button class="Desc-tab-main-btn" Desc-group="LyrGroupPublished">Published</button>

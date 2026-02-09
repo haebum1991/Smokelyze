@@ -12,6 +12,7 @@ import { triggerRefresh, clearPlotSelectionForLayer, usStates, caStates } from "
 import { ensureLayers, applyLayerToggles } from "./layers-handler.js";
 import { EMPTY_FC } from "./layers-constants.js";
 import { regionStats } from "./layers-state.js";
+import { updateSearchVisibility } from "./stats-data-search.js";
 import { showErrorToast, toggleSpinner, updateWildfireNewsList } from "./loader-ui.js";
 import { fetchGeoJSON } from "./loader-fetch.js";
 import {
@@ -458,35 +459,8 @@ function handleLoadingError(sourceKey, isoDate, ds = null) {
         clearModelStats();
     }
 
-    // 5. [추가] 체크박스가 해제되었으므로 검색 UI 상태도 새로고침
-    refreshSearchUIVisibility();
-}
-
-/**
- * Re-scans checkboxes to show/hide the Site Search UI
- */
-export function refreshSearchUIVisibility() {
-    const searchWrapper = document.getElementById("SiteSearchWrapper");
-    if (!searchWrapper) return;
-
-    const checkboxes = document.querySelectorAll("input[type=checkbox][id^='layer-']");
-    let hasSearchable = false;
-    const EXCLUDED = ExcludeLayerGroups.searchSite;
-
-    checkboxes.forEach(cb => {
-        if (!cb.checked) return;
-        const shortId = cb.id.replace("layer-", "");
-        if (!EXCLUDED.includes(shortId)) {
-            hasSearchable = true;
-        }
-    });
-
-    if (hasSearchable) {
-        searchWrapper.style.display = "block";
-    } else {
-        searchWrapper.style.display = "none";
-        if (utils.clearHighlight) utils.clearHighlight();
-    }
+    // [Refined] Update Search UI Visibility (delegated to stats-data-search.js)
+    updateSearchVisibility();
 }
 
 export async function updateAllActiveSources() {
@@ -528,9 +502,21 @@ export async function updateAllActiveSources() {
         const restrictedSources = ExcludeLayerGroups.restrictedSources;
         const tryingToLoadRestricted = Array.from(sourcesToLoad).some(s => restrictedSources.includes(s));
 
-        // 로그인 안 되어 있고 제한된 데이터 로드 시도 시 데이터 클리어
+        // 로그인 안 되어 있고 제한된 데이터 로드 시도 시 데이터 클리어 및 체크박스 해제
         if (!auth.currentUser && tryingToLoadRestricted) {
+            
+            // Uncheck restricted checkboxes
+            checkboxes.forEach(cb => {
+                const shortId = cb.id.replace("layer-", "");
+                const contextKey = `${shortId}-${currentDataset}`;
+                const globalKey = shortId;
+                const targetConfig = DATA_IMPORT_METHOD[contextKey] || DATA_IMPORT_METHOD[globalKey];
 
+                if (targetConfig?.source && restrictedSources.includes(targetConfig.source)) {
+                    cb.checked = false;
+                }
+            });
+            
             // Clear all restricted source data to remove any cached state shading/data
             restrictedSources.forEach(sourceKey => {
                 const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
@@ -574,9 +560,13 @@ export async function updateAllActiveSources() {
         if (hasHourly) {
             if (typeof showTimeControls === "function") showTimeControls();
             toggleSpinner(true);
-            airnowLoadData(isoDate)
-                .catch(e => console.error("Hourly background load failed:", e))
-                .finally(() => toggleSpinner(false));
+            try {
+                await airnowLoadData(isoDate);
+            } catch (e) {
+                console.error("Hourly background load failed:", e);
+            } finally {
+                toggleSpinner(false);
+            }
         } else {
             if (typeof hideTimeControls === "function") hideTimeControls();
         }
@@ -584,7 +574,7 @@ export async function updateAllActiveSources() {
         
         ensureLayers(); // Ensure layers exist before toggling visibility
         applyLayerToggles();
-        refreshSearchUIVisibility();
+        updateSearchVisibility();
 
         if (typeof triggerRefresh === "function") {
             triggerRefresh();
@@ -647,8 +637,9 @@ export function bindEvents() {
                     targetConfig = DATA_IMPORT_METHOD[globalKey];
                 }
 
-                // Published data인 경우 오버레이 표시
+                // Published data인 경우 오버레이 표시 및 체크박스 해제
                 if (targetConfig?.source && restrictedSources.includes(targetConfig.source)) {
+                    cb.checked = false;
                     utils.showAuthOverlay();
                 }
             }

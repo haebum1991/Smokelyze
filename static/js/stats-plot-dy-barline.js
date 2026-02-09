@@ -24,10 +24,10 @@ let currentDailyDetailStateBarLine = null;
 // ============================================
 function getStyleMap(theme) {
   return {
-    "airnow-pm25": { type: "scatter", color: theme.axisText, dash: "solid", marker: { symbol: "square", size: 8, color: theme.paper_bgcolor, line: { width: 2, color: theme.axisText } } },
-    "airnow-ozone": { type: "scatter", color: "green", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "green" } } },
-    "airnow-no2": { type: "scatter", color: "cyan", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "green" } } },
-  
+    "airnow-hourly-pm25": { type: "scatter", color: theme.axisText, dash: "solid", marker: { symbol: "square", size: 8, color: theme.paper_bgcolor, line: { width: 2, color: theme.axisText } } },
+    "airnow-hourly-ozone": { type: "scatter", color: "green", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "green" } } },
+    "airnow-hourly-no2": { type: "scatter", color: "cyan", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "green" } } },
+
     "mda8-obs": { type: "scatter", color: "green", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "green" } } },
   
     "mda8-pred": { type: "scatter", color: "magenta", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "magenta" } } },
@@ -79,7 +79,7 @@ const GROUPS = [
     axisName: "yaxis",
     title: "Conc. (ppb or ug m-3)",
     metrics: ["mda8-obs", "mda8-pred", "mda8-pred-edm",
-      "airnow-pm25", "airnow-ozone", "airnow-no2",
+      "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2",
       "pm25-obs", "pm25-crit",
       "pm25-crit-m0p5m", "pm25-crit-m1p0m",
       "pm25-smoke-m0p5m", "pm25-smoke-m1p0m"],

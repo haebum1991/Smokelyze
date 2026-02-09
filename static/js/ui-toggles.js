@@ -1,5 +1,5 @@
 
-import { savePatch, read, initStateShadingToggle } from "./ui-state.js";
+import { savePatch, read, initStateShadingToggle, initPointLayersToggle } from "./ui-state.js";
 import { onDescDrawerOpen } from "./ui-param-desc.js";
 import {
     clearHighlight,
@@ -17,9 +17,8 @@ const SWITCH_STYLE = `
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem;
+  padding-top: 0.5rem;
   padding-left: 0;
-  border-bottom: 0.1rem solid var(--card-shadow);
   font-size: 1.4rem;
   color: var(--text-main);
 }
@@ -237,12 +236,22 @@ export function initAccordion() {
     if (StateShadingContainer) {
         appendSwitch(StateShadingContainer, {
             id: "MapBtnStateShading",
-            label: "State Shading",
+            label: "Show State Shading",
             checked: true
         });
         initStateShadingToggle();
     }
-
+    
+    const PointLayersContainer = document.getElementById("ToggleSwitchPointLayers");
+    if (PointLayersContainer) {
+        appendSwitch(PointLayersContainer, {
+            id: "MapBtnPointLayers",
+            label: "Show Points",
+            checked: true
+        });
+        initPointLayersToggle();
+    }
+    
     const s = read?.();
     const isCollapsed = s?.accordionCollapsed ?? true;
     setAccordionCollapsed(isCollapsed);
