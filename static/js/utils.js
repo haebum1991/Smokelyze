@@ -11,7 +11,7 @@ function getCacheBuster(isoDate) {
   const targetDate = new Date(isoDate);
   const daysDiff = Math.floor((now - targetDate) / (24 * 60 * 60 * 1000));
 
-  if (daysDiff <= 3) {
+  if (daysDiff <= 2) {
     return `?v=${Math.floor(Date.now() / 3600000)}`;
   }
   return "";
