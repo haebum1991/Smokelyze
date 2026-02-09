@@ -1,5 +1,5 @@
 
-import { ExcludeLayerGroups, LAYER_TEMPLATES } from "./layers-def.js";
+import { ExcludeLayerGroups, LAYER_TEMPLATES, DATASET_SOURCE_MAP } from "./layers-def.js";
 import { resetUIAndData, resetAccordionDetails, resetMapViewToDefault } from "./ui-reset.js";
 import * as utils from "./utils.js";
 
@@ -937,12 +937,7 @@ export function clearPlotMessage(container) {
 export function getDatasetInfo() {
     const el = document.getElementById("MapDataSelect");
     const val = el ? el.value : "";
-    let key = val;
-    // Mapping
-    if (val === "gam-v2") key = "gam_v2";
-    else if (val === "gam-v1") key = "gam_v1";
-    else if (val === "epa-ember") key = "epa_ember";
-    else if (val === "pm-cbsa") key = "pm_cbsa";
+    const key = DATASET_SOURCE_MAP[val] || val;
     return { value: val, key: key };
 }
 
