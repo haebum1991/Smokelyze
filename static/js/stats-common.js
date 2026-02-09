@@ -865,18 +865,9 @@ export function attachDrillDownListeners(container, selector, onDrillDown) {
 
 export function highlightSiteOnMap(coords, properties, dsKeyOrVal) {
     if (utils.highlightLocation) {
-        let dsKey = dsKeyOrVal;
-        
-        // Use explicitly assigned specialDsKey if available (e.g., from AirNow data)
-        if (properties && properties.specialDsKey) {
-            dsKey = properties.specialDsKey;
-        } else {
-            // Mapping for model datasets
-            if (dsKey === "gam-v2") dsKey = "gam_v2";
-            else if (dsKey === "gam-v1") dsKey = "gam_v1";
-            else if (dsKey === "epa-ember") dsKey = "epa_ember";
-            else if (dsKey === "pm-cbsa") dsKey = "pm_cbsa";
-        }
+        const dsKey = (properties && properties.dsKeyForFigure)
+            ? properties.dsKeyForFigure
+            : (DATASET_SOURCE_MAP[dsKeyOrVal] || dsKeyOrVal);
 
         utils.highlightLocation(coords, properties, dsKey);
     }

@@ -187,15 +187,15 @@ export async function airnowCsv2GeoJSON(rows, lonKey = "longitude(deg)", latKey 
         const paramCode = parts[1]?.trim() || "";
         const AQS = siteId.slice(3);
 
-        let specialDsKey = null;
-        if (paramCode === "88101" || paramCode === "88502") specialDsKey = "airnow-hourly-pm25";
-        else if (paramCode === "44201") specialDsKey = "airnow-hourly-ozone";
-        else if (paramCode === "42602") specialDsKey = "airnow-hourly-no2";
+        let dsKeyForFigure = null;
+        if (paramCode === "88101" || paramCode === "88502") dsKeyForFigure = "airnow-hourly-pm25";
+        else if (paramCode === "44201") dsKeyForFigure = "airnow-hourly-ozone";
+        else if (paramCode === "42602") dsKeyForFigure = "airnow-hourly-no2";
 
         const properties = Object.assign({}, row, {
             paramCode,
             AQS,
-            specialDsKey
+            dsKeyForFigure
         });
         
         // Convert numeric pollutant fields from string to number for chart compatibility

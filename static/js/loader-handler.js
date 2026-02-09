@@ -231,6 +231,16 @@ export async function loadSourceData(sourceKey, isoDate) {
 
         const mapSource = map.getSource(ds.source);
         if (mapSource) {
+        
+            // [Root Fix] Tag all features with their source key for consistent tooltip handling
+            if (data.features) {
+                data.features.forEach(f => {
+                    if (f.properties && !f.properties.dsKeyForFigure) {
+                        f.properties.dsKeyForFigure = sourceKey;
+                    }
+                });
+            }
+            
             if (sourceKey === "wildfire_news") {
                 const filteredData = Object.assign({}, data, {
                     features: data.features.filter(f => f._showOnMap)
