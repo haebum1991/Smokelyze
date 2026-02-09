@@ -8,12 +8,10 @@ import { DATA_IMPORT_METHOD } from "./layers-def.js";
 
 function getCacheBuster(isoDate) {
   const now = new Date();
-  const y = now.getFullYear();
-  const m = pad2(now.getMonth() + 1);
-  const d = pad2(now.getDate());
-  const today = `${y}-${m}-${d}`;
+  const targetDate = new Date(isoDate);
+  const daysDiff = Math.floor((now - targetDate) / (24 * 60 * 60 * 1000));
 
-  if (isoDate === today) {
+  if (daysDiff <= 3) {
     return `?v=${Math.floor(Date.now() / 3600000)}`;
   }
   return "";
