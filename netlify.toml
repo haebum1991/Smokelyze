@@ -105,6 +105,12 @@
   to   = "/.netlify/functions/gcs-proxy/modis_burn_area_year_json/:splat"
   status = 200
   force  = true
+
+[[redirects]]
+  from = "/smokeday/*"
+  to   = "/.netlify/functions/gcs-proxy/smokeday/:splat"
+  status = 200
+  force  = true
   
 # ---- Security & Caching rules ----
 

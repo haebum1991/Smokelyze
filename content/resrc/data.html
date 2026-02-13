@@ -319,8 +319,11 @@ title: ""
     <h2>Annual Report</h2>
     <div class="datadb-report-info">
       <p>
-        Welcome to the Annual Analysis section. This page will be updated...
+        Browse and download the annual analysis reports below.
       </p>
+    </div>
+    <div id="AnnualReportList">
+        <!-- Will be populated by data-annual.js -->
     </div>
   </div>
 </div>
@@ -328,6 +331,7 @@ title: ""
 
 <script type="module" src="/js/data-query.js"></script>
 <script type="module" src="/js/data-report.js"></script>
+<script type="module" src="/js/data-annual.js"></script>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 
 <script>
@@ -347,6 +351,11 @@ title: ""
     // 3. Activate selected
     btn.classList.add("active");
     document.getElementById(tabName).classList.add("active");
+    
+    // 4. Dispatch events for specific tabs
+    if (tabName === "annual") {
+      window.dispatchEvent(new CustomEvent("tabOpenAnnual"));
+    }
   }
 
   function openSubTab(evt, tabName) {

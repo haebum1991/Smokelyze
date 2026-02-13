@@ -142,6 +142,38 @@
     max-width: 70rem;
 }
 
+.datadb-download-list {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.datadb-download-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2.5rem;
+    background: var(--color-bg);
+    border: 0.1rem solid var(--border-light);
+    border-radius: var(--border-radius-0p8rem);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (hover: hover) {
+  .datadb-download-item:hover {
+      border-color: var(--card-shadow);
+      box-shadow: 0 0.8rem 2rem rgba(163, 102, 255, 0.1);
+      transform: translateY(-0.2rem);
+  }
+}
+
+.datadb-download-name {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
 /* Published Result Table */
 .datadb-table-container {
     width: 100%;

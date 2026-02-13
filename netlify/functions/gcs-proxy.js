@@ -39,7 +39,8 @@ const PUBLIC_PREFIXES = [
   "noaa_hms_fire_year_json",
   "modis_burn_area_date_geojson",
   "modis_burn_area_year_json",
-  "airnow_date_geojson"
+  "airnow_date_geojson",
+  "smokeday"
 ];
 
 function dlog(...args) { if (DEBUG) console.log.apply(console, args); }
@@ -95,7 +96,8 @@ function extractGcsPath(event) {
     "noaa_hms_fire_date_geojson",
     "noaa_hms_fire_date_json",
     "noaa_hms_fire_year_json",
-    "airnow_date_geojson"
+    "airnow_date_geojson",
+    "smokeday"
   ];
 
   let rawPath = "";
@@ -120,11 +122,22 @@ function extractGcsPath(event) {
       }
     }
   }
-
+  
+  if (!rawPath && event.path) {
+    // Handle cases where the path is just the prefix (for listing)
+    const p = event.path.replace(/^\/+/, "");
+    for (const pre of prefixes) {
+      if (p === pre || p === `${pre}/`) {
+        rawPath = pre + "/";
+        break;
+      }
+    }
+  }
+  
   if (!rawPath) return "";
 
   // FINAL SAFETY CHECK: The path MUST start with one of our valid prefixes
-  const isValid = prefixes.some(pre => rawPath.startsWith(pre + "/"));
+  const isValid = prefixes.some(pre => rawPath === pre || rawPath === pre + "/" || rawPath.startsWith(pre + "/"));
   return isValid ? rawPath : "";
 }
 
@@ -164,6 +177,17 @@ exports.handler = async (event) => {
         console.error(`[SECURITY] Invalid Token Attempt: Error=${authError.message}`);
         return { statusCode: 401, headers: corsHeaders, body: "Invalid Session" };
       }
+    }
+    
+    const qs = event.queryStringParameters || {};
+    if (qs.list === "1") {
+      const [files] = await bucket.getFiles({ prefix: path, delimiter: "/" });
+      const fileNames = files.map(f => f.name.replace(path, ""));
+      return {
+        statusCode: 200,
+        headers: corsHeaders,
+        body: JSON.stringify(fileNames.filter(n => n.length > 0))
+      };
     }
     
     const file = bucket.file(path);
