@@ -196,6 +196,16 @@ exports.handler = async (event) => {
       dwarn("[NOT_FOUND]", { path });
       return { statusCode: 404, headers: corsHeaders, body: "not found" };
     }
+    
+    // 파일이 크기 때문에(15MB) Netlify 6MB 제한을 피하기 위해 Signed URL 방식으로 리다이렉트합니다.
+    if (path.startsWith("smokeday/")) {
+      const [url] = await file.getSignedUrl({
+        version: "v4",
+        action: "read",
+        expires: Date.now() + 5 * 60 * 1000,
+      });
+      return { statusCode: 302, headers: { ...corsHeaders, "Location": url } };
+    }
 
     const [buf] = await file.download();
     const isGzipped = buf.length >= 2 && buf[0] === 0x1f && buf[1] === 0x8b;
@@ -212,12 +222,6 @@ exports.handler = async (event) => {
         ? "public, max-age=3600, must-revalidate"
         : "public, max-age=2592000",
     };
-    
-    if (path.startsWith("smokeday/")) {
-      headers["Content-Type"] = "application/octet-stream";
-      headers["Content-Disposition"] = `attachment; filename="${path.split("/").pop()}"`;
-      return { statusCode: 200, headers, body: buf.toString("base64"), isBase64Encoded: true };
-    }
 
     if (isGzipped) {
       headers["Content-Type"] = "application/json"; 
