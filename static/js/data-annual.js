@@ -115,7 +115,7 @@ function renderTypeTable(type, reportsByYear, tableBody) {
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td class="datadb-year-cell">${year}</td>
+            <td class="datadb-annual-table-year-cell">${year}</td>
             <td>${renderDownloadCell(prelim, "Preliminary", year)}</td>
             <td>${renderDownloadCell(final, "Finalized", year)}</td>
         `;
@@ -133,17 +133,17 @@ function renderDownloadCell(record, type, year) {
             const targetYear = parseInt(year) + 1;
             msg = `Expected update: Sep ${targetYear}`;
         }
-        return `<div class="datadb-empty-cell">${msg}</div>`;
+        return `<div class="datadb-annual-table-empty-cell">${msg}</div>`;
     }
 
     const authClass = auth.currentUser ? "" : "disabled-auth";
     const authTitle = auth.currentUser ? "" : "Please login to download";
     
     return `
-        <div class="datadb-report-card">
-            <span class="datadb-report-name">${record.title}</span>
-            <span class="datadb-report-date">(as of ${record.asOfDate})</span>
-            <button class="datadb-download-btn-small ${authClass}" title="${authTitle}" onclick="downloadReport('${record.filename}')">
+        <div class="datadb-annual-table-card">
+            <span class="datadb-annual-table-name">${record.title}</span>
+            <span class="datadb-annual-table-date">(as of ${record.asOfDate})</span>
+            <button class="datadb-annual-table-download-btn ${authClass}" title="${authTitle}" onclick="downloadReport('${record.filename}')">
                 Download
             </button>
         </div>
