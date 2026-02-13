@@ -25,21 +25,27 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
   parent = "resrc"
   
 [[menu.main]]
+  name = "FAQ"
+  url = "/resrc/faq/"
+  weight = 2
+  parent = "resrc"
+  
+[[menu.main]]
   name = "Data"
   url = "/resrc/data/"
-  weight = 2
+  weight = 3
   parent = "resrc"
 
 [[menu.main]]
   name = "Documents"
   url = "/resrc/documents/"
-  weight = 3
+  weight = 4
   parent = "resrc"
 
 [[menu.main]]
   name = "Links"
   url = "/resrc/links/"
-  weight = 4
+  weight = 5
   parent = "resrc"
 
 [[menu.main]]
