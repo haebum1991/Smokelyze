@@ -212,6 +212,12 @@ exports.handler = async (event) => {
         ? "public, max-age=3600, must-revalidate"
         : "public, max-age=2592000",
     };
+    
+    if (path.startsWith("smokeday/")) {
+      headers["Content-Type"] = "application/octet-stream";
+      headers["Content-Disposition"] = `attachment; filename="${path.split("/").pop()}"`;
+      return { statusCode: 200, headers, body: buf.toString("base64"), isBase64Encoded: true };
+    }
 
     if (isGzipped) {
       headers["Content-Type"] = "application/json"; 
