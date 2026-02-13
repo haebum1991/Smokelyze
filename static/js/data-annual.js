@@ -1,5 +1,6 @@
 
 import { auth } from "./fb-init.js";
+import { showAuthOverlay } from "./utils.js";
 
 /**
  * Helper to fetch with Firebase Auth Token
@@ -135,11 +136,14 @@ function renderDownloadCell(record, type, year) {
         return `<div class="datadb-empty-cell">${msg}</div>`;
     }
 
+    const authClass = auth.currentUser ? "" : "disabled-auth";
+    const authTitle = auth.currentUser ? "" : "Please login to download";
+    
     return `
         <div class="datadb-report-card">
             <span class="datadb-report-name">${record.title}</span>
             <span class="datadb-report-date">(as of ${record.asOfDate})</span>
-            <button class="datadb-download-btn-small" onclick="downloadReport('${record.filename}')">
+            <button class="datadb-download-btn-small ${authClass}" title="${authTitle}" onclick="downloadReport('${record.filename}')">
                 Download
             </button>
         </div>
@@ -147,10 +151,11 @@ function renderDownloadCell(record, type, year) {
 }
 
 function downloadReport(filename) {
+    if (!auth.currentUser) {
+        showAuthOverlay();
+        return;
+    }
     const path = `/smokeday/smoke_id/${filename}`;
-    // Use direct navigation for downloads.
-    // The gcs-proxy returns a 302 redirect. Using fetch() on a 302 to another origin (GCS)
-    // often triggers CORS errors. window.location.href handles this as a normal browser navigation.
     window.location.href = path;
 }
 window.downloadReport = downloadReport;

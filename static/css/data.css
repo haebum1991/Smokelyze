@@ -217,6 +217,12 @@
     opacity: 0.9;
 }
 
+@media (max-width: 1024px) {
+    .datadb-download-btn-small {
+        display: none;
+    }
+}
+
 .datadb-empty-cell {
     color: var(--text-muted);
     font-style: italic;
