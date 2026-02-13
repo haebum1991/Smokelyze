@@ -185,7 +185,10 @@ exports.handler = async (event) => {
       const fileNames = files.map(f => f.name.replace(path, ""));
       return {
         statusCode: 200,
-        headers: corsHeaders,
+        headers: {
+          ...corsHeaders,
+          "Cache-Control": "public, max-age=2592000, must-revalidate"
+        },
         body: JSON.stringify(fileNames.filter(n => n.length > 0))
       };
     }
