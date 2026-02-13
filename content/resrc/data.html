@@ -322,8 +322,51 @@ title: ""
         Browse and download the annual analysis reports below.
       </p>
     </div>
-    <div id="AnnualReportList">
-        <!-- Will be populated by data-annual.js -->
+    <div id="AnnualReportContent">
+      <!-- PM2.5 Section -->
+      <div class="datadb-annual-section">
+        <h3 style="font-size: 2rem; color: var(--card-shadow); margin-bottom: 1rem;">
+          Smoke PM2.5
+        </h3>
+        <div class="datadb-table-container">
+          <table class="datadb-annual-table">
+            <thead>
+              <tr>
+                <th style="width: 15%;">Year</th>
+                <th style="width: 42.5%;">Preliminary</th>
+                <th style="width: 42.5%;">Finalized</th>
+              </tr>
+            </thead>
+            <tbody id="AnnualReportTableBody_PM">
+              <!-- Populated by data-annual.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <br>
+      <!-- Ozone Section -->
+      <div class="datadb-annual-section">
+        <h3 style="font-size: 2rem; color: var(--card-shadow); margin-bottom: 1rem;">
+          Smoke O3 based on GAM-v2
+        </h3>
+        <div class="datadb-table-container">
+          <table class="datadb-annual-table">
+            <thead>
+              <tr>
+                <th style="width: 15%;">Year</th>
+                <th style="width: 42.5%;">Preliminary</th>
+                <th style="width: 42.5%;">Finalized</th>
+              </tr>
+            </thead>
+            <tbody id="AnnualReportTableBody_O3">
+              <!-- Populated by data-annual.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <br>
+      
     </div>
   </div>
 </div>

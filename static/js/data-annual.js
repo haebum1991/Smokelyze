@@ -2,106 +2,171 @@
 import { auth } from "./fb-init.js";
 
 /**
- * Annual Report tab logic: Fetches and displays downloadable files from GCS
+ * Helper to fetch with Firebase Auth Token
  */
-
-async function fetchWithAuth(url) {
-    const options = {};
+async function fetchWithAuth(url, options = {}) {
+    const fetchOptions = { ...options };
     if (auth.currentUser) {
-        try {
-            const token = await auth.currentUser.getIdToken();
-            options.headers = { "Authorization": `Bearer ${token}` };
-        } catch (e) {
-            console.warn("Could not get ID token for annual report fetch:", e);
-        }
+        const idToken = await auth.currentUser.getIdToken();
+        fetchOptions.headers = {
+            ...fetchOptions.headers,
+            "Authorization": `Bearer ${idToken}`
+        };
     }
-    return fetch(url, options);
+    return fetch(url, fetchOptions);
 }
 
-export async function loadAnnualReports() {
-    const listContainer = document.getElementById("AnnualReportList");
-    if (!listContainer) return;
+/**
+ * Annual Report Data Handler
+ * Groups them by year and categorizes into Preliminary vs Finalized.
+ */
 
-    listContainer.innerHTML = "<p>Loading reports...</p>";
+async function loadAnnualReports() {
+    const tablePM = document.getElementById("AnnualReportTableBody_PM");
+    const tableO3 = document.getElementById("AnnualReportTableBody_O3");
+
+    if (tablePM) tablePM.innerHTML = "<tr><td colspan='3' style='text-align:center; padding: 3rem;'>Loading reports...</td></tr>";
+    if (tableO3) tableO3.innerHTML = "<tr><td colspan='3' style='text-align:center; padding: 3rem;'>Loading reports...</td></tr>";
 
     try {
-        // We use the proxy with ?list=1 to get the file list
         const res = await fetchWithAuth("/smokeday/smoke_id/?list=1");
+
         if (!res.ok) {
-            if (res.status === 401) {
-                listContainer.innerHTML = "<p>Please sign in to view and download reports.</p>";
-            } else {
-                throw new Error(`Failed to fetch: ${res.status}`);
-            }
+            const errorMsg = res.status === 401 ? "Please sign in to view reports." : `Server error: ${res.status}`;
+            if (tablePM) tablePM.innerHTML = `<tr><td colspan='3' style='text-align:center; padding: 2rem;'>${errorMsg}</td></tr>`;
+            if (tableO3) tableO3.innerHTML = `<tr><td colspan='3' style='text-align:center; padding: 2rem;'>${errorMsg}</td></tr>`;
             return;
         }
 
         const files = await res.json();
         if (!files || files.length === 0) {
-            listContainer.innerHTML = "<p>No reports available at this moment.</p>";
+            const noDataMsg = "No annual reports found.";
+            if (tablePM) tablePM.innerHTML = `<tr><td colspan='3' style='text-align:center; padding: 3rem;'>${noDataMsg}</td></tr>`;
+            if (tableO3) tableO3.innerHTML = `<tr><td colspan='3' style='text-align:center; padding: 3rem;'>${noDataMsg}</td></tr>`;
             return;
         }
 
-        listContainer.innerHTML = "";
-        const listWrapper = document.createElement("div");
-        listWrapper.className = "datadb-download-list";
+        // 1. Group by Type (pm/o3) and Year
+        const reportsByType = { pm: {}, o3: {} };
 
-        files.forEach(file => {
-            // Filter out directories if any (though delimiter should handle it)
-            if (file.endsWith("/")) return;
+        files.forEach(filename => {
+            const match = filename.match(/smoke_(pm|o3)_(\d{4}).*as_of_(\d{4})_(\d{2})_(\d{2})/);
+            if (!match) return;
 
-            const item = document.createElement("div");
-            item.className = "datadb-download-item";
+            const type = match[1]; // "pm" or "o3"
+            const dataYear = match[2];
+            const asOfDate = `${match[3]}-${match[4]}-${match[5]}`;
+            const cleanTitle = `smoke_${type}_${dataYear}`;
 
-            const nameSpan = document.createElement("span");
-            nameSpan.className = "datadb-download-name";
-            nameSpan.textContent = file;
-
-            const btn = document.createElement("button");
-            btn.className = "datadb-query-btn";
-            btn.textContent = "Download";
-            btn.setAttribute("aria-label", `Download ${file}`);
-
-            btn.onclick = async () => {
-                // To trigger a download with the correct name, we can use a fetch or direct link
-                // If the proxy gives the file, we can use an <a> tag with download attribute if CORS allows
-                const url = `/smokeday/smoke_id/${file}`;
-                const link = document.createElement("a");
-                link.href = url;
-                link.download = file;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            };
-
-            item.appendChild(nameSpan);
-            item.appendChild(btn);
-            listWrapper.appendChild(item);
+            if (!reportsByType[type][dataYear]) reportsByType[type][dataYear] = [];
+            reportsByType[type][dataYear].push({
+                filename,
+                dataYear,
+                asOfDate,
+                title: cleanTitle
+            });
         });
 
-        listContainer.appendChild(listWrapper);
+        // 2. Render Tables
+        renderTypeTable("pm", reportsByType.pm, tablePM);
+        renderTypeTable("o3", reportsByType.o3, tableO3);
+
     } catch (err) {
         console.error("Error loading annual reports:", err);
-        listContainer.innerHTML = "<p>Error loading reports. Please try again later.</p>";
+        const errHtml = `<tr><td colspan='3' style='text-align:center; color: var(--color-red); padding: 2rem;'>Error: ${err.message}</td></tr>`;
+        if (tablePM) tablePM.innerHTML = errHtml;
+        if (tableO3) tableO3.innerHTML = errHtml;
     }
 }
 
-// Initial load if tab is active, or wait for tab change event
-document.addEventListener("DOMContentLoaded", () => {
-    // Check if we are already on the annual tab (unlikely but possible on direct link)
+/**
+ * Helper to render a specific type table (PM or O3)
+ */
+function renderTypeTable(type, reportsByYear, tableBody) {
+    if (!tableBody) return;
+
+    const sortedYears = Object.keys(reportsByYear).sort((a, b) => b - a);
+
+    if (sortedYears.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan='3' style='text-align:center; padding: 3rem;'>No ${type.toUpperCase()} reports found.</td></tr>`;
+        return;
+    }
+
+    tableBody.innerHTML = "";
+    sortedYears.forEach(year => {
+        const records = reportsByYear[year];
+        records.sort((a, b) => new Date(a.asOfDate) - new Date(b.asOfDate));
+
+        let prelim = null;
+        let final = null;
+
+        if (records.length === 1) {
+            const currentYear = new Date().getFullYear();
+            if (parseInt(year) < currentYear - 1) {
+                final = records[0];
+            } else {
+                prelim = records[0];
+            }
+        } else {
+            prelim = records[0];
+            final = records[records.length - 1];
+        }
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td class="datadb-year-cell">${year}</td>
+            <td>${renderDownloadCell(prelim, "Preliminary", year)}</td>
+            <td>${renderDownloadCell(final, "Finalized", year)}</td>
+        `;
+        tableBody.appendChild(tr);
+    });
+}
+
+function renderDownloadCell(record, type, year) {
+    if (!record) {
+        let msg = "";
+        if (type === "Preliminary") {
+            msg = "No preliminary version";
+        } else {
+            // Finalized follows the logic: Available in Sep of (year + 1)
+            const targetYear = parseInt(year) + 1;
+            msg = `Expected update: Sep ${targetYear}`;
+        }
+        return `<div class="datadb-empty-cell">${msg}</div>`;
+    }
+
+    return `
+        <div class="datadb-report-card">
+            <span class="datadb-report-name">${record.title}</span>
+            <span class="datadb-report-date">(as of ${record.asOfDate})</span>
+            <button class="datadb-download-btn-small" onclick="downloadReport('${record.filename}')">
+                Download
+            </button>
+        </div>
+    `;
+}
+
+function downloadReport(filename) {
+    const path = `/smokeday/smoke_id/${filename}`;
+    // Use direct navigation for downloads.
+    // The gcs-proxy returns a 302 redirect. Using fetch() on a 302 to another origin (GCS)
+    // often triggers CORS errors. window.location.href handles this as a normal browser navigation.
+    window.location.href = path;
+}
+window.downloadReport = downloadReport;
+
+// Global Event Listeners
+window.addEventListener("tabOpenAnnual", () => loadAnnualReports());
+window.addEventListener("authStateChanged", () => {
+    // Only refresh if the annual tab is currently active
     if (document.getElementById("annual")?.classList.contains("active")) {
         loadAnnualReports();
     }
 });
 
-// Listen for tab changes
-window.addEventListener("tabOpenAnnual", () => {
-    loadAnnualReports();
-});
-
-// Listen for auth changes to refresh the list
-window.addEventListener("authStateChanged", () => {
-    if (document.getElementById("annual")?.classList.contains("active")) {
+// Initial load if user lands directly on this tab or auth is already ready
+document.addEventListener("DOMContentLoaded", () => {
+    if (window.firebaseAuthReady && document.getElementById("annual")?.classList.contains("active")) {
         loadAnnualReports();
     }
 });

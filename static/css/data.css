@@ -139,7 +139,88 @@
     color: var(--text-main);
     font-size: 1.6rem;
     line-height: 1.5;
-    max-width: 70rem;
+}
+
+/* Annual Report Table Styles */
+.datadb-annual-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.datadb-annual-table th {
+    background: var(--color-code-bg);
+    color: var(--text-heading);
+    font-weight: bold;
+    padding: 1rem;
+    text-align: center;
+    border-bottom: 0.2rem solid var(--card-shadow);
+}
+
+.datadb-annual-table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 0.1rem solid var(--border-light);
+    text-align: center;
+}
+
+.datadb-year-cell {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: var(--text-heading);
+    background: rgba(163, 102, 255, 0.03);
+}
+
+.datadb-report-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: var(--color-bg);
+    border: 0.1rem solid var(--border-light);
+    border-radius: var(--border-radius-0p8rem);
+    transition: all 0.3s ease;
+}
+
+.datadb-report-card:hover {
+    border-color: var(--card-shadow);
+    transform: translateY(-0.2rem);
+    box-shadow: 0 0.5rem 1.5rem rgba(163, 102, 255, 0.1);
+}
+
+.datadb-report-name {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--text-main);
+}
+
+.datadb-report-date {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+}
+
+.datadb-download-btn-small {
+    background: var(--card-shadow);
+    color: var(--color-bg);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-0p8rem);
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.3s;
+    margin-top: 0.5rem;
+}
+
+.datadb-download-btn-small:hover {
+    opacity: 0.9;
+}
+
+.datadb-empty-cell {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 1.2rem;
 }
 
 .datadb-download-list {
@@ -153,7 +234,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem 2.5rem;
+    padding: 0.5rem 1rem;
     background: var(--color-bg);
     border: 0.1rem solid var(--border-light);
     border-radius: var(--border-radius-0p8rem);
