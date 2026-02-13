@@ -187,7 +187,7 @@ exports.handler = async (event) => {
         statusCode: 200,
         headers: {
           ...corsHeaders,
-          "Cache-Control": "public, max-age=2592000, must-revalidate"
+          "Cache-Control": "public, max-age=86400, must-revalidate"
         },
         body: JSON.stringify(fileNames.filter(n => n.length > 0))
       };
