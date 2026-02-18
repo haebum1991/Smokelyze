@@ -356,12 +356,6 @@ function renderDataTable() {
             p.lon = f.geometry.coordinates[0];
             p.lat = f.geometry.coordinates[1];
         }
-
-        if (currentDatasetId !== "epa-ember" && p.smoke === 0) {
-            p.SMO = null;
-            p.edm_SMO = null;
-        }
-
         return p;
     });
 
