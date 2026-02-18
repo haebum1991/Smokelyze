@@ -18,6 +18,7 @@ if (datePicker && !datePicker.value) {
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
   const todayStr = `${yyyy}-${mm}-${dd}`;
+  
   datePicker.value = todayStr;
   datePicker.dispatchEvent(new Event("change", { bubbles: true }));
 }

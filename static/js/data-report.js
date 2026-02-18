@@ -14,8 +14,7 @@ const REPORT_CONFIG = {
     "gam-v2": {
         years: [2019, 2020, 2021, 2022, 2023, 2024],
         sources: {
-            main: "gam_v2",
-            edm: "gam_v2_edm"
+            main: "gam_v2"
         },
         types: {
             "by_year": [
@@ -230,14 +229,9 @@ async function loadStateData(datasetId, state, config) {
 
     // Sanitize state name for URL: replace spaces with underscores
     const safeState = state.replace(/ /g, "_");
-    const { main, edm } = config.sources;
+    const { main } = config.sources;
     const stateUrl = `/data_by_state/${main}/data_by_state_${safeState}.geojson.gz`;
-    const edmUrl = edm ? `/data_by_state/${edm}/data_by_state_${safeState}.geojson.gz` : null;
-
-    const [geoData, edmData] = await Promise.all([
-        fetchGeoJSON(stateUrl),
-        edmUrl ? fetchGeoJSON(edmUrl) : Promise.resolve(null)
-    ]);
+    const geoData = await fetchGeoJSON(stateUrl);
 
     if (!geoData || !geoData.features) return null;
 
@@ -249,26 +243,6 @@ async function loadStateData(datasetId, state, config) {
         }
         return p;
     });
-
-    if (edmData && edmData.features) {
-        const edmMap = new Map();
-        edmData.features.forEach(f => {
-            const p = f.properties;
-            const key = `${p.date}_${p.AQS_O3}`;
-            edmMap.set(key, p);
-        });
-
-        flatData.forEach(d => {
-            const key = `${d.date}_${d.AQS_O3}`;
-            const edmP = edmMap.get(key);
-            if (edmP) {
-                d.edm_MDA8O3_resids = edmP.MDA8O3_resids;
-                d.edm_Quant_MDA8O3_resids = edmP.Quant_MDA8O3_resids;
-                d.edm_p975 = edmP.p975;
-                d.edm_SMO = edmP.SMO;
-            }
-        });
-    }
 
     stateDataCache[cacheKey] = flatData;
     return flatData;

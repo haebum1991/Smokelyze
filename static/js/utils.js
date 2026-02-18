@@ -93,7 +93,7 @@ export function urlByDateGZfile(ds, isoDate) {
     return `${ds.gzfileBaseUrlDate}/${ds.source}/${yyyy}/${ds.prefix}${yyyy}-${mm}-${dd}.geojson.gz${cb}`;
   } else {
     // /gzfileBaseUrlDate/source/PREFIX_YYYY-MM-DD.geojson.gz
-    return `${ds.gzfileBaseUrlDate}/${ds.source}/${ds.prefix}${yyyy}-${mm}-${dd}.geojson.gz${cb}`;
+    return `${ds.gzfileBaseUrlDate}/${ds.source}/${yyyy}/${ds.prefix}${yyyy}-${mm}-${dd}.geojson.gz${cb}`;
   }
 }
 

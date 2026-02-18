@@ -32,9 +32,6 @@ export const ExcludeLayerGroups = {
   // [loader.js] > [loadSourceData] > [GZIP_DATASETS]
   formatGzip: ["gam_v2", "gam_v1", "pm_cbsa", "epa_ember", "wildfire_news", "wildfire_nifc", "smoke", "fire", "airnow_daily"],
 
-  // [loader.js] > [loadSourceData] > [CALC_SOURCES]
-  calcSources: ["gam_v2", "gam_v1", "epa_ember"],
-
   // [loader.js] > [loadSourceData] > Authentication required (Published data)
   // [loader.js] > [updateAllActiveSources] > Clear on logout
   restrictedSources: ["gam_v2", "gam_v1", "pm_cbsa", "epa_ember"],
