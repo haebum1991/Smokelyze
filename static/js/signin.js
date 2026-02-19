@@ -484,7 +484,7 @@ if (backToLoginBtn && mainView && benefitsView) {
 
 // Idle Timeout
 let idleTimer;
-const IDLE_TIMEOUT = 60 * 60 * 1000;
+const IDLE_TIMEOUT = 24 * 60 * 60 * 1000;
 function resetIdleTimer() {
     if (idleTimer) clearTimeout(idleTimer);
     if (auth.currentUser) {

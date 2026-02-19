@@ -18,100 +18,78 @@
 
   /* Hide Top-Left Logo on Splash */
   .nav-logo {
-    display: none !important;
+    visibility: hidden !important;
   }
 
   /* Reuse Standard Toggle Style */
   .nav-toggle {
-    display: block !important;
+    display: block;
     position: fixed !important;
     top: calc(var(--safe-area-top) + 2rem) !important;
     right: 2rem !important;
-    background: var(--sidebar-widget-bg) !important;
-    border: 0.1rem solid var(--card-shadow) !important;
-    color: var(--text-main) !important;
-    width: 4.5rem !important;
-    height: 4.5rem !important;
-    font-size: 2.2rem !important;
-    border-radius: 1rem !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
   }
 
   .nav-toggle-close {
-    display: block !important;
-    position: absolute !important;
-    top: 2rem !important;
-    right: 2rem !important;
-    background: transparent !important;
-    border: none !important;
-    color: var(--text-main) !important;
-    font-size: 3.5rem !important;
-    line-height: 1 !important;
-    cursor: pointer !important;
-  }
-
-  @media (hover: hover) {
-    .nav-toggle:hover {
-      background: var(--card-shadow) !important;
-      transform: scale(1.1) !important;
-    }
+    display: flex;
   }
 
   /* Reuse Standard Drawer Style */
   .nav-links {
-    display: flex !important;
-    flex-direction: column !important;
-    position: fixed !important;
-    top: var(--safe-area-top) !important;
-    right: 0 !important;
-    width: max-content !important;
-    height: 100vh !important;
-    background: var(--sidebar-widget-bg) !important;
-    border-left: 0.1rem solid var(--card-shadow) !important;
-    padding: 8rem 2rem 2rem !important;
-    margin: 0 !important;
-    transform: translateX(100%) !important;
-    transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1) !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-    gap: 0 !important;
-    list-style: none !important;
+    position: fixed;
+    top: var(--safe-area-top);
+    bottom: 0;
+    right: 0;
+    width: 15%;
+
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem;
+    gap: 1rem;
+    background: var(--mobile-nav-bg);
+    border-left: 0.1rem solid var(--text-main);
+    flex-direction: column;
+    display: flex;
+
+    justify-content: flex-start;
+    align-items: flex-start;
+    touch-action: pan-y;
+  }
+  
+  @media (max-width: 1024px) and (hover: hover) {
+    .nav-links {
+      width: 40%;
+    }
   }
 
   .nav-links.show {
-    transform: translateX(0) !important;
+    z-index: var(--z-mobile-nav-show);
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  
+  .nav-links li#NavAuthItem {
+    align-self: stretch;
+    width: 100%;
   }
 
-  .nav-links li {
-    width: 100% !important;
-    text-align: left !important;
+  .nav-links #ProfileBoxAuthenticated {
+    justify-content: center;
+    width: 100%;
   }
 
-  .nav-links li a {
-    font-size: 2rem !important;
-    font-weight: bold !important;
-    color: var(--text-main) !important;
-    text-decoration: none !important;
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
-    padding-left: 1rem !important;
-    padding-right: 10rem !important;
-    display: block !important;
-    border-radius: 0.8rem !important;
-    transition: all 0.2s ease !important;
-  }
-
-  @media (hover: hover) {
-    .nav-links li a:hover {
-      background: var(--sidebar-widget-bg) !important;
-      color: var(--card-shadow) !important;
-      transform: translateX(0.5rem) !important;
-    }
+  /* 로그인 버튼 (로그인 전) */
+  .nav-links #ProfileBoxUnauthenticated {
+    text-align: left;
+    width: 100%;
   }
 
   .footer-container {
@@ -253,18 +231,19 @@
   }
 
   section.splash-section {
-    padding: 12rem 0;
+    padding: 20rem 0;
     position: relative;
-    transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
-    opacity: 0.1;
-    transform: scale(0.9) translateY(4rem);
     scroll-snap-align: center;
     scroll-snap-stop: always;
+    transition: opacity 1.0s cubic-bezier(0.4, 0, 0.2, 1),
+    all 0.8s cubic-bezier(0.23, 1, 0.32, 1); 
+    opacity: 0;
+    transform: scale(0.9);
   }
 
   section.splash-section.active {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: scale(1);
   }
 
   .splash-section-title {
@@ -332,7 +311,7 @@
 
   .splash-footer {
     padding: 4rem 0 4rem;
-    background: var(--color-bg);
+    background: var(--sidebar-widget-bg);
     border-top: 0.1rem solid var(--card-shadow);
     color: var(--text-main);
     margin-top: 8rem;
@@ -402,7 +381,7 @@
     opacity: 1;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     .splash-footer-grid {
       grid-template-columns: 1fr;
       gap: 4rem;
@@ -531,6 +510,33 @@
     </header>
 
     <div class="splash-container">
+    
+      <!-- 00. Project Leadership -->
+      <section id="SectionLeadership" class="splash-section">
+        <h2 class="splash-section-title">Project Leadership</h2>
+        <div class="splash-grid">
+          <div class="splash-card">
+            <span class="splash-tech-pill" style="margin-bottom: 1rem;">Principal Investigator</span>
+            <h3>Dan Jaffe, Ph.D.</h3>
+            <p>
+              Professor at the University of Washington Bothell's School of STEM and the Department of Atmospheric Sciences at the University of Washington Seattle. 
+              A leading expert in atmospheric chemistry, 
+              his research focuses on the long-range transport of air pollution and the impact of wildfires
+              on urban air quality and public health.
+            </p>
+          </div>
+          <div class="splash-card">
+            <span class="splash-tech-pill" style="margin-bottom: 1rem;">Lead Developer & Researcher</span>
+            <h3>Haebum Lee, Ph.D.</h3>
+            <p>
+              Postdoctoral position at the Jaffe Research Group, the University of Washington. Specializing in environmental data science and
+              spatiotemporal analytics, he is the lead architect of the Smokelyze platform, dedicated to translating
+              complex wildfire data into actionable insights.
+            </p>
+          </div>
+        </div>
+      </section>
+    
       <!-- 01. Mission & Purpose -->
       <section id="SectionMission" class="splash-section">
         <h2 class="splash-section-title">Mission & Purpose</h2>
@@ -704,7 +710,7 @@
           <div class="splash-footer-links">
             <h4>Institutional</h4>
             <ul>
-              <li><a href="https://www.washington.edu" target="_blank">University of Washington</a></li>
+              <li><a href="https://www.washington.edu" target="_blank">UW</a></li>
               <li><a href="/about/about_us/">About</a></li>
             </ul>
           </div>
@@ -715,6 +721,10 @@
             <br>All rights reserved.
             <br>
             <br>Affiliated with the University of Washington
+            <br>
+            <br>
+            <br>
+            <img style="width: 50%;" src="/images/UW_logo_wide_white.png" alt="University of Washington">
           </p>
         </div>
       </div>
@@ -798,7 +808,7 @@
         }
       });
     }, {
-      threshold: 0.4, // Highlight when 40% of the section is visible
+      threshold: 0.2, // Highlight when 40% of the section is visible
       rootMargin: "-10% 0% -10% 0%"
     });
 
