@@ -79,7 +79,7 @@
     opacity: 1 !important;
     visibility: visible !important;
     pointer-events: auto !important;
-    gap: 1rem !important;
+    gap: 0 !important;
     list-style: none !important;
   }
 
@@ -729,13 +729,19 @@
     const canvas = document.getElementById("SplashBackgroundCanvas");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    let particles = [];
+    let lineThreshold = 180;
 
     function init() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       particles = [];
-      for (let i = 0; i < 70; i++) {
+
+      // Reduce density on mobile
+      const isMobile = window.innerWidth < 1024;
+      const particleCount = isMobile ? 30 : 70;
+      lineThreshold = isMobile ? 120 : 180;
+
+      for (let i = 0; i < particleCount; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
@@ -767,8 +773,8 @@
         for (let j = i + 1; j < particles.length; j++) {
           let p2 = particles[j];
           let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-          if (dist < 180) {
-            ctx.lineWidth = (1 - dist / 180) * 0.8;
+          if (dist < lineThreshold) {
+            ctx.lineWidth = (1 - dist / lineThreshold) * 0.8;
             ctx.beginPath();
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(p2.x, p2.y);
