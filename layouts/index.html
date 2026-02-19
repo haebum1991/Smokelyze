@@ -1,248 +1,813 @@
 
 {{ define "main" }}
 
-<script>document.body.classList.add("page-main");</script>
-
-<div class="content">
-  <section class="hero-main-section">
-    <div class="hero-main-text">
-      <h1 class="hero-main-title reveal-on-scroll">{{ .Site.Title }}</h1>
-      <p class="hero-main-slogan reveal-on-scroll">
-        Advanced Spatiotemporal Analytics for Wildfire Smoke & Air Quality.
-      </p>
-    </div>
-  </section>
-
-  <section class="dashboard-window reveal-on-scroll">
-    <h2>Atmospheric Intelligence</h2>
-    <div class="dashboard-group">
-      
-      <a href="/map" class="dashboard-card-link">
-        <article class="dashboard-group-sub">
-          <h3> Smokelyze map </h3>
-          <p>Check out the latest wildfire and smoke plume status including the latest research</p>
-          <img src="/images/smokelyze_page_sample.webp" alt="smokelyze_page_sample" style="width:100%; height:20rem; border-radius: var(--border-radius-0p8rem);
-          object-fit: cover; border: 0.1rem solid var(--color-bg);">
-        </article>
-      </a>
-
-      <a href="/about/smokelyze" class="dashboard-card-link">
-        <article class="dashboard-group-sub">
-          <h3> PMO3smokeTool (Legacy: R shiny version) </h3>
-          <p>Explore interactive maps based on the latest research on wildfires and air pollutants.</p>
-          <img src="/images/rsGAM_page_sample.webp" alt="rsGAM_page_sample" style="width:100%; height:20rem; border-radius: var(--border-radius-0p8rem); 
-          object-fit: cover; border: 0.1rem solid var(--color-bg);">
-        </article>
-      </a>
-      
-    </div>
-  </section>
-  
-  <br>
-
-  <section class="dashboard-window reveal-on-scroll">
-    <h2>Latest Archive </h2>
-    <div class="archive">
-      {{ $pages := .Pages }}
-      {{ if .IsHome }}
-        {{ $pages = .Site.RegularPages }}
-      {{ end }}
-      {{ $filteredPages := where $pages "Section" "!=" "" }}
-      {{ $latestThree := $filteredPages.ByDate.Reverse | first 3 }}
-      {{ range $latestThree }}
-        <article class="archive-item post-item">
-          {{ if .Resources.Match .Params.featuredImage }}
-            {{ $image := .Resources.GetMatch .Params.featuredImage }}
-            <div class="post-thumbnail">
-              <a href="{{ .RelPermalink }}">
-              <img src="{{ $image.RelPermalink }}" alt="{{ .Title }}">
-              </a>
-            </div>
-          {{ end }}
-    
-          <div class="post-content">
-            <a href="{{ .RelPermalink }}" class="archive-item-link">{{ .Title }}</a>
-    
-            <div class="post-meta">
-              <span class="post-date">{{ .Date.Format "2006-01-02" }}</span>
-              • <span class="post-read-time">{{ .ReadingTime }} min read</span>
-              • <span class="post-comments">0 comments</span>
-              {{ with .Params.categories }}
-                • <span class="post-category">{{ delimit . ", " }}</span>
-              {{ end }}
-            </div>
-          </div>
-        </article>
-      {{ end }}
-    </div>
-    
-    <div class="dashboard-archive-link">
-      <a href="/post" class="dashboard-archive-button">More archive →</a>
-    </div>
-  </section>
-</div>
+<!--
+    STANDALONE DESIGN OVERRIDE
+    Restructured sequence with Technical Stack content (English only)
+-->
 
 <style>
-body.page-main .container {
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-body.page-main .content {
-  max-width: 60%;
-}
-
-.hero-main-section {
-  width: 100vw;
-  height: 50vh;
-  position: relative;
-  left: 50%;
-  margin-left: -50vw;
-  padding: 8rem 2rem;
-  box-sizing: border-box;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  margin-bottom: 4rem;
-
-  background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url("/images/main_bg_1.webp");
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: 120% auto;
-  background-attachment: fixed;
-  transition: background-position 0.3s linear;
-}
-
-.hero-main-title {
-  font-size: 4.8rem;
-  margin-bottom: 0.5rem;
-  color: var(--text-heading);
-  text-shadow: 0 0.2rem 0.5rem var(--color-bg);
-}
-
-.hero-main-slogan {
-  font-size: 2.5rem;
-  margin-bottom: 2.5rem;
-  color: var(--text-heading);
-  text-shadow: 0 0.2rem 0.5rem var(--color-bg);
-}
-
-.dashboard-window {
-  margin-bottom: 4rem;
-}
-
-.dashboard-group {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-.dashboard-group-sub {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 1.5rem;
-  height: 100%;
-  color: var(--text-main);
-  background: var(--sidebar-widget-bg);
-  border: 0.1rem solid var(--card-shadow);
-  border-radius: var(--border-radius-0p8rem);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.dashboard-card-link {
-  text-decoration: none;
-  display: block;
-  color: inherit;
-}
-
-.dashboard-card-link:hover .dashboard-group-sub {
-  transform: translateY(-0.5rem);
-  box-shadow: 0 1rem 2rem var(--text-main);
-}
-
-.dashboard-group-sub h3,
-.dashboard-group-sub p,
-.dashboard-group-sub img,
-.dashboard-group-sub-post-title,
-.dashboard-group-sub-post-meta,
-.dashboard-group-sub-post-summary {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.dashboard-group-sub-post-title {
-  color: var(--text-main);
-  font-size: 1.8rem;
-  font-weight: bold;
-  transition: color 0.3s ease; 
-}
-
-.dashboard-group-sub-post-meta {
-  color: var(--text-main);
-  font-size: 1.4rem;
-}
-
-.dashboard-group-sub-post-summary {
-  color: var(--text-main);
-  font-size: 1.4rem;
-}
-
-.dashboard-archive-link {
-  text-align: left;
-  margin-top: 1rem;
-}
-
-.dashboard-archive-button {
-  text-decoration: none;
-  max-width: max-content;
-  display: inline-block;
-  padding: 1rem 2.5rem;
-  font-weight: bold;
-  transition: background-color 0.3s;
-  color: var(--color-bg);
-  background-color: var(--card-shadow);
-  border-radius: var(--border-radius-0p8rem);
-}
-
-@media (hover: hover) {
-  .dashboard-archive-button:hover {
-    background-color: var(--accent-link);
+  /* 1. Reset Global Header for Splash */
+  .header {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    transition: background 0.3s ease, backdrop-filter 0.3s ease !important;
   }
-}
 
-@media (max-width: 1366px) {
-  .hero-main-section {
-    background-size: cover; 
-    background-attachment: scroll !important;
+  /* Hide Top-Left Logo on Splash */
+  .nav-logo {
+    display: none !important;
   }
-  
-  body.page-main .content {
-    max-width: 90%;
+
+  /* Reuse Standard Toggle Style */
+  .nav-toggle {
+    display: block !important;
+    position: fixed !important;
+    top: 2rem !important;
+    right: 2rem !important;
+    background: var(--sidebar-widget-bg) !important;
+    border: 0.1rem solid var(--card-shadow) !important;
+    color: var(--text-main) !important;
+    width: 4.5rem !important;
+    height: 4.5rem !important;
+    font-size: 2.2rem !important;
+    border-radius: 1rem !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
-  
-  .dashboard-group {
-    row-gap: 5rem;
+
+  @media (hover: hover) {
+    .nav-toggle:hover {
+      background: var(--card-shadow) !important;
+      transform: scale(1.1) !important;
+    }
   }
-  
-}
+
+  /* Reuse Standard Drawer Style */
+  .nav-links {
+    display: flex !important;
+    flex-direction: column !important;
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    width: max-content !important;
+    height: 100vh !important;
+    background: var(--sidebar-widget-bg) !important;
+    border-left: 0.1rem solid var(--card-shadow) !important;
+    padding: 8rem 2rem 2rem !important;
+    margin: 0 !important;
+    transform: translateX(100%) !important;
+    transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    gap: 1rem !important;
+    list-style: none !important;
+  }
+
+  .nav-links.show {
+    transform: translateX(0) !important;
+  }
+
+  .nav-links li {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  .nav-links li a {
+    font-size: 2rem !important;
+    font-weight: bold !important;
+    color: var(--text-main) !important;
+    text-decoration: none !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+    padding-left: 1rem !important;
+    padding-right: 10rem !important;
+    display: block !important;
+    border-radius: 0.8rem !important;
+    transition: all 0.2s ease !important;
+  }
+
+  @media (hover: hover) {
+    .nav-links li a:hover {
+      background: var(--sidebar-widget-bg) !important;
+      color: var(--card-shadow) !important;
+      transform: translateX(0.5rem) !important;
+    }
+  }
+
+  /* Close Button inside Drawer */
+  .nav-toggle-close {
+    display: block !important;
+    position: absolute !important;
+    top: 2rem !important;
+    right: 2rem !important;
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-main) !important;
+    font-size: 3.5rem !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+  }
+
+  .footer-container {
+    display: block !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  .footer-links {
+    display: none !important;
+  }
+
+  /* 2. Reset Layout Constraints */
+  body {
+    padding-top: 0 !important;
+    margin: 0 !important;
+    background-color: var(--color-bg) !important;
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 100vw !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .standalone-wrapper {
+    font-family: "Outfit", sans-serif;
+    background-color: var(--color-bg);
+    color: var(--text-main);
+    line-height: 1.7;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(14, 165, 233, 0.03) 0%, transparent 50%);
+    min-height: 100vh;
+    scroll-snap-type: y mandatory;
+    overflow-y: auto;
+  }
+
+  #SplashBackgroundCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .content-layer {
+    position: relative;
+  }
+
+  .splash-hero {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    padding: 2rem;
+    perspective: 100rem;
+    opacity: 1 !important;
+    /* Always visible immediately */
+    transform: none !important;
+  }
+
+  .splash-hero-link {
+    text-decoration: none !important;
+    display: inline-block;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    .splash-hero-link:hover {
+      transform: scale(1.15);
+      text-decoration: none !important;
+    }
+  }
+
+  .splash-hero h1 {
+    font-size: clamp(3rem, 12vw, 6rem);
+    font-weight: bold;
+    background: var(--card-shadow);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+    letter-spacing: -0.05em;
+    filter: drop-shadow(0 0 3rem rgba(138, 191, 255, 0.3));
+    animation: SplashFloating 6s ease-in-out infinite;
+  }
+
+  @keyframes SplashFloating {
+
+    0%,
+    100% {
+      transform: translateY(0) rotateX(0);
+    }
+
+    50% {
+      transform: translateY(-2rem) rotateX(5deg);
+    }
+  }
+
+  .splash-hero p {
+    font-size: 1.8rem;
+    color: var(--text-main);
+    max-width: max-content;
+    font-weight: bold;
+    backdrop-filter: blur(0.5rem);
+    padding: 1.2rem 2.5rem;
+    border-radius: calc(var(--border-radius-0p8rem) * 3);
+    background: var(--sidebar-widget-bg);
+  }
+
+  .splash-container {
+    max-width: 120rem;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+  }
+
+  section.splash-section {
+    padding: 12rem 0;
+    position: relative;
+    transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    opacity: 0.1;
+    transform: scale(0.9) translateY(4rem);
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
+
+  section.splash-section.active {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+  .splash-section-title {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 4rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    color: var(--text-heading);
+  }
+
+  .splash-section-title::before {
+    content: "";
+    width: 6rem;
+    height: 0.4rem;
+    background: linear-gradient(90deg, var(--card-shadow), var(--card-shadow));
+    border-radius: 0.2rem;
+    box-shadow: 0 0 2rem var(--card-shadow);
+  }
+
+  .splash-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(32rem, 1fr));
+    gap: 3rem;
+  }
+
+  .splash-card {
+    background: var(--sidebar-widget-bg);
+    padding: 2rem 3rem;
+    border-radius: calc(var(--border-radius-0p8rem) * 3);
+    backdrop-filter: blur(1.2rem);
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    transform-style: preserve-3d;
+    position: relative;
+    text-decoration: none;
+    display: block;
+    color: var(--text-main);
+  }
+
+  @media (hover: hover) {
+    .splash-card:hover {
+      box-shadow: 0 0 2rem var(--text-soft);
+    }
+  }
+
+  .splash-card h3 {
+    color: var(--card-shadow);
+    font-weight: bold;
+  }
+
+  .splash-tech-pill {
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    background: var(--color-bg);
+    color: var(--card-shadow);
+    border: 0.1rem solid var(--card-shadow);
+    border-radius: 99.9rem;
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-right: 0.6rem;
+    margin-bottom: 0.6rem;
+    transition: all 0.3s ease;
+  }
+
+  .splash-footer {
+    padding: 4rem 0 4rem;
+    background: var(--color-bg);
+    border-top: 0.1rem solid var(--card-shadow);
+    color: var(--text-main);
+    margin-top: 8rem;
+  }
+
+  .splash-footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 6rem;
+    margin-bottom: 6rem;
+  }
+
+  .splash-footer-brand h3 {
+    font-size: 2.4rem;
+    background: var(--card-shadow);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-top: 0;
+    margin-bottom: 2rem;
+    line-height: 1.2;
+  }
+
+  .splash-footer-brand p {
+    color: var(--text-main);
+    opacity: 1;
+    max-width: max-content;
+    font-size: 1.6rem;
+  }
+
+  .splash-footer-links h4 {
+    font-size: 1.8rem;
+    margin-top: 0;
+    margin-bottom: 2rem;
+    color: var(--card-shadow);
+    line-height: 1.2;
+  }
+
+  .splash-footer-links ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .splash-footer-links ul li a {
+    color: var(--text-main);
+    text-decoration: none;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    font-size: 1.4rem;
+  }
+
+  @media (hover: hover) {
+    .splash-footer-links ul li a:hover {
+      opacity: 1;
+      color: var(--text-strong);
+      padding-left: 0.5rem;
+    }
+  }
+
+  .splash-footer-bottom {
+    text-align: right;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    border-top: 0.1rem solid var(--text-soft);
+    font-size: 1.4rem;
+    opacity: 1;
+  }
+
+  @media (max-width: 768px) {
+    .splash-footer-grid {
+      grid-template-columns: 1fr;
+      gap: 4rem;
+    }
+  }
+
+  .splash-preview-img {
+    width: 100%;
+    height: 20rem;
+    object-fit: cover;
+    border-radius: 1rem;
+    margin-top: 1.5rem;
+    border: 0.1rem solid var(--card-shadow);
+  }
+
+  .splash-workflow {
+    margin-top: 1.5rem;
+  }
+
+  .splash-workflow-item {
+    padding-left: 2rem;
+    position: relative;
+    margin-bottom: 1rem;
+  }
+
+  .splash-workflow-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: var(--card-shadow);
+  }
+
+  @keyframes SplashBounce {
+
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+      transform: translateY(0);
+    }
+
+    40% {
+      transform: translateY(-1rem);
+    }
+
+    60% {
+      transform: translateY(-0.5rem);
+    }
+  }
+
+  /* CTA Section & Button */
+  .splash-cta-container {
+    text-align: center;
+    padding: 4rem 0;
+  }
+
+  .splash-cta-btn {
+    display: inline-block;
+    padding: 2.2rem 6rem;
+    font-size: 2.4rem;
+    font-weight: bold;
+    color: var(--color-bg) !important;
+    text-decoration: none !important;
+    background: var(--card-shadow);
+    border-radius: 5rem;
+    box-shadow: 0 1rem 4rem rgba(99, 102, 241, 0.4);
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .splash-cta-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s;
+  }
+
+  @media (hover: hover) {
+    .splash-cta-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 5rem rgba(99, 102, 241, 0.7);
+      filter: brightness(1.1);
+    }
+
+    .splash-cta-btn:hover::before {
+      left: 100%;
+    }
+  }
+
+  .splash-cta h2 {
+    font-size: 4.5rem;
+    margin-bottom: 2.5rem;
+    color: var(--text-strong);
+    font-weight: bold;
+  }
 </style>
 
+<div class="standalone-wrapper">
+  <canvas id="SplashBackgroundCanvas"></canvas>
+
+  <div class="content-layer">
+    <!-- Hero -->
+    <header class="splash-hero">
+      <a href="/map" class="splash-hero-link">
+        <h1>Smokelyze</h1>
+      </a>
+      <p>
+        Advanced Spatiotemporal Analytics for Wildfire Smoke & Air Quality
+      </p>
+      <div style="margin-top: 3rem; color: var(--text-main); animation: SplashBounce 2s infinite;">
+        <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
+        </svg>
+      </div>
+    </header>
+
+    <div class="splash-container">
+      <!-- 01. Mission & Purpose -->
+      <section id="SectionMission" class="splash-section">
+        <h2 class="splash-section-title">Mission & Purpose</h2>
+        <div class="splash-card">
+          <p>
+            <span style="color: var(--card-shadow); font-weight: bold;">Smokelyze</span> (formerly PMO3smokeTool) was
+            created to precisely analyze the impact of wildfire smoke on air quality across the United States,
+            specifically focusing on health-hazardous concentrations of Ozone (O3) and Fine Particulate Matter (PM2.5)
+            using data-driven insights.
+          </p>
+          <p>To disentangle the complex interplay between meteorological factors and wildfire impact, we implemented the
+            <strong style="color: var(--card-shadow)">Generalized Additive Model (GAM)</strong> algorithm.
+          </p>
+          <p>
+            We hope this tool will be useful for state agencies and others in understanding the factors that control O3
+            production.
+          </p>
+        </div>
+      </section>
+
+      <!-- 02. Map Dashboards -->
+      <section id="SectionDashboards" class="splash-section">
+        <h2 class="splash-section-title">Map Dashboards</h2>
+        <div class="splash-grid">
+          <a href="/map" class="splash-card">
+            <h3>Smokelyze Map</h3>
+            <p>
+              Check out the latest wildfire and smoke plume status including the latest research
+            </p>
+            <img src="/images/smokelyze_page_sample.webp" alt="Map" class="splash-preview-img">
+          </a>
+          <a href="/about/smokelyze" class="splash-card">
+            <h3>PMO3smokeTool (Legacy: R shiny version) </h3>
+            <p>Explore interactive maps based on the latest research on wildfires and air pollutants</p>
+            <img src="/images/rsGAM_page_sample.webp" alt="Pipeline" class="splash-preview-img">
+          </a>
+        </div>
+      </section>
+
+      <!-- 03. Core Features -->
+      <section id="SectionFeatures" class="splash-section">
+        <h2 class="splash-section-title">Core Features</h2>
+        <div class="splash-grid">
+          <div class="splash-card">
+            <h3>Visual & Mapping Tools</h3>
+            <p>Visualize published research models (GAM) via interactive mapping, revealing the invisible impacts of
+              smoke on air quality.</p>
+          </div>
+          <div class="splash-card">
+            <h3>Integrated Data Pipeline</h3>
+            <p>Consolidate multifaceted data streams—from AirNow ground stations to satellite detection—into a single,
+              unified analytical framework.</p>
+          </div>
+          <div class="splash-card">
+            <h3>Statistical Tools</h3>
+            <p>Uncover patterns using interactive data drawers, featuring synchronized tables, ParCoords, and scatter
+              plots for multi-dimensional analysis.</p>
+          </div>
+          <div class="splash-card">
+            <h3>Collaborative Tools</h3>
+            <p>Utilize MapPost to pinpoint observations and share insights or feedback via geospatial markers and
+              real-time commentary directly on the map.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 04. Map Page & Quick Start -->
+      <section id="SectionGuide" class="splash-section">
+        <h2 class="splash-section-title">Effortless Exploration</h2>
+        <div class="splash-card">
+          <h3>Get Started in Seconds</h3>
+          <p>
+            Smokelyze is built for speed and simplicity. No complex setup required—just open the map and start
+            exploring.
+          </p>
+          <br>
+          <div class="splash-workflow">
+            <div class="splash-workflow-item">
+              <strong style="color: var(--card-shadow)">Instant Visualization</strong>: Activate layers with a single
+              click to see smoke impacts on air
+              quality.
+            </div>
+            <div class="splash-workflow-item">
+              <strong style="color: var(--card-shadow)">Frictionless Timeline</strong>: Rapidly navigate years of
+              historical data through an intuitive
+              temporal toolbar.
+            </div>
+            <div class="splash-workflow-item">
+              <strong style="color: var(--card-shadow)">One-Click Insights</strong>: Access deep statistical tables and
+              charts instantly from the
+              integrated data drawer.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 05. Data Pipeline -->
+      <section id="SectionPipeline" class="splash-section">
+        <h2 class="splash-section-title">Data Pipeline</h2>
+        <div class="splash-card">
+          <div style="margin-bottom: 2rem;">
+            <span class="splash-tech-pill">R code</span>
+            <span class="splash-tech-pill">Modular Docker</span>
+            <span class="splash-tech-pill">Google Cloud Run</span>
+            <span class="splash-tech-pill">Google Cloud Storage</span>
+          </div>
+          <p>
+            Smokelyze operates on a <strong>highly modularized, cloud-native architecture</strong>. Each stage of the
+            data lifecycle—from ingestion to advanced statistical modeling—is encapsulated in separate Docker
+            containers, ensuring maximum scalability and reliability.
+          </p>
+          <br>
+          <div class="splash-workflow">
+            <div class="splash-workflow-item">
+              <strong style="color: var(--card-shadow)">Multi-Source Acquisition</strong>: Automated tasks fetch
+              real-time data from AirNow stations, satellite-detected HMS smoke polygons, and integrated wildfire
+              incident news.
+            </div>
+            <div class="splash-workflow-item">
+              <strong style="color: var(--card-shadow)">Modeling & Prediction</strong>: Periodic R scripts automatically
+              collect MERRA-2, TROPOMI, and HYSPLIT data via Docker to run trained GAM models for future smoke impact
+              analysis.
+            </div>
+            <div class="splash-workflow-item">
+              <strong style="color: var(--card-shadow)">Automated Delivery</strong>: Processed datasets are compressed
+              and deployed to Google Cloud Storage (GCS) buckets, ready for instant retrieval by the Map rendering
+              engine.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 06. Final CTA -->
+      <section id="SectionCTA" class="splash-section splash-cta">
+        <div class="splash-cta-container">
+          <h2>Ready to see the impact?</h2>
+          <p style="margin-bottom: 4rem; opacity: 0.8; font-size: 1.8rem;">
+            Step into our interactive dashboard and explore wildfire smoke analytics.
+          </p>
+          <a href="/map" class="splash-cta-btn">
+            Explore Interactive Map
+          </a>
+        </div>
+      </section>
+    </div>
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <footer class="splash-footer">
+      <div class="splash-container">
+        <div class="splash-footer-grid">
+          <div class="splash-footer-brand">
+            <h3>Smokelyze</h3>
+            <p>
+              Advanced spatiotemporal analytics platform for wildfire smoke and air quality. Developed for precision
+              mapping and public health research.
+            </p>
+          </div>
+          <div class="splash-footer-links">
+            <h4>Short-cuts</h4>
+            <ul>
+              <li><a href="/map">Interactive Map</a></li>
+              <li><a href="/resrc/documents/">Research Method</a></li>
+              <li><a href="/resrc/data">Data Archive</a></li>
+              <li><a href="/post">Posts</a></li>
+            </ul>
+          </div>
+          <div class="splash-footer-links">
+            <h4>Institutional</h4>
+            <ul>
+              <li><a href="https://www.washington.edu" target="_blank">University of Washington</a></li>
+              <li><a href="/about/about_us/">About</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="splash-footer-bottom">
+          <p>&copy; 2026 Smokelyze Project
+            <br>Developed by Dr. Haebum Lee
+            <br>All rights reserved.
+            <br>
+            <br>Affiliated with the University of Washington
+          </p>
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>
+
 <script>
-  window.addEventListener("scroll", function() {
-    const container = document.querySelector(".hero-main-section");
-    if (container) {
-      let scrollY = window.pageYOffset;
-      let moveX = 50 - (scrollY * 0.05); 
-      container.style.backgroundPosition = moveX + "% center";
+  (function () {
+    // --- Particle Background ---
+    const canvas = document.getElementById("SplashBackgroundCanvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let particles = [];
+
+    function init() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      particles = [];
+      for (let i = 0; i < 70; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 0.4,
+          vy: (Math.random() - 0.5) * 0.4,
+          size: Math.random() * 2.5
+        });
+      }
     }
-  });
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const style = getComputedStyle(document.documentElement);
+      ctx.fillStyle = style.getPropertyValue("--text-main").trim();
+      ctx.strokeStyle = style.getPropertyValue("--text-soft").trim();
+
+      for (let i = 0; i < particles.length; i++) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        for (let j = i + 1; j < particles.length; j++) {
+          let p2 = particles[j];
+          let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+          if (dist < 180) {
+            ctx.lineWidth = (1 - dist / 180) * 0.8;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(draw);
+    }
+
+    window.addEventListener("resize", init);
+    init();
+    draw();
+
+    // --- Focus Scroll Reveal ---
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("active");
+        } else {
+          entry.target.classList.remove("active");
+        }
+      });
+    }, {
+      threshold: 0.4, // Highlight when 40% of the section is visible
+      rootMargin: "-10% 0% -10% 0%"
+    });
+
+    document.querySelectorAll(".splash-section").forEach(s => {
+      observer.observe(s);
+    });
+
+    // Close menu when clicking backdrop
+    window.addEventListener("click", (e) => {
+      const nav = document.getElementById("mainNav");
+      const openBtn = document.getElementById("navToggle");
+      if (nav && nav.classList.contains("show") && !nav.contains(e.target) && !openBtn.contains(e.target)) {
+        nav.classList.remove("show");
+        openBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+  })();
 </script>
+
 
 {{ end }}
 
