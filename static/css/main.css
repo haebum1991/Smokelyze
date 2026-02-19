@@ -1218,6 +1218,20 @@ body.page-about .sidebar {
     cursor: pointer;
   }
 
+  .nav-toggle-close {
+    z-index: var(--z-mobile-close);
+    display: flex;
+    align-self: flex-end;
+    font-size: 3rem;
+    font-weight: bold;
+    padding: 1rem 1.5rem;
+    margin: 1rem;
+    background: transparent;
+    color: var(--color-white, #fff);
+    border: none;
+    cursor: pointer;
+  }
+  
   .nav-links {
     position: fixed;
     top: var(--safe-area-top);
@@ -1279,20 +1293,6 @@ body.page-about .sidebar {
   .profile-btn-user {
     width: 5rem;
     height: 5rem;
-  }
-
-  .nav-toggle-close {
-    z-index: var(--z-mobile-close);
-    display: flex;
-    align-self: flex-end;
-    font-size: 3rem;
-    font-weight: bold;
-    padding: 1rem 1.5rem;
-    margin: 1rem;
-    background: transparent;
-    color: var(--color-white, #fff);
-    border: none;
-    cursor: pointer;
   }
 
   .post-item {
