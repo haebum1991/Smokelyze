@@ -43,6 +43,11 @@ title: ""
     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
     <circle cx="12" cy="13" r="4"></circle>
   </symbol>
+  <symbol id="icon-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <path
+      d="M12 3c-5.5 0-10 3.58-10 8c0 1.95.86 3.73 2.3 5.1c-.24 1.1-.9 2.75-2.3 3.9c0 0 3.45.15 6.15-2.15c1.23.4 2.58.65 3.85.65c5.5 0 10-3.58 10-8s-4.5-8-10-8z" />
+  </symbol>
 </svg>
 
 <link rel="preconnect" href="https://unpkg.com">
@@ -165,6 +170,12 @@ title: ""
     </svg>
   </button>
 
+  <button class="accordion-toggle" id="AiChatToggle" title="Open AI Chat">
+    <svg width="24" height="24">
+      <use xlink:href="#icon-chat" />
+    </svg>
+  </button>
+  
   <!-- topright: accordion panel -->
   <div class="accordion-page collapsed" id="AccordionPage">
     <div class="accordion">
@@ -348,6 +359,36 @@ title: ""
   </div>
   <div class="MapPost-drawer-list" id="MapPostDrawerList">
     <!-- Content injected via JS -->
+  </div>
+</div>
+
+<div class="accordion-page collapsed" id="AiChatDrawer">
+  <div class="accordion" style="display: flex; flex-direction: column;">
+    <div class="accordion-header" style="display: flex; align-items: center; gap: 0.8rem;">
+      <span class="accordion-title" style="display: flex; align-items: center; gap: 0.5rem;">
+        Ai Chat (Beta)
+      </span>
+      <button id="AiChatClearBtn" class="accordion-close-btn" title="Clear Chat"
+        style="background: var(--card-shadow); color: var(--color-bg); font-size: 1.6rem;">
+        Clear
+      </button>
+      <button id="AiChatDrawerClose" class="accordion-close-btn" title="Close">
+        <svg width="20" height="20">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
+    </div>
+    <div id="AiChatList"
+      style="flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+      <!-- Chat messages injected via JS -->
+    </div>
+    <div
+      style="display: flex; gap: 0.5rem; padding: 1rem; border-top: 0.1rem solid var(--card-shadow); background: var(--color-bg); border-radius: 0 0 0 var(--border-radius-0p8rem);">
+      <textarea id="AiChatInput" placeholder="Ask me anything!" rows="2"
+        style="flex: 1; resize: none; border-radius: var(--border-radius-0p8rem); border: 0.1rem solid var(--text-soft); padding: 0.5rem; font-family: inherit; font-size: 1.4rem; background: var(--color-bg); color: var(--text-main);"></textarea>
+      <button id="AiChatSubmitBtn"
+        style="background: var(--map-accordion-gradient-start); color: var(--text-strong); border: none; border-radius: var(--border-radius-0p8rem); padding: 0 1rem; cursor: pointer; font-weight: bold; transition: background 0.3s; box-shadow: 0.1rem 0.1rem 0.2rem var(--text-soft);">Send</button>
+    </div>
   </div>
 </div>
 
@@ -544,6 +585,7 @@ title: ""
 
 <script type="module" src="/js/ui-init.js"></script>
 <script type="module" src="/js/fb-MapPost.js"></script>
+<script type="module" src="/js/ai-chat.js"></script>
 <script type="module" src="/js/stats-daily.js"></script>
 <script type="module" src="/js/stats-yearly.js"></script>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" defer></script>

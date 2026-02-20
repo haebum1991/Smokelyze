@@ -863,7 +863,7 @@ body.page-about .sidebar {
 
 .auth-benefits-list li .icon {
   font-size: 2.4rem;
-  background: var(--map-toolbar-bg);
+  background: var(--color-white);
   width: 4.5rem;
   height: 4.5rem;
   display: flex;

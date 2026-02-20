@@ -252,7 +252,10 @@ if (profileSettingsBtn) {
         if (!user) return;
 
         if (settingsModal) settingsModal.style.display = "flex";
-
+        
+        const aiMsg = document.getElementById("AiMessage");
+        if (aiMsg) aiMsg.innerText = "";
+        
         try {
             const snap = await getDoc(doc(db, "smokelyze_users", user.uid));
             if (snap.exists()) {

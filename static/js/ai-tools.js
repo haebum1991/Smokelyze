@@ -1,0 +1,300 @@
+
+import { map } from "./layers-state.js";
+import { highlightLocation } from "./utils.js";
+
+export const smokelyzeAiTools = [
+    {
+        function_declarations: [
+            {
+                name: "change_date",
+                description: "Changes the date of the map display when the user wants to see data from a specific past or future date.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        date: {
+                            type: "STRING",
+                            description: "The date in YYYY-MM-DD format (e.g., 2023-08-10)"
+                        }
+                    },
+                    required: ["date"]
+                }
+            },
+            {
+                name: "extract_map_data",
+                description: "Extracts raw property data (GeoJSON) from the current map source. Use this to find highest/lowest values, station information, or to perform correlation analysis between different fields.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        sourceId: {
+                            type: "STRING",
+                            description: "ID of the data source (e.g., gam_v2, gam_v1, pm_cbsa, epa_ember, airnow_daily)"
+                        },
+                        target_field: {
+                            type: "STRING",
+                            description: "The field name to sort or extract (e.g., MDA8O3, PM2.5, TMAX, SMO)"
+                        },
+                        sort_desc: {
+                            type: "BOOLEAN",
+                            description: "Set to true for highest value first, false for lowest value first."
+                        },
+                        limit: {
+                            type: "INTEGER",
+                            description: "Maximum number of records to return (default: 10, set to 1 for the single highest/lowest point)"
+                        }
+                    },
+                    required: ["sourceId", "target_field"]
+                }
+            },
+            {
+                name: "move_to_location",
+                description: "Smoothly pans the map to a specific latitude (lat) and longitude (lon) and displays a highlight marker. Use this to focus on specific stations or locations found during data extraction.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        lat: {
+                            type: "NUMBER",
+                            description: "Target Latitude"
+                        },
+                        lon: {
+                            type: "NUMBER",
+                            description: "Target Longitude"
+                        },
+                        sourceId: {
+                            type: "STRING",
+                            description: "Related data source ID (optional, e.g., gam_v2)"
+                        },
+                        properties: {
+                            type: "OBJECT",
+                            description: "The complete property object of the location (obtained from extract_map_data result)"
+                        }
+                    },
+                    required: ["lat", "lon"]
+                }
+            },
+            {
+                name: "change_dataset",
+                description: "Changes the active Published dataset model across the entire map. Use this when the user wants to see results from a different model (e.g., gam-v2, gam-v1, epa-ember).",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        dataset_value: {
+                            type: "STRING",
+                            description: "The dataset value to switch to (e.g., gam-v2, gam-v1, epa-ember, pm-cbsa)"
+                        }
+                    },
+                    required: ["dataset_value"]
+                }
+            },
+            {
+                name: "toggle_layer",
+                description: "Turns a specific data layer (checkbox) ON or OFF on the map. Use this when the user asks to see specific indicators like 'obs mda8' or 'pm2.5'.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        layer_id: {
+                            type: "STRING",
+                            description: "The HTML ID of the layer checkbox (e.g., layer-mda8-obs, layer-airnow-daily-pm25, layer-smo, layer-smoke)"
+                        },
+                        turn_on: {
+                            type: "BOOLEAN",
+                            description: "True to check/turn ON, false to uncheck/turn OFF"
+                        }
+                    },
+                    required: ["layer_id", "turn_on"]
+                }
+            }
+        ]
+    }
+];
+
+/**
+ * 지도의 데이터 로딩이나 렌더링이 완료될 때까지 대기하는 헬퍼 함수
+ */
+function waitForMapIdle(timeout = 3500) {
+    return new Promise((resolve) => {
+        if (!map) return resolve();
+        // 이미 로드된 상태라도 데이터 fetch는 진행 중일 수 있으므로 idle 이벤트 활용
+        const onIdle = () => {
+            map.off("idle", onIdle);
+            resolve();
+        };
+        map.on("idle", onIdle);
+        // 혹시 모르니 타임아웃 설정
+        setTimeout(() => {
+            map.off("idle", onIdle);
+            resolve();
+        }, timeout);
+    });
+}
+
+export async function handleAiToolCall(functionName, args) {
+    let resultMessage = "";
+
+    try {
+        switch (functionName) {
+            case "change_date":
+                const targetDate = args?.date;
+                const datePicker = document.getElementById("datePicker");
+                if (datePicker && targetDate) {
+                    datePicker.value = targetDate;
+                    datePicker.dispatchEvent(new Event("change", { bubbles: true }));
+
+                    // 데이터가 로딩될 때까지 기다림
+                    await waitForMapIdle();
+
+                    resultMessage = `[System] Changed date to ${targetDate} and waited for data loading. You can now analyze new data using "extract_map_data".`;
+                } else {
+                    resultMessage = "[System Error] Could not find the date picker element on the screen.";
+                }
+                break;
+
+            case "extract_map_data":
+                const sourceId = args?.sourceId || "gam_v2";
+                if (!map) {
+                    return "[System Error] Map 인스턴스를 불러올 수 없습니다.";
+                }
+
+                const source = map.getSource(sourceId);
+                if (!source || !source._data || !source._data.features || source._data.features.length === 0) {
+                    resultMessage = `[System Event] The requested source (${sourceId}) is not loaded on the map. The user must first select the corresponding layer or dataset from the control panel to download it. Please ask the user to activate "${sourceId}" and try again.`;
+                    break;
+                }
+
+                const features = source._data.features;
+                const field = args.target_field;
+                const isDesc = args.sort_desc !== false; // default true
+                const limit = args.limit || 10;
+
+                const validFeatures = features.filter(f => {
+                    // 필드명 대소문자 구분 없이 찾기 (AI가 smo라고 해도 SMO를 찾을 수 있게)
+                    let actualField = field;
+                    if (!(field in f.properties)) {
+                        const keys = Object.keys(f.properties);
+                        const match = keys.find(k => k.toLowerCase() === field.toLowerCase());
+                        if (match) actualField = match;
+                    }
+
+                    const val = f.properties[actualField];
+                    return typeof val === "number" && !isNaN(val) && val !== null;
+                });
+
+                // 정렬 기준 필드도 실제 찾은 필드로 보정하기 위해 필터링된 결과에서 필드 재추출
+                let finalField = field;
+                if (validFeatures.length > 0) {
+                    const firstFeat = validFeatures[0].properties;
+                    if (!(field in firstFeat)) {
+                        const match = Object.keys(firstFeat).find(k => k.toLowerCase() === field.toLowerCase());
+                        if (match) finalField = match;
+                    }
+                }
+
+                if (validFeatures.length === 0) {
+                    resultMessage = `[System Event] No valid data found for field "${field}" in source "${sourceId}". (Available fields: ${features.length > 0 ? Object.keys(features[0].properties).slice(0, 10).join(", ") : "None"})`;
+                    break;
+                }
+
+                validFeatures.sort((a, b) => {
+                    const diff = a.properties[finalField] - b.properties[finalField];
+                    return isDesc ? -diff : diff;
+                });
+
+                const topFeatures = validFeatures.slice(0, limit);
+                let resultText = `[Data Extraction Success: ${sourceId} / Top ${limit} results out of ${validFeatures.length}]
+`;
+                topFeatures.forEach((f, idx) => {
+                    const lat = f.geometry?.coordinates?.[1] || "unknown";
+                    const lon = f.geometry?.coordinates?.[0] || "unknown";
+                    const locationLabel = f.properties["Site_ID"] || f.properties["name"] || `(${lat.toFixed(2)}, ${lon.toFixed(2)})`;
+
+                    // 모든 properties를 보여주되, 너무 길면 자르기
+                    const allProps = JSON.stringify(f.properties);
+
+                    resultText += `${idx + 1}. Site/Location: ${locationLabel} | Coords: [lat: ${lat}, lon: ${lon}] | Properties: ${allProps}
+`;
+                });
+
+                resultMessage = `Extracted ${sourceId} data follows. Analyze this data like a professional and provide insights to the user. You can also use "move_to_location" to fly to these sites:
+` + resultText;
+                break;
+
+            case "move_to_location":
+                const targetLat = args?.lat;
+                const targetLon = args?.lon;
+                const srcId = args?.sourceId || "gam_v2";
+                let props = args?.properties || {};
+
+                if (targetLat && targetLon) {
+                    // [경보] 만약 AI가 properties를 안 보내줬다면, 지도의 해당 위치에서 가장 가까운 Feature를 한 번 찾아봅니다.
+                    if (Object.keys(props).length === 0 && map) {
+                        const point = map.project([targetLon, targetLat]);
+                        const features = map.queryRenderedFeatures(point, {
+                            layers: [srcId, srcId + "-layer", srcId + "-circle"] // 레이어 이름 추측
+                        });
+                        if (features && features.length > 0) {
+                            props = features[0].properties;
+                        }
+                    }
+
+                    highlightLocation([targetLon, targetLat], props, srcId);
+                    resultMessage = `[System] Moved map to [lat: ${targetLat}, lon: ${targetLon}] and highlighted. (Tooltip: ${Object.keys(props).length > 0 ? "Success" : "Properties not found"}). Inform the user about the movement.`;
+                } else {
+                    resultMessage = `[System Error] Missing lat or lon coordinates.`;
+                }
+                break;
+
+            case "change_dataset":
+                const targetDataset = args?.dataset_value;
+                const dataSelect = document.getElementById("MapDataSelect");
+                if (dataSelect && targetDataset) {
+                    const optionExists = Array.from(dataSelect.options).some(opt => opt.value === targetDataset);
+                    if (optionExists) {
+                        dataSelect.value = targetDataset;
+                        dataSelect.dispatchEvent(new Event("change", { bubbles: true }));
+
+                        // Published 체크박스들(예: Obs MDA8 등)을 자동으로 체크해줌으로써 바로 화면에 보이게 유도
+                        const mda8Cb = document.getElementById("layer-mda8-obs");
+                        if (mda8Cb && !mda8Cb.checked) {
+                            mda8Cb.checked = true;
+                            mda8Cb.dispatchEvent(new Event("change", { bubbles: true }));
+                        }
+
+                        // 데이터가 로딩될 때까지 기다림
+                        await waitForMapIdle();
+
+                        resultMessage = `[System] Changed dataset to "${targetDataset}" and waited for loading. New data is now available for analysis.`;
+                    } else {
+                        resultMessage = `[System Error] Unsupported dataset value: ${targetDataset}`;
+                    }
+                } else {
+                    resultMessage = "[System Error] Could not find the dataset selector on the screen.";
+                }
+                break;
+
+            case "toggle_layer":
+                const layerId = args?.layer_id;
+                const turnOn = args?.turn_on;
+                const checkbox = document.getElementById(layerId);
+
+                if (checkbox) {
+                    if (checkbox.checked !== turnOn) {
+                        checkbox.checked = turnOn;
+                        checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+                        resultMessage = `[System] Layer "${layerId}" turned ${turnOn ? "ON" : "OFF"}. Data is loading. Inform the user.`;
+                    } else {
+                        resultMessage = `[System] Layer "${layerId}" is already ${turnOn ? "ON" : "OFF"}.`;
+                    }
+                } else {
+                    resultMessage = `[System Error] Could not find layer checkbox with ID "${layerId}". Verify the ID.`;
+                }
+                break;
+
+            default:
+                resultMessage = `[System Error] The requested function (${functionName}) is not yet supported.`;
+        }
+    } catch (e) {
+        resultMessage = `[System Error] Error during function execution: ` + e.message;
+    }
+
+    return resultMessage;
+}
+
