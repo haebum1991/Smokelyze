@@ -8,7 +8,7 @@
 import { smokelyzeAiTools, handleAiToolCall } from "./ai-tools.js";
 
 // 사용할 AI 모델 이름 (향후 gemini-3.0-flash 등으로 손쉽게 교체 가능)
-const GEMINI_MODEL = "gemini-2.0-flash-lite-preview-02-05";
+const GEMINI_MODEL = "gemini-2.5-flash-lite";
 
 // 브라우저가 열려있는 동안 유지되는 대화 기록 (컨텍스트 유지를 위함)
 let sessionHistory = [];
@@ -64,10 +64,10 @@ export async function fetchGeminiChat(systemInstruction, userMessage) {
 
             const data = await response.json();
             if (!data.candidates || data.candidates.length === 0) {
-                // 혹시 프롬프트 차단(블락) 응답인지 확인
                 if (data.promptFeedback && data.promptFeedback.blockReason) {
                     throw new Error(`AI response blocked (Reason: ${data.promptFeedback.blockReason})`);
                 }
+                console.error("[Gemini API] Empty candidates:", data);
                 throw new Error("AI returned no response.");
             }
 
@@ -77,9 +77,18 @@ export async function fetchGeminiChat(systemInstruction, userMessage) {
                 throw new Error("AI response blocked due to safety/security filters.");
             }
 
-            if (!candidate.content || !candidate.content.parts) {
-                console.error("[Gemini API] Unknown response format:", candidate);
-                throw new Error(`AI returned an invalid message. (Finish reason: ${candidate.finishReason || "unknown"})`);
+            // [Important] Lite 모델이 복잡한 분석 도중 아무 파트 없이 STOP 하는 경우 대비
+            if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
+                if (candidate.finishReason === "STOP") {
+                    console.warn("[Gemini API] Lite model failed to reason. Returning guidance.");
+                    return {
+                        type: "text",
+                        text: "I'm sorry, due to the complexity of the request, the Lite model's analysis was interrupted. **Please try breaking your question down into steps** (e.g., 'Change date first' → 'Now find the highest value') for more accurate results!",
+                        usage: data.usageMetadata
+                    };
+                }
+                console.error("[Gemini API] Response structure error. Full Candidate:", JSON.stringify(candidate, null, 2));
+                throw new Error(`AI returned an invalid message structure. (Finish reason: ${candidate.finishReason || "unknown"})`);
             }
 
             const modelResponseContent = candidate.content;
@@ -106,13 +115,12 @@ export async function fetchGeminiChat(systemInstruction, userMessage) {
                 // AI의 "함수 쓸게!"라는 메시지를 대화 기록에 추가
                 contents.push(modelResponseContent);
 
-                // 앱(브라우저)의 "함수 결과는 이거야!"라는 메시지를 대화 기록에 추가
+                // [Fix] Gemini 2.0 모델에서는 함수 결과의 role을 "tool"로 기재하는 것이 안정적입니다.
                 contents.push({
-                    role: "function",
+                    role: "tool",
                     parts: functionResponseParts
                 });
 
-                // 루프가 계속 돌면서 결과를 반영한 최종 답변을 생성하러 올라감
                 continue;
             }
 

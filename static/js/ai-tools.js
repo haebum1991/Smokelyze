@@ -21,13 +21,13 @@ export const smokelyzeAiTools = [
             },
             {
                 name: "extract_map_data",
-                description: "Extracts raw property data (GeoJSON) from the current map source. Use this to find highest/lowest values, station information, or to perform correlation analysis between different fields.",
+                description: "Extracts raw property data (GeoJSON) from THE CURRENTLY LOADED map source. If a source is NOT loaded, you must first call change_dataset or toggle_layer to load it. Use this to find highest/lowest values, station information, or to perform correlation analysis.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
                         sourceId: {
                             type: "STRING",
-                            description: "ID of the data source (e.g., gam_v2, gam_v1, pm_cbsa, epa_ember, airnow_daily)"
+                            description: "ID of the data source (Use underscores: gam_v2, gam_v1, pm_cbsa, epa_ember, airnow_daily)"
                         },
                         target_field: {
                             type: "STRING",
@@ -47,25 +47,16 @@ export const smokelyzeAiTools = [
             },
             {
                 name: "move_to_location",
-                description: "Smoothly pans the map to a specific latitude (lat) and longitude (lon) and displays a highlight marker. Use this to focus on specific stations or locations found during data extraction.",
+                description: "Smoothly pans the map to a specific coordinate and displays a highlight marker. Required after finding a specific site of interest via extract_map_data.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
-                        lat: {
-                            type: "NUMBER",
-                            description: "Target Latitude"
-                        },
-                        lon: {
-                            type: "NUMBER",
-                            description: "Target Longitude"
-                        },
-                        sourceId: {
-                            type: "STRING",
-                            description: "Related data source ID (optional, e.g., gam_v2)"
-                        },
+                        lat: { type: "NUMBER", description: "Target Latitude" },
+                        lon: { type: "NUMBER", description: "Target Longitude" },
+                        sourceId: { type: "STRING", description: "Related data source ID (e.g., gam_v2)" },
                         properties: {
                             type: "OBJECT",
-                            description: "The complete property object of the location (obtained from extract_map_data result)"
+                            description: "The complete property object of the location from extract_map_data."
                         }
                     },
                     required: ["lat", "lon"]
@@ -73,13 +64,13 @@ export const smokelyzeAiTools = [
             },
             {
                 name: "change_dataset",
-                description: "Changes the active Published dataset model across the entire map. Use this when the user wants to see results from a different model (e.g., gam-v2, gam-v1, epa-ember).",
+                description: "Changes the active Published dataset model. If you want to extract data from a model, you must call this first with the hyphenated ID.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
                         dataset_value: {
                             type: "STRING",
-                            description: "The dataset value to switch to (e.g., gam-v2, gam-v1, epa-ember, pm-cbsa)"
+                            description: "The dataset value (Use hyphens: gam-v2, gam-v1, epa-ember, pm-cbsa)"
                         }
                     },
                     required: ["dataset_value"]
@@ -87,13 +78,13 @@ export const smokelyzeAiTools = [
             },
             {
                 name: "toggle_layer",
-                description: "Turns a specific data layer (checkbox) ON or OFF on the map. Use this when the user asks to see specific indicators like 'obs mda8' or 'pm2.5'.",
+                description: "Turns a specific data layer ON or OFF. Use this to ensure a layer like 'layer-smo' is active before trying to extract data from its source.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
                         layer_id: {
                             type: "STRING",
-                            description: "The HTML ID of the layer checkbox (e.g., layer-mda8-obs, layer-airnow-daily-pm25, layer-smo, layer-smoke)"
+                            description: "The HTML ID of the layer checkbox (e.g., layer-mda8-obs, layer-airnow-daily-pm25, layer-smo, layer-smoke, layer-wildfire-news)"
                         },
                         turn_on: {
                             type: "BOOLEAN",

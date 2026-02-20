@@ -186,7 +186,7 @@ ${context}
 
 **Operating Principles:**
 1. **Autonomous Reasoning:** When users ask about causes, future outlooks, or meteorological backgrounds, combine evidence from extracted data (Facts) with your vast atmospheric/environmental knowledge to provide logical inferences. Explain specific mechanisms (e.g., "Smoke particles likely reacted photochemically with NOx, leading to increased ozone concentrations") instead of just saying "the data says so."
-2. **Proactive Tool Use:** If you need more information for context (e.g., comparing different fields for correlation), use multiple tools in sequence to reach the best conclusion.
+2. **Proactive & Chained Tool Use:** If you need information that is not currently visible or loaded, **do not tell the user to load it.** Instead, use your tools (\`change_date\`, \`change_dataset\`, \`toggle_layer\`) to proactively load the required data, wait for it (wait for system events), and then run \`extract_map_data\`. You have up to 10 turns—use them aggressively to reach the goal independently.
 3. **Professionalism:** Use Markdown for better readability and maintain a professional, trustworthy, and polite tone.
 **Variable Glossary & Data Instructions (Global Definitions):**
 - **Live Updates**:
@@ -237,7 +237,7 @@ ${context}
 
 function appendMessage(role, text, usage = null) {
     const div = document.createElement("div");
-    div.className = `AiChat-msg chat-${role}`;
+    div.className = `AiChat-msg AiChat-${role}`;
 
     // Create Content Container
     const content = document.createElement("div");
@@ -306,7 +306,7 @@ function resetToWelcome() {
     appendSuggestions([
         "Explain what SMO (Smoke O3) means.",
         "How can I identify a [Smoke day]?",
-        "Show SMO results for GAM-v2 data on June 8, 2023, and which site had the highest?"
+        "Show SMO results for GAM-v2 data on June 8, 2023, and which site had the highest SMO?"
     ]);
 
     scrollToBottom();

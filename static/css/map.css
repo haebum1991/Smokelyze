@@ -2024,7 +2024,7 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
   transition: opacity 0.3s ease, visibility 0.3s ease;
   transform: none;
   top: calc(var(--header-height-total) + var(--toolbar-date-height));
-  right: 1.5rem;
+  right: 10rem;
 }
 
 #AiChatDrawer.collapsed {
@@ -2043,6 +2043,36 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
 #AiChatDrawer .accordion-header {
   cursor: move;
   user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ai-chat-draggable-header .accordion-title {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.ai-chat-header-handle {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+  padding: 0 1rem;
+}
+
+.ai-chat-draggable-header:hover .ai-chat-header-handle {
+  opacity: 0.8;
+}
+
+.ai-chat-header-btns {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2rem;
 }
 
 #AiChatDrawer .accordion {
@@ -2106,7 +2136,12 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
   background: rgba(0, 0, 0, 0.1);
   width: auto;
   height: auto;
-  color: var(--text-main);
+  
+  background: var(--card-shadow) !important;
+  color: var(--color-bg) !important;
+  font-size: 1.4rem !important;
+  height: auto !important;
+  width: auto !important;
 }
 
 @media (hover: hover) {
@@ -2195,26 +2230,28 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
 }
 
 @media (max-width: 1024px) {
-
+  
+  #AiChatToggle {
+    top: calc(var(--header-height-total) + var(--toolbar-date-height) + 7rem);
+  }
+  
   #AiChatDrawer {
     top: auto !important;
     bottom: 0 !important;
     right: 0 !important;
     left: 0 !important;
     width: 100% !important;
-    transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+    transition: transform 0.3s ease-out;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 
   #AiChatDrawer.collapsed {
     transform: translateY(100%) !important;
-    opacity: 0;
-    visibility: hidden;
   }
 
   #AiChatDrawer:not(.collapsed) {
     transform: translateY(0) !important;
-    opacity: 1;
-    visibility: visible;
   }
 
   #AiChatDrawer .accordion-header {
@@ -2230,8 +2267,8 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
     box-shadow: 0 -0.5rem 2rem rgba(0, 0, 0, 0.2);
   }
   
-  #AiChatToggle {
-    top: calc(var(--header-height-total) + var(--toolbar-date-height) + 7rem);
+  .ai-chat-header-handle {
+    display: none;
   }
 }
 
