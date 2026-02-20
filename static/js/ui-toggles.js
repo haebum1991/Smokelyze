@@ -170,14 +170,15 @@ export function addSwipeClose(el, options = {}) {
         if (direction === "down" && deltaY > 0) isClosingMove = true;
 
         if (isClosingMove) {
-            if (!isDragging) {
+            const distance = direction === "down" ? deltaY : Math.abs(deltaX);
+            if (!isDragging && distance > 5) {
                 el.style.transition = "none";
                 isDragging = true;
             }
-            if (direction === "down") {
-                el.style.transform = `translateY(${deltaY}px)`;
-            } else {
-                el.style.transform = `translateX(${deltaX}px)`;
+
+            if (isDragging) {
+                const transformValue = direction === "down" ? `translateY(${deltaY}px)` : `translateX(${deltaX}px)`;
+                el.style.setProperty("transform", transformValue, "important");
             }
         }
     }, { passive: true });
@@ -205,7 +206,7 @@ export function addSwipeClose(el, options = {}) {
         }
 
         // Reset transform to original position if not closed, or to ensure clean state
-        el.style.transform = "";
+        el.style.removeProperty("transform");
 
         // Cleanup after transition finishes
         setTimeout(() => {

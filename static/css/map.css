@@ -2247,11 +2247,11 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
   }
 
   #AiChatDrawer.collapsed {
-    transform: translateY(100%) !important;
+    transform: translateY(100%);
   }
 
   #AiChatDrawer:not(.collapsed) {
-    transform: translateY(0) !important;
+    transform: translateY(0);
   }
 
   #AiChatDrawer .accordion-header {
