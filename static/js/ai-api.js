@@ -124,25 +124,43 @@ export async function fetchGeminiChat(systemInstruction, userMessage) {
                 // 성공적으로 응답을 받았으므로, 현재까지의 대화(contents)를 세션 히스토리에 저장
                 contents.push(modelResponseContent);
 
-                // [안전한 히스토리 관리]: 
-                // 1. 너무 길어져서 API 한도가 초과되지 않도록 최근 40개 정도만 유지
-                // 2. 반드시 user 역할로 시작하도록 자름 (API 규칙: 첫 메시지는 user여야 함)
-                // 3. function call - response 쌍이 깨지지 않도록 관리
+                // [Intelligent Compaction]: Clean up heavy function results from older turns
                 let trimmedHistory = [...contents];
-                if (trimmedHistory.length > 40) {
-                    trimmedHistory = trimmedHistory.slice(trimmedHistory.length - 40);
+
+                // Keep only last 20 messages for context
+                if (trimmedHistory.length > 20) {
+                    trimmedHistory = trimmedHistory.slice(trimmedHistory.length - 20);
                 }
 
-                // 첫 메시지가 user가 아닐 경우, 첫 user를 찾을 때까지 앞에서부터 제거
                 while (trimmedHistory.length > 0 && trimmedHistory[0].role !== "user") {
                     trimmedHistory.shift();
                 }
 
-                sessionHistory = trimmedHistory;
+                // Summarize old data extraction results to save tokens in future turns
+                sessionHistory = trimmedHistory.map((msg, idx) => {
+                    if (idx >= trimmedHistory.length - 2) return msg;
+
+                    if (msg.role === "function") {
+                        const compactedParts = msg.parts.map(p => {
+                            if (p.functionResponse && p.functionResponse.name === "extract_map_data") {
+                                return {
+                                    functionResponse: {
+                                        name: "extract_map_data",
+                                        response: { result: "[Old data result pruned to save tokens]" }
+                                    }
+                                };
+                            }
+                            return p;
+                        });
+                        return { ...msg, parts: compactedParts };
+                    }
+                    return msg;
+                });
 
                 return {
                     type: "text",
-                    text: combinedText
+                    text: combinedText,
+                    usage: data.usageMetadata // { promptTokenCount, candidatesTokenCount, totalTokenCount }
                 };
             }
 

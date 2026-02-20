@@ -181,12 +181,10 @@ ${context}
 2. **Proactive Tool Use:** If you need more information for context (e.g., comparing different fields for correlation), use multiple tools in sequence to reach the best conclusion.
 3. **Professionalism:** Use Markdown for better readability and maintain a professional, trustworthy, and polite tone.
 **Variable Glossary & Data Instructions (Global Definitions):**
-
 - **Live Updates**:
   - **WF News**: Wildfire news from Google News. UTC based, updated every 6 hrs. Article assigned to representative state locations with jitter.
   - **WF Incident Locations (NIFC)**: Precise coordinates for active fires. Includes discovery time, name, cause, and area (acres). Every 6 hrs.
   **Full Variable & Dataset Glossary (Chief Scientist Reference):**
-
 - **1. Live Updates (Real-time)**:
   - **WF News**: Wildfire news from Google News. UTC based, updated every 6 hrs. Assigned to state locations with jitter.
   - **WF Incident Locations (NIFC)**: Verified fire occurrences (NIFC WFIGS/IRWIN). Includes discovery coordinates, name, cause, and area (acres). Updated every 6 hrs.
@@ -202,36 +200,26 @@ ${context}
   - **HMS-fire**: NOAA-HMS fire hotspots with FRP (Fire Radiative Power in MW). Spatially aggregated at 0.001 deg.
   - **MODIS burned area (MCD64A1)**: Historical monthly fire footprints at 500m resolution.
 
-- **4. Research/Published Models**:
-  - **UW GAM-v2**: Apr-Oct (2019-2024), US wide. Most recent version using HMS & PM2.5 to predict baseline O3.
-  - **UW GAM-v1**: May-Sep (2018-2023), CONUS.
-  - **UW Smoke PM2.5**: Full year (2019-2024), health impact focus.
-  - **EPA EMBER**: Screening-level modeling of 2023 ozone fire impacts.
-
-- **5. Detailed Variable Definitions**:
-  - **Obs MDA8/PM2.5**: Measured values at AQS monitoring sites.
-  - **Pred MDA8**: Model-predicted O3 concentration WITHOUT wildfire smoke (Baseline).
-  - **SMO (Smoke O3)**: Smoke-attributable ozone portion. (Obs - Pred) only on smoke days.
-  - **Residual**: (Obs - Pred) for all days. Positive = enhancement.
-  - **Quant residual/PM2.5**: Percentile status based on non-smoke distributions. 
-  - **PM2.5-crit**: Threshold (Median + 1.0 MAD or 0.5 MAD) to classify "smoke-impacted" conditions.
-  - **TMAX / SRAD**: Max Temp and Solar Flux (meteorological drivers).
-  - **Smoke day (SMD)**: Classified by [HMS overhead plume] AND [Surface PM2.5 > PM2.5-crit].
-  - **SMO > 97.5th**: Extreme smoke O3 impact (Residual exceeds 97.5th percentile of non-smoke days).
-  - **Exc. day (Exceedance)**: O3 > 70 ppb or PM2.5 > 9 ug/m3. Analyze if SMO/Smoke PM2.5 was the cause.
-  - **EDM versions**: Experimental Data-driven Model versions for comparative analysis.
+**Variable Glossary (Chief Scientist Ref):**
+- **Live**: WF News (Google News), WF Incident (NIFC active fire coords/acres), MapPost (User pins).
+- **AirNow**: Obs MDA8 (1-day delay, 8hr O3), Obs PM2.5 (1-day delay), O3/PM2.5/NO2 Hourly (RSIG server, 1-2hr delay).
+- **Satellite**: HMS-smoke (plumes), HMS-fire (hotspots), MODIS burned area (historical).
+- **Models**: UW GAM-v2 (current standard, 2019-24), GAM-v1 (2018-23), Smoke PM2.5 (Full year), EPA EMBER (2023 only).
+- **Variables**: Pred MDA8 (Model baseline), SMO (Smoke O3 contribution: Obs-Pred), Residual (Total error), Quant (Percentile status), PM2.5-crit (Smoke threshold), TMAX/SRAD (Meteorology), SMD (Smoke Day: HMS plume + PM2.5 > crit).
+- **Extremes**: SMO > 97.5th (Huge smoke O3 impact), Exc. day (Exceedance: O3 > 70ppb, PM2.5 > 9ug/m3).
 
 **Technical Guidelines:**
-- **Coordinate Precision:** When mentioning coordinates (Latitude, Longitude) in your response, always format them to **at least 3 decimal places** (e.g., 47.606, -122.332).
-- When using \`move_to_location\` after analysis, always pass the entire "properties" object from \`extract_map_data\` for proper tooltip display.`;
+- **Coords:** Always format Latitude/Longitude to **3+ decimal places** (e.g., 47.606, -122.332).
+- When using \`move_to_location\`, always pass all "properties" from \`extract_map_data\` for tooltips.`;
 
     try {
         const aiResponse = await fetchGeminiChat(systemPrompt, text);
         document.getElementById(loadingId)?.remove();
 
         const aiResponseText = aiResponse.text;
+        const usage = aiResponse.usage;
 
-        appendMessage("ai", aiResponseText);
+        appendMessage("ai", aiResponseText, usage);
     } catch (err) {
         document.getElementById(loadingId)?.remove();
         appendSystemMessage("An error occurred: " + err.message);
@@ -239,20 +227,30 @@ ${context}
 }
 
 
-
-function appendMessage(role, text) {
+function appendMessage(role, text, usage = null) {
     const div = document.createElement("div");
     div.className = `chat-msg chat-${role}`;
+
+    // Create Content Container
+    const content = document.createElement("div");
 
     // Parse Markdown for AI answers
     if (role === "ai" && typeof marked !== "undefined") {
         const rawHTML = marked.parse(text);
-        // Using DOMParser as a basic sanity check
         const parser = new DOMParser();
         const htmlDoc = parser.parseFromString(rawHTML, "text/html");
-        div.innerHTML = htmlDoc.body.innerHTML;
+        content.innerHTML = htmlDoc.body.innerHTML;
     } else {
-        div.innerText = text;
+        content.innerText = text;
+    }
+    div.appendChild(content);
+
+    // Append Token Usage Info if available
+    if (usage) {
+        const usageDiv = document.createElement("div");
+        usageDiv.style = "font-size: 1.2rem; color: var(--text-main); border-top: 1px solid var(--card-shadow); margin-top: 0.8rem; padding-top: 0.4rem; font-family: monospace; opacity: 0.8;";
+        usageDiv.innerText = `In:${usage.promptTokenCount} | Out:${usage.candidatesTokenCount} | Tot:${usage.totalTokenCount}`;
+        div.appendChild(usageDiv);
     }
 
     aiChatList.appendChild(div);

@@ -206,10 +206,20 @@ export async function handleAiToolCall(functionName, args) {
                     const lon = f.geometry?.coordinates?.[0] || "unknown";
                     const locationLabel = f.properties["Site_ID"] || f.properties["name"] || `(${lat.toFixed(2)}, ${lon.toFixed(2)})`;
 
-                    // 모든 properties를 보여주되, 너무 길면 자르기
-                    const allProps = JSON.stringify(f.properties);
+                    // [Smart Trimming] Keep all numbers, but truncate long strings to save tokens
+                    const trimmedProps = {};
+                    for (const [key, val] of Object.entries(f.properties)) {
+                        if (typeof val === "number") {
+                            trimmedProps[key] = val; // Always keep numeric variables
+                        } else if (typeof val === "string") {
+                            // Truncate long descriptions/meta, but keep names/IDs
+                            trimmedProps[key] = val.length > 100 ? val.substring(0, 100) + "..." : val;
+                        } else if (val !== null && typeof val === "object") {
+                            trimmedProps[key] = Array.isArray(val) ? `[Array(${val.length})]` : `[Object]`;
+                        }
+                    }
 
-                    resultText += `${idx + 1}. Site/Location: ${locationLabel} | Coords: [lat: ${lat}, lon: ${lon}] | Properties: ${allProps}
+                    resultText += `${idx + 1}. Site: ${locationLabel} | Coords: [${lat}, ${lon}] | Data: ${JSON.stringify(trimmedProps)}
 `;
                 });
 
