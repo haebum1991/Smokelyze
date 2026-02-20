@@ -146,12 +146,15 @@ export function addSwipeClose(el, options = {}) {
     const { direction = "right", threshold = 60, onClose = () => { }, maxWidth = 1024 } = options;
 
     let touchStartX = 0;
+    let touchStartY = 0;
     let touchMoveX = 0;
+    let touchMoveY = 0;
     let isDragging = false;
 
     el.addEventListener("touchstart", (e) => {
         if (window.innerWidth > maxWidth) return;
         touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
         isDragging = false;
     }, { passive: true });
 
@@ -159,15 +162,25 @@ export function addSwipeClose(el, options = {}) {
         if (window.innerWidth > maxWidth) return;
 
         touchMoveX = e.touches[0].clientX;
+        touchMoveY = e.touches[0].clientY;
         const deltaX = touchMoveX - touchStartX;
-        const isClosingMove = (direction === "right" && deltaX > 0) || (direction === "left" && deltaX < 0);
+        const deltaY = touchMoveY - touchStartY;
+
+        let isClosingMove = false;
+        if (direction === "right" && deltaX > 0) isClosingMove = true;
+        if (direction === "left" && deltaX < 0) isClosingMove = true;
+        if (direction === "down" && deltaY > 0) isClosingMove = true;
 
         if (isClosingMove) {
             if (!isDragging) {
                 el.style.transition = "none";
                 isDragging = true;
             }
-            el.style.transform = `translateX(${deltaX}px)`;
+            if (direction === "down") {
+                el.style.transform = `translateY(${deltaY}px)`;
+            } else {
+                el.style.transform = `translateX(${deltaX}px)`;
+            }
         } else if (isDragging) {
             el.style.transform = "";
         }
@@ -178,14 +191,20 @@ export function addSwipeClose(el, options = {}) {
 
         el.style.transition = "";
         const deltaX = touchMoveX - touchStartX;
-        const reachedThreshold = (direction === "right" && deltaX > threshold) ||
-            (direction === "left" && deltaX < -threshold);
+        const deltaY = touchMoveY - touchStartY;
+        
+        let reachedThreshold = false;
+        if (direction === "right" && deltaX > threshold) reachedThreshold = true;
+        if (direction === "left" && deltaX < -threshold) reachedThreshold = true;
+        if (direction === "down" && deltaY > threshold) reachedThreshold = true;
 
         if (reachedThreshold) onClose();
 
         el.style.transform = "";
         touchStartX = 0;
+        touchStartY = 0;
         touchMoveX = 0;
+        touchMoveY = 0;
         isDragging = false;
     });
 }

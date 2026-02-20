@@ -3,6 +3,8 @@ import { fetchGeminiChat, clearAiChatHistory } from "./ai-api.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import { auth } from "./fb-init.js";
 import { showAuthOverlay } from "./utils.js";
+import { addSwipeClose } from "./ui-toggles.js";
+
 
 // DOM Elements
 const aiToggleBtn = document.getElementById("AiChatToggle");
@@ -82,6 +84,12 @@ export function initAiChat() {
 
     // Make it draggable
     makeDraggable(aiDrawer, aiDrawer.querySelector(".accordion-header"));
+    
+    // Add Swipe to close for mobile
+    addSwipeClose(aiDrawer, {
+        direction: "down",
+        onClose: closeDrawer
+    });
 }
 
 function makeDraggable(el, handle) {
@@ -162,7 +170,7 @@ async function handleChatSubmit() {
 
     // Create loading element
     const loadingId = "loader-" + Date.now();
-    aiChatList.innerHTML += `<div id="${loadingId}" class="chat-msg chat-ai" style="color:var(--text-soft);">...Analyzing...</div>`;
+    aiChatList.innerHTML += `<div id="${loadingId}" class="AiChat-msg AiChat-ai" style="color:var(--text-soft);">...Analyzing...</div>`;
     scrollToBottom();
 
     // Context Generation
@@ -229,7 +237,7 @@ ${context}
 
 function appendMessage(role, text, usage = null) {
     const div = document.createElement("div");
-    div.className = `chat-msg chat-${role}`;
+    div.className = `AiChat-msg chat-${role}`;
 
     // Create Content Container
     const content = document.createElement("div");
@@ -267,11 +275,11 @@ function appendSystemMessage(text) {
 
 function appendSuggestions(suggestions) {
     const container = document.createElement("div");
-    container.className = "chat-suggestions";
+    container.className = "AiChat-suggestions";
 
     suggestions.forEach(text => {
         const chip = document.createElement("button");
-        chip.className = "suggestion-chip";
+        chip.className = "AiChat-suggestion-chip";
         chip.innerText = text;
         chip.onclick = () => {
             aiChatInput.value = text;

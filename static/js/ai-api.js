@@ -8,7 +8,7 @@
 import { smokelyzeAiTools, handleAiToolCall } from "./ai-tools.js";
 
 // 사용할 AI 모델 이름 (향후 gemini-3.0-flash 등으로 손쉽게 교체 가능)
-const GEMINI_MODEL = "gemini-2.5-flash";
+const GEMINI_MODEL = "gemini-2.0-flash-lite-preview-02-05";
 
 // 브라우저가 열려있는 동안 유지되는 대화 기록 (컨텍스트 유지를 위함)
 let sessionHistory = [];
