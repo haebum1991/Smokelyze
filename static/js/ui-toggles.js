@@ -147,8 +147,6 @@ export function addSwipeClose(el, options = {}) {
 
     let touchStartX = 0;
     let touchStartY = 0;
-    let touchMoveX = 0;
-    let touchMoveY = 0;
     let isDragging = false;
 
     el.addEventListener("touchstart", (e) => {
@@ -161,8 +159,8 @@ export function addSwipeClose(el, options = {}) {
     el.addEventListener("touchmove", (e) => {
         if (window.innerWidth > maxWidth) return;
 
-        touchMoveX = e.touches[0].clientX;
-        touchMoveY = e.touches[0].clientY;
+        const touchMoveX = e.touches[0].clientX;
+        const touchMoveY = e.touches[0].clientY;
         const deltaX = touchMoveX - touchStartX;
         const deltaY = touchMoveY - touchStartY;
 
@@ -181,30 +179,41 @@ export function addSwipeClose(el, options = {}) {
             } else {
                 el.style.transform = `translateX(${deltaX}px)`;
             }
-        } else if (isDragging) {
-            el.style.transform = "";
         }
     }, { passive: true });
 
-    el.addEventListener("touchend", () => {
+    el.addEventListener("touchend", (e) => {
         if (window.innerWidth > maxWidth || !isDragging) return;
 
-        el.style.transition = "";
-        const deltaX = touchMoveX - touchStartX;
-        const deltaY = touchMoveY - touchStartY;
-        
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+
+        // Restore transition for smooth snap back or exit
+        el.style.transition = "transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1)";
+
         let reachedThreshold = false;
         if (direction === "right" && deltaX > threshold) reachedThreshold = true;
         if (direction === "left" && deltaX < -threshold) reachedThreshold = true;
         if (direction === "down" && deltaY > threshold) reachedThreshold = true;
 
-        if (reachedThreshold) onClose();
+        if (reachedThreshold) {
+            onClose();
+            // Optional: after calling onClose, we might want to keep the transform 
+            // but usually onClose hides the element via classes.
+        }
 
+        // Reset transform to original position if not closed, or to ensure clean state
         el.style.transform = "";
-        touchStartX = 0;
-        touchStartY = 0;
-        touchMoveX = 0;
-        touchMoveY = 0;
+
+        // Cleanup after transition finishes
+        setTimeout(() => {
+            if (!el.classList.contains("open") && !el.classList.contains("active") && el.classList.contains("collapsed")) {
+                el.style.transition = "";
+            }
+        }, 300);
+
         isDragging = false;
     });
 }

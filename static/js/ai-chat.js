@@ -14,6 +14,8 @@ const aiChatList = document.getElementById("AiChatList");
 const aiChatInput = document.getElementById("AiChatInput");
 const aiChatSubmitBtn = document.getElementById("AiChatSubmitBtn");
 
+let hasShownKeyWarning = false;
+  
 export function initAiChat() {
     if (!aiToggleBtn || !aiDrawer) return;
 
@@ -45,9 +47,10 @@ export function initAiChat() {
             aiToggleBtn.classList.add("active");
             scrollToBottom();
 
-            // Check API Key
-            if (!localStorage.getItem("smokelyze_gemini_key")) {
+            // Check API Key - Only show once per session to avoid annoyance
+            if (!localStorage.getItem("smokelyze_gemini_key") && !hasShownKeyWarning) {
                 appendSystemMessage("API Key is not set yet. Please enter your key in [Profiles] > [Settings] > [Google Gemini API]. You can use it immediately after registration!");
+                hasShownKeyWarning = true;
             }
         } else {
             closeDrawer();
