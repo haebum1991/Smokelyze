@@ -263,9 +263,9 @@ function resetToWelcome() {
     // Append Welcome
     appendSystemMessage("Welcome to Smokelyze Ai assistant. Ask anything about air quality analysis or how to use the platform!");
     appendSuggestions([
+        "What is smoke O3 (SMO)?",
         "Set the date to June 8, 2023, and turn on the HMS smoke.",
-        "How can I identify a [Smoke day]?",
-        "Show the SMO results for the GAM-v2 model on June 8, 2023. Which site had the highest SMO value, and can you point it out on the map?"
+        "Show the SMO results for the GAM-v2 model on August 15, 2024. Which site had the highest SMO value, and can you point it out on the map?"
     ]);
 
     scrollToBottom();
@@ -286,6 +286,7 @@ function generateContext() {
     // 0. Current Real-world Time
     const now = new Date();
     contextLines.push(`Current Real-world Time: ${now.toLocaleString()}`);
+    contextLines.push(`Today's Date (ISO): ${now.toISOString().split("T")[0]}`);
 
     // 1. Date (Dashboard View Date)
     const datePicker = document.getElementById("datePicker");
