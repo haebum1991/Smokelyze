@@ -7,8 +7,8 @@
 
 import { smokelyzeAiTools, handleAiToolCall } from "./ai-tools.js";
 
-// 사용할 AI 모델 이름 (향후 gemini-3.0-flash 등으로 손쉽게 교체 가능)
-const GEMINI_MODEL = "gemini-2.5-flash-lite";
+// 사용할 AI 백엔드 주소 (배포 후 Cloud Run URL로 교체 필요)
+const AI_BACKEND_URL = "https://fetch-aichat-service-1068523865415.us-central1.run.app/api/chat";
 
 // 브라우저가 열려있는 동안 유지되는 대화 기록 (컨텍스트 유지를 위함)
 let sessionHistory = [];
@@ -17,15 +17,9 @@ export function clearAiChatHistory() {
     sessionHistory = [];
 }
 
-export async function fetchGeminiChat(systemInstruction, userMessage) {
-    // 1. 보안 영역: 기기에서 사용자가 입력해둔 키 가져오기
+export async function fetchGeminiChat(dashboardContext, userMessage) {
+    // 사용자가 입력해둔 자신의 API Key 가져오기
     const apiKey = localStorage.getItem("smokelyze_gemini_key");
-    if (!apiKey) {
-        throw new Error("API Key not found. Please register your key in [Profiles] > [Settings] > [Google Gemini API] menu first.");
-    }
-
-    // 통신할 목표 지점 (Google 생성형 AI 서버)
-    const endpointUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
 
     // 2. 초기 대화 기록 구성 + 이전 대화 기억(컨텍스트 유지)
     let contents = [
@@ -36,22 +30,20 @@ export async function fetchGeminiChat(systemInstruction, userMessage) {
         }
     ];
 
-    const generationConfig = {
-        temperature: 0.2,
-        maxOutputTokens: 2048,
-    };
-
     try {
         // 최대 10번까지 핑퐁(Function Calling -> 결과 응답 -> 다시 질문)을 반복할 수 있는 에이전트 루프
         for (let turn = 0; turn < 10; turn++) {
+            // [중요] 매 턴마다 최신 대시보드 상태(Context)를 다시 생성하여 AI에게 전달
+            // 그래야 AI가 방금 수행한 도구 호출(날짜 변경 등)의 결과를 인지할 수 있음
+            const currentContext = typeof generateContext === "function" ? generateContext() : dashboardContext;
+
             const requestBody = {
-                system_instruction: { parts: [{ text: systemInstruction }] },
                 contents: contents,
-                tools: smokelyzeAiTools,
-                generationConfig: generationConfig
+                dashboardContext: currentContext, // 최신 상태 전달
+                apiKey: apiKey
             };
 
-            const response = await fetch(endpointUrl, {
+            const response = await fetch(AI_BACKEND_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(requestBody)
@@ -148,7 +140,7 @@ export async function fetchGeminiChat(systemInstruction, userMessage) {
                 sessionHistory = trimmedHistory.map((msg, idx) => {
                     if (idx >= trimmedHistory.length - 2) return msg;
 
-                    if (msg.role === "function") {
+                    if (msg.role === "tool") {
                         const compactedParts = msg.parts.map(p => {
                             if (p.functionResponse && p.functionResponse.name === "extract_map_data") {
                                 return {
