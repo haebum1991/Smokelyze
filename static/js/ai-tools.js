@@ -195,23 +195,34 @@ export async function handleAiToolCall(functionName, args) {
                     const lon = f.geometry?.coordinates?.[0] || "unknown";
                     const locationLabel = f.properties["Site_ID"] || f.properties["name"] || `(${lat.toFixed(2)}, ${lon.toFixed(2)})`;
 
-                    // [Strict Filtering] Only keep essential fields to save enormous amount of tokens
+                    // [Smart & Robust Filtering] Keep identifiers (case-insensitive) and all scientific values
                     const cleanProps = {};
+                    const commonIdKeys = ["state", "site_name", "AQS", "AQS_O3", "AQS_PM"];
+                    const actualKeys = Object.keys(f.properties);
 
-                    // 1. Always include key identifiers
-                    ["Site_ID", "name", "AQS", "AQS_ID", "State", "State_Name"].forEach(key => {
-                        if (f.properties[key]) cleanProps[key] = f.properties[key];
+                    // 1. Identify and keep all ID/Name/State fields regardless of case
+                    commonIdKeys.forEach(targetKey => {
+                        const match = actualKeys.find(k => k.toLowerCase() === targetKey);
+                        if (match) {
+                            cleanProps[match] = f.properties[match];
+                        }
                     });
 
-                    // 2. Include the targeted data field (with case-insensitive matching)
-                    const targetVal = f.properties[finalField];
-                    cleanProps[finalField] = (typeof targetVal === "number") ? Number(targetVal.toFixed(4)) : targetVal;
+                    // 2. Keep all numeric scientific values to prevent Metadata Panel from showing NA
+                    for (const [key, val] of Object.entries(f.properties)) {
+                        if (typeof val === "number") {
+                            cleanProps[key] = Number(val.toFixed(4));
+                        } else if (!cleanProps[key] && val !== null) {
+                            // Keep other non-numeric info if not already captured
+                            cleanProps[key] = (typeof val === "string" && val.length > 50) ? val.substring(0, 50) + "..." : val;
+                        }
+                    }
 
-                    resultText += `${idx + 1}. Site: ${locationLabel} | Coords: [${lat}, ${lon}] | Data: ${JSON.stringify(cleanProps)}`;
+                    resultText += `${idx + 1}. Site: ${locationLabel} | Coords: [${lat}, ${lon}] | Data: ${JSON.stringify(cleanProps)}
+`;
                 });
 
-                resultMessage = `Extracted ${sourceId} data follows. Analyze this data like a professional and provide insights to the user. You can also use "move_to_location" to fly to these sites:
-` + resultText;
+                resultMessage = `Extracted ${sourceId} data follows. Analyze this data like a professional and provide insights to the user. You can also use "move_to_location" to fly to these sites:` + resultText;
                 break;
 
             case "move_to_location":
