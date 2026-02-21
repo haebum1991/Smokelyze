@@ -332,8 +332,7 @@ export async function handleAiToolCall(functionName, args) {
 `;
                 });
 
-                resultMessage = summaryText + "
-[System Info] This data represents state-level aggregates. Use this for broad geographic analysis.";
+                resultMessage = summaryText + " [System Info] This data represents state-level aggregates. Use this for broad geographic analysis.";
                 break;
 
             default:
