@@ -263,9 +263,9 @@ function resetToWelcome() {
     // Append Welcome
     appendSystemMessage("Welcome to Smokelyze Ai assistant. Ask anything about air quality analysis or how to use the platform!");
     appendSuggestions([
-        "Explain what SMO (Smoke O3) means.",
+        "Set the date to June 8, 2023, and turn on the HMS smoke.",
         "How can I identify a [Smoke day]?",
-        "Show SMO results for GAM-v2 data on June 8, 2023, and which site had the highest SMO?"
+        "Show the SMO results for the GAM-v2 model on June 8, 2023. Which site had the highest SMO value, and can you point it out on the map?"
     ]);
 
     scrollToBottom();

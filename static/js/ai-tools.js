@@ -288,6 +288,27 @@ export async function handleAiToolCall(functionName, args) {
                     resultMessage = `[System Error] Could not find layer checkbox with ID "${layerId}". Verify the ID.`;
                 }
                 break;
+                
+            case "reset_map":
+                const resetBtn = document.getElementById("MapBtnReset");
+                if (resetBtn) {
+                    resetBtn.click();
+                    await waitForMapIdle();
+                    resultMessage = "[System] Map has been reset to its initial state.";
+                } else {
+                    resultMessage = "[System Error] Could not find the Reset button on the screen.";
+                }
+                break;
+                
+            case "open_description":
+                const descBtn = document.getElementById("DescToggle");
+                if (descBtn) {
+                    descBtn.click();
+                    resultMessage = "[System] Opened the Description Drawer. The user can now see detailed scientific parameters and research background.";
+                } else {
+                    resultMessage = "[System Error] Could not find the Description button on the screen.";
+                }
+                break;
 
             default:
                 resultMessage = `[System Error] The requested function (${functionName}) is not yet supported.`;
