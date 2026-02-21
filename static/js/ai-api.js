@@ -127,9 +127,9 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                 // [Intelligent Compaction]: Clean up heavy function results from older turns
                 let trimmedHistory = [...contents];
 
-                // Keep only last 20 messages for context
-                if (trimmedHistory.length > 20) {
-                    trimmedHistory = trimmedHistory.slice(trimmedHistory.length - 20);
+                // Keep only last 5 messages for context
+                if (trimmedHistory.length > 5) {
+                    trimmedHistory = trimmedHistory.slice(trimmedHistory.length - 5);
                 }
 
                 while (trimmedHistory.length > 0 && trimmedHistory[0].role !== "user") {
