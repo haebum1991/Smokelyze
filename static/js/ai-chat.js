@@ -4,7 +4,10 @@ import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 import { auth } from "./fb-init.js";
 import { showAuthOverlay } from "./utils.js";
 import { addSwipeClose } from "./ui-toggles.js";
+import { regionStats } from "./layers-state.js";
 
+// Expose regionStats for AI tools to access summary data
+window.getRegionStats = () => regionStats;
 
 // DOM Elements
 const aiToggleBtn = document.getElementById("AiChatToggle");

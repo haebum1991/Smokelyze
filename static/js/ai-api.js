@@ -152,10 +152,10 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
 
                     if (msg.role === "tool") {
                         const compactedParts = msg.parts.map(p => {
-                            if (p.functionResponse && p.functionResponse.name === "extract_map_data") {
+                            if (p.functionResponse && p.functionResponse.name === "extract_summary_aqs") {
                                 return {
                                     functionResponse: {
-                                        name: "extract_map_data",
+                                        name: "extract_summary_aqs",
                                         response: { result: "[Old data result pruned to save tokens]" }
                                     }
                                 };

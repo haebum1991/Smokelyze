@@ -20,8 +20,8 @@ export const smokelyzeAiTools = [
                 }
             },
             {
-                name: "extract_map_data",
-                description: "Extracts raw property data (GeoJSON) from THE CURRENTLY LOADED map source. If a source is NOT loaded, you must first call change_dataset or toggle_layer to load it. Use this to find highest/lowest values, station information, or to perform correlation analysis.",
+                name: "extract_summary_aqs",
+                description: "Extracts raw property data (GeoJSON) from THE CURRENTLY LOADED map source. If a source is NOT loaded, you must first call change_dataset or change_layer to load it. Use this to find highest/lowest values, station information, or to perform correlation analysis.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
@@ -47,7 +47,7 @@ export const smokelyzeAiTools = [
             },
             {
                 name: "move_to_location",
-                description: "Smoothly pans the map to a specific coordinate and displays a highlight marker. Required after finding a specific site of interest via extract_map_data.",
+                description: "Smoothly pans the map to a specific coordinate and displays a highlight marker. Required after finding a specific site of interest via extract_summary_aqs.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
@@ -56,7 +56,7 @@ export const smokelyzeAiTools = [
                         sourceId: { type: "STRING", description: "Related data source ID (e.g., gam_v2)" },
                         properties: {
                             type: "OBJECT",
-                            description: "The complete property object of the location from extract_map_data."
+                            description: "The complete property object of the location from extract_summary_aqs."
                         }
                     },
                     required: ["lat", "lon"]
@@ -77,7 +77,7 @@ export const smokelyzeAiTools = [
                 }
             },
             {
-                name: "toggle_layer",
+                name: "change_layer",
                 description: "Turns a specific data layer ON or OFF. Use this to ensure a layer like 'layer-smo' is active before trying to extract data from its source.",
                 parameters: {
                     type: "OBJECT",
@@ -133,13 +133,13 @@ export async function handleAiToolCall(functionName, args) {
                     // 데이터가 로딩될 때까지 기다림
                     await waitForMapIdle();
 
-                    resultMessage = `[System] Changed date to ${targetDate} and waited for data loading. You can now analyze new data using "extract_map_data".`;
+                    resultMessage = `[System] Changed date to ${targetDate} and waited for data loading. You can now analyze new data using "extract_summary_aqs".`;
                 } else {
                     resultMessage = "[System Error] Could not find the date picker element on the screen.";
                 }
                 break;
 
-            case "extract_map_data":
+            case "extract_summary_aqs":
                 const sourceId = args?.sourceId || "gam_v2";
                 if (!map) {
                     return "[System Error] Map 인스턴스를 불러올 수 없습니다.";
@@ -157,7 +157,6 @@ export async function handleAiToolCall(functionName, args) {
                 const limit = args.limit || 10;
 
                 const validFeatures = features.filter(f => {
-                    // 필드명 대소문자 구분 없이 찾기 (AI가 smo라고 해도 SMO를 찾을 수 있게)
                     let actualField = field;
                     if (!(field in f.properties)) {
                         const keys = Object.keys(f.properties);
@@ -169,7 +168,6 @@ export async function handleAiToolCall(functionName, args) {
                     return typeof val === "number" && !isNaN(val) && val !== null;
                 });
 
-                // 정렬 기준 필드도 실제 찾은 필드로 보정하기 위해 필터링된 결과에서 필드 재추출
                 let finalField = field;
                 if (validFeatures.length > 0) {
                     const firstFeat = validFeatures[0].properties;
@@ -189,29 +187,27 @@ export async function handleAiToolCall(functionName, args) {
                     return isDesc ? -diff : diff;
                 });
 
-                const topFeatures = validFeatures.slice(0, limit);
-                let resultText = `[Data Extraction Success: ${sourceId} / Top ${limit} results out of ${validFeatures.length}]
-`;
+                const topFeatures = validFeatures.slice(0, Math.min(limit, 20)); // Max 20 to protect tokens
+                let resultText = `[Data Extraction Success: ${sourceId} / Showing Top ${topFeatures.length} out of ${validFeatures.length} found]`;
+                
                 topFeatures.forEach((f, idx) => {
                     const lat = f.geometry?.coordinates?.[1] || "unknown";
                     const lon = f.geometry?.coordinates?.[0] || "unknown";
                     const locationLabel = f.properties["Site_ID"] || f.properties["name"] || `(${lat.toFixed(2)}, ${lon.toFixed(2)})`;
 
-                    // [Smart Trimming] Keep all numbers, but truncate long strings to save tokens
-                    const trimmedProps = {};
-                    for (const [key, val] of Object.entries(f.properties)) {
-                        if (typeof val === "number") {
-                            trimmedProps[key] = val; // Always keep numeric variables
-                        } else if (typeof val === "string") {
-                            // Truncate long descriptions/meta, but keep names/IDs
-                            trimmedProps[key] = val.length > 100 ? val.substring(0, 100) + "..." : val;
-                        } else if (val !== null && typeof val === "object") {
-                            trimmedProps[key] = Array.isArray(val) ? `[Array(${val.length})]` : `[Object]`;
-                        }
-                    }
+                    // [Strict Filtering] Only keep essential fields to save enormous amount of tokens
+                    const cleanProps = {};
 
-                    resultText += `${idx + 1}. Site: ${locationLabel} | Coords: [${lat}, ${lon}] | Data: ${JSON.stringify(trimmedProps)}
-`;
+                    // 1. Always include key identifiers
+                    ["Site_ID", "name", "AQS", "AQS_ID", "State", "State_Name"].forEach(key => {
+                        if (f.properties[key]) cleanProps[key] = f.properties[key];
+                    });
+
+                    // 2. Include the targeted data field (with case-insensitive matching)
+                    const targetVal = f.properties[finalField];
+                    cleanProps[finalField] = (typeof targetVal === "number") ? Number(targetVal.toFixed(4)) : targetVal;
+
+                    resultText += `${idx + 1}. Site: ${locationLabel} | Coords: [${lat}, ${lon}] | Data: ${JSON.stringify(cleanProps)}`;
                 });
 
                 resultMessage = `Extracted ${sourceId} data follows. Analyze this data like a professional and provide insights to the user. You can also use "move_to_location" to fly to these sites:
@@ -271,7 +267,7 @@ export async function handleAiToolCall(functionName, args) {
                 }
                 break;
 
-            case "toggle_layer":
+            case "change_layer":
                 const layerId = args?.layer_id;
                 const turnOn = args?.turn_on;
                 const checkbox = document.getElementById(layerId);
@@ -308,6 +304,36 @@ export async function handleAiToolCall(functionName, args) {
                 } else {
                     resultMessage = "[System Error] Could not find the Description button on the screen.";
                 }
+                break;
+                
+            case "extract_summary_state":
+                const targetField = args?.target_field || "SMO";
+                const stats = typeof getRegionStats === "function" ? getRegionStats() : (window.regionStats || {});
+
+                if (Object.keys(stats).length === 0) {
+                    resultMessage = "[System Error] No summary data currently available. Please ensure a dataset is loaded first.";
+                    break;
+                }
+
+                const sortedRegions = Object.entries(stats)
+                    .map(([id, data]) => ({ id, ...data }))
+                    .filter(r => typeof r[targetField] === "number")
+                    .sort((a, b) => b[targetField] - a[targetField]);
+
+                if (sortedRegions.length === 0) {
+                    resultMessage = `[System Error] No valid data found for field "${targetField}" in the summary table.`;
+                    break;
+                }
+
+                let summaryText = `[Summary Table Data: Top 10 States for ${targetField}]
+`;
+                sortedRegions.slice(0, 15).forEach((r, i) => {
+                    summaryText += `${i + 1}. ${r.id}: ${r[targetField].toFixed(2)}
+`;
+                });
+
+                resultMessage = summaryText + "
+[System Info] This data represents state-level aggregates. Use this for broad geographic analysis.";
                 break;
 
             default:
