@@ -31,8 +31,8 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
     ];
 
     try {
-        // 최대 10번까지 핑퐁(Function Calling -> 결과 응답 -> 다시 질문)을 반복할 수 있는 에이전트 루프
-        for (let turn = 0; turn < 10; turn++) {
+        // 최대 15번까지 핑퐁(Function Calling -> 결과 응답 -> 다시 질문)을 반복할 수 있는 에이전트 루프
+        for (let turn = 0; turn < 15; turn++) {
             // [중요] 매 턴마다 최신 대시보드 상태(Context)를 다시 생성하여 AI에게 전달
             // 그래야 AI가 방금 수행한 도구 호출(날짜 변경 등)의 결과를 인지할 수 있음
             const currentContext = typeof generateContext === "function" ? generateContext() : dashboardContext;
@@ -127,9 +127,9 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                 // [Intelligent Compaction]: Clean up heavy function results from older turns
                 let trimmedHistory = [...contents];
 
-                // Keep only last 5 messages for context
-                if (trimmedHistory.length > 10) {
-                    trimmedHistory = trimmedHistory.slice(trimmedHistory.length - 10);
+                // Keep last 20 messages to avoid losing the initial user request during tool calls
+                if (trimmedHistory.length > 20) {
+                    trimmedHistory = trimmedHistory.slice(trimmedHistory.length - 20);
                 }
 
                 while (trimmedHistory.length > 0 && trimmedHistory[0].role !== "user") {

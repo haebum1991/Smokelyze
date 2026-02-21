@@ -214,7 +214,7 @@
         
         <label>
           A Google Gemini API Key is required to use the Smokelyze AI Assistant.
-          Your key is securely stored only in your browser (local device) and is never sent to the server.
+          Your key is stored only in your browser; it is used for secure transit during analysis but is <strong>never stored on the server</strong>.
         </label>
         <div class="profile-group" style="margin-top: 1rem;">
           <input type="password" id="AiApiKey" placeholder="Enter Gemini API Key (AIzaSy...)" class="profile-input"
@@ -234,44 +234,6 @@
         <div class="profile-message" id="AiMessage" style="margin-top: 1.5rem; font-weight: bold;"></div>
         <button class="profile-btn-save" id="AiBtnSave">Save Key Locally</button>
       </div>
-    </div>
-  </div>
-</div>
-
-
-<!-- AI Config Modal -->
-<div class="auth-overlay AiConfigPage" id="AiConfigPage" style="display: none;">
-  <div class="auth-card profile-card">
-    <div class="auth-card-header" style="display: flex; align-items: center; gap: 0.8rem;">
-      <h3>Google Gemini</h3>
-      <button class="auth-btn-close" id="AiConfigBtnClose">&times;</button>
-    </div>
-    <div class="auth-card-body" style="text-align: left;">
-      <p style="margin-bottom: 2rem; color: var(--text-main); font-size: 1.5rem;">
-        A Google Gemini API Key is required to use the Smokelyze AI Assistant.
-        Your key is <strong>securely stored only in your browser (local device)</strong> and is never sent to the
-        server.
-      </p>
-
-      <div class="profile-group">
-        <label for="AiApiKey">Your API Key <small style="color:var(--text-soft);">(Bring Your Own Key)</small></label>
-        <input type="password" id="AiApiKey" placeholder="AIzaSy..." class="profile-input" style="width: 100%;">
-
-        <div style="margin-top: 1rem; font-size: 1.4rem;">
-          <a href="https://aistudio.google.com/app/apikey" target="_blank"
-            style="text-decoration: underline; display: flex; align-items: center; gap: 0.5rem;">
-            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-              <path
-                d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" />
-            </svg>
-            Get a API Key (Google AI Studio)
-          </a>
-        </div>
-      </div>
-      <div class="profile-message" id="AiMessage" style="margin-top: 1.5rem; font-weight: bold;"></div>
-    </div>
-    <div class="auth-card-footer">
-      <button class="profile-btn-save" id="AiBtnSave">Save Key locally</button>
     </div>
   </div>
 </div>
