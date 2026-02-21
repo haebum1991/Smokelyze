@@ -72,10 +72,20 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
             // [Important] Lite 모델이 복잡한 분석 도중 아무 파트 없이 STOP 하는 경우 대비
             if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
                 if (candidate.finishReason === "STOP") {
-                    console.warn("[Gemini API] Lite model failed to reason. Returning guidance.");
+                    // [Fix] 만약 도구 호출을 이미 수행했다면, 비어있는 응답이라도 성공으로 간주
+                    const hasToolResponse = contents.some(msg => msg.role === "tool");
+                    if (hasToolResponse) {
+                        return {
+                            type: "text",
+                            text: "[System] Analysis and map updates completed successfully.",
+                            usage: data.usageMetadata
+                        };
+                    }
+
+                    console.warn("[Gemini API] Model failed to reason. Returning guidance.");
                     return {
                         type: "text",
-                        text: "I'm sorry, due to the complexity of the request, the Lite model's analysis was interrupted. **Please try breaking your question down into steps** (e.g., 'Change date first' → 'Now find the highest value') for more accurate results!",
+                        text: "I'm sorry, the analysis was interrupted. **Please try again or break your question into steps.**",
                         usage: data.usageMetadata
                     };
                 }

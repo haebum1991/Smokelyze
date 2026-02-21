@@ -283,10 +283,15 @@ function scrollToBottom() {
 function generateContext() {
     const contextLines = [];
 
-    // 0. Current Real-world Time
+    // 0. Current Real-world Time (Local)
     const now = new Date();
-    contextLines.push(`Current Real-world Time: ${now.toLocaleString()}`);
-    contextLines.push(`Today's Date (ISO): ${now.toISOString().split("T")[0]}`);
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const localToday = `${year}-${month}-${day}`;
+
+    contextLines.push(`Current Local Time: ${now.toLocaleString()}`);
+    contextLines.push(`Today's Local Date: ${localToday}`);
 
     // 1. Date (Dashboard View Date)
     const datePicker = document.getElementById("datePicker");
