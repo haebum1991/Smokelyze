@@ -128,8 +128,8 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                 let trimmedHistory = [...contents];
 
                 // Keep only last 5 messages for context
-                if (trimmedHistory.length > 5) {
-                    trimmedHistory = trimmedHistory.slice(trimmedHistory.length - 5);
+                if (trimmedHistory.length > 10) {
+                    trimmedHistory = trimmedHistory.slice(trimmedHistory.length - 10);
                 }
 
                 while (trimmedHistory.length > 0 && trimmedHistory[0].role !== "user") {
