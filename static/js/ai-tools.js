@@ -300,13 +300,6 @@ export async function handleAiToolCall(functionName, args) {
                         dataSelect.value = targetDataset;
                         dataSelect.dispatchEvent(new Event("change", { bubbles: true }));
 
-                        // Published 체크박스들(예: Obs MDA8 등)을 자동으로 체크해줌으로써 바로 화면에 보이게 유도
-                        const mda8Cb = document.getElementById("layer-mda8-obs");
-                        if (mda8Cb && !mda8Cb.checked) {
-                            mda8Cb.checked = true;
-                            mda8Cb.dispatchEvent(new Event("change", { bubbles: true }));
-                        }
-
                         // 데이터가 로딩될 때까지 기다림
                         await waitForMapIdle();
 
