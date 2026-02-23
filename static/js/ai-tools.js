@@ -57,6 +57,10 @@ export const smokelyzeAiTools = [
                 }
             },
             {
+                name: "clear_all_layers",
+                description: "Turns off all active map layer checkboxes to start a fresh analysis."
+            },
+            {
                 name: "change_dataset",
                 description: "Changes the active model (gam-v2, pm-cbsa).",
                 parameters: {
@@ -332,6 +336,21 @@ export async function handleAiToolCall(functionName, args) {
                 } else {
                     resultMessage = `[System Error] Could not find layer checkbox with ID "${rawLayerId}". Verify the ID naming (hyphens/underscores).`;
                 }
+                break;
+            
+            case "clear_all_layers":
+                document.querySelectorAll(".accordion-page input[type='checkbox']").forEach(cb => {
+                    
+                    // Do not turn off Map Settings toggles
+                    if (cb.id === "MapBtnStateShading" || cb.id === "MapBtnPointLayers") return;
+
+                    if (cb.checked && cb.parentElement.style.display !== "none") {
+                        cb.checked = false;
+                        cb.dispatchEvent(new Event("change", { bubbles: true }));
+                    }
+                });
+                await waitForMapIdle(1500); // Wait a little bit for sources to clear
+                resultMessage = "[System] Successfully cleared all active layers. The map is now fresh.";
                 break;
                 
             case "reset_map":
