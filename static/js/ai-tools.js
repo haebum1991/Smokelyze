@@ -256,12 +256,13 @@ export async function handleAiToolCall(functionName, args) {
                         (map.getSource(rawSrcId.replace(/-/g, "_")) ? rawSrcId.replace(/-/g, "_") :
                             (map.getSource(rawSrcId.replace(/_/g, "-")) ? rawSrcId.replace(/_/g, "-") : rawSrcId));
 
-                    let foundMetadata = null;
+                    let finalTargetLon = targetLon;
+                    let finalTargetLat = targetLat;
 
                     // [BRAIN] Robust Search in loadedGeoJSON for full properties
                     // This ensures we have the actual data from geojson.gz even if AI passed partial info
                     if (loadedGeoJSON) {
-                        const EPSILON = 0.0001; // ~11m
+                        const EPSILON = 0.05; // Loosened epsilon in case AI provides truncated coords
                         // Try active sources first, then others
                         const searchSources = [...(activeSources || []), ...Object.keys(loadedGeoJSON)];
 
@@ -269,13 +270,36 @@ export async function handleAiToolCall(functionName, args) {
                             const data = loadedGeoJSON[src] || loadedGeoJSON[loadedSources[src]];
                             if (!data || !data.features) continue;
 
-                            const match = data.features.find(f => {
-                                const c = f.geometry?.coordinates;
-                                return c && Math.abs(c[0] - targetLon) < EPSILON && Math.abs(c[1] - targetLat) < EPSILON;
-                            });
+                            let match = null;
+
+                            // 1. Semantic Match by Site Name / ID (Overrides Coordinates)
+                            if (props && Object.keys(props).length > 0) {
+                                match = data.features.find(f => {
+                                    const p = f.properties;
+                                    if (!p) return false;
+                                    if (props.site_name && p.site_name && p.site_name.toLowerCase() === props.site_name.toLowerCase()) return true;
+                                    if (props.AQS && p.AQS && String(p.AQS) === String(props.AQS)) return true;
+                                    if (props.AQS_O3 && p.AQS_O3 && String(p.AQS_O3) === String(props.AQS_O3)) return true;
+                                    if (props.AQS_PM && p.AQS_PM && String(p.AQS_PM) === String(props.AQS_PM)) return true;
+                                    if (props.IncidentName && p.IncidentName && p.IncidentName.toLowerCase() === props.IncidentName.toLowerCase()) return true;
+                                    return false;
+                                });
+                            }
+
+                            // 2. Fallback to Geographic Match
+                            if (!match) {
+                                match = data.features.find(f => {
+                                    const c = f.geometry?.coordinates;
+                                    return c && Math.abs(c[0] - targetLon) < EPSILON && Math.abs(c[1] - targetLat) < EPSILON;
+                                });
+                            }
 
                             if (match) {
                                 foundMetadata = match.properties;
+                                if (match.geometry?.coordinates) {
+                                    finalTargetLon = match.geometry.coordinates[0];
+                                    finalTargetLat = match.geometry.coordinates[1];
+                                }
                                 break;
                             }
                         }
@@ -284,8 +308,8 @@ export async function handleAiToolCall(functionName, args) {
                     // Merge: Map-found data (base) + AI-provided data (overrides)
                     const finalProps = { ...foundMetadata, ...props };
 
-                    highlightLocation([targetLon, targetLat], finalProps, actualSrcId);
-                    resultMessage = `[System] Moved map to [lat: ${targetLat}, lon: ${targetLon}] and highlighted using ${foundMetadata ? "full GeoJSON metadata" : "AI-provided metadata"}.`;
+                    highlightLocation([finalTargetLon, finalTargetLat], finalProps, actualSrcId);
+                    resultMessage = `[System] Moved map to [lat: ${finalTargetLat}, lon: ${finalTargetLon}] and highlighted using ${foundMetadata ? "full GeoJSON metadata" : "AI-provided metadata"}.`;
                 } else {
                     resultMessage = `[System Error] Missing lat or lon coordinates.`;
                 }
