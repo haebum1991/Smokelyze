@@ -116,8 +116,10 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                     let resultMsg;
                     // 백엔드 실행 결과가 있으면 그것을 사용, 없으면 프론트엔드 도구 실행
                     if (backendResultsMap[funcName]) {
+                        console.log(`[AI Logic] Using cached backend result for: ${funcName}`);
                         resultMsg = backendResultsMap[funcName];
                     } else {
+                        console.log(`[AI Logic] Executing frontend tool: ${funcName}`);
                         resultMsg = await handleAiToolCall(funcName, funcArgs);
                     }
 
@@ -127,6 +129,11 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                             response: typeof resultMsg === "object" ? resultMsg : { result: resultMsg }
                         }
                     });
+                }
+
+                // [Fix] Ensure map has a moment to process transitions
+                if (functionCallParts.some(p => p.functionCall.name === "move_to_location")) {
+                    await new Promise(r => setTimeout(r, 600));
                 }
 
                 // AI의 "함수 쓸게!"라는 메시지를 대화 기록에 추가
