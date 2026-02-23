@@ -176,7 +176,12 @@ async function handleChatSubmit() {
 
     // Create loading element
     const loadingId = "loader-" + Date.now();
-    aiChatList.innerHTML += `<div id="${loadingId}" class="AiChat-msg AiChat-ai" style="color:var(--text-soft);">...Analyzing...</div>`;
+    const loaderDiv = document.createElement("div");
+    loaderDiv.id = loadingId;
+    loaderDiv.className = "AiChat-msg AiChat-ai";
+    loaderDiv.style.color = "var(--text-soft)";
+    loaderDiv.innerText = "...Analyzing...";
+    aiChatList.appendChild(loaderDiv);
     scrollToBottom();
 
     // Context Generation
