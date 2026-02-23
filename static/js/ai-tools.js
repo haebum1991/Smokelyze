@@ -6,92 +6,90 @@ export const smokelyzeAiTools = [
     {
         function_declarations: [
             {
-                name: "change_date",
-                description: "Changes the date of the map display when the user wants to see data from a specific past or future date.",
+                name: "query_bigquery",
+                description: "Executes a Read-only SQL query on the Smokelyze BigQuery database. Used by the backend only.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
-                        date: {
-                            type: "STRING",
-                            description: "The date in YYYY-MM-DD format (e.g., 2023-08-10)"
-                        }
+                        sql: { type: "STRING", description: "The SQL query." }
+                    },
+                    required: ["sql"]
+                }
+            },
+            {
+                name: "change_date",
+                description: "Changes the date of the map display.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        date: { type: "STRING", description: "YYYY-MM-DD" }
                     },
                     required: ["date"]
                 }
             },
             {
                 name: "extract_summary_aqs",
-                description: "Extracts raw property data (GeoJSON) from THE CURRENTLY LOADED map source. If a source is NOT loaded, you must first call change_dataset or change_layer to load it. Use this to find highest/lowest values, station information, or to perform correlation analysis.",
+                description: "Extracts map data for correlation.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
-                        sourceId: {
-                            type: "STRING",
-                            description: "ID of the data source (Use underscores: gam_v2, gam_v1, pm_cbsa, epa_ember, airnow_daily)"
-                        },
-                        target_field: {
-                            type: "STRING",
-                            description: "The field name to sort or extract (e.g., MDA8O3, PM2.5, TMAX, SMO)"
-                        },
-                        sort_desc: {
-                            type: "BOOLEAN",
-                            description: "Set to true for highest value first, false for lowest value first."
-                        },
-                        limit: {
-                            type: "INTEGER",
-                            description: "Maximum number of records to return (default: 10, set to 1 for the single highest/lowest point)"
-                        }
+                        sourceId: { type: "STRING" },
+                        target_field: { type: "STRING" },
+                        sort_desc: { type: "BOOLEAN" },
+                        limit: { type: "INTEGER" }
                     },
                     required: ["sourceId", "target_field"]
                 }
             },
             {
                 name: "move_to_location",
-                description: "Smoothly pans the map to a specific coordinate and displays a highlight marker. Required after finding a specific site of interest via extract_summary_aqs.",
+                description: "Pans the map to a site.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
-                        lat: { type: "NUMBER", description: "Target Latitude" },
-                        lon: { type: "NUMBER", description: "Target Longitude" },
-                        sourceId: { type: "STRING", description: "Related data source ID (e.g., gam_v2)" },
-                        properties: {
-                            type: "OBJECT",
-                            description: "The complete property object of the location from extract_summary_aqs."
-                        }
+                        lat: { type: "NUMBER" },
+                        lon: { type: "NUMBER" },
+                        sourceId: { type: "STRING" },
+                        properties: { type: "OBJECT" }
                     },
                     required: ["lat", "lon"]
                 }
             },
             {
                 name: "change_dataset",
-                description: "Changes the active Published dataset model. If you want to extract data from a model, you must call this first with the hyphenated ID.",
+                description: "Changes the active model (gam-v2, pm-cbsa).",
                 parameters: {
                     type: "OBJECT",
                     properties: {
-                        dataset_value: {
-                            type: "STRING",
-                            description: "The dataset value (Use hyphens: gam-v2, gam-v1, epa-ember, pm-cbsa)"
-                        }
+                        dataset_value: { type: "STRING" }
                     },
                     required: ["dataset_value"]
                 }
             },
             {
                 name: "change_layer",
-                description: "Turns a specific data layer ON or OFF. Use this to ensure a layer like 'layer-smo' is active before trying to extract data from its source.",
+                description: "Toggles a map layer.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
-                        layer_id: {
-                            type: "STRING",
-                            description: "The HTML ID of the layer checkbox (e.g., layer-mda8-obs, layer-airnow-daily-pm25, layer-smo, layer-smoke, layer-wildfire-news)"
-                        },
-                        turn_on: {
-                            type: "BOOLEAN",
-                            description: "True to check/turn ON, false to uncheck/turn OFF"
-                        }
+                        layer_id: { type: "STRING" },
+                        turn_on: { type: "BOOLEAN" }
                     },
                     required: ["layer_id", "turn_on"]
+                }
+            },
+            {
+                name: "open_description",
+                description: "Opens info panel."
+            },
+            {
+                name: "extract_summary_state",
+                description: "Extracts state-level summary table.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        target_field: { type: "STRING" }
+                    }
                 }
             }
         ]
