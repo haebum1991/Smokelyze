@@ -246,8 +246,7 @@ function appendSuggestions(suggestions) {
         chip.onclick = () => {
             aiChatInput.value = text;
             handleChatSubmit();
-            // Remove suggestions after first interaction
-            container.remove();
+            // Keep suggestions visible so they can be clicked again
         };
         container.appendChild(chip);
     });
@@ -268,7 +267,7 @@ function resetToWelcome() {
     appendSuggestions([
         "Go the date to 2021-05-10.",
         "Set the date to 2023-06-10, and turn on the HMS smoke layer.",
-        "show the PM2.5 results for the GAM-v1 model on 2023-06-08, and which site had the lowest?",
+        "Show the PM2.5 results for the GAM-v1 model on 2023-06-08, and which site had the lowest?",
         "Show the SMO results for the GAM-v2 model on 2024-08-15, and which site had the highest?"
     ]);
 
