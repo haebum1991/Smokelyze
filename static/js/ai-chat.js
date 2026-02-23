@@ -324,8 +324,7 @@ function generateContext() {
         contextLines.push(`Active Layers: None`);
     }
 
-    return contextLines.join("
-");
+    return contextLines.join("\n");
 }
 
 // Auto init if directly included
