@@ -143,17 +143,29 @@ export async function handleAiToolCall(functionName, args) {
                 break;
 
             case "extract_summary_aqs":
-                const sourceId = args?.sourceId || "gam_v2";
+                let rawSourceId = args?.sourceId || "gam_v2";
+
                 if (!map) {
                     return "[System Error] Map 인스턴스를 불러올 수 없습니다.";
                 }
 
-                const source = map.getSource(sourceId);
+                // Agnostic Lookup: Try exact, underscore, and hyphen variations
+                let source = map.getSource(rawSourceId) ||
+                    map.getSource(rawSourceId.replace(/-/g, "_")) ||
+                    map.getSource(rawSourceId.replace(/_/g, "-"));
+
+                // Fallback check: if still not found, check dataset list
+                if (!source) {
+                    const possibleSources = ["gam_v2", "gam_v1", "pm_cbsa", "epa_ember"];
+                    source = possibleSources.map(s => map.getSource(s)).find(s => s);
+                }
+
                 if (!source || !source._data || !source._data.features || source._data.features.length === 0) {
-                    resultMessage = `[System Event] The requested source (${sourceId}) is not loaded on the map. The user must first select the corresponding layer or dataset from the control panel to download it. Please ask the user to activate "${sourceId}" and try again.`;
+                    resultMessage = `[System Event] The requested source (${rawSourceId}) is not loaded on the map. Current Active Dataset might be different. Please ensure the user has selected the layer and wait for data to load.`;
                     break;
                 }
 
+                const sourceId = source.id; // Corrected ID found in map
                 const features = source._data.features;
                 const field = args.target_field;
                 const isDesc = args.sort_desc !== false; // default true
@@ -231,17 +243,22 @@ export async function handleAiToolCall(functionName, args) {
             case "move_to_location":
                 const targetLat = args?.lat;
                 const targetLon = args?.lon;
-                const srcId = args?.sourceId || "gam_v2";
+                const rawSrcId = args?.sourceId || "gam_v2";
                 let props = args?.properties || {};
 
                 if (targetLat && targetLon) {
                     // [Sync] Wait for map to be idle (GeoJSON data to be loaded/rendered)
                     await waitForMapIdle(1500);
 
+                    // Agnostic source ID for lookup
+                    const actualSrcId = (map && map.getSource(rawSrcId)) ? rawSrcId :
+                        (map.getSource(rawSrcId.replace(/-/g, "_")) ? rawSrcId.replace(/-/g, "_") :
+                            (map.getSource(rawSrcId.replace(/_/g, "-")) ? rawSrcId.replace(/_/g, "-") : rawSrcId));
+
                     try {
                         if (Object.keys(props).length === 0 && map) {
                             const point = map.project([targetLon, targetLat]);
-                            const possibleLayers = [srcId, `${srcId}-layer`, `${srcId}-circle`, `${srcId.replace("_", "-")}-layer`];
+                            const possibleLayers = [actualSrcId, `${actualSrcId}-layer`, `${actualSrcId}-circle`, `${actualSrcId.replace("_", "-")}-layer`];
                             const activeLayers = possibleLayers.filter(l => map.getLayer(l));
 
                             if (activeLayers.length > 0) {
@@ -255,7 +272,7 @@ export async function handleAiToolCall(functionName, args) {
                         console.warn("[System Warning] Could not query map layers for tooltip:", layerErr);
                     }
 
-                    highlightLocation([targetLon, targetLat], props, srcId);
+                    highlightLocation([targetLon, targetLat], props, actualSrcId);
                     resultMessage = `[System] Moved map to [lat: ${targetLat}, lon: ${targetLon}] and highlighted. Inform the user.`;
                 } else {
                     resultMessage = `[System Error] Missing lat or lon coordinates.`;
@@ -291,20 +308,24 @@ export async function handleAiToolCall(functionName, args) {
                 break;
 
             case "change_layer":
-                const layerId = args?.layer_id;
+                const rawLayerId = args?.layer_id;
                 const turnOn = args?.turn_on;
-                const checkbox = document.getElementById(layerId);
+
+                // Agnostic Lookup for checkbox ID
+                const checkbox = document.getElementById(rawLayerId) ||
+                    document.getElementById(rawLayerId.replace(/-/g, "_")) ||
+                    document.getElementById(rawLayerId.replace(/_/g, "-"));
 
                 if (checkbox) {
                     if (checkbox.checked !== turnOn) {
                         checkbox.checked = turnOn;
                         checkbox.dispatchEvent(new Event("change", { bubbles: true }));
-                        resultMessage = `[System] Layer "${layerId}" turned ${turnOn ? "ON" : "OFF"}. Data is loading. Inform the user.`;
+                        resultMessage = `[System] Layer "${checkbox.id}" turned ${turnOn ? "ON" : "OFF"}. Data is loading. Inform the user.`;
                     } else {
-                        resultMessage = `[System] Layer "${layerId}" is already ${turnOn ? "ON" : "OFF"}.`;
+                        resultMessage = `[System] Layer "${checkbox.id}" is already ${turnOn ? "ON" : "OFF"}.`;
                     }
                 } else {
-                    resultMessage = `[System Error] Could not find layer checkbox with ID "${layerId}". Verify the ID.`;
+                    resultMessage = `[System Error] Could not find layer checkbox with ID "${rawLayerId}". Verify the ID naming (hyphens/underscores).`;
                 }
                 break;
                 

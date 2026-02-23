@@ -305,24 +305,26 @@ function generateContext() {
     // 2. Published Dataset Model
     const dsSelect = document.getElementById("MapDataSelect");
     if (dsSelect) {
-        const option = dsSelect.options[dsSelect.selectedIndex];
-        if (option) contextLines.push(`Active Model: ${option.text}`);
+        const val = dsSelect.value;
+        const text = dsSelect.options[dsSelect.selectedIndex]?.text || "Unknown";
+        contextLines.push(`Active Model: ID="${val}", Label="${text}"`);
     }
 
     // 3. Simple list of visible checkboxes
     const activeLayers = [];
     document.querySelectorAll(".accordion-page input[type='checkbox']").forEach(cb => {
-        if (cb.checked) {
-            // Find its label text gently
+        if (cb.checked && cb.parentElement.style.display !== "none") {
             const labelText = cb.parentElement.innerText.trim() || cb.id;
-            activeLayers.push(labelText.replace(/\n/g, "").substring(0, 30));
+            activeLayers.push(`${cb.id} ("${labelText}")`);
         }
     });
     if (activeLayers.length > 0) {
         contextLines.push(`Active Layers: ${activeLayers.join(", ")}`);
+    } else {
+        contextLines.push(`Active Layers: None`);
     }
 
-    return contextLines.join("\
+    return contextLines.join("
 ");
 }
 
