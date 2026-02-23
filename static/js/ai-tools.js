@@ -103,21 +103,53 @@ export const smokelyzeAiTools = [
 
 /**
  * 지도의 데이터 로딩이나 렌더링이 완료될 때까지 대기하는 헬퍼 함수
+ * 땜질식 타이머가 아니라 실제 화면의 로딩 스피너(MapLoadingSpinner)를 완벽하게 감시합니다.
  */
-function waitForMapIdle(timeout = 3500) {
+function waitForMapIdle(timeout = 10000) {
     return new Promise((resolve) => {
-        if (!map) return resolve();
-        // 이미 로드된 상태라도 데이터 fetch는 진행 중일 수 있으므로 idle 이벤트 활용
-        const onIdle = () => {
-            map.off("idle", onIdle);
-            resolve();
-        };
-        map.on("idle", onIdle);
-        // 혹시 모르니 타임아웃 설정
+        // 프론트엔드의 Debounce(200ms) 이벤트가 스피너를 켤 시간을 주기 위해 250ms 먼저 대기
         setTimeout(() => {
-            map.off("idle", onIdle);
-            resolve();
-        }, timeout);
+            const spinner = document.getElementById("MapLoadingSpinner");
+
+            // 데바운스가 끝났는데도 스피너가 안 켜졌거나 이미 꺼졌다면 (데이터가 필요 없는 로컬 조작 등) 즉시 완료
+            if (!spinner || spinner.style.display === "none" || spinner.style.display === "") {
+                resolve();
+                return;
+            }
+
+            let resolved = false;
+            let timeoutId;
+
+            const finalize = () => {
+                if (resolved) return;
+                resolved = true;
+                if (observer) observer.disconnect();
+                clearTimeout(timeoutId);
+                resolve();
+            };
+
+            // 스피너의 스타일 변경을 실시간 감지
+            const observer = new MutationObserver((mutations) => {
+                for (let mutation of mutations) {
+                    if (mutation.attributeName === "style") {
+                        if (spinner.style.display === "none") {
+                            finalize();
+                            return;
+                        }
+                    }
+                }
+            });
+
+            // 감시 시작
+            observer.observe(spinner, { attributes: true, attributeFilter: ["style"] });
+
+            // 최후의 안전 방어막 (10초 이상 스피너가 안 꺼지는 무한 로딩 대비)
+            timeoutId = setTimeout(() => {
+                console.warn("[System] waitForMapIdle timeout reached. Forcing resolve.");
+                finalize();
+            }, timeout);
+
+        }, 250);
     });
 }
 
