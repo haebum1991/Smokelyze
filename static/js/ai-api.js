@@ -117,9 +117,9 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                 // AI의 "함수 쓸게!"라는 메시지를 대화 기록에 추가
                 contents.push(modelResponseContent);
 
-                // [Fix] Gemini 2.0 모델에서는 함수 결과의 role을 "tool"로 기재하는 것이 안정적입니다.
+                // [Standard] Gemini API expects "function" role for tool responses. 
                 contents.push({
-                    role: "tool",
+                    role: "function",
                     parts: functionResponseParts
                 });
 
