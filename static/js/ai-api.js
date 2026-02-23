@@ -117,9 +117,9 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                 // AI의 "함수 쓸게!"라는 메시지를 대화 기록에 추가
                 contents.push(modelResponseContent);
 
-                // [Standard] Gemini API expects "function" role for tool responses. 
+                // [Standard] Gemini API expects "tool" role for tool responses. 
                 contents.push({
-                    role: "function",
+                    role: "tool",
                     parts: functionResponseParts
                 });
 
