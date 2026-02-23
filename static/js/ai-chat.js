@@ -324,7 +324,11 @@ function generateContext() {
         contextLines.push(`Active Layers: None`);
     }
 
-    return contextLines.join("\n");
+    // AI Mapping Hint: Helps AI correlate display IDs to internal source names
+    contextLines.push(`[System Note] Model ID "gam-v2" maps to source "gam_v2". If a layer like "layer-smo-gam-v2" is active, it means "gam-v2" data is present.`);
+
+    return contextLines.join("
+");
 }
 
 // Auto init if directly included
