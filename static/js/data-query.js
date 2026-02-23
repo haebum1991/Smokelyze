@@ -302,12 +302,18 @@ function setDateRangeFromData(features) {
     const minDateFormatted = extractDate(minDate);
     const maxDateFormatted = extractDate(maxDate);
 
-    // Store as default for reset
-    defaultDateStart = minDateFormatted;
-    defaultDateEnd = maxDateFormatted;
+    // Set date range for both Table and Plot inputs
+    const setInputs = (startId, endId) => {
+        const start = document.getElementById(startId);
+        const end = document.getElementById(endId);
+        if (start && end) {
+            start.value = minDateFormatted;
+            end.value = maxDateFormatted;
+        }
+    };
 
-    dateStartInput.value = minDateFormatted;
-    dateEndInput.value = maxDateFormatted;
+    setInputs("DatadbDataDateStart", "DatadbDataDateEnd");
+    setInputs("DatadbPlotDateStart", "DatadbPlotDateEnd");
 }
 
 /**
@@ -450,6 +456,8 @@ async function handleQuery() {
             }
 
             renderDataTable();
+            if (drawAQSPlots) drawAQSPlots(currentTableData, currentDatasetId, currentAqs);
+
             pendingFlyTo = true;
             document.getElementById("DatadbDataTableWrapper").style.display = "block";
 
@@ -634,6 +642,26 @@ function resetDateRange() {
 }
 
 /**
+ * Reset PLOT date range to original min/max
+ */
+function resetPlotDateRange() {
+    if (!defaultDateStart || !defaultDateEnd) return;
+
+    const dateStartInput = document.getElementById("DatadbPlotDateStart");
+    const dateEndInput = document.getElementById("DatadbPlotDateEnd");
+
+    if (dateStartInput && dateEndInput) {
+        dateStartInput.value = defaultDateStart;
+        dateEndInput.value = defaultDateEnd;
+
+        if (currentFeatures.length > 0) {
+            // Plots use their own filtered set of currentFeatures, but here we just pass the full set
+            if (drawAQSPlots) drawAQSPlots(currentFeatures.map(f => ({ ...f.properties, lon: f.geometry?.coordinates?.[0], lat: f.geometry?.coordinates?.[1] })), currentDatasetId, currentAqs);
+        }
+    }
+}
+
+/**
  * Apply current date range filter
  */
 function applyDateRange() {
@@ -655,6 +683,37 @@ function applyDateRange() {
     renderDataTable();
 }
 
+/**
+ * Apply current PLOT date range filter
+ */
+function applyPlotDateRange() {
+    if (currentFeatures.length === 0) return;
+
+    const dateStart = document.getElementById("DatadbPlotDateStart")?.value;
+    const dateEnd = document.getElementById("DatadbPlotDateEnd")?.value;
+
+    if (!dateStart || !dateEnd) return;
+
+    const startDate = new Date(dateStart);
+    const endDate = new Date(dateEnd);
+
+    // Filter features for PLOT independently
+    const filteredForPlot = currentFeatures
+        .filter(f => {
+            const fDate = new Date(f.properties.date);
+            return fDate >= startDate && fDate <= endDate;
+        })
+        .map(f => {
+            const p = { ...f.properties };
+            if (f.geometry && f.geometry.coordinates) {
+                p.lon = f.geometry.coordinates[0];
+                p.lat = f.geometry.coordinates[1];
+            }
+            return p;
+        });
+
+    if (drawAQSPlots) drawAQSPlots(filteredForPlot, currentDatasetId, currentAqs);
+}
 
 /**
  * Exposed functions for HTML
@@ -737,6 +796,13 @@ function initQueryBuilder() {
     const btnNext = document.getElementById("DatadbDataTableBtnNext");
     if (btnNext) btnNext.addEventListener("click", () => changePage(1));
 
+    // Plot-specific Button Listeners
+    const btnPlotDefault = document.getElementById("DatadbPlotBtnDateDefault");
+    if (btnPlotDefault) btnPlotDefault.addEventListener("click", resetPlotDateRange);
+
+    const btnPlotSetRange = document.getElementById("DatadbPlotBtnDateSetRange");
+    if (btnPlotSetRange) btnPlotSetRange.addEventListener("click", applyPlotDateRange);
+
     // Custom Event Listeners (Tab Switching)
     window.addEventListener("tabOpenLocation", () => {
         // Debounce or just check visibility logic is inside initLocationMap usually
@@ -744,7 +810,15 @@ function initQueryBuilder() {
     });
 
     window.addEventListener("tabOpenPlots", () => {
-        if (drawAQSPlots) drawAQSPlots(currentTableData, currentDatasetId, currentAqs);
+        if (currentFeatures.length > 0) {
+            applyPlotDateRange();
+            setTimeout(() => {
+                ["DatadbPlot1", "DatadbPlot2", "DatadbPlot3", "DatadbPlot4"].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && window.Plotly) Plotly.Plots.resize(el);
+                });
+            }, 100);
+        }
     });
     
     onAuthStateChanged(auth, (user) => {

@@ -146,6 +146,20 @@ title: ""
 
           <!-- Plots Section -->
           <div id="DatadbPlotsSection" class="datadb-tab-content nested-sub-tab-content">
+          
+            <!-- Plot-specific Date Range Filter (Independent) -->
+            <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin-bottom: 1.5rem;">
+              <div style="flex: 1; min-width: 30rem;">
+                <div class="datadb-date-range">
+                  <input type="date" id="DatadbPlotDateStart">
+                  <span>to</span>
+                  <input type="date" id="DatadbPlotDateEnd">
+                </div>
+              </div>
+              <button class="datadb-query-btn" id="DatadbPlotBtnDateDefault">Default range</button>
+              <button class="datadb-query-btn" id="DatadbPlotBtnDateSetRange">Set range</button>
+            </div>
+          
             <div id="DatadbPlotsContainer" class="datadb-plots-grid">
               <div id="DatadbPlot1" class="datadb-plot-item"></div>
               <div id="DatadbPlot2" class="datadb-plot-item"></div>
