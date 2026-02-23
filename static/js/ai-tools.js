@@ -121,6 +121,11 @@ export async function handleAiToolCall(functionName, args) {
 
     try {
         switch (functionName) {
+            case "query_bigquery":
+                // This tool is executed on the Cloud Run backend. 
+                // We simply return a success indicator to let the frontend loop continue.
+                return "[System] Data fetched successfully from BigQuery backend.";
+
             case "change_date":
                 const targetDate = args?.date;
                 const datePicker = document.getElementById("datePicker");
