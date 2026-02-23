@@ -235,19 +235,28 @@ export async function handleAiToolCall(functionName, args) {
                 let props = args?.properties || {};
 
                 if (targetLat && targetLon) {
-                    // [경보] 만약 AI가 properties를 안 보내줬다면, 지도의 해당 위치에서 가장 가까운 Feature를 한 번 찾아봅니다.
-                    if (Object.keys(props).length === 0 && map) {
-                        const point = map.project([targetLon, targetLat]);
-                        const features = map.queryRenderedFeatures(point, {
-                            layers: [srcId, srcId + "-layer", srcId + "-circle"] // 레이어 이름 추측
-                        });
-                        if (features && features.length > 0) {
-                            props = features[0].properties;
+                    // [Sync] Wait for map to be idle (GeoJSON data to be loaded/rendered)
+                    await waitForMapIdle(1500);
+
+                    try {
+                        if (Object.keys(props).length === 0 && map) {
+                            const point = map.project([targetLon, targetLat]);
+                            const possibleLayers = [srcId, `${srcId}-layer`, `${srcId}-circle`, `${srcId.replace("_", "-")}-layer`];
+                            const activeLayers = possibleLayers.filter(l => map.getLayer(l));
+
+                            if (activeLayers.length > 0) {
+                                const features = map.queryRenderedFeatures(point, { layers: activeLayers });
+                                if (features && features.length > 0) {
+                                    props = features[0].properties;
+                                }
+                            }
                         }
+                    } catch (layerErr) {
+                        console.warn("[System Warning] Could not query map layers for tooltip:", layerErr);
                     }
 
                     highlightLocation([targetLon, targetLat], props, srcId);
-                    resultMessage = `[System] Moved map to [lat: ${targetLat}, lon: ${targetLon}] and highlighted. (Tooltip: ${Object.keys(props).length > 0 ? "Success" : "Properties not found"}). Inform the user about the movement.`;
+                    resultMessage = `[System] Moved map to [lat: ${targetLat}, lon: ${targetLon}] and highlighted. Inform the user.`;
                 } else {
                     resultMessage = `[System Error] Missing lat or lon coordinates.`;
                 }
