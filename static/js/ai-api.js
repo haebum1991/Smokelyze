@@ -100,16 +100,31 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
             const functionCallParts = parts.filter(p => p.functionCall);
             if (functionCallParts.length > 0) {
                 const functionResponseParts = [];
+
+                // [Fix] 백엔드에서 미리 실행해서 보내준 결과값이 있다면 매핑
+                const backendResultsMap = {};
+                if (data.backendResults) {
+                    data.backendResults.forEach(br => {
+                        backendResultsMap[br.functionResponse.name] = br.functionResponse.response;
+                    });
+                }
+
                 for (const part of functionCallParts) {
                     const funcName = part.functionCall.name;
                     const funcArgs = part.functionCall.args;
 
-                    const resultMsg = await handleAiToolCall(funcName, funcArgs);
+                    let resultMsg;
+                    // 백엔드 실행 결과가 있으면 그것을 사용, 없으면 프론트엔드 도구 실행
+                    if (backendResultsMap[funcName]) {
+                        resultMsg = backendResultsMap[funcName];
+                    } else {
+                        resultMsg = await handleAiToolCall(funcName, funcArgs);
+                    }
 
                     functionResponseParts.push({
                         functionResponse: {
                             name: funcName,
-                            response: { result: resultMsg }
+                            response: typeof resultMsg === "object" ? resultMsg : { result: resultMsg }
                         }
                     });
                 }

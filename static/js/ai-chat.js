@@ -268,7 +268,7 @@ function resetToWelcome() {
     appendSuggestions([
         "What is smoke O3 (SMO)?",
         "Set the date to June 8, 2023, and turn on the HMS smoke.",
-        "Show the SMO results for the GAM-v2 model on August 15, 2024. Which site had the highest SMO value, and can you point it out on the map?"
+        "Show the SMO results for the GAM-v2 model on August 15, 2024. Which site had the highest SMO?"
     ]);
 
     scrollToBottom();
@@ -299,7 +299,7 @@ function generateContext() {
     // 1. Date (Dashboard View Date)
     const datePicker = document.getElementById("datePicker");
     if (datePicker && datePicker.value) {
-        contextLines.push(`View Date: ${datePicker.value}`);
+        contextLines.push(`View Date (Map Active Date): ${datePicker.value}`);
     }
 
     // 2. Published Dataset Model

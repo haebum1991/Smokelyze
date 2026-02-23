@@ -1,6 +1,7 @@
 
 import { map } from "./layers-state.js";
 import { highlightLocation } from "./utils.js";
+import { loadedGeoJSON, activeSources, loadedSources } from "./loader-state.js";
 
 export const smokelyzeAiTools = [
     {
@@ -247,33 +248,44 @@ export async function handleAiToolCall(functionName, args) {
                 let props = args?.properties || {};
 
                 if (targetLat && targetLon) {
-                    // [Sync] Wait for map to be idle (GeoJSON data to be loaded/rendered)
+                    // [Sync] Wait for map to be idle
                     await waitForMapIdle(1500);
 
-                    // Agnostic source ID for lookup
+                    // Agnostic source ID lookup
                     const actualSrcId = (map && map.getSource(rawSrcId)) ? rawSrcId :
                         (map.getSource(rawSrcId.replace(/-/g, "_")) ? rawSrcId.replace(/-/g, "_") :
                             (map.getSource(rawSrcId.replace(/_/g, "-")) ? rawSrcId.replace(/_/g, "-") : rawSrcId));
 
-                    try {
-                        if (Object.keys(props).length === 0 && map) {
-                            const point = map.project([targetLon, targetLat]);
-                            const possibleLayers = [actualSrcId, `${actualSrcId}-layer`, `${actualSrcId}-circle`, `${actualSrcId.replace("_", "-")}-layer`];
-                            const activeLayers = possibleLayers.filter(l => map.getLayer(l));
+                    let foundMetadata = null;
 
-                            if (activeLayers.length > 0) {
-                                const features = map.queryRenderedFeatures(point, { layers: activeLayers });
-                                if (features && features.length > 0) {
-                                    props = features[0].properties;
-                                }
+                    // [BRAIN] Robust Search in loadedGeoJSON for full properties
+                    // This ensures we have the actual data from geojson.gz even if AI passed partial info
+                    if (loadedGeoJSON) {
+                        const EPSILON = 0.0001; // ~11m
+                        // Try active sources first, then others
+                        const searchSources = [...(activeSources || []), ...Object.keys(loadedGeoJSON)];
+
+                        for (const src of searchSources) {
+                            const data = loadedGeoJSON[src] || loadedGeoJSON[loadedSources[src]];
+                            if (!data || !data.features) continue;
+
+                            const match = data.features.find(f => {
+                                const c = f.geometry?.coordinates;
+                                return c && Math.abs(c[0] - targetLon) < EPSILON && Math.abs(c[1] - targetLat) < EPSILON;
+                            });
+
+                            if (match) {
+                                foundMetadata = match.properties;
+                                break;
                             }
                         }
-                    } catch (layerErr) {
-                        console.warn("[System Warning] Could not query map layers for tooltip:", layerErr);
                     }
 
-                    highlightLocation([targetLon, targetLat], props, actualSrcId);
-                    resultMessage = `[System] Moved map to [lat: ${targetLat}, lon: ${targetLon}] and highlighted. Inform the user.`;
+                    // Merge: Map-found data (base) + AI-provided data (overrides)
+                    const finalProps = { ...foundMetadata, ...props };
+
+                    highlightLocation([targetLon, targetLat], finalProps, actualSrcId);
+                    resultMessage = `[System] Moved map to [lat: ${targetLat}, lon: ${targetLon}] and highlighted using ${foundMetadata ? "full GeoJSON metadata" : "AI-provided metadata"}.`;
                 } else {
                     resultMessage = `[System Error] Missing lat or lon coordinates.`;
                 }
