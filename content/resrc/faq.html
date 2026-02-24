@@ -3,11 +3,454 @@
 title: ""
 ---
 
+<h1 style="text-align: center;">
+    Frequently Asked Questions
+</h1>
+
+<div class="faq-hero">
+    <p>
+    Everything you need to know about using Smokelyze
+    <br>
+    from data layers to analysis.
+    </p>
+
+    <div class="faq-search-wrap">
+        <input type="text" class="faq-search" id="FaqSearch" placeholder="Search questions...">
+    </div>
+
+    <div class="faq-filters">
+        <button class="faq-filter-btn active" data-filter="all">All</button>
+        <button class="faq-filter-btn" data-filter="data">Data & Layers</button>
+        <button class="faq-filter-btn" data-filter="account">Account</button>
+        <button class="faq-filter-btn" data-filter="general">General</button>
+        <button class="faq-filter-btn" data-filter="ai">AI Chat</button>
+    </div>
+
+    <div class="faq-contact">
+        Can't find what you're looking for? <br>
+        Contact the developer, PhD. Haebum Lee.
+    </div>
+</div>
+
+<div class="faq-list" id="FaqList">
+
+    <!-- Data & Layers -->
+    <div class="faq-item" data-category="data">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">Data</span> What is "SMO" (Smoke O3)?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                <strong>SMO (Smoke contribution to Ozone or Smoke O3)</strong> represents the estimated ozone concentration increase
+                caused by wildfire smoke.
+                It is calculated as:
+                <br><br>
+                <code>SMO = MDA8O3 (observed) − MDA8O3_pred (predicted)</code>
+                <br><br>
+                A positive SMO value means wildfire smoke likely <strong>increased ozone</strong> at that monitoring
+                site on that day. SMO is only valid on <strong>smoke days</strong> (when HMS detects overhead smoke
+                plumes and PM2.5 exceeds the critical threshold).
+            </div>
+        </div>
+    </div>
+    
+    <div class="faq-item" data-category="data">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">Data</span> What does "Published" data mean, and why do I need to log in?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                <strong>Published data</strong> refers to peer-reviewed scientific model outputs (GAM-v2, GAM-v1, EPA
+                EMBER, Smoke PM2.5) that estimate smoke-attributed ozone and PM2.5 concentrations.
+                These datasets require <strong>free account login</strong> because they are research-grade data products
+                that we want to track usage for academic attribution purposes. Simply sign in with your Google account
+                to access all Published layers — no fee required.
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-item" data-category="data">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">Data</span> Why does the map say "No data found" for my selected date?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                Each dataset covers a specific time period. For example, the GAM-v2 model covers <strong>April–October
+                    of 2019–2024</strong> (ozone season only).
+                If you select a date outside this range, no data will be available.
+                Check the <strong>Layer Descriptions</strong> panel (the <code>ℹ</code> icon on the map) for the exact
+                date range of each dataset.
+                For HMS Smoke and Fire data, data from the <strong>current day</strong> may not yet be available due to
+                processing delays — try selecting yesterday's date.
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-item" data-category="data">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">Data</span> How do I compare data across AQS sites?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                Use the <strong>statistical plots</strong> available in the [Map] page:
+                <ul>
+                    <li><strong>Table:</strong> View regional or site-level summary statistics including area
+                        burned, smoke coverage, and fire metrics in a structured list.</li>
+                    <li><strong>Bar/Line plot:</strong> View state-level aggregated statistics and click individual
+                        states for site-level drill-down.</li>
+                    <li><strong>ParCoords plot:</strong> Multi-dimensional visualization to compare trends across
+                        different variables or sites simultaneously.</li>
+                    <li><strong>Scatter plot:</strong> Select multiple data layers and compare their values
+                        site-by-site. The first selected layer goes to the Y-axis, and additional layers become X-axis
+                        traces.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="faq-item" data-category="data">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">Data</span> What is the "Annual report" section in the Data Archive?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                The <strong>Annual report</strong> section (Resources > Data > Annual report) provides
+                summarized
+                research outputs for specific calendar years, categorized into <strong>Preliminary</strong> (initial
+                models) and <strong>Finalized</strong> (validated results).
+                <ul>
+                    <li><strong>Smoke O3:</strong> Predictions for wildfire seasons (2025+) using the
+                        finalized model architecture (GAM-v2).
+                    </li>
+                    <li><strong>Smoke PM2.5:</strong> Summarized PM2.5, PM2.5-criteria, and Smoke day across PM2.5 AQS sites.
+                    </li>
+                </ul>
+                Finalized reports are typically released in <strong>September of the following year</strong> (e.g., the
+                2024 finalized dataset is expected in Sep 2025). Like all Published data, you must be logged in to
+                download these files.
+                <br><br>
+                <strong>Caveat:</strong> Preliminary data combines the most recent EPA pre-generated data with AirNow
+                observations, as EPA pre-generated data is updated only twice a year. Users should exercise caution when
+                using preliminary outputs. Finalized data is established based on the EPA's official "as of" timestamp
+                at the time of publication. Due to these staggered reporting cycles, it is difficult to provide
+                "perfect" data; please use these datasets with awareness of these limitations.
+            </div>
+        </div>
+    </div>
+    
+    <div class="faq-item" data-category="data">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">Data</span> What is the "AQS query" in the Data Archive?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                The <strong>AQS query</strong> tool (located under Resources > Data > Published > AQS query) allows you
+                to extract processed data at the individual AQS monitoring station level.
+                <br><br>
+                By selecting a <strong>Dataset</strong> (e.g., GAM-v2), <strong>State</strong>, and a specific
+                <strong>AQS site</strong>, you can import historical model outputs and observations. Once data is
+                imported, you can toggle between:
+                <ul>
+                    <li><strong>Location:</strong> View the site's physical metadata and its position on a map.</li>
+                    <li><strong>Table:</strong> Browse the full dataset in a structured list and download it as a
+                        <strong>CSV</strong> for external analysis.
+                    </li>
+                    <li><strong>Plot:</strong> Generate interactive time-series charts to visualize trends over custom
+                        date ranges.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="faq-item" data-category="data">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">Data</span> What is "State report" in the Data Archive?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                The <strong>State report</strong> tool (Resources > Data > Published > State report) provides aggregated
+                air quality summaries at the state level. It is designed to help you understand wildfire impacts in the state level
+                <br><br>
+                Key features include:
+                <ul>
+                    <li><strong>Temporal Resolution:</strong> Choose between <strong>"By Year"</strong> for annual
+                        trends or
+                        <strong>"By Date"</strong> to analyze specific high-impact periods.
+                    </li>
+                    <li><strong>Report Types:</strong> Select from various statistics, such as average smoke-attributed
+                        ozone (SMO) levels, exceedance day counts, or site-specific summaries within the state.</li>
+                    <li><strong>Exportable Data:</strong> Like the AQS query tool, all generated reports can be reviewed
+                        in a table format and downloaded as a <strong>CSV</strong> file.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+                          
+    <!-- Account -->
+    <div class="faq-item" data-category="account">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">Account</span> Why do I need to sign in with Google?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                Signing in is required for two reasons:
+                <ul>
+                    <li><strong>Access control</strong>: Published research data is restricted to authenticated users
+                        for usage tracking and academic attribution.</li>
+                    <li><strong>Community features</strong>: MapPosts (community map pins) and Announcements require
+                        user identity to display authorship and enable moderation.</li>
+                </ul>
+                We use <strong>Google Sign-In exclusively</strong> — no separate username/password is created. We only
+                access your display name, email, and profile photo; no other Google data is accessed.
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-item" data-category="account">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">Account</span> What is a "Guest" login?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                Guest mode gives you <strong>full access</strong> to all Live data layers (HMS Smoke, Hotspots, AirNow,
+                Wildfire News, NIFC Fires) <strong>without signing in</strong>.
+                However, you will not be able to access Published model data, write MapPosts, or view Announcements.
+                If you only need real-time air quality monitoring, Guest mode is perfectly sufficient.
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="faq-item" data-category="account">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">Account</span> What is the "UID" in my profile, and how do I use it?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                The <strong>UID (User ID)</strong> is your unique identifier within the Smokelyze platform. It is used
+                to manage access permissions for collaboration features like <strong>MapPost</strong>.
+                <br><br>
+                For example, if you want to share a MapPost with specific colleagues rather than the entire public, you
+                can set the post's visibility to <strong>"Group"</strong>. Only members you have added to your group via
+                their UID will be able to see those posts.
+                <br><br>
+                <strong>How to set up a group:</strong>
+                <ol>
+                    <li>Go to your <strong>Profile (User icon)</strong> > <strong>Settings</strong>.</li>
+                    <li>Enter your colleague's <strong>UID</strong> in the input field.</li>
+                    <li>Click <strong>"Add"</strong> to register them as a group member.</li>
+                </ol>
+                Once registered, they will be granted permission to view and interact with your "Group" visibility
+                MapPosts.
+            </div>
+        </div>
+    </div>
+    
+    <!-- General -->
+    <div class="faq-item" data-category="general">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">General</span> Which browsers are supported?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                Smokelyze works best on modern browsers:
+                <ul>
+                    <li><strong>Chrome</strong> (recommended), Firefox, Edge, Safari</li>
+                    <li>Mobile browsers (Chrome for Android, Safari for iOS)</li>
+                    <li>Internet Explorer is not supported</li>
+                </ul>
+                For the best experience, use a <strong>desktop browser</strong> with a screen width of 1024px or wider.
+                The map and statistical plots are fully responsive but designed for larger screens.
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-item" data-category="general">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">General</span> How do I cite Smokelyze in my research?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                Each dataset has its own specific research paper for citation. Please cite the relevant paper based on
+                the data you used:
+                <ul>
+                    <li><strong>GAM-v2:</strong> <a href="https://doi.org/10.1029/2025JD044088" target="_blank">Lee and
+                            Jaffe, 2025 (JGR-Atmos)</a></li>
+                    <li><strong>GAM-v1:</strong> <a href="https://doi.org/10.1021/acs.est.4c05870" target="_blank">Lee
+                            and Jaffe, 2024 (ES&T)</a></li>
+                </ul>
+                If you wish to cite the <strong>Smokelyze app itself</strong>, please cite the <strong>Lee and Jaffe,
+                    2025 (GAM-v2)</strong> paper, as the current platform's development is fundamentally linked to this
+                research.
+                <br><br>
+                For full citation strings and DOI links, please visit the <strong><a href="/resrc/data">Data
+                        Archive</a></strong> page.
+            </div>
+        </div>
+    </div>
+    
+    <div class="faq-item" data-category="general">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">General</span> What is the "Announcements" page?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                The <strong>Announcements</strong> page is where we post project updates, new layer releases, system
+                maintenance notices, and key research milestones. Check this page regularly to stay informed about the
+                latest developments in the Smokelyze platform.
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-item" data-category="general">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">General</span> What is the "Links" page?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                The <strong>Links</strong> page is a curated collection of useful external resources, including official
+                air quality monitoring sites, wildfire tracking tools, and academic partner organizations.
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Chat -->
+    <div class="faq-item" data-category="ai">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">AI</span> How do I set up the AI Chat assistant?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                The AI assistant requires a <strong>Google Gemini API Key</strong> (free tier available):
+                <ul>
+                    <li>1. Visit <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a> and
+                        generate your API key.</li>
+                    <li>2. In Smokelyze, click on your <strong>Profile icon</strong> → <strong>Settings</strong> → paste
+                        your key into the <strong>Google Gemini API</strong> field.</li>
+                    <li>3. Open the AI Chat panel from the map page and start asking questions!</li>
+                    <li>Note: The <strong>free tier</strong> of the Gemini API has a quota (rate limit) per minute/day.
+                        For unrestricted use, please ensure you have set up a billing account on your Google AI Studio
+                        project.</li>
+                </ul>
+                Your API key is stored <strong>only in your browser's local storage</strong> and is never saved on our
+                servers.
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-item" data-category="ai">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">AI</span> What can the AI assistant do?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                The AI assistant is a <strong>full-stack map controller</strong> — not just a chatbot. It can:
+                <ul>
+                    <li><strong>Navigate</strong>: Change dates, toggle layers, switch datasets, and fly to specific
+                        locations on the map (e.g., "Set the date to 2023-06-10 and show the HMS smoke layer").</li>
+                    <li><strong>Analyze</strong>: Run SQL queries against the entire historical database to find
+                        rankings, trends, and comparisons (e.g., "Which site in California had the highest SMO on
+                        2023-07-15?").</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-item" data-category="ai">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">AI</span> Is my API key secure?</h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                Yes. Your API key follows a <strong>BYOK (Bring Your Own Key)</strong> model:
+                <ul>
+                    <li>The key is stored in your browser's <code>localStorage</code> — it never leaves your device
+                        except when making API calls.</li>
+                    <li>When communicating with our backend, the key is sent via a <strong>secure HTTP header</strong>
+                        (not in the request body) to minimize logging exposure.</li>
+                    <li>Our server uses the key only to forward your request to Google's API, then discards it. We do
+                        not store, log, or cache your key.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="faq-no-results" id="FaqNoResults">
+    No matching questions found. Try different keywords or <a href="/resrc/announcements/">check our
+    Announcements</a>.
+</div>
+
+<script>
+    (function () {
+        const searchInput = document.getElementById("FaqSearch");
+        const faqList = document.getElementById("FaqList");
+        const noResults = document.getElementById("FaqNoResults");
+        const items = faqList.querySelectorAll(".faq-item");
+        const filterBtns = document.querySelectorAll(".faq-filter-btn");
+
+        let activeFilter = "all";
+
+        // Filter buttons
+        filterBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                filterBtns.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                activeFilter = btn.dataset.filter;
+                applyFilters();
+            });
+        });
+
+        // Search
+        if (searchInput) {
+            searchInput.addEventListener("input", () => applyFilters());
+        }
+
+        function applyFilters() {
+            const query = (searchInput?.value || "").toLowerCase().trim();
+            let visibleCount = 0;
+
+            items.forEach(item => {
+                const category = item.dataset.category;
+                const text = item.textContent.toLowerCase();
+                const matchCategory = (activeFilter === "all" || category === activeFilter);
+                const matchSearch = !query || text.includes(query);
+
+                if (matchCategory && matchSearch) {
+                    item.style.display = "";
+                    visibleCount++;
+                } else {
+                    item.style.display = "none";
+                }
+            });
+
+            noResults.style.display = visibleCount === 0 ? "block" : "none";
+        }
+    })();
+</script>
+
 <style>
     /* FAQ Page Styles */
     .faq-hero {
         text-align: center;
-        padding: 4rem 2rem 3rem;
+        padding: 2rem 2rem 3rem;
         position: relative;
     }
 
@@ -305,395 +748,4 @@ title: ""
         }
     }
 </style>
-
-
-<div class="faq-hero">
-    <h1>Frequently Asked Questions</h1>
-    <p>
-    Everything you need to know about using Smokelyze
-    <br>
-    from data layers to analysis.</p>
-
-    <div class="faq-search-wrap">
-        <input type="text" class="faq-search" id="FaqSearch" placeholder="Search questions...">
-    </div>
-
-    <div class="faq-filters">
-        <button class="faq-filter-btn active" data-filter="all">All</button>
-        <button class="faq-filter-btn" data-filter="data">Data & Layers</button>
-        <button class="faq-filter-btn" data-filter="ai">AI Chat</button>
-        <button class="faq-filter-btn" data-filter="account">Account</button>
-        <button class="faq-filter-btn" data-filter="general">General</button>
-    </div>
-
-    <div class="faq-contact">
-        Can't find what you're looking for? <br>
-        Contact the developer, PhD. Haebum Lee.
-    </div>
-</div>
-
-<div class="faq-list" id="FaqList">
-
-    <!-- Data & Layers -->
-    <div class="faq-item" data-category="data">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-            <h3><span class="faq-tag">Data</span> What is "SMO" (Smoke O3)?</h3>
-            <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-            <div class="faq-answer-inner">
-                <strong>SMO (Smoke contribution to Ozone or Smoke O3)</strong> represents the estimated ozone concentration increase
-                caused by wildfire smoke.
-                It is calculated as:
-                <br><br>
-                <code>SMO = MDA8O3 (observed) − MDA8O3_pred (predicted)</code>
-                <br><br>
-                A positive SMO value means wildfire smoke likely <strong>increased ozone</strong> at that monitoring
-                site on that day. SMO is only valid on <strong>smoke days</strong> (when HMS detects overhead smoke
-                plumes and PM2.5 exceeds the critical threshold).
-            </div>
-        </div>
-    </div>
-    
-    <div class="faq-item" data-category="data">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-            <h3><span class="faq-tag">Data</span> What does "Published" data mean, and why do I need to log in?</h3>
-            <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-            <div class="faq-answer-inner">
-                <strong>Published data</strong> refers to peer-reviewed scientific model outputs (GAM-v2, GAM-v1, EPA
-                EMBER, Smoke PM2.5) that estimate smoke-attributed ozone and PM2.5 concentrations.
-                These datasets require <strong>free account login</strong> because they are research-grade data products
-                that we want to track usage for academic attribution purposes. Simply sign in with your Google account
-                to access all Published layers — no fee required.
-            </div>
-        </div>
-    </div>
-
-    <div class="faq-item" data-category="data">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-            <h3><span class="faq-tag">Data</span> Why does the map say "No data found" for my selected date?</h3>
-            <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-            <div class="faq-answer-inner">
-                Each dataset covers a specific time period. For example, the GAM-v2 model covers <strong>April–October
-                    of 2019–2024</strong> (ozone season only).
-                If you select a date outside this range, no data will be available.
-                Check the <strong>Layer Descriptions</strong> panel (the <code>ℹ</code> icon on the map) for the exact
-                date range of each dataset.
-                For HMS Smoke and Fire data, data from the <strong>current day</strong> may not yet be available due to
-                processing delays — try selecting yesterday's date.
-            </div>
-        </div>
-    </div>
-
-    <div class="faq-item" data-category="data">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-            <h3><span class="faq-tag">Data</span> How do I compare data across AQS sites?</h3>
-            <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-            <div class="faq-answer-inner">
-                Use the <strong>statistical plots</strong> available in the [Map] page:
-                <ul>
-                    <li><strong>Table:</strong> View regional or site-level summary statistics including area
-                        burned, smoke coverage, and fire metrics in a structured list.</li>
-                    <li><strong>Bar/Line plot:</strong> View state-level aggregated statistics and click individual
-                        states for site-level drill-down.</li>
-                    <li><strong>ParCoords plot:</strong> Multi-dimensional visualization to compare trends across
-                        different variables or sites simultaneously.</li>
-                    <li><strong>Scatter plot:</strong> Select multiple data layers and compare their values
-                        site-by-site. The first selected layer goes to the Y-axis, and additional layers become X-axis
-                        traces.</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    
-    <div class="faq-item" data-category="data">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-            <h3><span class="faq-tag">Data</span> What is the "Annual report" section in the Data Archive?</h3>
-            <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-            <div class="faq-answer-inner">
-                The <strong>Annual report</strong> section (Resources > Data > Annual report) provides
-                summarized
-                research outputs for specific calendar years, categorized into <strong>Preliminary</strong> (initial
-                models) and <strong>Finalized</strong> (validated results).
-                <ul>
-                    <li><strong>Smoke O3:</strong> Predictions for wildfire seasons (2025+) using the
-                        finalized model architecture (GAM-v2).
-                    </li>
-                    <li><strong>Smoke PM2.5:</strong> Summarized PM2.5, PM2.5-criteria, and Smoke day across PM2.5 AQS sites.
-                    </li>
-                </ul>
-                Finalized reports are typically released in <strong>September of the following year</strong> (e.g., the
-                2024 finalized dataset is expected in Sep 2025). Like all Published data, you must be logged in to
-                download these files.
-                <br><br>
-                <strong>Caveat:</strong> Preliminary data combines the most recent EPA pre-generated data with AirNow
-                observations, as EPA pre-generated data is updated only twice a year. Users should exercise caution when
-                using preliminary outputs. Finalized data is established based on the EPA's official "as of" timestamp
-                at the time of publication. Due to these staggered reporting cycles, it is difficult to provide
-                "perfect" data; please use these datasets with awareness of these limitations.
-            </div>
-        </div>
-    </div>
-    
-    <!-- Account -->
-    <div class="faq-item" data-category="account">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-            <h3><span class="faq-tag">Account</span> Why do I need to sign in with Google?</h3>
-            <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-            <div class="faq-answer-inner">
-                Signing in is required for two reasons:
-                <ul>
-                    <li><strong>Access control</strong>: Published research data is restricted to authenticated users
-                        for usage tracking and academic attribution.</li>
-                    <li><strong>Community features</strong>: MapPosts (community map pins) and Announcements require
-                        user identity to display authorship and enable moderation.</li>
-                </ul>
-                We use <strong>Google Sign-In exclusively</strong> — no separate username/password is created. We only
-                access your display name, email, and profile photo; no other Google data is accessed.
-            </div>
-        </div>
-    </div>
-
-    <div class="faq-item" data-category="account">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-            <h3><span class="faq-tag">Account</span> What is a "Guest" login?</h3>
-            <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-            <div class="faq-answer-inner">
-                Guest mode gives you <strong>full access</strong> to all Live data layers (HMS Smoke, Hotspots, AirNow,
-                Wildfire News, NIFC Fires) <strong>without signing in</strong>.
-                However, you will not be able to access Published model data, write MapPosts, or view Announcements.
-                If you only need real-time air quality monitoring, Guest mode is perfectly sufficient.
-            </div>
-        </div>
-    </div>
-    
-    
-    <div class="faq-item" data-category="account">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-            <h3><span class="faq-tag">Account</span> What is the "UID" in my profile, and how do I use it?</h3>
-            <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-            <div class="faq-answer-inner">
-                The <strong>UID (User ID)</strong> is your unique identifier within the Smokelyze platform. It is used
-                to
-                manage access permissions for collaboration features like <strong>MapPost</strong>.
-                <br><br>
-                For example, if you want to share a MapPost with specific colleagues rather than the entire public, you
-                can set the post's visibility to <strong>"Group"</strong>. Only members you have added to your group via
-                their UID will be able to see those posts.
-                <br><br>
-                <strong>How to set up a group:</strong>
-                <ol>
-                    <li>Go to your <strong>Profile (User icon)</strong> > <strong>Settings</strong>.</li>
-                    <li>Enter your colleague's <strong>UID</strong> in the input field.</li>
-                    <li>Click <strong>"Add"</strong> to register them as a group member.</li>
-                </ol>
-                Once registered, they will be granted permission to view and interact with your "Group" visibility
-                MapPosts.
-            </div>
-        </div>
-    </div>
-    
-    <!-- General -->
-    <div class="faq-item" data-category="general">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-            <h3><span class="faq-tag">General</span> Which browsers are supported?</h3>
-            <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-            <div class="faq-answer-inner">
-                Smokelyze works best on modern browsers:
-                <ul>
-                    <li><strong>Chrome</strong> (recommended), Firefox, Edge, Safari</li>
-                    <li>Mobile browsers (Chrome for Android, Safari for iOS)</li>
-                    <li>Internet Explorer is not supported</li>
-                </ul>
-                For the best experience, use a <strong>desktop browser</strong> with a screen width of 1024px or wider.
-                The map and statistical plots are fully responsive but designed for larger screens.
-            </div>
-        </div>
-    </div>
-
-    <div class="faq-item" data-category="general">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-            <h3><span class="faq-tag">General</span> How do I cite Smokelyze in my research?</h3>
-            <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-            <div class="faq-answer-inner">
-                Each dataset has its own specific research paper for citation. Please cite the relevant paper based on
-                the data you used:
-                <ul>
-                    <li><strong>GAM-v2:</strong> <a href="https://doi.org/10.1029/2025JD044088" target="_blank">Lee and
-                            Jaffe, 2025 (JGR-Atmos)</a></li>
-                    <li><strong>GAM-v1:</strong> <a href="https://doi.org/10.1021/acs.est.4c05870" target="_blank">Lee
-                            and Jaffe, 2024 (ES&T)</a></li>
-                </ul>
-                If you wish to cite the <strong>Smokelyze app itself</strong>, please cite the <strong>Lee and Jaffe,
-                    2025 (GAM-v2)</strong> paper, as the current platform's development is fundamentally linked to this
-                research.
-                <br><br>
-                For full citation strings and DOI links, please visit the <strong><a href="/resrc/data">Data
-                        Archive</a></strong> page.
-            </div>
-        </div>
-    </div>
-    
-    <div class="faq-item" data-category="general">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-            <h3><span class="faq-tag">General</span> What is the "Announcements" page?</h3>
-            <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-            <div class="faq-answer-inner">
-                The <strong>Announcements</strong> page is where we post project updates, new layer releases, system
-                maintenance notices, and key research milestones. Check this page regularly to stay informed about the
-                latest developments in the Smokelyze platform.
-            </div>
-        </div>
-    </div>
-
-    <div class="faq-item" data-category="general">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-            <h3><span class="faq-tag">General</span> What is the "Links" page?</h3>
-            <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-            <div class="faq-answer-inner">
-                The <strong>Links</strong> page is a curated collection of useful external resources, including official
-                air quality monitoring sites, wildfire tracking tools, and academic partner organizations.
-            </div>
-        </div>
-    </div>
-    
-    <!-- AI Chat -->
-    <div class="faq-item" data-category="ai">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-            <h3><span class="faq-tag">AI</span> How do I set up the AI Chat assistant?</h3>
-            <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-            <div class="faq-answer-inner">
-                The AI assistant requires a <strong>Google Gemini API Key</strong> (free tier available):
-                <ul>
-                    <li>1. Visit <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a> and
-                        generate your API key.</li>
-                    <li>2. In Smokelyze, click on your <strong>Profile icon</strong> → <strong>Settings</strong> → paste
-                        your key into the <strong>Google Gemini API</strong> field.</li>
-                    <li>3. Open the AI Chat panel from the map page and start asking questions!</li>
-                    <li>Note: The <strong>free tier</strong> of the Gemini API has a quota (rate limit) per minute/day.
-                        For unrestricted use, please ensure you have set up a billing account on your Google AI Studio
-                        project.</li>
-                </ul>
-                Your API key is stored <strong>only in your browser's local storage</strong> and is never saved on our
-                servers.
-            </div>
-        </div>
-    </div>
-
-    <div class="faq-item" data-category="ai">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-            <h3><span class="faq-tag">AI</span> What can the AI assistant do?</h3>
-            <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-            <div class="faq-answer-inner">
-                The AI assistant is a <strong>full-stack map controller</strong> — not just a chatbot. It can:
-                <ul>
-                    <li><strong>Navigate</strong>: Change dates, toggle layers, switch datasets, and fly to specific
-                        locations on the map (e.g., "Set the date to 2023-06-10 and show the HMS smoke layer").</li>
-                    <li><strong>Analyze</strong>: Run SQL queries against the entire historical database to find
-                        rankings, trends, and comparisons (e.g., "Which site in California had the highest SMO on
-                        2023-07-15?").</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    <div class="faq-item" data-category="ai">
-        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
-            <h3><span class="faq-tag">AI</span> Is my API key secure?</h3>
-            <span class="faq-icon">+</span>
-        </div>
-        <div class="faq-answer">
-            <div class="faq-answer-inner">
-                Yes. Your API key follows a <strong>BYOK (Bring Your Own Key)</strong> model:
-                <ul>
-                    <li>The key is stored in your browser's <code>localStorage</code> — it never leaves your device
-                        except when making API calls.</li>
-                    <li>When communicating with our backend, the key is sent via a <strong>secure HTTP header</strong>
-                        (not in the request body) to minimize logging exposure.</li>
-                    <li>Our server uses the key only to forward your request to Google's API, then discards it. We do
-                        not store, log, or cache your key.</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="faq-no-results" id="FaqNoResults">
-    No matching questions found. Try different keywords or <a href="/resrc/announcements/">check our
-    Announcements</a>.
-</div>
-
-<script>
-    (function () {
-        const searchInput = document.getElementById("FaqSearch");
-        const faqList = document.getElementById("FaqList");
-        const noResults = document.getElementById("FaqNoResults");
-        const items = faqList.querySelectorAll(".faq-item");
-        const filterBtns = document.querySelectorAll(".faq-filter-btn");
-
-        let activeFilter = "all";
-
-        // Filter buttons
-        filterBtns.forEach(btn => {
-            btn.addEventListener("click", () => {
-                filterBtns.forEach(b => b.classList.remove("active"));
-                btn.classList.add("active");
-                activeFilter = btn.dataset.filter;
-                applyFilters();
-            });
-        });
-
-        // Search
-        if (searchInput) {
-            searchInput.addEventListener("input", () => applyFilters());
-        }
-
-        function applyFilters() {
-            const query = (searchInput?.value || "").toLowerCase().trim();
-            let visibleCount = 0;
-
-            items.forEach(item => {
-                const category = item.dataset.category;
-                const text = item.textContent.toLowerCase();
-                const matchCategory = (activeFilter === "all" || category === activeFilter);
-                const matchSearch = !query || text.includes(query);
-
-                if (matchCategory && matchSearch) {
-                    item.style.display = "";
-                    visibleCount++;
-                } else {
-                    item.style.display = "none";
-                }
-            });
-
-            noResults.style.display = visibleCount === 0 ? "block" : "none";
-        }
-    })();
-</script>
 
