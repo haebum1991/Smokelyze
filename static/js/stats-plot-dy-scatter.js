@@ -1,5 +1,6 @@
 
 import { ExcludeLayerGroups, LAYER_TEMPLATES } from "./layers-def.js";
+import { activeLayerStack } from "./layers-state.js";
 import { currentDate, ESML } from "./utils.js";
 import { loadedGeoJSON } from "./loader.js";
 import {
@@ -25,16 +26,24 @@ export function renderDailyScatter(containerId) {
     const isDetailMode = !!currentDailyDetailStateScatter;
     const { value: dsVal, key: dsKey } = getDatasetInfo();
 
-    // 1. 체크된 유효한 데이저 레이어들 수집 (Y, X1, X2...)
-    const activeLayers = LAYER_TEMPLATES.filter(tmpl => {
-        const cb = document.getElementById(`layer-${tmpl.id}`);
-        return cb?.checked && !ExcludeLayerGroups.plotScatter.includes(tmpl.id);
-    }).map(tmpl => ({
-        id: tmpl.id,
-        field: (typeof tmpl.field === "function") ? tmpl.field(dsVal) : tmpl.field,
-        title: (typeof tmpl.title === "function") ? tmpl.title(dsVal) : tmpl.title,
-        decimals: tmpl.decimals ?? 1
-    }));
+    // 1. 선택한 순서대로(activeLayerStack 기반) 유효한 데이터 레이어들 수집
+    const activeLayers = activeLayerStack
+        .filter(id => !ExcludeLayerGroups.plotScatter.includes(id))
+        .map(id => {
+            const cb = document.getElementById(`layer-${id}`);
+            if (!cb || !cb.checked) return null;
+
+            const tmpl = LAYER_TEMPLATES.find(t => t.id === id);
+            if (!tmpl) return null;
+
+            return {
+                id: tmpl.id,
+                field: (typeof tmpl.field === "function") ? tmpl.field(dsVal) : tmpl.field,
+                title: (typeof tmpl.title === "function") ? tmpl.title(dsVal) : tmpl.title,
+                decimals: tmpl.decimals ?? 1
+            };
+        })
+        .filter(l => l !== null);
 
     if (activeLayers.length < 2) {
         currentDailyDetailStateScatter = null;
@@ -145,6 +154,11 @@ export function renderDailyScatter(containerId) {
             });
         }
     }
+    
+    // 4. Dynamic Legend & Margin Logic
+    const numTraces = traces.length;
+    const estimatedRows = Math.ceil(numTraces / 2); // Roughly 2 items per row
+    const dynamicMarginB = 100 + (estimatedRows * 20); // Rows based auto-margin
 
     const layout = {
         paper_bgcolor: theme.paper_bgcolor, plot_bgcolor: theme.plot_bgcolor,
@@ -168,10 +182,7 @@ export function renderDailyScatter(containerId) {
         },
         yaxis: {
             ...getSpikeLayout(theme),
-            title: {
-                text: yTitle,
-                font: { size: fontSize, color: theme.axisText }
-            },
+            title: { text: yTitle, font: { size: fontSize, color: theme.axisText } },
             tickfont: { size: fontSize * 0.8, color: theme.axisText },
             gridcolor: theme.grid,
             linecolor: theme.axisText,
@@ -181,13 +192,13 @@ export function renderDailyScatter(containerId) {
         shapes: shapes,
         legend: {
             orientation: "h",
-            yanchor: "bottom",
-            y: -0.4,
+            yanchor: "top", // 상단을 기준으로 고정하여 x축 라벨과의 간격 유지
+            y: -0.25,
             xanchor: "center",
             x: 0.5,
-            font: { color: theme.axisText, size: fontSize * 0.9 }
+            font: { color: theme.axisText, size: fontSize * 0.85 }
         },
-        margin: { t: 70, r: 50, b: 140, l: 60 }, // 하단 여백 충분히 확보
+        margin: { t: 70, r: 50, b: dynamicMarginB, l: 60 },
         hovermode: "closest"
     };
 
