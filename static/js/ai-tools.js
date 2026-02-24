@@ -196,26 +196,39 @@ export async function handleAiToolCall(functionName, args) {
 
                     let foundMetadata = null;
 
-                    // [BRAIN] Robust Search in loadedGeoJSON for full properties
-                    // This ensures we have the actual data from geojson.gz even if AI passed partial info
+                    // [BRAIN] Search loadedGeoJSON for full properties — prioritize ACTIVE sources
                     if (loadedGeoJSON) {
                         const EPSILON = 0.0001; // ~11m
-                        // Try active sources first, then others
-                        const searchSources = [...(activeSources || []), ...Object.keys(loadedGeoJSON)];
+                        const currentDate = document.getElementById("datePicker")?.value;
 
-                        for (const src of searchSources) {
-                            const data = loadedGeoJSON[src] || loadedGeoJSON[loadedSources[src]];
-                            if (!data || !data.features) continue;
+                        const findMatch = (sourceList) => {
+                            for (const src of sourceList) {
+                                const data = loadedGeoJSON[src] || loadedGeoJSON[loadedSources[src]];
+                                if (!data || !data.features) continue;
 
-                            const match = data.features.find(f => {
-                                const c = f.geometry?.coordinates;
-                                return c && Math.abs(c[0] - targetLon) < EPSILON && Math.abs(c[1] - targetLat) < EPSILON;
-                            });
+                                const match = data.features.find(f => {
+                                    const c = f.geometry?.coordinates;
+                                    return c && Math.abs(c[0] - targetLon) < EPSILON && Math.abs(c[1] - targetLat) < EPSILON;
+                                });
 
-                            if (match) {
-                                foundMetadata = match.properties;
-                                break;
+                                if (match) {
+                                    // Validate: skip if this data is from a different date
+                                    const matchDate = match.properties?.date;
+                                    if (currentDate && matchDate && String(matchDate) !== currentDate) {
+                                        console.warn(`[move_to_location] Skipping stale match from ${src} (date: ${matchDate}, expected: ${currentDate})`);
+                                        continue;
+                                    }
+                                    return match.properties;
+                                }
                             }
+                            return null;
+                        };
+
+                        // 1st priority: active sources (current model)
+                        foundMetadata = findMatch(activeSources || []);
+                        // 2nd priority: all loaded sources (fallback)
+                        if (!foundMetadata) {
+                            foundMetadata = findMatch(Object.keys(loadedGeoJSON));
                         }
                     }
 
