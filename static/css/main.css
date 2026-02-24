@@ -1271,7 +1271,6 @@ body.page-about .sidebar {
   background: var(--sidebar-widget-bg);
   border-top: 0.1rem solid var(--card-shadow);
   color: var(--text-main);
-  margin-top: 8rem;
 }
 
 .main-footer-container {
