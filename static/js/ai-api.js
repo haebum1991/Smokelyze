@@ -149,7 +149,13 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
 
                 continue;
             }
-
+            
+            // 4-1b. Safety net: if backend detected AI skipped move_to_location, auto-execute it
+            if (data.autoMoveCoords) {
+                console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}]`);
+                await handleAiToolCall("move_to_location", data.autoMoveCoords);
+            }
+            
             // 4-2. 최종 일반 텍스트 대답일 경우 (모든 텍스트 파트를 합쳐서 반환)
             const textParts = parts.filter(p => p.text);
             if (textParts.length > 0) {
