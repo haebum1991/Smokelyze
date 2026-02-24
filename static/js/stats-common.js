@@ -680,17 +680,13 @@ export function getPlotTheme() {
                 `.trim(),
             scatter: `
                     If you see this message, it could be due to the following reasons: <br>
-                    - Please select at least one layer of [Published] data to display the Scatter plot. <br> 
+                    - Please select at least two data layers of [Published] data to display the Scatter plot. (1st = Y-axis, 2nd+ = X-axis). <br> 
                     - No data available for the selected date, layers, and/or regions. <br>
                     - No compatible data points found to create a plot. <br>
                     
                     <br> 
                     [Note] <br>
-                    This plot tab compares [Obs MDA8] and [Pred MDA8] for published datasets by date, 
-                    including [GAM-v1], [GAM-v2], and [EPA-EMBER].
-                    For [Smoke PM2.5] datasets,
-                    the plot displays the relationship between [PM2.5] and [Smoke PM2.5].
-                    Therefore, this plot tab does not work for [Satellite] data.
+                    This plot tab does not work for [Live Updates], [AirNow], [Satellite], and [Satellite] data.
                 `.trim(),
             heatmap: `
                     If you see this message, it could be due to the following reasons: <br>
