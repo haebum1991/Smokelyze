@@ -5,7 +5,7 @@
  * Google 서버와 직접 통신합니다. (보안 BYOK 방식)
  */
 
-import { smokelyzeAiTools, handleAiToolCall } from "./ai-tools.js";
+import { handleAiToolCall } from "./ai-tools.js";
 
 // 사용할 AI 백엔드 주소 (배포 후 Cloud Run URL로 교체 필요)
 const AI_BACKEND_URL = "https://fetch-aichat-service-1068523865415.us-central1.run.app/api/chat";
@@ -39,13 +39,15 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
 
             const requestBody = {
                 contents: contents,
-                dashboardContext: currentContext, // 최신 상태 전달
-                apiKey: apiKey
+                dashboardContext: currentContext
             };
 
             const response = await fetch(AI_BACKEND_URL, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(apiKey ? { "X-API-Key": apiKey } : {})
+                },
                 body: JSON.stringify(requestBody)
             });
 

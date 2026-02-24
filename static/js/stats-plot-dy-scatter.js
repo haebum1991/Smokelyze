@@ -101,7 +101,7 @@ export function renderDailyScatter(containerId) {
         if (nonSmoke.x.length > 0) {
             traces.push({
                 x: nonSmoke.x, y: nonSmoke.y, mode: "markers", type: "scatter",
-                name: xLayers.length > 1 ? `${xTitle} (NSD)` : "Non-smoke (NSD)",
+                name: xLayers.length > 1 ? `${xTitle} (NSD)` : "Non-smoke day (NSD)",
                 text: nonSmoke.text, customdata: nonSmoke.customdata,
                 marker: { color: color, size: 8, opacity: 0.7, line: { color: theme.axisText, width: 0.5 } },
                 hovertemplate: `${yTitle}: %{y:.${yDec}f}<br>${xTitle}: %{x:.${xDec}f}<br>%{text}<extra></extra>`

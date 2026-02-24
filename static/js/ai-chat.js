@@ -1,6 +1,7 @@
 
 import { fetchGeminiChat, clearAiChatHistory } from "./ai-api.js";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
+import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.es.mjs";
 import { auth } from "./fb-init.js";
 import { showAuthOverlay } from "./utils.js";
 import { addSwipeClose } from "./ui-toggles.js";
@@ -211,10 +212,7 @@ function appendMessage(role, text, usage = null) {
 
     // Parse Markdown for AI answers
     if (role === "ai" && typeof marked !== "undefined") {
-        const rawHTML = marked.parse(text);
-        const parser = new DOMParser();
-        const htmlDoc = parser.parseFromString(rawHTML, "text/html");
-        content.innerHTML = htmlDoc.body.innerHTML;
+        content.innerHTML = DOMPurify.sanitize(marked.parse(text));
     } else {
         content.innerText = text;
     }

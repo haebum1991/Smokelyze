@@ -63,7 +63,7 @@ onAuthStateChanged(auth, async (user) => {
                         profileUserBtn.innerHTML = "";
                         const avatarDiv = document.createElement("div");
                         avatarDiv.className = "profile-avatar";
-                        avatarDiv.innerHTML = `<span style="font-size: 1.2rem; font-weight: bold;">${getInitials(user.displayName) || "U"}</span>`;
+                        avatarDiv.innerHTML = `<span style="font-size: 1.2rem; font-weight: bold;">${utils.ESML(getInitials(user.displayName)) || "U"}</span>`;
                         profileUserBtn.appendChild(avatarDiv);
                     };
                     profileUserBtn.appendChild(img);
