@@ -22,10 +22,9 @@ body.page-map .content {
   padding: 0;
 }
 
-.footer-container {
+body.page-map .main-footer {
   display: none;
 }
-
 
 /* ================ Map base component ================ */
 #MapWrapper {

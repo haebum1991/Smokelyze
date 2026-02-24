@@ -1,13 +1,43 @@
 
-<footer class="footer-container">
-  <div class="footer-links">
-    
-    Copyright © {{ now.Year }} Smokelyze. All rights reserved.<br>
-    
-    <a href="https://gohugo.io/" class="footer-links-kudos">
-      Smokelyze developed by Dr. Haebum Lee, made with
-      <img src="{{ "images/hugo-logo.png" | relURL }}" alt="Hugo Logo" width="22" height="22">
-    </a>
+<footer class="main-footer">
+  <div class="main-footer-container">
+    <div class="main-footer-grid">
+      <div class="main-footer-brand">
+        <h3>Smokelyze</h3>
+        <p>
+          Advanced spatiotemporal analytics platform for wildfire smoke and air quality. Developed for precision
+          mapping and public health research.
+        </p>
+      </div>
+      <div class="main-footer-links">
+        <h4>Short-cuts</h4>
+        <ul>
+          <li><a href="/map">Interactive Map</a></li>
+          <li><a href="/resrc/documents/">Research Method</a></li>
+          <li><a href="/resrc/data">Data Archive</a></li>
+          <li><a href="/post">Posts</a></li>
+        </ul>
+      </div>
+      <div class="main-footer-links">
+        <h4>Institutional</h4>
+        <ul>
+          <li><a href="https://www.washington.edu" target="_blank">UW</a></li>
+          <li><a href="/about/about_us/">About</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="main-footer-bottom">
+      <p>&copy; {{ now.Year }} Smokelyze Project
+        <br>Developed by Dr. Haebum Lee
+        <br>All rights reserved.
+        <br>
+        <br>Affiliated with the University of Washington
+        <br>
+        <br>
+        <br>
+        <img style="width: 60%;" src="{{ "images/UW_logo_wide_white.png" | relURL }}" alt="University of Washington">
+      </p>
+    </div>
   </div>
   <button id="BackToTop">▲ Back to Top</button>
 </footer>

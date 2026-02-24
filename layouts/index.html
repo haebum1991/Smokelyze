@@ -92,20 +92,6 @@
     width: 100%;
   }
 
-  .footer-container {
-    display: block !important;
-    height: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    border: none !important;
-    background: transparent !important;
-    overflow: visible !important;
-  }
-
-  .footer-links {
-    display: none !important;
-  }
-
   /* 2. Reset Layout Constraints */
   body {
     padding-top: 0 !important;
@@ -307,85 +293,6 @@
     margin-right: 0.6rem;
     margin-bottom: 0.6rem;
     transition: all 0.3s ease;
-  }
-
-  .splash-footer {
-    padding: 4rem 0 4rem;
-    background: var(--sidebar-widget-bg);
-    border-top: 0.1rem solid var(--card-shadow);
-    color: var(--text-main);
-    margin-top: 8rem;
-  }
-
-  .splash-footer-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    gap: 6rem;
-    margin-bottom: 6rem;
-  }
-
-  .splash-footer-brand h3 {
-    font-size: 2.4rem;
-    background: var(--card-shadow);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-top: 0;
-    margin-bottom: 2rem;
-    line-height: 1.2;
-  }
-
-  .splash-footer-brand p {
-    color: var(--text-main);
-    opacity: 1;
-    max-width: max-content;
-    font-size: 1.6rem;
-  }
-
-  .splash-footer-links h4 {
-    font-size: 1.8rem;
-    margin-top: 0;
-    margin-bottom: 2rem;
-    color: var(--card-shadow);
-    line-height: 1.2;
-  }
-
-  .splash-footer-links ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .splash-footer-links ul li a {
-    color: var(--text-main);
-    text-decoration: none;
-    opacity: 0.8;
-    transition: all 0.3s ease;
-    font-size: 1.4rem;
-  }
-
-  @media (hover: hover) {
-    .splash-footer-links ul li a:hover {
-      opacity: 1;
-      color: var(--text-strong);
-      padding-left: 0.5rem;
-    }
-  }
-
-  .splash-footer-bottom {
-    text-align: right;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-    border-top: 0.1rem solid var(--text-soft);
-    font-size: 1.4rem;
-    opacity: 1;
-  }
-
-  @media (max-width: 1024px) {
-    .splash-footer-grid {
-      grid-template-columns: 1fr;
-      gap: 4rem;
-    }
   }
 
   .splash-preview-img {
@@ -688,47 +595,6 @@
     <br>
     <br>
 
-    <footer class="splash-footer">
-      <div class="splash-container">
-        <div class="splash-footer-grid">
-          <div class="splash-footer-brand">
-            <h3>Smokelyze</h3>
-            <p>
-              Advanced spatiotemporal analytics platform for wildfire smoke and air quality. Developed for precision
-              mapping and public health research.
-            </p>
-          </div>
-          <div class="splash-footer-links">
-            <h4>Short-cuts</h4>
-            <ul>
-              <li><a href="/map">Interactive Map</a></li>
-              <li><a href="/resrc/documents/">Research Method</a></li>
-              <li><a href="/resrc/data">Data Archive</a></li>
-              <li><a href="/post">Posts</a></li>
-            </ul>
-          </div>
-          <div class="splash-footer-links">
-            <h4>Institutional</h4>
-            <ul>
-              <li><a href="https://www.washington.edu" target="_blank">UW</a></li>
-              <li><a href="/about/about_us/">About</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="splash-footer-bottom">
-          <p>&copy; 2026 Smokelyze Project
-            <br>Developed by Dr. Haebum Lee
-            <br>All rights reserved.
-            <br>
-            <br>Affiliated with the University of Washington
-            <br>
-            <br>
-            <br>
-            <img style="width: 50%;" src="/images/UW_logo_wide_white.png" alt="University of Washington">
-          </p>
-        </div>
-      </div>
-    </footer>
   </div>
 </div>
 
