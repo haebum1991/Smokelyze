@@ -485,9 +485,10 @@ export const LAYER_DEFS = (() => {
                     paint: {
                         "circle-radius": makeStepExpr("FRP", frpTmpl.breaks, frpRadii, 0),
                         "circle-color": frpTmpl.colors,
-                        "circle-opacity": 0.8,
-                        "circle-stroke-width": 0.5,
-                        "circle-stroke-color": "#000000"
+                        "circle-opacity": 1,
+                        "circle-stroke-color": "#FFD700",
+                        "circle-stroke-width": 2,
+                        "circle-stroke-opacity": 1
                     }
                 }
             ],

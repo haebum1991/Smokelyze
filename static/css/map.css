@@ -263,7 +263,15 @@ body.FigurePage-drawer-open .map-btn-capture {
   margin-bottom: 0.2rem;
 }
 
-.legend-color {
+.legend-color-rect {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 0;
+  margin-right: 0.8rem;
+  border: 0.1rem solid var(--text-main);
+}
+
+.legend-color-circle {
   width: 1.2rem;
   height: 1.2rem;
   border-radius: 50%;

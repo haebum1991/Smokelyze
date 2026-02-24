@@ -39,6 +39,11 @@ export function updateLegend(activeStack) {
     }
 
     let html = `<h4>${conf.title}</h4>`;
+    
+    // Point data (circle layers) → round swatches, others (fill/polygon) → square
+    // Exception: layers with sizeLegend (e.g., Fire) use rect for color + circle for size
+    const isCircleLayer = layerDef?.layers?.[0]?.type === "circle" && !conf.sizeLegend;
+    const swatchClass = isCircleLayer ? "legend-color-circle" : "legend-color-rect";
 
     if (conf.labels) {
         const offset = Math.max(0, conf.colors.length - conf.labels.length);
@@ -46,7 +51,7 @@ export function updateLegend(activeStack) {
             const color = conf.colors[i + offset];
             if (color) {
                 html += `<div class="legend-item">
-                     <span class="legend-color" style="background:${color}"></span>
+                     <span class="${swatchClass}" style="background:${color}"></span>
                      <span>${label}</span>
                    </div>`;
             }
@@ -55,27 +60,27 @@ export function updateLegend(activeStack) {
         const { breaks, colors } = conf;
         if (!breaks || breaks.length === 0) {
             html += `<div class="legend-item">
-                   <span class="legend-color" style="background:${colors[0]}"></span>
+                   <span class="${swatchClass}" style="background:${colors[0]}"></span>
                    <span>${conf.title}</span>
                  </div>`;
         } else {
             // Less than first break
             html += `<div class="legend-item">
-                   <span class="legend-color" style="background:${colors[0]}"></span>
+                   <span class="${swatchClass}" style="background:${colors[0]}"></span>
                    <span>&lt; ${breaks[0]}</span>
                  </div>`;
 
             // Intervals between breaks
             for (let i = 0; i < breaks.length - 1; i++) {
                 html += `<div class="legend-item">
-                     <span class="legend-color" style="background:${colors[i + 1]}"></span>
+                     <span class="${swatchClass}" style="background:${colors[i + 1]}"></span>
                      <span>${breaks[i]} to ${breaks[i + 1]}</span>
                    </div>`;
             }
 
             // Greater than or equal to last break
             html += `<div class="legend-item">
-                   <span class="legend-color" style="background:${colors[colors.length - 1]}"></span>
+                   <span class="${swatchClass}" style="background:${colors[colors.length - 1]}"></span>
                    <span>&ge; ${breaks[breaks.length - 1]}</span>
                  </div>`;
         }
@@ -88,8 +93,8 @@ export function updateLegend(activeStack) {
         conf.sizeLegend.items.forEach(item => {
             const sizeRem = (item.radius * 2 / 10) + "rem";
             html += `<div class="legend-item" style="align-items: center;">
-                   <span style="display:inline-block; width:2rem; text-align:center; margin-right:0.6rem;">
-                     <span style="display:inline-block; border-radius:50%; background:${conf.sizeLegend.color}; width:${sizeRem}; height:${sizeRem}; border:0.1rem solid #000; vertical-align:middle;"></span>
+                   <span style="display:inline-block; width:2.6rem; text-align:center; margin-right:0.4rem;">
+                     <span style="display:inline-block; border-radius:50%; background:${conf.sizeLegend.color}; width:${sizeRem}; height:${sizeRem}; border:0.3rem solid ${conf.sizeLegend.strokeColor}; vertical-align:middle;"></span>
                    </span>
                    <span>${item.label}</span>
                  </div>`;
