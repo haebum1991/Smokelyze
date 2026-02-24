@@ -94,7 +94,7 @@ export function updateLegend(activeStack) {
             const sizeRem = (item.radius * 2 / 10) + "rem";
             html += `<div class="legend-item" style="align-items: center;">
                    <span style="display:inline-block; width:2.6rem; text-align:center; margin-right:0.4rem;">
-                     <span style="display:inline-block; border-radius:50%; background:${conf.sizeLegend.color}; width:${sizeRem}; height:${sizeRem}; border:0.3rem solid ${conf.sizeLegend.strokeColor}; vertical-align:middle;"></span>
+                     <span style="display:inline-block; border-radius:50%; background:${conf.sizeLegend.strokeColor}; width:${sizeRem}; height:${sizeRem}; border:0.3rem solid ${conf.sizeLegend.strokeColor}; vertical-align:middle;"></span>
                    </span>
                    <span>${item.label}</span>
                  </div>`;
