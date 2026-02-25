@@ -21,7 +21,7 @@ title: ""
     -->
     
     <form name="contact" method="POST" data-netlify="true"
-        style="max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem;">
+        style="max-width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem;">
 
         <!-- This hidden field is for Netlify's bot protection (optional but recommended) -->
         <input type="hidden" name="form-name" value="contact" />
@@ -29,24 +29,31 @@ title: ""
         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
             <label for="name" style="color: var(--card-shadow); font-weight: bold;">Name</label>
             <input type="text" id="name" name="name" required placeholder="Your Name"
-                style="padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--card-shadow); background: var(--bg-card, #fff); color: var(--text-strong); font-size: 1.6rem; outline: none;">
+                style="padding: 1rem; border-radius: 0.5rem; border: 0.1rem solid var(--card-shadow); background: var(--color-white); color: var(--color-black); font-size: 1.6rem; outline: none;">
         </div>
-
+        
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <label for="affiliation" style="color: var(--card-shadow); font-weight: bold;">Affiliation
+                (Optional)</label>
+            <input type="text" id="affiliation" name="affiliation" placeholder="University, Company, etc."
+                style="padding: 1rem; border-radius: 0.5rem; border: 0.1rem solid var(--card-shadow); background: var(--color-white); color: var(--color-black); font-size: 1.6rem; outline: none;">
+        </div>
+        
         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
             <label for="email" style="color: var(--card-shadow); font-weight: bold;">Email Address</label>
             <input type="email" id="email" name="email" required placeholder="your.email@example.com"
-                style="padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--card-shadow); background: var(--bg-card, #fff); color: var(--text-strong); font-size: 1.6rem; outline: none;">
+                style="padding: 1rem; border-radius: 0.5rem; border: 0.1rem solid var(--card-shadow); background: var(--color-white); color: var(--color-black); font-size: 1.6rem; outline: none;">
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
             <label for="message" style="color: var(--card-shadow); font-weight: bold;">Message</label>
             <textarea id="message" name="message" rows="6" required placeholder="How can we help you?"
-                style="padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--card-shadow); background: var(--bg-card, #fff); color: var(--text-strong); font-size: 1.6rem; resize: vertical; outline: none;"></textarea>
+                style="padding: 1rem; border-radius: 0.5rem; border: 0.1rem solid var(--card-shadow); background: var(--color-white); color: var(--color-black); font-size: 1.6rem; resize: vertical; outline: none;"></textarea>
         </div>
 
         <div style="text-align: center; margin-top: 1rem;">
             <button type="submit"
-                style="background-color: var(--card-shadow); color: var(--color-bg); border: none; padding: 1rem 3rem; font-size: 1.6rem; font-weight: bold; border-radius: 2rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                style="background-color: var(--card-shadow); color: var(--color-bg); border: none; padding: 1rem 3rem; font-size: 1.6rem; font-weight: bold; border-radius: 2rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; box-shadow: 0 0.4rem 1rem rgba(0,0,0,0.2);">
                 Send Message
             </button>
         </div>
