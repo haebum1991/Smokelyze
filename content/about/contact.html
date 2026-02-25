@@ -20,7 +20,7 @@ title: ""
       You can configure email notifications for new submissions in your Netlify Dashboard.
     -->
     
-    <form name="contact" method="POST" data-netlify="true"
+    <form name="contact" id="contactForm" method="POST" data-netlify="true"
         style="max-width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem;">
 
         <!-- This hidden field is for Netlify's bot protection (optional but recommended) -->
@@ -52,14 +52,63 @@ title: ""
         </div>
 
         <div style="text-align: center; margin-top: 1rem;">
-            <button type="submit"
-                style="background-color: var(--card-shadow); color: var(--color-bg); border: none; padding: 1rem 3rem; font-size: 1.6rem; font-weight: bold; border-radius: 2rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; box-shadow: 0 0.4rem 1rem rgba(0,0,0,0.2);">
+            <button id="submitBtn" type="submit"
+                style="background-color: var(--card-shadow); color: var(--color-bg); border: none; padding: 1rem 3rem; font-size: 1.6rem; font-weight: bold; border-radius: 2rem; cursor: pointer; transition: transform 0.2s, background-color 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
                 Send Message
             </button>
+            <div id="submitSuccess"
+                style="display: none; color: #34A853; font-weight: bold; font-size: 1.8rem; margin-top: 1.5rem;">
+                ✔ Complete! Thank you for your message.
+            </div>
+            <div id="submitError"
+                style="display: none; color: #EA4335; font-weight: bold; font-size: 1.6rem; margin-top: 1.5rem;">
+                ✖ Something went wrong. Please try again.
+            </div>
         </div>
     </form>
     <br>
 </div>
+
+<script>
+    const contactForm = document.getElementById("contactForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const submitSuccess = document.getElementById("submitSuccess");
+    const submitError = document.getElementById("submitError");
+
+    if (contactForm) {
+        contactForm.addEventListener("submit", function (e) {
+            e.preventDefault(); // 기본(화면 넘어감) 방지
+            submitBtn.innerText = "Sending...";
+            submitBtn.disabled = true;
+
+            const formData = new FormData(contactForm);
+            const searchParams = new URLSearchParams();
+            for (const pair of formData) {
+                searchParams.append(pair[0], pair[1]);
+            }
+
+            // AJAX로 데이터 전송
+            fetch("/", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: searchParams.toString()
+            })
+                .then(() => {
+                    submitBtn.style.display = "none";
+                    submitSuccess.style.display = "block";
+                    submitError.style.display = "none";
+                    contactForm.reset();
+                })
+                .catch((error) => {
+                    console.error("Form submission error:", error);
+                    submitBtn.innerText = "Send Message";
+                    submitBtn.disabled = false;
+                    submitSuccess.style.display = "none";
+                    submitError.style.display = "block";
+                });
+        });
+    }
+</script>
 
 <br>
 <br>
