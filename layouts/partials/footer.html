@@ -25,6 +25,13 @@
           <li><a href="/about/about_us/">About</a></li>
         </ul>
       </div>
+      <div class="main-footer-links">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="/about/terms-of-service/">Terms of Use</a></li>
+          <li><a href="/about/privacy-policy/">Privacy Policy</a></li>
+        </ul>
+      </div>
     </div>
     <div class="main-footer-bottom">
       <p>&copy; {{ now.Year }} Smokelyze Project
@@ -94,7 +101,15 @@
         </div>
         <span>Sign in with Google</span>
       </button>
-
+      
+      <p style="font-size: 1.2rem; color: var(--text-soft); text-align: center; margin-top: 1.5rem; line-height: 1.4;">
+        By signing in, you agree to our
+        <a href="/about/terms-of-service/" target="_blank" style="text-decoration: underline; color: inherit;">Terms of
+          Use</a> and
+        <a href="/about/privacy-policy/" target="_blank" style="text-decoration: underline; color: inherit;">Privacy
+          Policy</a>.
+      </p>
+      
       <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
         <button id="AuthBtnBenefits" class="auth-btn-guest" style="text-decoration: underline;">
           View Member Benefits

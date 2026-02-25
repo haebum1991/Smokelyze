@@ -86,8 +86,11 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     // Map Overlay logic
-    if (authOverlay) {
-        authOverlay.style.display = (user || sessionStorage.getItem("auth-guest-dismissed")) ? "none" : "flex";
+    // if (authOverlay) {
+    //     authOverlay.style.display = (user || sessionStorage.getItem("auth-guest-dismissed")) ? "none" : "flex";
+    // }
+    if (authOverlay && user) {
+        authOverlay.style.display = "none";
     }
 
     window.dispatchEvent(new CustomEvent("authStateChanged", { detail: { user } }));

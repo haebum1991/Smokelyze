@@ -66,6 +66,18 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
   weight = 2
   parent = "about"
 
+[[menu.main]]
+  name = "Terms of Use"
+  url = "/about/terms-of-service/"
+  weight = 3
+  parent = "about"
+
+[[menu.main]]
+  name = "Privacy Policy"
+  url = "/about/privacy-policy/"
+  weight = 4
+  parent = "about"
+  
 [params]
   description = "A website built through Hugo and blogdown."
   highlightjsVersion = "9.12.0"
