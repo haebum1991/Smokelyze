@@ -137,7 +137,14 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                 if (functionCallParts.some(p => p.functionCall.name === "move_to_location")) {
                     await new Promise(r => setTimeout(r, 600));
                 }
-
+                
+                // [Safety Net] If backend passed BQ coordinates (because AI may skip move_to_location),
+                // execute move_to_location NOW before the next loop iteration sends a new HTTP request.
+                if (data.autoMoveCoords && !functionCallParts.some(p => p.functionCall.name === "move_to_location")) {
+                    console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}]`);
+                    await handleAiToolCall("move_to_location", data.autoMoveCoords);
+                }
+                
                 // AI의 "함수 쓸게!"라는 메시지를 대화 기록에 추가
                 contents.push(modelResponseContent);
 

@@ -50,7 +50,7 @@ body.page-map .main-footer {
 }
 
 body.FigurePage-drawer-open #MapTooltip {
-  transform: translateX(var(--FigurePage-drawer-width));
+  transform: translateX(calc(var(--FigurePage-drawer-width) - var(--toolbar-date-width)));
 }
 
 @media (max-width: 1024px) {
