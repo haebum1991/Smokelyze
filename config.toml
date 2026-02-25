@@ -67,15 +67,21 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
   parent = "about"
 
 [[menu.main]]
+  name = "Contact"
+  url = "/about/contact/"
+  weight = 3
+  parent = "about"
+
+[[menu.main]]
   name = "Terms of Use"
   url = "/about/terms-of-service/"
-  weight = 3
+  weight = 4
   parent = "about"
 
 [[menu.main]]
   name = "Privacy Policy"
   url = "/about/privacy-policy/"
-  weight = 4
+  weight = 5
   parent = "about"
   
 [params]
