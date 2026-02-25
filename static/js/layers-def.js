@@ -501,6 +501,7 @@ export const LAYER_DEFS = (() => {
                 sizeLegend: {
                     title: frpTmpl.title,
                     color: frpTmpl.colors,
+                    strokeColor: "#FFD700",
                     items: makeSizeLegendItems(frpTmpl.breaks, frpRadii)
                 }
             },
