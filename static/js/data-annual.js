@@ -24,10 +24,10 @@ async function fetchWithAuth(url, options = {}) {
 
 async function loadAnnualReports() {
     const tablePM = document.getElementById("AnnualReportTableBody_PM");
-    const tableO3 = document.getElementById("AnnualReportTableBody_O3");
+    const tableO3_gam_v2 = document.getElementById("AnnualReportTableBody_O3_gam_v2");
 
     if (tablePM) tablePM.innerHTML = "<tr><td colspan='3' style='text-align:center; padding: 3rem;'>Loading reports...</td></tr>";
-    if (tableO3) tableO3.innerHTML = "<tr><td colspan='3' style='text-align:center; padding: 3rem;'>Loading reports...</td></tr>";
+    if (tableO3_gam_v2) tableO3_gam_v2.innerHTML = "<tr><td colspan='3' style='text-align:center; padding: 3rem;'>Loading reports...</td></tr>";
 
     try {
         const res = await fetchWithAuth("/smokeday/smoke_id/?list=1");
@@ -35,7 +35,7 @@ async function loadAnnualReports() {
         if (!res.ok) {
             const errorMsg = res.status === 401 ? "Please sign in to view reports." : `Server error: ${res.status}`;
             if (tablePM) tablePM.innerHTML = `<tr><td colspan='3' style='text-align:center; padding: 2rem;'>${errorMsg}</td></tr>`;
-            if (tableO3) tableO3.innerHTML = `<tr><td colspan='3' style='text-align:center; padding: 2rem;'>${errorMsg}</td></tr>`;
+            if (tableO3_gam_v2) tableO3_gam_v2.innerHTML = `<tr><td colspan='3' style='text-align:center; padding: 2rem;'>${errorMsg}</td></tr>`;
             return;
         }
 
@@ -43,22 +43,24 @@ async function loadAnnualReports() {
         if (!files || files.length === 0) {
             const noDataMsg = "No annual reports found.";
             if (tablePM) tablePM.innerHTML = `<tr><td colspan='3' style='text-align:center; padding: 3rem;'>${noDataMsg}</td></tr>`;
-            if (tableO3) tableO3.innerHTML = `<tr><td colspan='3' style='text-align:center; padding: 3rem;'>${noDataMsg}</td></tr>`;
+            if (tableO3_gam_v2) tableO3_gam_v2.innerHTML = `<tr><td colspan='3' style='text-align:center; padding: 3rem;'>${noDataMsg}</td></tr>`;
             return;
         }
 
-        // 1. Group by Type (pm/o3) and Year
-        const reportsByType = { pm: {}, o3: {} };
+        // 1. Group by Type (pm/o3_gam_v2) and Year
+        const reportsByType = { pm: {}, o3_gam_v2: {} };
 
         files.forEach(filename => {
-            const match = filename.match(/smoke_(pm|o3)_(\d{4}).*as_of_(\d{4})_(\d{2})_(\d{2})/);
+            // pm과 o3_gam_v2 두 가지만 명확하게 추출합니다.
+            const match = filename.match(/smoke_(pm|o3_gam_v2)_(\d{4})_EPA_as_of_(\d{4})_(\d{2})_(\d{2})/);
             if (!match) return;
 
-            const type = match[1]; // "pm" or "o3"
+            const type = match[1]; // "pm" 또는 "o3_gam_v2"
             const dataYear = match[2];
             const asOfDate = `${match[3]}-${match[4]}-${match[5]}`;
             const cleanTitle = `smoke_${type}_${dataYear}`;
 
+            // 추출된 type이 객체의 키와 일치하므로 바로 사용 가능합니다.
             if (!reportsByType[type][dataYear]) reportsByType[type][dataYear] = [];
             reportsByType[type][dataYear].push({
                 filename,
@@ -70,13 +72,13 @@ async function loadAnnualReports() {
 
         // 2. Render Tables
         renderTypeTable("pm", reportsByType.pm, tablePM);
-        renderTypeTable("o3", reportsByType.o3, tableO3);
+        renderTypeTable("o3_gam_v2", reportsByType.o3_gam_v2, tableO3_gam_v2);
 
     } catch (err) {
         console.error("Error loading annual reports:", err);
         const errHtml = `<tr><td colspan='3' style='text-align:center; color: var(--color-red); padding: 2rem;'>Error: ${err.message}</td></tr>`;
         if (tablePM) tablePM.innerHTML = errHtml;
-        if (tableO3) tableO3.innerHTML = errHtml;
+        if (tableO3_gam_v2) tableO3_gam_v2.innerHTML = errHtml;
     }
 }
 
@@ -138,7 +140,7 @@ function renderDownloadCell(record, type, year) {
 
     const authClass = auth.currentUser ? "" : "disabled-auth";
     const authTitle = auth.currentUser ? "" : "Please login to download";
-    
+
     return `
         <div class="datadb-annual-table-card">
             <span class="datadb-annual-table-name">${record.title}</span>
