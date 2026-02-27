@@ -250,14 +250,20 @@ title: ""
       </details>
       
       <details>
-        <summary>Published</summary>
+        <summary>Published & Latest</summary>
 
         <label for="MapDataSelect">Select dataset:</label>
         <select id="MapDataSelect" name="MapDataSelect">
-          <option value="gam-v2">UW GAM-v2 (Lee and Jaffe, 2025 )</option>
-          <option value="gam-v1">UW GAM-v1 (Lee and Jaffe, 2024) </option>
-          <option value="pm-cbsa">UW Smoke PM2.5 (Under review) </option>
-          <option value="epa-ember">EPA EMBER (Simon, et al., 2024) </option>
+          <optgroup label="Published">
+            <option value="gam-v2">UW GAM-v2 (Lee and Jaffe, 2025)</option>
+            <option value="gam-v1">UW GAM-v1 (Lee and Jaffe, 2024)</option>
+            <option value="pm-cbsa">UW Smoke PM2.5 (Under review)</option>
+            <option value="epa-ember">EPA EMBER (Simon, et al., 2024)</option>
+          </optgroup>
+          <optgroup label="Latest Analysis & Prediction">
+            <option value="gam-v2-pred">UW GAM-v2 (2025+)</option>
+            <option value="pm-cbsa-pred">UW Smoke PM2.5 (2025+)</option>
+          </optgroup>
         </select>
 
         <div id="MapCheckboxPublished">
@@ -315,7 +321,6 @@ title: ""
           <label><input type="checkbox" id="layer-ExcDays-m1p0m"> Exc. day m1p0m </label>
 
         </div>
-        <hr style="margin-top: 0.2rem; margin-bottom: 1rem;">
       </details>
     </div>
   </div>
@@ -542,13 +547,6 @@ title: ""
 
 <script>
   const LAYER_CONFIG = {
-    "gam-v1": [
-      "layer-mda8-obs", "layer-mda8-pred", "layer-smo", "layer-resids", "layer-resids-quant",
-      "layer-pm25-obs", "layer-pm25-quant", "layer-pm25-crit", "layer-tmax", "layer-srad",
-      "layer-smokeday", "layer-smokeday-975",
-      "layer-ExcDays"
-    ],
-
     "gam-v2": [
       "layer-mda8-obs", "layer-mda8-pred", "layer-smo", "layer-resids", "layer-resids-quant",
       "layer-pm25-obs", "layer-pm25-quant", "layer-pm25-crit",
@@ -558,6 +556,13 @@ title: ""
       "layer-ExcDays", "layer-ExcDays-edm"
     ],
 
+    "gam-v1": [
+      "layer-mda8-obs", "layer-mda8-pred", "layer-smo", "layer-resids", "layer-resids-quant",
+      "layer-pm25-obs", "layer-pm25-quant", "layer-pm25-crit", "layer-tmax", "layer-srad",
+      "layer-smokeday", "layer-smokeday-975",
+      "layer-ExcDays"
+    ],
+    
     "pm-cbsa": [
       "layer-pm25-obs", "layer-pm25-quant",
       "layer-pm25-crit-m0p5m", "layer-pm25-crit-m1p0m",
@@ -569,6 +574,24 @@ title: ""
     "epa-ember": [
       "layer-mda8-obs", "layer-mda8-pred", "layer-smo", "layer-resids",
       "layer-ExcDays"
+    ],
+    
+    
+    "gam-v2-pred": [
+      "layer-mda8-obs", "layer-mda8-pred", "layer-smo", "layer-resids", "layer-resids-quant",
+      "layer-pm25-obs", "layer-pm25-quant", "layer-pm25-crit",
+      "layer-tmax", "layer-srad",
+      "layer-mda8-pred-edm", "layer-smo-edm", "layer-resids-edm", "layer-resids-quant-edm",
+      "layer-smokeday", "layer-smokeday-975", "layer-smokeday-975-edm",
+      "layer-ExcDays", "layer-ExcDays-edm"
+    ],
+    
+    "pm-cbsa-pred": [
+      "layer-pm25-obs", "layer-pm25-quant",
+      "layer-pm25-crit-m0p5m", "layer-pm25-crit-m1p0m",
+      "layer-pm25-smoke-m0p5m", "layer-pm25-smoke-m1p0m",
+      "layer-smokeday-m0p5m", "layer-smokeday-m1p0m",
+      "layer-ExcDays-m0p5m", "layer-ExcDays-m1p0m"
     ]
   };
 

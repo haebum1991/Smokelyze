@@ -131,9 +131,12 @@ const DescData = {
           title: "General information",
           desc: "The detailed information is provided in the tooltip, and please see the [Parameter descriptions] for each dataset. " +
                 "We recommend using the most recent (highest) version for each analysis." +
-                "<ul><li><b>[UW GAM-v2]</b> includes smoke days, smoke PM2.5 and smoke O3 for the ozone season (<b style='color: var(--card-shadow);'>April-Oct, 2019-2024</b>).</li>" +
-                "<li><b>[UW GAM-v1]</b> includes smoke days, smoke PM2.5 and smoke O3 for the ozone season (<b style='color: var(--card-shadow);'>May-Sep, 2018-2023</b>).</li>" +
-                "<li><b>[UW Smoke PM2.5]</b> includes smoke days and smoke PM2.5 for the full year (<b style='color: var(--card-shadow);'>2019-2024</b>).</li></ul>"
+                "<ul><li><b style='color: var(--card-shadow);'>[UW GAM-v2]</b> includes smoke days, smoke PM2.5 and smoke O3 for the ozone season (<b>April-Oct, 2019-2024</b>).</li>" +
+                "<li><b style='color: var(--card-shadow);'>[UW GAM-v1]</b> includes smoke days, smoke PM2.5 and smoke O3 for the ozone season (<b>May-Sep, 2018-2023</b>).</li>" +
+                "<li><b style='color: var(--card-shadow);'>[UW Smoke PM2.5]</b> includes smoke days and smoke PM2.5 for the full year (<b>2019-2024</b>).</li>" +
+                "<br>" +
+                "<li><b style='color: var(--card-shadow);'>[UW GAM-v2 (2025+)]</b> includes smoke days, smoke PM2.5 and smoke O3 for the ozone season (<b>April-Oct, 2025+</b>).</li>" +
+                "<li><b style='color: var(--card-shadow);'>[UW Smoke PM2.5 (2025+)]</b> includes smoke days and smoke PM2.5 for the full year (<b>2025+</b>).</li></ul>"
         },
         {
           id: "purpose",
@@ -147,22 +150,32 @@ const DescData = {
                 "In the [Overview] tab, users can view model metadata, compare different model outputs, " + 
                 "and examine time-series and scatter plots of observed versus predicted values for selected sites. " + 
                 "In the [Layer map] tab, users can load data for analysis and customize data visualization by choosing point, raster, or HMS layers. " + 
-                "This functionality helps users assess the performance of various GAM models and compare different approaches to understanding air quality dynamics, particularly in the context of wildfires." + 
-                "<br><br>" +
-                "We plan to continuously add not only our GAM results but also other studies related to the smoke contribution to O3 and PM2.5 derived through different methods for comparison.<br>" +
-                "The currently available datasets are as follows:"
+                "This functionality helps users assess the performance of various GAM models and compare different approaches to understanding air quality dynamics, particularly in the context of wildfires."
+        },
+        {
+          id: "purpose-prediction",
+          title: "What is the [Latest Analysis & Prediction] for?",
+          desc: "The [Latest Analysis & Prediction] section provides continuous monitoring and near real-time predictions of wildfire impacts for the 2025 season and beyond. " +
+              "While the [Published] datasets are based on finalized historical records, these predictions utilize validated model parameters from our research (e.g., <b>UW GAM-v2</b>) but integrate preliminary seasonal data to provide current situational awareness. " +
+              "This allows users to track ongoing smoke impacts as they occur using the same frameworks established in our peer-reviewed research." +
+              "<br><ul><li><b style='color: var(--card-shadow);'>[UW GAM-v2 (2025+)]</b> includes smoke days, smoke PM2.5 and smoke O3 for the ozone season (April-Oct). " +
+              "Due to the update cycle of predictors used in GAM estimation, the most recent data is approximately <b>8-9 weeks old</b>. " +
+              "Based on the EPA data finalization cycle, a full re-analysis of the previous year (e.g., 2025) is typically conducted during Q3-Q4 of the current year (e.g., 2026), and data may be updated accordingly.</li>" +
+              "<li><b style='color: var(--card-shadow);'>[UW Smoke PM2.5 (2025+)]</b> includes smoke days and smoke PM2.5 for the full year. " +
+              "The most recent data is uploaded with a delay of approximately <b>2-3 days</b>. " +
+              "Based on the EPA data finalization cycle, a full re-analysis of the previous year (e.g., 2025) is typically conducted during Q3-Q4 of the current year (e.g., 2026), and data may be updated accordingly.</li></ul>"
         },
         {
           id: "research-o3-gam",
           title: "Research for smoke contribution to O3 using GAM in the US",
-          desc: "<ul><li><b>[UW GAM-v2]</b>, data period: Apr to Oct, 2019-2024, study area: CONUS + AK + HI<ul>" +
+          desc: "<ul><li><b style='color: var(--card-shadow);'>[UW GAM-v2]</b>, data period: Apr to Oct, 2019-2024, study area: CONUS + AK + HI<ul>" +
                 "<li>EPA data for O3 and PM2.5 (pre-generated data) were downloaded as of 2024-11-19.</li>" +
                 "<li>Lee, H. and Jaffe, D. A.: " +
                 "Impact of Wildfires on O3 and Air Quality Across the United States for 2019–2024 Using Generalized Additive Models, " +
                 "J. Geophys. Res. Atmos., 130, e2025JD044088, 2025. " +
                 "<a href='https://doi.org/10.1029/2025JD044088' target='_blank'>https://doi.org/10.1029/2025JD044088</a></li></ul></li>" +
                 
-                "<li><b>[UW GAM-v1]</b>, data period: May to Sep, 2018-2023, study area: CONUS<ul>" +
+                "<li><b style='color: var(--card-shadow);'>[UW GAM-v1]</b>, data period: May to Sep, 2018-2023, study area: CONUS<ul>" +
                 "<li>EPA data for O3 and PM2.5 (pre-generated data) were downloaded as of 2023-10-26.</li>" +
                 "<li>Lee, H. and Jaffe, D. A.: " + 
                 "Wildfire impacts on O3 in the continental United States using PM2.5 and a generalized additive model (2018–2023), " +
@@ -172,7 +185,7 @@ const DescData = {
         {
           id: "research-pm25-gam",
           title: "Research for smoke contribution to PM2.5 in the US",
-          desc: "<ul><li><b>[UW Smoke PM2.5]</b>, data period: Jan to Dec, 2019-2024, study area: CONUS + AK + HI<ul>" +
+          desc: "<ul><li><b style='color: var(--card-shadow);'>[UW Smoke PM2.5]</b>, data period: Jan to Dec, 2019-2024, study area: CONUS + AK + HI<ul>" +
                 "<li>EPA data for O3 and PM2.5 (pre-generated data) were downloaded as of 2024-11-19.</li>" +
                 "<li>Jaffe, D., Lee, H., Magzamen, S., Goldberg, D., and O'Dell, K.: " + 
                 "Health and Regulatory Impacts of PM2.5 from Wildland Fires for 2019–2024 in the U.S., " +
@@ -182,7 +195,7 @@ const DescData = {
         {
           id: "research-o3-ember",
           title: "Research for smoke contribution to O3 using EMBER in the US",
-          desc: "<ul><li><b>[EPA EMBER]</b>, data period: Apr to Sep, 2023, study area: CONUS<ul>" +
+          desc: "<ul><li><b style='color: var(--card-shadow);'>[EPA EMBER]</b>, data period: Apr to Sep, 2023, study area: CONUS<ul>" +
                 "<li>Simon, H. Beidler, J., Baker, K. R., Henderson, B. H., Fox, L., Misenis, C., Campbell, P., Vukovich, J., Possiel, N., and Eyth, A.: " +
                 "Expedited modeling of burn events results (EMBER): A screening-level dataset of 2023 ozone fire impacts in the US, " + 
                 "Data in Brief, 58, 111208, 2024. " +
