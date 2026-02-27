@@ -361,7 +361,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
           <div style="${rowStyle}">Residual (ppb): ${ESML(smartFmt(p["MDA8O3_resids"], "MDA8O3_resids", dataSource))}</div>
           <div style="${rowStyle}">SMO (ppb): ${ESML(smartFmt(p["SMO"], "SMO", dataSource))}</div>
           <hr style="${hrStyle}">`;
-    } else if (dataSource === "pm_cbsa") {
+    } else if (dataSource === "pm_cbsa" || dataSource === "pm_cbsa_pred") {
       bodyHtml += `
           <div style="${rowStyle}">AQS PM: ${ESML(p["AQS_PM"] || "NA")}</div>
           <div style="${rowStyle}">Site name: ${ESML(p["site_name"] || "NA")}</div>
@@ -401,7 +401,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
           <hr style="${hrStyle}">
           <div style="${rowStyle}">TMAX (°C): ${ESML(smartFmt(p["TMAX"], "TMAX", dataSource))}</div>
           <div style="${rowStyle}">SRAD (W m⁻²): ${ESML(smartFmt(p["SRAD"], "SRAD", dataSource))}</div>`;
-    } else {
+    } else if (dataSource === "gam_v2" || dataSource === "gam_v2_pred") {
       bodyHtml += `
           <div style="${rowStyle}">AQS O3: ${ESML(p["AQS_O3"] || "NA")}</div>
           <div style="${rowStyle}">Site name: ${ESML(p["site_name"] || "NA")}</div>
@@ -428,6 +428,10 @@ export function generatePopupHTML(p, dataSource, isLocked) {
           <hr style="${hrStyle}">
           <div style="${rowStyle}">TMAX (K): ${ESML(smartFmt(p["T2MAX"], "T2MAX", dataSource))}</div>
           <div style="${rowStyle}">SRAD (W m⁻²): ${ESML(smartFmt(p["SRAD"], "SRAD", dataSource))}</div>`;
+    } else {
+      bodyHtml += `
+          <hr style="${hrStyle}">
+          <div style="${rowStyle};">(No additional details defined for this source)</div>`;
     }
 
     return createMetaHeader() + bodyHtml;

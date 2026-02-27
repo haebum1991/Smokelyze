@@ -184,7 +184,7 @@ function injectSearchUIPublished() {
     if (!targetSelect) return;
 
     const { wrapper, input, resultsList } = createSearchUIElement(
-        "SiteSearchInnerWrapperPublished",
+        "SiteSearchWrapperPublished",
         "Site search (name, AQS, ...):",
         "Type to search..."
     );
@@ -217,7 +217,7 @@ function injectSearchUIPublished() {
             const f = features[i];
             const p = f.properties;
             const name = (p.site_name || p.name || "").toLowerCase();
-            const aqs = (p.AQS_O3 || p.AQS || "").toString().toLowerCase();
+            const aqs = (p.AQS_O3 || p.AQS_PM || p.AQS || "").toString().toLowerCase();
             const state = (p.state || "").toLowerCase();
 
             if (name.includes(query) || aqs.includes(query) || state.includes(query)) {
@@ -225,7 +225,7 @@ function injectSearchUIPublished() {
                     feature: f,
                     display: {
                         state: p.state,
-                        aqs: p.AQS_O3 || p.AQS,
+                        aqs: p.AQS_O3 || p.AQS_PM || p.AQS,
                         name: p.site_name || p.name
                     }
                 });
@@ -293,7 +293,7 @@ function injectSearchUIAirNow() {
             const f = data[i];
             const p = f.properties;
             const name = (p.site_name || p.name || "").toLowerCase();
-            const aqs = (p.AQS_O3 || p.AQS || "").toString().toLowerCase();
+            const aqs = (p.AQS_O3 || p.AQS_PM || p.AQS || "").toString().toLowerCase();
             const state = (p.state || "").toLowerCase();
             if (name.includes(query) || aqs.includes(query) || state.includes(query)) {
                 matches.push({
@@ -301,7 +301,7 @@ function injectSearchUIAirNow() {
                     display: {
                         layerLabel: f._layerLabel,
                         state: p.state,
-                        aqs: p.AQS_O3 || p.AQS,
+                        aqs: p.AQS_O3 || p.AQS_PM || p.AQS,
                         name: p.site_name || p.name
                     }
                 });
