@@ -2021,7 +2021,7 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
 }
 
 
-/* ================ AI Chat setting ================ */
+/* ================ Ai Chat setting ================ */
 #AiChatToggle {
   top: calc(var(--header-height-total) + var(--toolbar-date-height));
 }
