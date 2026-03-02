@@ -66,6 +66,16 @@ export function restoreUI() {
 
   // Point Layers
   setPointLayersEnabled(typeof s.PointLayersEnabled === "boolean" ? s.PointLayersEnabled : true);
+  
+  // Dataset
+  if (s.dataset) {
+    const el = document.getElementById("MapDataSelect");
+    if (el) {
+      el.value = s.dataset;
+      // Trigger the filter logic in index.html
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  }
 }
 
 export function restoreView(map) {
@@ -236,5 +246,13 @@ export function resetGlobalPointLayers() {
   }
 
   setPointLayersEnabled(true);
+}
+
+export function bindDatasetAutosave() {
+  const el = document.getElementById("MapDataSelect");
+  if (!el) return;
+  el.addEventListener("change", () => {
+    savePatch({ dataset: el.value });
+  });
 }
 
