@@ -9,6 +9,10 @@ export function initBtnTooltips() {
   let tooltip = null;
 
   document.addEventListener("mouseenter", (e) => {
+  
+    // Skip for touch devices (mobile) to prevent showing on tap
+    if (window.matchMedia("(hover: none)").matches) return;
+        
     const target = e.target.closest("[title], [btn-tooltip]");
     if (!target) return;
 
