@@ -26,6 +26,32 @@ body.page-map .main-footer {
   display: none;
 }
 
+/* ================ Smart Tooltip System (JS-based) ================ */
+.custom-btn-tooltip {
+  position: fixed;
+  width: max-content;
+  z-index: var(--z-highest);
+  background: var(--color-bg);
+  backdrop-filter: blur(0.8rem);
+  -webkit-backdrop-filter: blur(0.8rem);
+  color: var(--text-main);
+  padding: 0.8rem 1.4rem;
+  border-radius: 1rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  pointer-events: none;
+  box-shadow: 0 0.1rem 0.5rem var(--card-shadow);
+  border: 1px solid var(--card-shadow);
+
+  /* Animation */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.custom-btn-tooltip.visible {
+  opacity: 1;
+}
+
 /* ================ Map base component ================ */
 #MapWrapper {
   flex: 1 1 auto;

@@ -76,7 +76,7 @@ const TUTORIAL_STEPS = [
     {
         element: "#MapBtnReset",
         popover: {
-            title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-refresh"/></svg></span> Reset all',
+            title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-refresh"/></svg></span> Reset All',
             description: "Instantly jump back to the default map view and zoom level if you ever get lost or want a fresh start. All active layers will be unchecked and cleared.",
             side: "top",
             align: "end",

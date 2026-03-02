@@ -112,7 +112,7 @@ title: ""
   <!-- map panel wrapper -->
   <div id="MapWrapper">
     <div id="map"></div>
-    <button class="FigurePage-toggle" id="FigurePageToggle">
+    <button class="FigurePage-toggle" id="FigurePageToggle" title="Stats & Charts Panel">
       <svg width="28" height="28">
         <use xlink:href="#icon-stats" />
       </svg>
@@ -127,7 +127,7 @@ title: ""
     <button class="MapPost-toggle" id="MapPostToggle" style="display:none;">
     </button>
 
-    <button class="Desc-toggle" id="DescToggle">
+    <button class="Desc-toggle" id="DescToggle" title="Layer Descriptions">
       <svg class="chevron" width="24" height="24">
         <use xlink:href="#icon-chevron-left" />
       </svg>
@@ -143,7 +143,7 @@ title: ""
         </svg>
       </button>
 
-      <button class="map-btn-reset" id="MapBtnReset" title="Reset">
+      <button class="map-btn-reset" id="MapBtnReset" title="Reset All">
         <svg width="28" height="28">
           <use xlink:href="#icon-refresh" />
         </svg>
@@ -197,18 +197,18 @@ title: ""
     </div>
     
     <div class="date-controls">
-      <button class="minus1y" id="onMapMinus1y">-y</button>
-      <button class="minus1m" id="onMapMinus1m">-m</button>
-      <button class="minus1d" id="onMapMinus1d">-d</button>
+      <button class="minus1y" id="onMapMinus1y" title="-1 Year">-y</button>
+      <button class="minus1m" id="onMapMinus1m" title="-1 Month">-m</button>
+      <button class="minus1d" id="onMapMinus1d" title="-1 Day">-d</button>
       
       <!-- Hour buttons -->
-      <button class="minus1h" id="onMapMinus1h" style="display: none;">-h</button>
-      <button class="plus1h" id="onMapPlus1h" style="display: none;">+h</button>
+      <button class="minus1h" id="onMapMinus1h" title="-1 Hour" style="display: none;">-h</button>
+      <button class="plus1h" id="onMapPlus1h" title="+1 Hour" style="display: none;">+h</button>
       <!-- Hour buttons -->
       
-      <button class="plus1d" id="onMapPlus1d">+d</button>
-      <button class="plus1m" id="onMapPlus1m">+m</button>
-      <button class="plus1y" id="onMapPlus1y">+y</button>
+      <button class="plus1d" id="onMapPlus1d" title="+1 Day">+d</button>
+      <button class="plus1m" id="onMapPlus1m" title="+1 Month">+m</button>
+      <button class="plus1y" id="onMapPlus1y" title="+1 Year">+y</button>
     </div>
   </div>
   
@@ -230,7 +230,7 @@ title: ""
     <div class="accordion">
       <div class="accordion-header">
         <span class="accordion-title">Layers</span>
-        <button id="AccordionClose" class="accordion-close-btn" title="Close">
+        <button id="AccordionClose" class="accordion-close-btn">
           <svg width="20" height="20">
             <use xlink:href="#icon-close" />
           </svg>
@@ -431,7 +431,7 @@ title: ""
         <button id="AiChatClearBtn" class="accordion-close-btn" title="Clear Chat">
           Clear
         </button>
-        <button id="AiChatDrawerClose" class="accordion-close-btn" title="Close">
+        <button id="AiChatDrawerClose" class="accordion-close-btn">
           <svg width="20" height="20">
             <use xlink:href="#icon-close" />
           </svg>
@@ -465,17 +465,17 @@ title: ""
     <div id="StatsPanelDate">
 
       <div class="stats-controls-date">
-        <button class="minus1y" id="StatsInputMinus1y">-y</button>
-        <button class="minus1m" id="StatsInputMinus1m">-m</button>
-        <button class="minus1d" id="StatsInputMinus1d">-d</button>
-        <button class="minus1h" id="StatsInputMinus1h" style="display: none;">-h</button>
+        <button class="minus1y" id="StatsInputMinus1y" title="-1 Year">-y</button>
+        <button class="minus1m" id="StatsInputMinus1m" title="-1 Month">-m</button>
+        <button class="minus1d" id="StatsInputMinus1d" title="-1 Day">-d</button>
+        <button class="minus1h" id="StatsInputMinus1h" title="-1 Hour" style="display: none;">-h</button>
         
         <div class="stats-input-date" id="StatsInputDate"></div>
         
-        <button class="plus1h" id="StatsInputPlus1h" style="display: none;">+h</button>
-        <button class="plus1d" id="StatsInputPlus1d">+d</button>
-        <button class="plus1m" id="StatsInputPlus1m">+m</button>
-        <button class="plus1y" id="StatsInputPlus1y">+y</button>
+        <button class="plus1h" id="StatsInputPlus1h" title="+1 Hour" style="display: none;">+h</button>
+        <button class="plus1d" id="StatsInputPlus1d" title="+1 Day">+d</button>
+        <button class="plus1m" id="StatsInputPlus1m" title="+1 Month">+m</button>
+        <button class="plus1y" id="StatsInputPlus1y" title="+1 Year">+y</button>
       </div>
 
       <div class="stats-plot-tab-panel">
@@ -523,9 +523,9 @@ title: ""
     <div id="StatsPanelYear">
 
       <div class="stats-controls-year">
-        <button class="minus1y" id="AnnStatsInputMinus1y">-y</button>
+        <button class="minus1y" id="AnnStatsInputMinus1y" title="-1 Year">-y</button>
         <div class="stats-input-year" id="StatsInputYear"></div>
-        <button class="plus1y" id="AnnStatsInputPlus1y">+y</button>
+        <button class="plus1y" id="AnnStatsInputPlus1y" title="+1 Year">+y</button>
       </div>
 
       <div class="stats-tab-month-main">

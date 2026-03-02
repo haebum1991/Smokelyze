@@ -7,6 +7,7 @@ import { geolocate } from "./layers.js";
 import { resetViewControl } from "./ui-reset.js";
 import { initMapCapture } from "./map-capture.js";
 import { initTimeButtons, initTimePicker } from "./ui-time.js";
+import { initBtnTooltips } from "./ui-btn-tooltip.js";
 
 const datePicker = document.getElementById("datePicker");
 
@@ -39,4 +40,5 @@ initTimeButtons?.();
 initTimePicker?.();
 initMapCapture?.();
 initStateShadingToggle?.();
+initBtnTooltips?.();
 
