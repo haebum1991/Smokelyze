@@ -142,56 +142,34 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
 
 
 /* ================ Map Buttons ================ */
+.map-btn-wrapper {
+  z-index: var(--z-FigurePage-toggle);
+  position: absolute;
+  bottom: -4.8rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  transition: transform 0.3s ease-out;
+}
+
+@media (max-width: 1024px) {
+  body.FigurePage-drawer-open .map-btn-wrapper {
+    transform: translateX(-50%);
+  }
+}
+
 .map-btn-reset,
-.map-btn-capture {
+.map-btn-capture,
+.map-btn-tutorial {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Map reset button css */
-.map-btn-reset {
-  z-index: var(--z-FigurePage-toggle);
-  font-size: 2rem;
-  font-weight: bold;
-  
-  display: block;
-  max-width: max-content;
-
-  border-radius: var(--border-radius-0p8rem);
-  border: 0.1rem solid var(--card-shadow);
-  background-color: var(--color-bg);
-  color: var(--text-main);
-  cursor: pointer;
-
-  position: absolute;
-  top: auto;
-  bottom: -4.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 0.6rem 0.8rem;
-
-  transition: transform 0.3s ease-out;
-}
-
-.map-btn-reset:hover {
-  transform: translateX(-50%) scale(1.05);
-}
-
-.map-btn-reset:active {
-  background-color: var(--accent-highlight);
-  color: var(--text-main);
-  border-color: var(--accent-highlight);
-}
-
-/* Map capture button css */
-.map-btn-capture {
-  z-index: var(--z-FigurePage-toggle);
-    
-  position: absolute;
-  bottom: 8px;
-  left: 87px;
-  padding: 5px 5px;
-  
+.map-btn-reset,
+.map-btn-capture,
+.map-btn-tutorial {
   font-size: 2rem;
   font-weight: bold;
 
@@ -200,34 +178,38 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
   justify-content: center;
   max-width: max-content;
 
-  border-radius: calc(var(--border-radius-0p8rem) * 0.7);
-  border: 0.1rem solid var(--card-shadow);
-  background-color: var(--color-bg);
-  color: var(--text-main);
+  border-radius: var(--border-radius-0p8rem);
+  border: none;
+  background-color: var(--map-accordion-gradient-start);
+  color: var(--text-strong);
   cursor: pointer;
-  
-  transition: transform 0.3s ease-out;
+  padding: 0.6rem 0.8rem;
+
+  transition: transform 0.3s ease-out, background 0.3s ease;
 }
 
-@media (hover: hover) {
-  .map-btn-capture:hover {
-    transform: scale(1.05);
-  }
+.map-btn-reset:hover,
+.map-btn-capture:hover,
+.map-btn-tutorial:hover {
+  transform: scale(1.05);
 }
 
-body.FigurePage-drawer-open .map-btn-capture {
-  transform: translateX(var(--FigurePage-drawer-width));
+.map-btn-reset:active {
+  background-color: var(--accent-highlight);
+  color: var(--text-main);
+  border-color: var(--accent-highlight);
 }
 
 @media (max-width: 1024px) {
   .map-btn-reset:hover {
-    transform: translateX(-50%);
+    transform: none;
   }
-  
+
   .map-btn-capture {
     display: none;
   }
 }
+
 
 
 /* ================ Map Legends ================ */
@@ -628,7 +610,7 @@ details[open] summary {
   gap: 0.8rem;
 
   position: absolute;
-  bottom: -4.5rem;
+  bottom: -4.8rem;
   left: 0.3rem;
   padding: 0.6rem 0.8rem;
 
@@ -642,7 +624,7 @@ details[open] summary {
 }
 
 .FigurePage-toggle .chevron {
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .FigurePage-toggle.active .chevron {
@@ -1216,7 +1198,7 @@ tr.stats-state-row-ca.show {
   gap: 0.8rem;
 
   position: absolute;
-  bottom: -4.5rem;
+  bottom: -4.8rem;
   right: 0.4rem;
   padding: 0.6rem 0.8rem;
 
@@ -1230,7 +1212,7 @@ tr.stats-state-row-ca.show {
 }
 
 .Desc-toggle .chevron {
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .Desc-toggle.active .chevron {
@@ -2066,7 +2048,7 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
   align-items: center;
   justify-content: center;
   opacity: 0.4;
-  transition: opacity 0.2s;
+  transition: opacity 0.3s;
   padding: 0 1rem;
 }
 
@@ -2126,7 +2108,7 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
   padding: 0.8rem 1.4rem;
   font-size: 1.3rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   white-space: normal;
   /* Allow text wrapping */
   text-align: left;
@@ -2277,5 +2259,254 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
   .ai-chat-header-handle {
     display: none;
   }
+}
+
+
+/* ================ Tutorial: Driver.js Overrides ================ */
+/* ---- Tutorial Overlays (Welcome & Finish) ---- */
+.map-tut-overlay {
+    z-index: var(--z-highest);
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+
+    background: radial-gradient(ellipse at center, rgba(15, 23, 42, 0.88) 0%, rgba(0, 0, 0, 0.95) 100%);
+    backdrop-filter: blur(1rem);
+    -webkit-backdrop-filter: blur(1rem);
+    animation: map-tut-overlay-in 0.5s ease forwards;
+}
+
+.map-tut-overlay.map-tut-fade-out {
+    animation: map-tut-overlay-out 0.5s ease forwards;
+}
+
+@keyframes map-tut-overlay-in {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes map-tut-overlay-out {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.map-tut-overlay-title {
+    font-size: 3.6rem;
+    font-weight: bold;
+    letter-spacing: -0.02em;
+    text-align: center;
+    color: var(--color-white);
+    background: var(--card-shadow);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: map-tut-title-in 0.8s 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes map-tut-title-in {
+    0% {
+        opacity: 0;
+        transform: translateY(2rem);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.map-tut-overlay-sub {
+    font-size: 1.7rem;
+    color: var(--color-white);
+    text-align: center;
+    max-width: 44rem;
+    line-height: 1.6;
+    animation: map-tut-title-in 0.8s 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.map-tut-overlay-btn {
+    margin-top: 1.5rem;
+    padding: 1.3rem 4rem;
+    font-size: 1.7rem;
+    font-weight: bold;
+    color: var(--color-bg);
+    background: var(--card-shadow);
+    border: none;
+    border-radius: 10rem;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    animation: map-tut-title-in 0.8s 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    box-shadow: 0 0.8rem 2rem rgba(163, 102, 255, 0.3);
+}
+
+.map-tut-overlay-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 1.2rem 3rem rgba(163, 102, 255, 0.5);
+}
+
+.map-tut-overlay-skip {
+    margin-top: 0.8rem;
+    font-size: 1.4rem;
+    color: var(--text-soft);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    animation: map-tut-title-in 0.8s 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.map-tut-overlay-skip:hover {
+    color: var(--text-main);
+}
+
+
+/* ---- Driver.js theme overrides (Scoped to app theme) ---- */
+.driver-popover {
+    background-color: var(--color-bg) !important;
+    backdrop-filter: blur(2rem) !important;
+    -webkit-backdrop-filter: blur(2rem) !important;
+    border: 0.1rem solid var(--card-shadow) !important;
+    border-radius: 1.6rem !important;
+    color: var(--text-main) !important;
+    box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.5) !important;
+    padding: 2.22rem !important;
+    max-width: 36rem !important;
+}
+
+.driver-popover * {
+    color: var(--text-main);
+}
+
+.driver-popover .driver-popover-title {
+    font-size: 1.9rem !important;
+    font-weight: bold !important;
+    color: var(--text-strong) !important;
+    margin-bottom: 0.8rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+}
+
+.map-tut-pop-icon-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 0.6rem;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.map-tut-pop-icon {
+    width: 1.8rem;
+    height: 1.8rem;
+    stroke: var(--card-shadow);
+    fill: none;
+    stroke-width: 2.5;
+}
+
+.driver-popover .driver-popover-description {
+    font-size: 1.5rem !important;
+    line-height: 1.6 !important;
+    color: var(--text-main) !important;
+    opacity: 0.9 !important;
+}
+
+.driver-popover .driver-popover-progress-text {
+    font-size: 1.2rem !important;
+    font-weight: bold !important;
+    color: var(--card-shadow) !important;
+    opacity: 0.8 !important;
+}
+
+/* Navigation & Buttons */
+.driver-popover .driver-popover-prev-btn,
+.driver-popover .driver-popover-next-btn {
+    background: var(--card-shadow) !important;
+    color: var(--color-bg) !important;
+    border: none !important;
+    padding: 0.85rem 1.8rem !important;
+    border-radius: var(--border-radius-0p8rem) !important;
+    font-size: 1.4rem !important;
+    font-weight: bold !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Close button appearance */
+.driver-popover .driver-popover-close-btn {
+    color: var(--text-main) !important;
+}
+
+.driver-popover .driver-popover-close-btn:hover {
+    color: var(--text-strong) !important;
+}
+
+/* Arrow customization (Basic reset) */
+.driver-popover .driver-popover-arrow {
+    border: none !important;
+}
+
+.driver-popover-arrow-side-top {
+    border-bottom-color: var(--color-bg) !important;
+}
+
+.driver-popover-arrow-side-bottom {
+    border-top-color: var(--color-bg) !important;
+}
+
+.driver-popover-arrow-side-left {
+    border-right-color: var(--color-bg) !important;
+}
+
+.driver-popover-arrow-side-right {
+    border-left-color: var(--color-bg) !important;
+}
+
+/* Active element visibility high-priority rules */
+.driver-active-element {
+    z-index: var(--z-highest) !important;
+}
+
+body.map-tut-active #MapWrapper {
+    overflow: visible !important;
+}
+
+body.map-tut-active #FigurePageToggle,
+body.map-tut-active #DescToggle,
+body.map-tut-active #MapBtnReset,
+body.map-tut-active #MapBtnCapture,
+body.map-tut-active .map-btn-tutorial,
+body.map-tut-active .maplibregl-ctrl-top-right,
+body.map-tut-active .maplibregl-ctrl-bottom-left {
+    z-index: var(--z-highest) !important;
+}
+
+/* Hide other non-tutorial elements */
+body.map-tut-active #WFnewsToggle,
+body.map-tut-active #MapPostToggle {
+    display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .map-tut-overlay-title {
+        font-size: 2.8rem;
+    }
 }
 

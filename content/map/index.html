@@ -56,6 +56,37 @@ title: ""
     <circle cx="15" cy="12" r="1"></circle>
     <circle cx="15" cy="19" r="1"></circle>
   </symbol>
+    <symbol id="icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+    <line x1="16" y1="2" x2="16" y2="6"></line>
+    <line x1="8" y1="2" x2="8" y2="6"></line>
+    <line x1="3" y1="10" x2="21" y2="10"></line>
+  </symbol>
+  <symbol id="icon-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+    <line x1="8" y1="2" x2="8" y2="18"></line>
+    <line x1="16" y1="6" x2="16" y2="22"></line>
+  </symbol>
+  <symbol id="icon-compass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+  </symbol>
+  <symbol id="icon-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+    <path d="M21 3v5h-5"></path>
+    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+    <path d="M3 21v-5h5"></path>
+  </symbol>
+  <symbol id="icon-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+    stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+  </symbol>
 </svg>
 
 <link rel="preconnect" href="https://unpkg.com">
@@ -64,6 +95,7 @@ title: ""
 <link rel="preconnect" href="https://tiles.openfreemap.org">
 
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/driver.js@1.4.0/dist/driver.css" rel="stylesheet">
 <link href="/css/map.css" rel="stylesheet">
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer></script>
@@ -104,15 +136,25 @@ title: ""
       </svg>
     </button>
 
-    <button class="map-btn-reset" id="MapBtnReset">
-      Reset
-    </button>
-    
-    <button class="map-btn-capture" id="MapBtnCapture" title="Snapshot">
-      <svg width="20" height="20">
-        <use xlink:href="#icon-camera" />
-      </svg>
-    </button>
+    <div class="map-btn-wrapper" id="MapBtnWrapper">
+      <button class="map-btn-capture" id="MapBtnCapture" title="Snapshot">
+        <svg width="28" height="28">
+          <use xlink:href="#icon-camera" />
+        </svg>
+      </button>
+
+      <button class="map-btn-reset" id="MapBtnReset" title="Reset">
+        <svg width="28" height="28">
+          <use xlink:href="#icon-refresh" />
+        </svg>
+      </button>
+      
+      <button class="map-btn-tutorial" id="MapBtnTutorial" title="Quick Start">
+        <svg width="28" height="28">
+          <use xlink:href="#icon-help" />
+        </svg>
+      </button>
+    </div>
 
   </div>
   <div class="map-legend" id="MapLegend" style="display:none;"></div>
@@ -624,8 +666,10 @@ title: ""
 <script type="module" src="/js/ai-chat.js"></script>
 <script type="module" src="/js/stats-daily.js"></script>
 <script type="module" src="/js/stats-yearly.js"></script>
+<script type="module" src="/js/ui-tutorial.js"></script>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/driver.js@1.4.0/dist/driver.js.iife.js"></script>
 
 <!-- Firebase & Discussion -->
 <!-- MapPost Context Menu -->
