@@ -1,7 +1,7 @@
 
 import { currentDate } from "./utils.js";
 import { regionStats } from "./layers-state.js";
-import { LAYER_TEMPLATES } from "./layers-def.js";
+import { LAYER_TEMPLATES, DATASET_SOURCE_MAP } from "./layers-def.js";
 import { getSiteStatsForState, loadedGeoJSON } from "./loader.js";
 import {
   getPlotTheme,
@@ -331,12 +331,7 @@ export function renderDailyBarLine(containerId) {
 
       if (!isDetailMode) {
         const dsVal = document.getElementById("MapDataSelect")?.value;
-        let dsKey = dsVal;
-        if (dsVal === "gam-v2") dsKey = "gam_v2";
-        else if (dsVal === "gam-v1") dsKey = "gam_v1";
-        else if (dsVal === "epa-ember") dsKey = "epa_ember";
-        else if (dsVal === "pm-cbsa") dsKey = "pm_cbsa";
-
+        const dsKey = DATASET_SOURCE_MAP[dsVal] || dsVal;
         const rawData = loadedGeoJSON?.[dsKey];
         const countsByState = {};
         dataStatsX.forEach(st => { countsByState[st] = { c1: 0, c2: 0 }; });
