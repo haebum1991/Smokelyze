@@ -2307,13 +2307,8 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
 .map-tut-overlay-title {
     font-size: 3.6rem;
     font-weight: bold;
-    letter-spacing: -0.02em;
     text-align: center;
     color: var(--color-white);
-    background: var(--card-shadow);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     animation: map-tut-title-in 0.8s 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -2440,6 +2435,7 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
 .driver-popover .driver-popover-next-btn {
     background: var(--card-shadow) !important;
     color: var(--color-bg) !important;
+    text-shadow: none !important;
     border: none !important;
     padding: 0.85rem 1.8rem !important;
     border-radius: var(--border-radius-0p8rem) !important;
