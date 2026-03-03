@@ -14,7 +14,8 @@ import {
     setCachedActiveLayerIds,
     setActiveLayerStack,
     PointLayersEnabled,
-    NaShadingEnabled
+    NaShadingEnabled,
+    closedLegendIds
 } from "./layers-state.js";
 
 export function addSourceIfMissing(sourceId) {
@@ -186,25 +187,11 @@ export function applyLayerToggles() {
 
     const currentDataset = document.getElementById("MapDataSelect")?.value;
 
-    // [Winner-Takes-All Logic] Determine the group winner (AirNow Group vs Model Group)
-    const restricted = ExcludeLayerGroups.restrictedSources || [];
-    const isAirNow = (id) => id.startsWith("airnow-");
-    const isModel = (id) => {
-        const cfg = DATA_IMPORT_METHOD[`${id}-${currentDataset}`] || DATA_IMPORT_METHOD[id];
-        return cfg && restricted.includes(cfg.source);
-    };
-
-    let groupWinner = null;
-    for (let i = newStack.length - 1; i >= 0; i--) {
-        const id = newStack[i];
-        if (isAirNow(id)) {
-            groupWinner = "airnow";
-            break;
-        } else if (isModel(id)) {
-            groupWinner = "model";
-            break;
-        }
-    }
+    // Determine all layers that have legends
+    const legendLayers = newStack.filter(id => {
+        const targetKey = LAYER_DEFS[id] ? id : (id + "-" + currentDataset);
+        return LAYER_DEFS[targetKey] && LAYER_DEFS[targetKey].legend;
+    });
 
     let legendWillShow = false;
 
@@ -212,13 +199,16 @@ export function applyLayerToggles() {
         const targetKey = LAYER_DEFS[shortId] ? shortId : `${shortId}-${currentDataset}`;
         const def = LAYER_DEFS[targetKey];
         if (def) {
-            const inAirNow = isAirNow(shortId);
-            const inModel = isModel(shortId);
-
-            // Group visibility rule
             let categoryAllowed = true;
-            if (groupWinner === "airnow" && inModel) categoryAllowed = false;
-            if (groupWinner === "model" && inAirNow) categoryAllowed = false;
+
+            const isLegendLayer = legendLayers.includes(shortId);
+            const isOpen = !closedLegendIds.has(shortId);
+
+            // 핵심 수정: 살아남은 범례(Legend) 중, 현재 "아코디언이 열려있는" 모든 범례들을 지도에 보여줍니다.
+            // 위성, 산불 등도 예외 없이 무조건 아코디언이 열려있어야만 지도에 보입니다.
+            if (isLegendLayer && !isOpen) {
+                categoryAllowed = false;
+            }
 
             if (def.legend && categoryAllowed) legendWillShow = true;
 
@@ -295,5 +285,26 @@ export function moveLayerToTop(layerId) {
 // Expose to window for inline onclick handlers in Legend
 if (typeof window !== "undefined") {
     window.moveLayerToTop = moveLayerToTop;
+}
+
+/**
+ * 범례 아코디언 열기/닫기 개별 토글
+ * @param {string} layerId 
+ */
+export function toggleLegendState(layerId) {
+    if (closedLegendIds.has(layerId)) {
+        closedLegendIds.delete(layerId);
+        // 열렸으므로 맵의 맨 위로 올림 (ux 선택사항)
+        moveLayerToTop(layerId);
+    } else {
+        closedLegendIds.add(layerId);
+        applyLayerToggles();
+    }
+}
+
+// Expose to window for inline onclick handlers in Legend
+if (typeof window !== "undefined") {
+    window.moveLayerToTop = moveLayerToTop;
+    window.toggleLegendState = toggleLegendState;
 }
 

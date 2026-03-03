@@ -3,7 +3,7 @@
   * 색상 및 범례 관리: 데이터 값에 따른 지도 레이어의 색상 스타일(Shading)과 범례(Legend) 생성
   */
 import { ExcludeLayerGroups, LAYER_TEMPLATES, LAYER_DEFS } from "./layers-def.js";
-import { map, activeLayerStack, regionStats, StateShadingEnabled, NaShadingEnabled } from "./layers-state.js";
+import { map, activeLayerStack, regionStats, StateShadingEnabled, NaShadingEnabled, closedLegendIds } from "./layers-state.js";
 
 /**
  * 범례(Legend) 렌더링 함수 (최종 수정됨)
@@ -21,7 +21,7 @@ export function updateLegend(activeStack) {
     const currentDataset = document.getElementById("MapDataSelect")?.value;
 
     // Filter layers that have legends
-    const legendLayers = [...activeStack].reverse().filter(id => {
+    let legendLayers = [...activeStack].filter(id => {
         const targetKey = LAYER_DEFS[id] ? id : (id + "-" + currentDataset);
         return LAYER_DEFS[targetKey] && LAYER_DEFS[targetKey].legend;
     });
@@ -32,21 +32,34 @@ export function updateLegend(activeStack) {
         return;
     }
 
+    // 아코디언처럼 범례 순서가 위아래로 점프하지 않도록, 사이드바 메뉴(DOM)의 고정 순서대로 정렬합니다.
+    const allCheckboxes = Array.from(document.querySelectorAll("input[type=checkbox][id^='layer-']")).map(cb => cb.id.replace("layer-", ""));
+    legendLayers.sort((a, b) => {
+        let idxA = allCheckboxes.indexOf(a);
+        let idxB = allCheckboxes.indexOf(b);
+        if (idxA === -1) idxA = 999;
+        if (idxB === -1) idxB = 999;
+        return idxA - idxB;
+    });
+
+    // 현재 켜진 범례들 중에서, 실제 지도상 가장 윗단(Top)에 있는 레이어 ID를 찾아 아코디언을 열어줍니다.
+    const topLegendLayerId = [...activeStack].reverse().find(id => legendLayers.includes(id));
+
     let finalHtml = "";
 
-    legendLayers.forEach((id, index) => {
+    legendLayers.forEach((id) => {
         const fullKey = LAYER_DEFS[id] ? id : `${id}-${currentDataset}`;
         const layerDef = LAYER_DEFS[fullKey];
         const conf = layerDef?.legend;
         if (!conf) return;
 
-        // Is this the very top layer in the stack? (index 0 because we reversed)
-        const isTop = index === 0;
+        // Is this legend manually opened? (By default, checked layers are open, unless explicitly closed)
+        const isOpen = !closedLegendIds.has(id);
 
-        let sectionHtml = `<div class="legend-section ${isTop ? 'is-top' : ''}" data-layer-id="${id}">`;
-        sectionHtml += `<div class="legend-header" onclick="window.moveLayerToTop('${id}')">
+        let sectionHtml = `<div class="legend-section ${isOpen ? 'is-top' : ''}" data-layer-id="${id}">`;
+        sectionHtml += `<div class="legend-header" onclick="window.toggleLegendState('${id}')">
                            <span class="legend-title">${conf.title}</span>
-                           <span class="legend-badge">${(isTop && legendLayers.length >= 2) ? 'TOP' : ''}</span>
+                           <span class="legend-badge"></span>
                         </div>`;
 
         sectionHtml += `<div class="legend-content">`;
@@ -167,7 +180,12 @@ export function updateStateShading() {
     }
 
     const EXCLUDED = ExcludeLayerGroups.stateShading;
-    const stack = activeLayerStack.filter(id => !EXCLUDED.includes(id));
+    const stack = activeLayerStack.filter(id => {
+        if (EXCLUDED.includes(id)) return false;
+        // 범례가 닫혀서 보이지 않게 처리된 레이어라면 뒤의 주(State) 색상(Shading)도 그리지 않아야 합니다.
+        if (closedLegendIds.has(id)) return false;
+        return true;
+    });
 
     if (stack.length === 0) {
         if (map.getLayer("states-fill")) map.setPaintProperty("states-fill", "fill-opacity", 0);

@@ -6,7 +6,7 @@
 import { ESML, formatDate } from "./utils.js";
 import { auth } from "./fb-init.js";
 import { ExcludeLayerGroups, LAYER_TEMPLATES } from "./layers-def.js";
-import { regionStats } from "./layers-state.js";
+import { regionStats, closedLegendIds } from "./layers-state.js";
 
 
 /**
@@ -457,6 +457,7 @@ export function stateHoverHTML(p, _cachedActiveLayerIds) {
   LAYER_TEMPLATES.forEach(tmpl => {
     if (tmpl.manualLayer) return;
     if (!checkedIds.includes("layer-" + tmpl.id) || EXCLUDED.includes(tmpl.id)) return;
+    if (closedLegendIds.has(tmpl.id)) return; // 범례가 닫힌 레이어는 툴팁(Hover) 정보에서도 숨깁니다.
 
     let label = typeof tmpl.title === "function" ? tmpl.title(document.getElementById("MapDataSelect")?.value) : tmpl.title;
     if (tmpl.id === "tmax" && stats.label_display) label = stats.label_display;
@@ -477,17 +478,17 @@ export function stateHoverHTML(p, _cachedActiveLayerIds) {
   if (layerRows) html += `<hr style="${hrStyle}">${layerRows}`;
 
   const bgRows = [];
-  if (checkedIds.includes("layer-burn")) {
+  if (checkedIds.includes("layer-burn") && !closedLegendIds.has("burn")) {
     const b = stats.burn || 0;
     bgRows.push(`Area burned (km²): ${b > 0 ? b.toFixed(1) : "NA"}`);
   }
-  if (checkedIds.includes("layer-smoke")) {
+  if (checkedIds.includes("layer-smoke") && !closedLegendIds.has("smoke")) {
     const sl = stats.smokeLight || 0, sm = stats.smokeMedium || 0, sh = stats.smokeHeavy || 0;
     bgRows.push(`Smoke area-L (km²): ${sl > 0 ? sl.toLocaleString() : "NA"}`);
     bgRows.push(`Smoke area-M (km²): ${sm > 0 ? sm.toLocaleString() : "NA"}`);
     bgRows.push(`Smoke area-H (km²): ${sh > 0 ? sh.toLocaleString() : "NA"}`);
   }
-  if (checkedIds.includes("layer-fire")) {
+  if (checkedIds.includes("layer-fire") && !closedLegendIds.has("fire")) {
     const fc = stats.fireCount || 0;
     const ff = stats.fireFrp || 0;
     bgRows.push(`Fire points: ${fc > 0 ? fc.toLocaleString() : "NA"}`);

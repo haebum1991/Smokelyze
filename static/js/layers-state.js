@@ -12,6 +12,7 @@ export let _cachedActiveLayerIds = [];
 export let StateShadingEnabled = true;
 export let PointLayersEnabled = true;
 export let NaShadingEnabled = true;
+export let closedLegendIds = new Set();
 
 export function setStateShadingEnabled(enabled) {
     StateShadingEnabled = !!enabled;

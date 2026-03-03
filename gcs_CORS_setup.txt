@@ -1,0 +1,20 @@
+1.Google Cloud Console 접속 및 로그인
+
+2. 구글 크롬 등에서 console.cloud.google.com 에 접속하고 관리자(Smokelyze 계정)로 로그인합니다.
+클라우드 셸(터미널) 켜기
+
+3. 페이지 우측 상단 검색창 옆에 보면 **>_ 모댱의 작은 아이콘(Cloud Shell 활성화)**이 있습니다. 이걸 클릭하세요.
+화면 하단에 검은색 터미널 창(터미널)이 스르륵 하고 열릴 겁니다. (로딩에 몇 초 걸릴 수 있습니다)
+명령어 복붙해서 실행하기 (끝!)
+
+4. 하단에 열린 검은색 터미널 창에, 딱 이 두 줄을 통째로 복사해서 붙여넣고 엔터를 치세요! (주의: 복사할 때 오타가 나지 않게 아래 박스의 모든 글자를 한꺼번에 복사하세요.)
+
+
+echo '[{"origin":["*"],"responseHeader":["Content-Type","Authorization","Content-Encoding"],"method":["GET","HEAD","OPTIONS"],"maxAgeSeconds":3600}]' > cors.json
+
+gcloud storage buckets update gs://smokelyze_bucket --cors-file=cors.json
+
+
+5. 다시 취소하고 싶으면
+
+gcloud storage buckets update gs://smokelyze_bucket --clear-cors
