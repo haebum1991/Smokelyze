@@ -201,13 +201,22 @@ exports.handler = async (event) => {
     // ---- List request with ETag ----
     if (qs.list === "1") {
       const [files] = await bucket.getFiles({ prefix: path, delimiter: "/" });
-      const fileNames = files.map(f => f.name.replace(path, "")).filter(n => n.length > 0);
+
+      // 이렇게 하면 파일 내용이 바뀌어 generation이 변할 때 리스트의 ETag도 새롭게 갱신됩니다.
+      const listInfo = files.map(f => ({
+        name: f.name.replace(path, ""),
+        gen: f.metadata.generation
+      })).filter(i => i.name.length > 0);
+
+      const fileNames = listInfo.map(i => i.name);
       const listBody = JSON.stringify(fileNames);
-      const listEtag = `"list-${crypto.createHash("md5").update(listBody).digest("hex").slice(0, 16)}"`;
+
+      // ETag 계산에는 파일명 + Generation 정보를 모두 포함한 listInfo를 사용합니다.
+      const listEtag = `"list-${crypto.createHash("md5").update(JSON.stringify(listInfo)).digest("hex").slice(0, 16)}"`;
       const cacheControl = getCacheControl(path);
 
       if (isClientCacheValid(event, listEtag)) {
-        dlog("[304] List unchanged:", path);
+        dlog("[304] List unchanged (w/ Gen check):", path);
         return { statusCode: 304, headers: { ...corsHeaders, "ETag": listEtag, "Cache-Control": cacheControl }, body: "" };
       }
       return {
