@@ -3,7 +3,7 @@
   * 색상 및 범례 관리: 데이터 값에 따른 지도 레이어의 색상 스타일(Shading)과 범례(Legend) 생성
   */
 import { ExcludeLayerGroups, LAYER_TEMPLATES, LAYER_DEFS } from "./layers-def.js";
-import { map, activeLayerStack, regionStats, StateShadingEnabled } from "./layers-state.js";
+import { map, activeLayerStack, regionStats, StateShadingEnabled, NaShadingEnabled } from "./layers-state.js";
 
 /**
  * 범례(Legend) 렌더링 함수 (최종 수정됨)
@@ -99,6 +99,16 @@ export function updateLegend(activeStack) {
                    <span>${item.label}</span>
                  </div>`;
         });
+    }
+    
+    // Add NA indicator only for appropriate layers (exclude satellite and news/legend-excluded layers)
+    const skipNALayers = [...(ExcludeLayerGroups.satelliteLayers || []), ...ExcludeLayerGroups.liveUpdateLayers];
+    if (!skipNALayers.includes(topLayerId) && NaShadingEnabled) {
+        html += `<hr style="border:0; border-top:0.1rem solid var(--card-shadow); margin:0.8rem 0;">
+                 <div class="legend-item">
+                   <span class="${swatchClass}" style="background:#ffffff; border: 0.1rem solid var(--text-main);"></span>
+                   <span>N/A</span>
+                 </div>`;
     }
 
     container.innerHTML = html;
@@ -201,7 +211,7 @@ export function updateStateShading() {
     if (hasData) {
         const matchExpr = ["match", ["coalesce", ["get", "ID"], ["get", "name"], ["get", "NAME"], ["get", "STUSPS"], ""]];
         rules.forEach(r => matchExpr.push(r));
-        matchExpr.push("rgba(0,0,0,0)"); // Default
+        matchExpr.push(NaShadingEnabled ? "#FFFFFF" : "rgba(0,0,0,0)"); // Default (NA) color
 
         if (map.getLayer("states-fill")) {
             map.setPaintProperty("states-fill", "fill-color", matchExpr);

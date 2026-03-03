@@ -4,7 +4,7 @@
  */
 
 import * as utils from "./utils.js";
-import { DATA_IMPORT_METHOD, ExcludeLayerGroups, DATASET_SOURCE_MAP } from "./layers-def.js";
+import { DATA_IMPORT_METHOD, ExcludeLayerGroups, DATASET_SOURCE_MAP, LAYER_TEMPLATES } from "./layers-def.js";
 import { map } from "./map-init.js";
 import { saveDate, saveLayerFlag, state } from "./ui-state.js";
 import { auth } from "./fb-init.js";
@@ -202,12 +202,17 @@ export async function loadSourceData(sourceKey, isoDate) {
                 stateSums["US_conus"][k] = { sum: 0, count: 0 };
                 stateSums["Canada"][k] = { sum: 0, count: 0 };
             });
+            
+            const dsMap = DATASET_SOURCE_MAP || {};
+            const dsKeys = Object.keys(dsMap).filter(k => dsMap[k] === sourceKey);
+            if (dsKeys.length === 0) dsKeys.push(sourceKey);
 
             const keysToReset = [];
             Object.keys(metricsMap).forEach(key => {
-                const p = metricsMap[key];
-                const fieldName = (typeof p === "function") ? p(sourceKey) : p;
-                keysToReset.push(fieldName);
+                const tmpl = LAYER_TEMPLATES.find(t => t.id === key);
+                if (tmpl && tmpl.datasets && tmpl.datasets.some(d => dsKeys.includes(d))) {
+                    keysToReset.push(key);
+                }
             });
 
             Object.keys(regionStats).forEach(st => {
@@ -219,13 +224,14 @@ export async function loadSourceData(sourceKey, isoDate) {
                 });
             });
 
-            const dsMap = DATASET_SOURCE_MAP || {};
-            const dsKey = Object.keys(dsMap).find(k => dsMap[k] === sourceKey) || sourceKey;
-
             const resolvedMetrics = [];
             Object.keys(metricsMap).forEach(key => {
+                const tmpl = LAYER_TEMPLATES.find(t => t.id === key);
+                const matchedDsKey = tmpl?.datasets?.find(d => dsKeys.includes(d));
+                if (!matchedDsKey) return;
+
                 const p = metricsMap[key];
-                const fieldName = (typeof p === "function") ? p(dsKey) : p;
+                const fieldName = (typeof p === "function") ? p(matchedDsKey) : p;
                 resolvedMetrics.push({ key, field: fieldName });
             });
 
@@ -312,8 +318,10 @@ export async function loadSourceData(sourceKey, isoDate) {
                             newStats[`${key}_c2`] = item.c2 || 0;
                         }
                         hasData = true;
-                    } else {
+                    } else if (keysToReset.includes(key)) {
+                        // 중요: 현재 로드 중인 소스가 이 metric(id)을 담당하는 경우에만 null 할당
                         newStats[key] = null;
+                        hasData = true;
                     }
                 });
 

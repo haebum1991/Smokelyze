@@ -13,7 +13,10 @@ export function initBtnTooltips() {
     // Skip for touch devices (mobile) to prevent showing on tap
     if (window.matchMedia("(hover: none)").matches) return;
         
-    const target = e.target.closest("[title], [btn-tooltip]");
+    const el = e.target;
+    if (!el || !el.closest) return;
+
+    const target = el.closest("[title], [btn-tooltip]");
     if (!target) return;
 
     // Get tooltip text

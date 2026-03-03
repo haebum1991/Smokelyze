@@ -3,17 +3,18 @@
  * 레이어 실행 제어: 지도에 레이어를 추가, 삭제하거나 체크박스에 따른 가시성 토글 로직을 관리
  */
 
-import { DATA_IMPORT_METHOD, ExcludeLayerGroups, DATASET_SOURCE_MAP, LAYER_DEFS } from "./layers-def.js";
+import { DATA_IMPORT_METHOD, ExcludeLayerGroups, DATASET_SOURCE_MAP, LAYER_DEFS, makeStepExpr } from "./layers-def.js";
 import { highlightLocation } from "./utils.js";
 import { state } from "./ui-state.js";
 import { EMPTY_FC } from "./layers-constants.js";
 import { updateLegend, updateStateShading } from "./layers-colors.js";
-import { 
-    map, 
-    activeLayerStack, 
-    setCachedActiveLayerIds, 
-    setActiveLayerStack, 
-    PointLayersEnabled 
+import {
+    map,
+    activeLayerStack,
+    setCachedActiveLayerIds,
+    setActiveLayerStack,
+    PointLayersEnabled,
+    NaShadingEnabled
 } from "./layers-state.js";
 
 export function addSourceIfMissing(sourceId) {
@@ -146,7 +147,7 @@ export function applyLayerToggles() {
     setCachedActiveLayerIds(currentCheckedIds.map(id => `layer-${id}`));
 
     // 3. Handle Special Background Layers
-    const EXCLUDED = ExcludeLayerGroups.legend;
+    const EXCLUDED = ExcludeLayerGroups.liveUpdateLayers;
     EXCLUDED.forEach(key => {
         if (currentCheckedIds.includes(key) && LAYER_DEFS[key]) {
             LAYER_DEFS[key].layers.forEach(l => {
@@ -184,22 +185,74 @@ export function applyLayerToggles() {
     setActiveLayerStack(newStack);
 
     const currentDataset = document.getElementById("MapDataSelect")?.value;
+
+    // [Winner-Takes-All Logic] Determine the group winner (AirNow Group vs Model Group)
+    const restricted = ExcludeLayerGroups.restrictedSources || [];
+    const isAirNow = (id) => id.startsWith("airnow-");
+    const isModel = (id) => {
+        const cfg = DATA_IMPORT_METHOD[`${id}-${currentDataset}`] || DATA_IMPORT_METHOD[id];
+        return cfg && restricted.includes(cfg.source);
+    };
+
+    let groupWinner = null;
+    for (let i = newStack.length - 1; i >= 0; i--) {
+        const id = newStack[i];
+        if (isAirNow(id)) {
+            groupWinner = "airnow";
+            break;
+        } else if (isModel(id)) {
+            groupWinner = "model";
+            break;
+        }
+    }
+
     let legendWillShow = false;
 
     newStack.forEach(shortId => {
         const targetKey = LAYER_DEFS[shortId] ? shortId : `${shortId}-${currentDataset}`;
         const def = LAYER_DEFS[targetKey];
         if (def) {
-            if (def.legend) legendWillShow = true;
+            const inAirNow = isAirNow(shortId);
+            const inModel = isModel(shortId);
+
+            // Group visibility rule
+            let categoryAllowed = true;
+            if (groupWinner === "airnow" && inModel) categoryAllowed = false;
+            if (groupWinner === "model" && inAirNow) categoryAllowed = false;
+
+            if (def.legend && categoryAllowed) legendWillShow = true;
+
             def.layers.forEach(l => {
                 if (map.getLayer(l.id)) {
                     // Check if Point Layers are disabled and this is a point layer
                     const isPointLayer = l.type === "circle";
-                    const shouldShow = !isPointLayer || PointLayersEnabled;
+                    const shouldShow = (!isPointLayer || PointLayersEnabled) && categoryAllowed;
 
                     map.setLayoutProperty(l.id, "visibility", shouldShow ? "visible" : "none");
                     if (shouldShow) {
                         map.moveLayer(l.id);
+
+                        // Dynamic NA filter & shading for Point Layers
+                        if (isPointLayer && l._fieldName) {
+                            // 1. Color: If NA is shown
+                            const naColor = NaShadingEnabled ? "#FFFFFF" : "rgba(0,0,0,0)";
+                            const newColor = makeStepExpr(l._fieldName, l._breaks, l._colors, naColor);
+                            map.setPaintProperty(l.id, "circle-color", newColor);
+
+                            // 2. Stroke & Filter: If NA is hidden, also hide stroke and filter out features
+                            if (!NaShadingEnabled) {
+                                // Hide features that have null, undefined, or explicitly "NA/null" values
+                                map.setFilter(l.id, [
+                                    "all",
+                                    ["has", l._fieldName],
+                                    ["!=", ["get", l._fieldName], null],
+                                    ["!=", ["to-number", ["get", l._fieldName], -999], -999] // Filter out NaN/null converted to -999
+                                ]);
+                            } else {
+                                // Restore filter
+                                map.setFilter(l.id, null);
+                            }
+                        }
                     }
                 }
             });

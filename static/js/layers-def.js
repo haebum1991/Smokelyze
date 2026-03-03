@@ -9,7 +9,7 @@ export const ExcludeLayerGroups = {
     
   // ========= Find by [key] =========
   // [layers-handler.js] > [applyLayerToggles] > [EXCLUDED]
-  legend: ["wildfire-news", "wildfire-nifc", "MapPost"],
+  liveUpdateLayers: ["wildfire-news", "wildfire-nifc", "MapPost"],
 
   // [layers-colors.js] > [updateStateShading] > [EXCLUDED]
   stateShading: ["smoke", "wildfire-news", "wildfire-nifc", "MapPost"],
@@ -281,7 +281,7 @@ export const DATASET_SOURCE_MAP = {
 
 export function makeStepExpr(valueField, breaks, colors, nullVal) {
     if (!breaks || breaks.length === 0) return colors[0];
-    const fallback = (nullVal !== undefined) ? nullVal : "rgba(0, 0, 0, 0)";
+    const fallback = (nullVal !== undefined) ? nullVal : "#FFFFFF";
     const stepExpr = ["step", ["to-number", ["get", valueField]]];
     stepExpr.push(colors[0]);
     for (let i = 0; i < breaks.length; i++) {
@@ -351,7 +351,10 @@ export function getLayerDef(key, sourceKey, fieldName, breaks, colors, opts = {}
                 "circle-color": makeStepExpr(fieldName, breaks, colors),
                 "circle-stroke-width": strokeWidth,
                 "circle-stroke-color": strokeColor
-            }
+            },
+            _fieldName: fieldName,
+            _breaks: breaks,
+            _colors: colors
         };
     }
 

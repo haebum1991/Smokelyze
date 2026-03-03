@@ -3,7 +3,9 @@ import {
   setStateShadingEnabled, 
   StateShadingEnabled, 
   setPointLayersEnabled, 
-  PointLayersEnabled 
+  PointLayersEnabled,
+  setNaShadingEnabled,
+  NaShadingEnabled
 } from "./layers-state.js";
 import { updateStateShading } from "./layers-colors.js";
 
@@ -67,6 +69,9 @@ export function restoreUI() {
   // Point Layers
   setPointLayersEnabled(typeof s.PointLayersEnabled === "boolean" ? s.PointLayersEnabled : true);
   
+  // NA Shading
+  setNaShadingEnabled(typeof s.NaShadingEnabled === "boolean" ? s.NaShadingEnabled : true);
+
   // Dataset
   if (s.dataset) {
     const el = document.getElementById("MapDataSelect");
@@ -142,6 +147,11 @@ export function saveGlobalStateShading(enabled) {
 export function saveGlobalPointLayers(enabled) {
   setPointLayersEnabled(enabled);
   savePatch({ PointLayersEnabled: !!enabled });
+}
+
+export function saveGlobalNaShading(enabled) {
+  setNaShadingEnabled(enabled);
+  savePatch({ NaShadingEnabled: !!enabled });
 }
 
 export function bindAccordionAutosave() {
@@ -225,6 +235,48 @@ export function initPointLayersToggle() {
   };
 
   btn.addEventListener(btn.type === "checkbox" ? "change" : "click", handler);
+}
+
+export function initNaShadingToggle() {
+  const btn = document.getElementById("MapBtnNaShading");
+  if (!btn) return;
+
+  if (btn.type === "checkbox") {
+    btn.checked = !!NaShadingEnabled;
+  } else if (!NaShadingEnabled) {
+    btn.classList.add("disabled");
+  }
+
+  const handler = async () => {
+    let nextEnabled;
+    if (btn.type === "checkbox") {
+      nextEnabled = btn.checked;
+    } else {
+      const currentlyEnabled = !btn.classList.contains("disabled");
+      nextEnabled = !currentlyEnabled;
+      if (nextEnabled) btn.classList.remove("disabled");
+      else btn.classList.add("disabled");
+    }
+
+    saveGlobalNaShading(nextEnabled);
+
+    // Refresh both legend and shading
+    updateStateShading?.();
+    const { applyLayerToggles } = await import("./layers-handler.js");
+    applyLayerToggles?.();
+  };
+
+  btn.addEventListener(btn.type === "checkbox" ? "change" : "click", handler);
+}
+
+export function resetGlobalNaShading() {
+  const btn = document.getElementById("MapBtnNaShading");
+  if (btn) {
+    if (btn.type === "checkbox") btn.checked = true;
+    else btn.classList.remove("disabled");
+  }
+
+  setNaShadingEnabled(true);
 }
 
 export function resetGlobalStateShading() {

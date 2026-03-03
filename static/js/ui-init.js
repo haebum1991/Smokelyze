@@ -1,5 +1,5 @@
 
-import { restoreUI, bindAccordionAutosave, bindDatasetAutosave, initStateShadingToggle } from "./ui-state.js";
+import { restoreUI, bindAccordionAutosave, bindDatasetAutosave, initStateShadingToggle, initNaShadingToggle } from "./ui-state.js";
 import { initDateButtons } from "./ui-date.js";
 import { initUIPulsingIcons } from "./layers-icon.js";
 import { map } from "./map-init.js";
@@ -41,5 +41,6 @@ initTimeButtons?.();
 initTimePicker?.();
 initMapCapture?.();
 initStateShadingToggle?.();
+initNaShadingToggle?.();
 initBtnTooltips?.();
 

@@ -1,5 +1,5 @@
 
-import { savePatch, read, initStateShadingToggle, initPointLayersToggle } from "./ui-state.js";
+import { savePatch, read, initStateShadingToggle, initPointLayersToggle, initNaShadingToggle } from "./ui-state.js";
 import { onDescDrawerOpen } from "./ui-param-desc.js";
 import {
     clearHighlight,
@@ -279,6 +279,16 @@ export function initAccordion() {
             checked: true
         });
         initPointLayersToggle();
+    }
+    
+    const NaShadingContainer = document.getElementById("ToggleSwitchNaShading");
+    if (NaShadingContainer) {
+        appendSwitch(NaShadingContainer, {
+            id: "MapBtnNaShading",
+            label: "Show N/A values",
+            checked: true
+        });
+        initNaShadingToggle();
     }
     
     const s = read?.();

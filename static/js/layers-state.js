@@ -11,7 +11,7 @@ export let regionStats = {};
 export let _cachedActiveLayerIds = [];
 export let StateShadingEnabled = true;
 export let PointLayersEnabled = true;
-
+export let NaShadingEnabled = true;
 
 export function setStateShadingEnabled(enabled) {
     StateShadingEnabled = !!enabled;
@@ -19,6 +19,10 @@ export function setStateShadingEnabled(enabled) {
 
 export function setPointLayersEnabled(enabled) {
     PointLayersEnabled = !!enabled;
+}
+
+export function setNaShadingEnabled(enabled) {
+    NaShadingEnabled = !!enabled;
 }
 
 export function setActiveLayerStack(stack) {

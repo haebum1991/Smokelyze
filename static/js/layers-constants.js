@@ -55,19 +55,19 @@ export const PALETTE_SMOKE = [
 
 // [Binary Palette]
 export const PALETTE_BIN_1 = [
-    "rgba(255,255,255,0.7)",
+    "#CCCCCC", // Grey
     "#FF0000"  // Red
 ];
 export const PALETTE_BIN_2 = [
-    "rgba(255,255,255,0.7)",
+    "#CCCCCC", // Grey
     "#00FF00"  // Green
 ];
 export const PALETTE_BIN_3 = [
-    "rgba(255,255,255,0.7)",
+    "#CCCCCC", // Grey
     "#0000FF"  // Blue
 ];
 export const PALETTE_TRI = [
-    "rgba(255,255,255,0.7)",
+    "#CCCCCC", // Grey
     "#00FF00", // Green
     "#FF0000" // Red
 ];
