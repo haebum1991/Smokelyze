@@ -46,7 +46,7 @@ export function updateLegend(activeStack) {
         let sectionHtml = `<div class="legend-section ${isTop ? 'is-top' : ''}" data-layer-id="${id}">`;
         sectionHtml += `<div class="legend-header" onclick="window.moveLayerToTop('${id}')">
                            <span class="legend-title">${conf.title}</span>
-                           <span class="legend-badge">${isTop ? 'TOP' : ''}</span>
+                           <span class="legend-badge">${(isTop && legendLayers.length >= 2) ? 'TOP' : ''}</span>
                         </div>`;
 
         sectionHtml += `<div class="legend-content">`;

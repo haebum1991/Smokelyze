@@ -247,7 +247,7 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
   top: calc(var(--header-height-total) + var(--toolbar-date-height));
   left: 0;
 
-  padding: 1rem;
+  padding: 0.8rem;
   border-radius: var(--border-radius-0p8rem);
 
   font-size: 1.4rem;
@@ -268,14 +268,14 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
 }
 
 .legend-header {
-  padding: 0.8rem 1rem;
+  padding: 0.4rem 0.5rem;
   background: var(--map-accordion-gradient-start);
-  color: white;
+  color: var(--color-white);
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: filter 0.2s;
+  transition: filter 0.3s;
 }
 
 .legend-header:hover {
@@ -283,9 +283,9 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
 }
 
 .legend-section.is-top .legend-header {
-  background: var(--accent-highlight);
-  color: white;
   font-weight: bold;
+  background: var(--card-shadow);
+  color: var(--color-bg);
 }
 
 .legend-title {
@@ -298,9 +298,10 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
 
 .legend-badge {
   font-size: 0.9rem;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-bg);
+  color: var(--text-main);
   padding: 0.1rem 0.4rem;
-  border-radius: 0.4rem;
+  border-radius: var(--border-radius-0p8rem);
 }
 
 .legend-content {
@@ -337,7 +338,7 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
 .legend-divider {
   border: 0;
   border-top: 0.1rem solid var(--card-shadow);
-  margin: 0.6rem 0;
+  margin: 0.6rem 0 !important;
 }
 
 .map-legend h4 {
@@ -359,7 +360,6 @@ body.FigurePage-drawer-open .map-legend {
     top: calc(var(--header-height-total) + var(--toolbar-date-height));
   }
 }
-
 
 
 /* ================ Map date-control panel ================ */
@@ -2447,7 +2447,7 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
     background: none;
     border: none;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: color 0.3s;
     animation: map-tut-title-in 0.8s 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -2526,7 +2526,7 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
     border-radius: var(--border-radius-0p8rem) !important;
     font-size: 1.4rem !important;
     font-weight: bold !important;
-    transition: all 0.2s ease !important;
+    transition: all 0.3s ease !important;
 }
 
 /* Close button appearance */

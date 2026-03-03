@@ -202,16 +202,34 @@ export async function loadSourceData(sourceKey, isoDate) {
                 stateSums["US_conus"][k] = { sum: 0, count: 0 };
                 stateSums["Canada"][k] = { sum: 0, count: 0 };
             });
-            
-            const dsMap = DATASET_SOURCE_MAP || {};
-            const dsKey = Object.keys(dsMap).find(k => dsMap[k] === sourceKey) || sourceKey;
 
+            const dsMap = DATASET_SOURCE_MAP || {};
             const keysToReset = [];
+            const resolvedMetrics = [];
+
             Object.keys(metricsMap).forEach(key => {
                 const tmpl = LAYER_TEMPLATES.find(t => t.id === key);
-                if (tmpl && tmpl.datasets && tmpl.datasets.includes(dsKey)) {
-                    keysToReset.push(key);
+                if (!tmpl || !tmpl.datasets) return;
+
+                // Find if this template has any dataset that maps to the loaded sourceKey
+                const relevantDsKeys = tmpl.datasets.filter(dk => dsMap[dk] === sourceKey);
+
+                // If no mapping found in DATASET_SOURCE_MAP, check for direct match (fallback)
+                if (relevantDsKeys.length === 0) {
+                    if (tmpl.id === sourceKey || key === sourceKey) {
+                        relevantDsKeys.push(key);
+                    } else {
+                        return;
+                    }
                 }
+
+                keysToReset.push(key);
+
+                // Resolve the field name using the first relevant dsKey
+                const dsKeyForField = relevantDsKeys[0];
+                const p = metricsMap[key];
+                const fieldName = (typeof p === "function") ? p(dsKeyForField) : p;
+                resolvedMetrics.push({ key, field: fieldName });
             });
 
             Object.keys(regionStats).forEach(st => {
@@ -221,17 +239,6 @@ export async function loadSourceData(sourceKey, isoDate) {
                         regionStats[st][k] = null;
                     }
                 });
-            });
-
-            const resolvedMetrics = [];
-            Object.keys(metricsMap).forEach(key => {
-                // 중요: 현재 로딩 중인 데이터셋(dsKey)과 연관된 고유 ID만 선별
-                const tmpl = LAYER_TEMPLATES.find(t => t.id === key);
-                if (!tmpl || !tmpl.datasets || !tmpl.datasets.includes(dsKey)) return;
-
-                const p = metricsMap[key];
-                const fieldName = (typeof p === "function") ? p(dsKey) : p;
-                resolvedMetrics.push({ key, field: fieldName });
             });
 
             data.features.forEach(fi => {

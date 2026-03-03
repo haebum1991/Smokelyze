@@ -108,8 +108,8 @@ export function getSiteStatsForState(targetState) {
         const fc = loaded[sourceKey];
         if (!fc || !fc.features) return;
 
-        const dsKey = Object.keys(dsMap).find(k => dsMap[k] === matchedAct) || matchedAct;
-
+        const relevantDsKeys = Object.keys(dsMap).filter(k => dsMap[k] === matchedAct);
+        if (relevantDsKeys.length === 0) relevantDsKeys.push(matchedAct);
 
         fc.features.forEach(fi => {
             const p = fi.properties;
@@ -128,11 +128,13 @@ export function getSiteStatsForState(targetState) {
 
             Object.keys(localMetricsMap).forEach(mKey => {
                 const fieldDef = localMetricsMap[mKey];
-                const fieldName = (typeof fieldDef === "function") ? fieldDef(dsKey) : fieldDef;
 
-                if (p[fieldName] !== undefined) {
-                    siteStats[id][mKey] = p[fieldName];
-                }
+                relevantDsKeys.forEach(dsK => {
+                    const fieldName = (typeof fieldDef === "function") ? fieldDef(dsK) : fieldDef;
+                    if (p[fieldName] !== undefined && p[fieldName] !== null) {
+                        siteStats[id][mKey] = p[fieldName];
+                    }
+                });
             });
 
             if (sourceKey === "gam_v2") {
