@@ -1,6 +1,7 @@
 
 const admin = require("firebase-admin");
 const { Storage } = require("@google-cloud/storage");
+const crypto = require("crypto");
 
 // Initialize Firebase Admin for token verification
 if (!admin.apps.length) {
@@ -46,6 +47,22 @@ const PUBLIC_PREFIXES = [
 function dlog(...args) { if (DEBUG) console.log.apply(console, args); }
 function dwarn(...args) { if (DEBUG) console.warn.apply(console, args); }
 function hostOf(u) { try { return new URL(u).host; } catch { return ""; } }
+
+// ---- ETag-based cache revalidation ----
+function generateETag(metadata) {
+  return `"gcs-${metadata.generation}"`;
+}
+
+function isClientCacheValid(event, etag) {
+  const inm = (event.headers || {})["if-none-match"] || "";
+  if (!inm) return false;
+  return inm.split(",").some(t => t.trim() === etag || t.trim() === `W/${etag}`);
+}
+
+function getCacheControl(path) {
+  if (path.startsWith("realtime/")) return "public, max-age=3600, must-revalidate";
+  return "public, max-age=604800, must-revalidate";
+}
 
 function checkOrigin(event) {
   const allow = (process.env.ALLOWED_ORIGIN || "").trim();
@@ -180,81 +197,82 @@ exports.handler = async (event) => {
     }
     
     const qs = event.queryStringParameters || {};
+
+    // ---- List request with ETag ----
     if (qs.list === "1") {
       const [files] = await bucket.getFiles({ prefix: path, delimiter: "/" });
-      const fileNames = files.map(f => f.name.replace(path, ""));
+      const fileNames = files.map(f => f.name.replace(path, "")).filter(n => n.length > 0);
+      const listBody = JSON.stringify(fileNames);
+      const listEtag = `"list-${crypto.createHash("md5").update(listBody).digest("hex").slice(0, 16)}"`;
+      const cacheControl = getCacheControl(path);
+
+      if (isClientCacheValid(event, listEtag)) {
+        dlog("[304] List unchanged:", path);
+        return { statusCode: 304, headers: { ...corsHeaders, "ETag": listEtag, "Cache-Control": cacheControl }, body: "" };
+      }
       return {
         statusCode: 200,
-        headers: {
-          ...corsHeaders,
-          "Cache-Control": "public, max-age=86400, must-revalidate"
-        },
-        body: JSON.stringify(fileNames.filter(n => n.length > 0))
+        headers: { ...corsHeaders, "ETag": listEtag, "Cache-Control": cacheControl },
+        body: listBody
       };
     }
-    
+
+    // ---- File request with ETag ----
     const file = bucket.file(path);
-    const [exists] = await file.exists();
-    if (!exists) {
-      dwarn("[NOT_FOUND]", { path });
-      return { statusCode: 404, headers: corsHeaders, body: "not found" };
+    let fileMeta;
+    try {
+      [fileMeta] = await file.getMetadata();
+    } catch (e) {
+      if (e.code === 404) {
+        dwarn("[NOT_FOUND]", { path });
+        return { statusCode: 404, headers: corsHeaders, body: "not found" };
+      }
+      throw e;
     }
-    
-    // 파일이 크기 때문에(15MB) Netlify 6MB 제한을 피하기 위해 Signed URL 방식으로 리다이렉트합니다.
+
+    const etag = generateETag(fileMeta);
+    const cacheControl = getCacheControl(path);
+
+    // ETag match → 304 Not Modified (no download needed)
+    if (isClientCacheValid(event, etag)) {
+      dlog("[304] Cache valid:", path);
+      return { statusCode: 304, headers: { ...corsHeaders, "ETag": etag, "Cache-Control": cacheControl }, body: "" };
+    }
+
+    // Smokeday: Signed URL redirect (file > 6MB Netlify limit)
     if (path.startsWith("smokeday/")) {
       const [url] = await file.getSignedUrl({
         version: "v4",
         action: "read",
         expires: Date.now() + 5 * 60 * 1000,
       });
-      return { statusCode: 302, headers: { ...corsHeaders, "Location": url } };
+      return { statusCode: 302, headers: { ...corsHeaders, "ETag": etag, "Cache-Control": cacheControl, "Location": url } };
     }
 
+    // Download and serve with ETag
     const [buf] = await file.download();
     const isGzipped = buf.length >= 2 && buf[0] === 0x1f && buf[1] === 0x8b;
 
-    const currentYear = new Date().getFullYear();
-    const isDynamicYearly = (
-      (path.startsWith("noaa_hms_smoke_year_json/") && path.includes(`_${currentYear}.json`)) ||
-      (path.startsWith("noaa_hms_fire_year_json/") && path.includes(`_${currentYear}.json`))
-    );
-
     const headers = {
       ...corsHeaders,
-      "Cache-Control": (path.startsWith("realtime/") || isDynamicYearly)
-        ? "public, max-age=3600, must-revalidate"
-        : "public, max-age=2592000",
+      "ETag": etag,
+      "Cache-Control": cacheControl,
     };
 
     if (isGzipped) {
-      headers["Content-Type"] = "application/json"; 
+      headers["Content-Type"] = "application/json";
       headers["Content-Encoding"] = "gzip";
-      
-      return { 
-        statusCode: 200, 
-        headers, 
-        body: buf.toString("base64"), 
-        isBase64Encoded: true 
-      };
+      return { statusCode: 200, headers, body: buf.toString("base64"), isBase64Encoded: true };
     }
 
     const lower = path.toLowerCase();
     if (lower.endsWith(".pbf")) {
-       headers["Content-Type"] = "application/x-protobuf";
-       return { 
-         statusCode: 200, 
-         headers, 
-         body: buf.toString("base64"), 
-         isBase64Encoded: true 
-       };
+      headers["Content-Type"] = "application/x-protobuf";
+      return { statusCode: 200, headers, body: buf.toString("base64"), isBase64Encoded: true };
     }
 
     headers["Content-Type"] = "application/json; charset=utf-8";
-    return { 
-        statusCode: 200, 
-        headers, 
-        body: buf.toString("utf8") 
-    };
+    return { statusCode: 200, headers, body: buf.toString("utf8") };
 
   } catch (e) {
     console.error("[ERR]", e);
