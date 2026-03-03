@@ -234,7 +234,7 @@ export function applyLayerToggles() {
 
                         // Dynamic NA filter & shading for Point Layers
                         if (isPointLayer && l._fieldName) {
-                            // 1. Color: If NA is shown
+                            // 1. Color: If NA is shown, it's white. If hidden, it's transparent.
                             const naColor = NaShadingEnabled ? "#FFFFFF" : "rgba(0,0,0,0)";
                             const newColor = makeStepExpr(l._fieldName, l._breaks, l._colors, naColor);
                             map.setPaintProperty(l.id, "circle-color", newColor);
@@ -275,5 +275,25 @@ export function applyLayerToggles() {
 
     updateLegend(newStack);
     updateStateShading?.();
+}
+
+/**
+ * 전역 유틸리티: 특정 레이어를 스택의 가장 위로 이동시킴
+ * @param {string} layerId 
+ */
+export function moveLayerToTop(layerId) {
+    const stack = [...activeLayerStack];
+    const idx = stack.indexOf(layerId);
+    if (idx !== -1) {
+        stack.splice(idx, 1);
+        stack.push(layerId);
+        setActiveLayerStack(stack);
+        applyLayerToggles();
+    }
+}
+
+// Expose to window for inline onclick handlers in Legend
+if (typeof window !== "undefined") {
+    window.moveLayerToTop = moveLayerToTop;
 }
 

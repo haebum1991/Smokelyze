@@ -14,104 +14,113 @@ export function updateLegend(activeStack) {
 
     if (!activeStack || activeStack.length === 0) {
         container.style.display = "none";
+        container.innerHTML = "";
         return;
     }
 
     const currentDataset = document.getElementById("MapDataSelect")?.value;
 
-    const topLayerId = [...activeStack].reverse().find(id => {
+    // Filter layers that have legends
+    const legendLayers = [...activeStack].reverse().filter(id => {
         const targetKey = LAYER_DEFS[id] ? id : (id + "-" + currentDataset);
         return LAYER_DEFS[targetKey] && LAYER_DEFS[targetKey].legend;
     });
 
-    if (!topLayerId) {
+    if (legendLayers.length === 0) {
         container.style.display = "none";
+        container.innerHTML = "";
         return;
     }
 
-    const fullKey = LAYER_DEFS[topLayerId] ? topLayerId : `${topLayerId}-${currentDataset}`;
-    const layerDef = LAYER_DEFS[fullKey];
-    const conf = layerDef?.legend;
+    let finalHtml = "";
 
-    if (!conf) {
-        container.style.display = "none";
-        return;
-    }
+    legendLayers.forEach((id, index) => {
+        const fullKey = LAYER_DEFS[id] ? id : `${id}-${currentDataset}`;
+        const layerDef = LAYER_DEFS[fullKey];
+        const conf = layerDef?.legend;
+        if (!conf) return;
 
-    let html = `<h4>${conf.title}</h4>`;
-    
-    // Point data (circle layers) → round swatches, others (fill/polygon) → square
-    // Exception: layers with sizeLegend (e.g., Fire) use rect for color + circle for size
-    const isCircleLayer = layerDef?.layers?.[0]?.type === "circle" && !conf.sizeLegend;
-    const swatchClass = isCircleLayer ? "legend-color-circle" : "legend-color-rect";
+        // Is this the very top layer in the stack? (index 0 because we reversed)
+        const isTop = index === 0;
 
-    if (conf.labels) {
-        const offset = Math.max(0, conf.colors.length - conf.labels.length);
-        conf.labels.forEach((label, i) => {
-            const color = conf.colors[i + offset];
-            if (color) {
-                html += `<div class="legend-item">
-                     <span class="${swatchClass}" style="background:${color}"></span>
-                     <span>${label}</span>
-                   </div>`;
-            }
-        });
-    } else {
-        const { breaks, colors } = conf;
-        if (!breaks || breaks.length === 0) {
-            html += `<div class="legend-item">
-                   <span class="${swatchClass}" style="background:${colors[0]}"></span>
-                   <span>${conf.title}</span>
-                 </div>`;
+        let sectionHtml = `<div class="legend-section ${isTop ? 'is-top' : ''}" data-layer-id="${id}">`;
+        sectionHtml += `<div class="legend-header" onclick="window.moveLayerToTop('${id}')">
+                           <span class="legend-title">${conf.title}</span>
+                           <span class="legend-badge">${isTop ? 'TOP' : ''}</span>
+                        </div>`;
+
+        sectionHtml += `<div class="legend-content">`;
+
+        // Point data (circle layers) → round swatches, others (fill/polygon) → square
+        const isCircleLayer = layerDef?.layers?.[0]?.type === "circle" && !conf.sizeLegend;
+        const swatchClass = isCircleLayer ? "legend-color-circle" : "legend-color-rect";
+
+        if (conf.labels) {
+            const offset = Math.max(0, conf.colors.length - conf.labels.length);
+            conf.labels.forEach((label, i) => {
+                const color = conf.colors[i + offset];
+                if (color) {
+                    sectionHtml += `<div class="legend-item">
+                                        <span class="${swatchClass}" style="background:${color}"></span>
+                                        <span>${label}</span>
+                                    </div>`;
+                }
+            });
         } else {
-            // Less than first break
-            html += `<div class="legend-item">
-                   <span class="${swatchClass}" style="background:${colors[0]}"></span>
-                   <span>&lt; ${breaks[0]}</span>
-                 </div>`;
-
-            // Intervals between breaks
-            for (let i = 0; i < breaks.length - 1; i++) {
-                html += `<div class="legend-item">
-                     <span class="${swatchClass}" style="background:${colors[i + 1]}"></span>
-                     <span>${breaks[i]} to ${breaks[i + 1]}</span>
-                   </div>`;
+            const { breaks, colors } = conf;
+            if (!breaks || breaks.length === 0) {
+                sectionHtml += `<div class="legend-item">
+                                    <span class="${swatchClass}" style="background:${colors[0]}"></span>
+                                    <span>${conf.title}</span>
+                                </div>`;
+            } else {
+                sectionHtml += `<div class="legend-item">
+                                    <span class="${swatchClass}" style="background:${colors[0]}"></span>
+                                    <span>&lt; ${breaks[0]}</span>
+                                </div>`;
+                for (let i = 0; i < breaks.length - 1; i++) {
+                    sectionHtml += `<div class="legend-item">
+                                        <span class="${swatchClass}" style="background:${colors[i + 1]}"></span>
+                                        <span>${breaks[i]} to ${breaks[i + 1]}</span>
+                                    </div>`;
+                }
+                sectionHtml += `<div class="legend-item">
+                                    <span class="${swatchClass}" style="background:${colors[colors.length - 1]}"></span>
+                                    <span>&ge; ${breaks[breaks.length - 1]}</span>
+                                </div>`;
             }
-
-            // Greater than or equal to last break
-            html += `<div class="legend-item">
-                   <span class="${swatchClass}" style="background:${colors[colors.length - 1]}"></span>
-                   <span>&ge; ${breaks[breaks.length - 1]}</span>
-                 </div>`;
         }
-    }
 
-    // Add Size Legend Section if exists
-    if (conf.sizeLegend) {
-        html += `<hr style="border:0; border-top:0.1rem solid var(--card-shadow); margin:0.8rem 0;">`;
-        html += `<h4>${conf.sizeLegend.title}</h4>`;
-        conf.sizeLegend.items.forEach(item => {
-            const sizeRem = (item.radius * 2 / 10) + "rem";
-            html += `<div class="legend-item" style="align-items: center;">
-                   <span style="display:inline-block; width:2.6rem; text-align:center; margin-right:0.4rem;">
-                     <span style="display:inline-block; border-radius:50%; background:${conf.sizeLegend.color}; width:${sizeRem}; height:${sizeRem}; border:0.3rem solid ${conf.sizeLegend.strokeColor}; vertical-align:middle;"></span>
-                   </span>
-                   <span>${item.label}</span>
-                 </div>`;
-        });
-    }
-    
-    // Add NA indicator only for appropriate layers (exclude satellite and news/legend-excluded layers)
-    const skipNALayers = [...(ExcludeLayerGroups.satelliteLayers || []), ...ExcludeLayerGroups.liveUpdateLayers];
-    if (!skipNALayers.includes(topLayerId) && NaShadingEnabled) {
-        html += `<hr style="border:0; border-top:0.1rem solid var(--card-shadow); margin:0.8rem 0;">
-                 <div class="legend-item">
-                   <span class="${swatchClass}" style="background:#ffffff; border: 0.1rem solid var(--text-main);"></span>
-                   <span>N/A</span>
-                 </div>`;
-    }
+        // Add Size Legend Section if exists
+        if (conf.sizeLegend) {
+            sectionHtml += `<hr class="legend-divider">`;
+            sectionHtml += `<h4>${conf.sizeLegend.title}</h4>`;
+            conf.sizeLegend.items.forEach(item => {
+                const sizeRem = (item.radius * 2 / 10) + "rem";
+                sectionHtml += `<div class="legend-item" style="align-items: center;">
+                                   <span style="display:inline-block; width:2.6rem; text-align:center; margin-right:0.4rem;">
+                                     <span style="display:inline-block; border-radius:50%; background:${conf.sizeLegend.color}; width:${sizeRem}; height:${sizeRem}; border:0.3rem solid ${conf.sizeLegend.strokeColor}; vertical-align:middle;"></span>
+                                   </span>
+                                   <span>${item.label}</span>
+                                 </div>`;
+            });
+        }
 
-    container.innerHTML = html;
+        // Add NA indicator if enabled
+        const skipNALayers = [...(ExcludeLayerGroups.satelliteLayers || []), ...ExcludeLayerGroups.liveUpdateLayers];
+        if (!skipNALayers.includes(id) && NaShadingEnabled) {
+            sectionHtml += `<hr class="legend-divider">
+                             <div class="legend-item">
+                               <span class="${swatchClass}" style="background:#ffffff; border: 0.1rem solid var(--text-main);"></span>
+                               <span>N/A</span>
+                             </div>`;
+        }
+
+        sectionHtml += `</div></div>`; // End of legend-content and legend-section
+        finalHtml += sectionHtml;
+    });
+
+    container.innerHTML = finalHtml;
     container.style.display = "block";
 }
 

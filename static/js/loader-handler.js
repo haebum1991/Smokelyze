@@ -204,13 +204,12 @@ export async function loadSourceData(sourceKey, isoDate) {
             });
             
             const dsMap = DATASET_SOURCE_MAP || {};
-            const dsKeys = Object.keys(dsMap).filter(k => dsMap[k] === sourceKey);
-            if (dsKeys.length === 0) dsKeys.push(sourceKey);
+            const dsKey = Object.keys(dsMap).find(k => dsMap[k] === sourceKey) || sourceKey;
 
             const keysToReset = [];
             Object.keys(metricsMap).forEach(key => {
                 const tmpl = LAYER_TEMPLATES.find(t => t.id === key);
-                if (tmpl && tmpl.datasets && tmpl.datasets.some(d => dsKeys.includes(d))) {
+                if (tmpl && tmpl.datasets && tmpl.datasets.includes(dsKey)) {
                     keysToReset.push(key);
                 }
             });
@@ -226,12 +225,12 @@ export async function loadSourceData(sourceKey, isoDate) {
 
             const resolvedMetrics = [];
             Object.keys(metricsMap).forEach(key => {
+                // 중요: 현재 로딩 중인 데이터셋(dsKey)과 연관된 고유 ID만 선별
                 const tmpl = LAYER_TEMPLATES.find(t => t.id === key);
-                const matchedDsKey = tmpl?.datasets?.find(d => dsKeys.includes(d));
-                if (!matchedDsKey) return;
+                if (!tmpl || !tmpl.datasets || !tmpl.datasets.includes(dsKey)) return;
 
                 const p = metricsMap[key];
-                const fieldName = (typeof p === "function") ? p(matchedDsKey) : p;
+                const fieldName = (typeof p === "function") ? p(dsKey) : p;
                 resolvedMetrics.push({ key, field: fieldName });
             });
 

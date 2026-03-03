@@ -259,10 +259,57 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
   transition: transform 0.3s ease-out;
 }
 
-.map-legend h4 {
-  margin: 0 0 0.5rem;
-  font-size: 1.3rem;
+.legend-section {
+  border-bottom: 0.1rem solid var(--card-shadow);
+}
+
+.legend-section:last-child {
+  border-bottom: none;
+}
+
+.legend-header {
+  padding: 0.8rem 1rem;
+  background: var(--map-accordion-gradient-start);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: filter 0.2s;
+}
+
+.legend-header:hover {
+  filter: brightness(1.1);
+}
+
+.legend-section.is-top .legend-header {
+  background: var(--accent-highlight);
+  color: white;
   font-weight: bold;
+}
+
+.legend-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 0.5rem;
+}
+
+.legend-badge {
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.4rem;
+}
+
+.legend-content {
+  padding: 0.8rem 1rem;
+  background: var(--color-bg);
+}
+
+.legend-section:not(.is-top) .legend-content {
+  display: none;
 }
 
 .legend-item {
@@ -285,6 +332,18 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
   border-radius: 50%;
   margin-right: 0.8rem;
   border: 0.1rem solid var(--text-main);
+}
+
+.legend-divider {
+  border: 0;
+  border-top: 0.1rem solid var(--card-shadow);
+  margin: 0.6rem 0;
+}
+
+.map-legend h4 {
+  margin: 0.4rem 0 0.3rem;
+  font-size: 1.2rem;
+  font-weight: bold;
 }
 
 body.FigurePage-drawer-open .map-legend {
