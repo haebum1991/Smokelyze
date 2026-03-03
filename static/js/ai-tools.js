@@ -289,8 +289,7 @@ export async function handleAiToolCall(functionName, args) {
                 document.querySelectorAll(".accordion-page input[type='checkbox']").forEach(cb => {
                     
                     // Do not turn off Map Settings toggles
-                    if (cb.id === "MapBtnStateShading" || cb.id === "MapBtnPointLayers") return;
-
+                    if (cb.id === "MapBtnStateShading" || cb.id === "MapBtnPointLayers" || cb.id === "MapBtnNaShading") return;
                     if (cb.checked && cb.parentElement.style.display !== "none") {
                         cb.checked = false;
                         cb.dispatchEvent(new Event("change", { bubbles: true }));

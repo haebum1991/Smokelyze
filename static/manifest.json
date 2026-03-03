@@ -2,7 +2,7 @@
 {
   "name": "Smokelyze - Atmospheric Intelligence",
   "short_name": "Smokelyze",
-  "description": "Advanced Spatiotemporal Analytics for Wildfire Smoke & Air Quality.",
+  "description": "Advanced Spatiotemporal Analytics for Wildfire Smoke & Air Quality",
   "start_url": "/",
   "scope": "/", 
   "display": "standalone",

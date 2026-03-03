@@ -74,7 +74,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
 
 [[menu.main]]
   name = "Terms of Use"
-  url = "/about/terms-of-service/"
+  url = "/about/terms-of-use/"
   weight = 4
   parent = "about"
 
