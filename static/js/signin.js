@@ -138,16 +138,18 @@ async function recordUserHistory(user) {
             lastLogin: serverTimestamp()
         }, { merge: true });
 
-        const logKey = `logged_${user.uid}_${new Date().toISOString().split("T")[0]}`;
-        if (!sessionStorage.getItem(logKey)) {
-            await addDoc(collection(db, "smokelyze_login_logs"), {
-                uid: user.uid,
-                email: user.email,
-                loginAt: serverTimestamp(),
-                userAgent: navigator.userAgent
-            });
-            sessionStorage.setItem(logKey, "true");
-        }
+        // Login logging is now handled by Firebase Analytics (BigQuery export enabled, as of 2026-03-04)
+        // const logKey = `logged_${user.uid}_${new Date().toISOString().split("T")[0]}`;
+        // if (!sessionStorage.getItem(logKey)) {
+        //     await addDoc(collection(db, "smokelyze_login_logs"), {
+        //         uid: user.uid,
+        //         email: user.email,
+        //         loginAt: serverTimestamp(),
+        //         userAgent: navigator.userAgent
+        //     });
+        //     sessionStorage.setItem(logKey, "true");
+        // }
+        
     } catch (error) {
         console.error("Sync Error:", error);
     }
