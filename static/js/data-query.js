@@ -768,6 +768,7 @@ function downloadCSV() {
     logUserAction("download", {
         dataset: currentDatasetId,
         aqsSite: currentAqs,
+        state: currentQueryState,
         filename: fileName,
         itemCount: currentTableData.length
     });
