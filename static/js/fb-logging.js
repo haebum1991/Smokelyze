@@ -2,34 +2,59 @@
 import { analytics, logEvent, auth } from "./fb-init.js";
 import { DATA_IMPORT_METHOD, LAYER_TEMPLATES } from "./layers-def.js";
 
+// Brain State: Robust Unique IDs for globally unique analysis in R
+let sessionId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+let currentViewId = null;
+
+/**
+ * [Centralized Brain] Logs all user actions via Firebase Analytics.
+ * Optimized for BigQuery / R Analysis.
+ */
 export async function logUserAction(type, payload = {}) {
     if (window.loggingEnabled === false) return;
 
     const user = auth.currentUser;
-    const path = window.location.pathname.toLowerCase();
+    // Guest support for testing
+    const uid = user ? user.uid : "GUEST_" + sessionId;
 
+    // 1. Brain: Robust Page Detection
+    const path = window.location.pathname.toLowerCase();
     let page = "other";
+
     if (path.includes("/map")) page = "map";
     else if (path.includes("data")) page = "data";
     else if (path === "/" || path.includes("index.html")) page = "home";
+
+    // 2. Brain: Interaction Grouping
+    if (type === "view") {
+        currentViewId = "v_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
+    }
 
     const currentDataset = document.getElementById("MapDataSelect")?.value;
     const datePicker = document.getElementById("datePicker");
     const targetDate = payload.date || (datePicker ? datePicker.value : null);
 
-    // [Clean Schema] Only essential custom dimensions for BigQuery/R
+    // [Unified Schema Template] Every row has identical columns for R bind_rows()
+    // NOTE: Firebase Analytics automatically includes timestamp, device info, etc.
     let logEntry = {
-        id_user: user ? user.uid : "GUEST",
+        id_user: uid,
+        id_session: sessionId,
+        id_view: currentViewId,
         id_page: page,
+
+        // Background Context (View)
         key_dataset: null,
         key_layer: null,
-        key_date: targetDate,
+        key_date: null,
+
+        // Specific Details (Action)
         key_aqs: null,
         key_state: null,
         key_filename: null,
         key_report_type: null
     };
 
+    // Helper: Harvest Map Context
     const getMapViewContext = (filterSourceKey = null) => {
         const EXCLUDE = ["wildfire_news", "map_post", "wildfire-news", "map-post"];
         const activeSubLayers = Array.from(document.querySelectorAll("input[type=checkbox][id^='layer-']"))
@@ -62,6 +87,7 @@ export async function logUserAction(type, payload = {}) {
         };
     };
 
+    // Logic Tree
     if (page === "map") {
         if (type === "view") {
             const EXCLUDE_TRIGGERS = ["wildfire_news", "map_post", "wildfire-news", "map-post"];
@@ -91,7 +117,9 @@ export async function logUserAction(type, payload = {}) {
                 key_filename: payload.filename || payload.fileName || null
             });
         }
-    } else if (page === "data") {
+    }
+
+    else if (page === "data") {
         Object.assign(logEntry, {
             key_dataset: payload.dataset || payload.datasetId || null,
             key_date: payload.date || targetDate || null,
@@ -102,11 +130,20 @@ export async function logUserAction(type, payload = {}) {
         });
     }
 
-    // Final Clean-up
+    // Global Fallback for download / other
     if (!logEntry.key_filename && payload.filename) logEntry.key_filename = payload.filename;
     if (!logEntry.key_aqs && (payload.selected_id || payload.aqsSite)) {
         logEntry.key_aqs = payload.selected_id || payload.aqsSite;
     }
+
+    // Final Clean-up (Removing unwanted fields)
+    const cleanup = [
+        "email", "layer", "url", "userAgent", "date", "itemCount", "item_count",
+        "dataset", "selected_id", "view_dataset", "view_active_layers", "view_target_date",
+        "view_gcs_path", "aqs_code", "state", "session_id", "view_id", "page", "action",
+        "filename", "report_type", "uid", "timestamp"
+    ];
+    cleanup.forEach(key => delete logEntry[key]);
 
     try {
         logEvent(analytics, type, logEntry);
