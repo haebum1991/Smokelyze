@@ -1,6 +1,7 @@
 
 import { auth } from "./fb-init.js";
 import { showAuthOverlay } from "./utils.js";
+import { logUserAction } from "./fb-logging.js";
 
 /**
  * Helper to fetch with Firebase Auth Token
@@ -74,6 +75,9 @@ async function loadAnnualReports() {
         renderTypeTable("pm", reportsByType.pm, tablePM);
         renderTypeTable("o3_gam_v2", reportsByType.o3_gam_v2, tableO3_gam_v2);
 
+        // [Report to Brain]
+        logUserAction("view", { dataset: "annual_reports", fileCount: files.length });
+        
     } catch (err) {
         console.error("Error loading annual reports:", err);
         const errHtml = `<tr><td colspan='3' style='text-align:center; color: var(--color-red); padding: 2rem;'>Error: ${err.message}</td></tr>`;
@@ -159,6 +163,9 @@ function downloadReport(filename) {
     }
     const path = `/smokeday/smoke_id/${filename}`;
     window.location.href = path;
+    
+    // [Report to Brain]
+    logUserAction("download", { dataset: "annual_reports", filename });
 }
 window.downloadReport = downloadReport;
 

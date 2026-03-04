@@ -5,6 +5,7 @@ import { auth, onAuthStateChanged } from "./fb-init.js";
 import { loadedGeoJSON, loadSourceData } from "./loader.js";
 import { DATASET_SOURCE_MAP } from "./layers-def.js";
 import { updateAuthButton } from "./signin.js";
+import { logUserAction } from "./fb-logging.js";
 
 function convertToCSV(geoJSON) {
     if (!geoJSON || !geoJSON.features || geoJSON.features.length === 0) {
@@ -159,7 +160,11 @@ export async function handleDownload() {
 
     const csv = convertToCSV(loadedData);
     if (csv) {
-        downloadCSV(dataset + "_" + date + ".csv", csv);
+        const filename = dataset + "_" + date + ".csv";
+        downloadCSV(filename, csv);
+
+        // [Report to Brain]
+        logUserAction("download", { dataset, date, filename, itemCount: loadedData.features ? loadedData.features.length : 0 });
     } else {
         alert("Failed to convert data to CSV.");
     }

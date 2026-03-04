@@ -6,8 +6,9 @@
 
 import { fetchGeoJSON } from "./loader-fetch.js";
 import { auth, onAuthStateChanged } from "./fb-init.js";
-import { fetchJson, ESML, showAuthOverlay } from "./utils.js";
+import { ESML, showAuthOverlay } from "./utils.js";
 import { updateAuthButton } from "./signin.js";
+import { logUserAction } from "./fb-logging.js";
 
 // --- Configuration ---
 const REPORT_CONFIG = {
@@ -306,6 +307,9 @@ async function generateReport() {
         currentPage = 1;
         renderDatadbReportTable();
           
+        // [Report to Brain]
+        logUserAction("view", { datasetId, state, reportType, period });
+        
         // Update Title with Truncated Report Type
         const titleEl = document.getElementById("DatadbReportTableTitle");
         if (titleEl) {
@@ -550,6 +554,9 @@ function downloadReportCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // [Report to Brain]
+    logUserAction("download", { datasetId, state, reportType, fileName, itemCount: reportResults.data.length });
 }
 
 // --- Initialization ---

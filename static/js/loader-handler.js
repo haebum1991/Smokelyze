@@ -20,6 +20,7 @@ import {
     metricsMap, COUNT_METRICS, initializeMetrics, clearModelStats,
     resetLoadedSources, mergeModelStats
 } from "./loader-state.js";
+import { logUserAction } from "./fb-logging.js";
 
 // ---- [External data] AirNow ----
 import { airnowLoadData } from "./airnow-loader.js";
@@ -179,7 +180,14 @@ export async function loadSourceData(sourceKey, isoDate) {
 
             loadedSources[sourceKey] = isoDate;
             loadedGeoJSON[sourceKey] = data;
-
+            
+            // [Report to Brain]
+            logUserAction("view", {
+                sourceKey: sourceKey,
+                date: isoDate,
+                gcs_path: url
+            });
+            
             if (utils.refreshHighlight) {
                 utils.refreshHighlight();
             }

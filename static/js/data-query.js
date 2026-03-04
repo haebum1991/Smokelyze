@@ -8,6 +8,7 @@ import { auth, onAuthStateChanged } from "./fb-init.js";
 import { showAuthOverlay, fetchJson, ESML } from "./utils.js";
 import { updateAuthButton } from "./signin.js";
 import { renderAQSPlots as drawAQSPlots } from "./data-query-plots.js";
+import { logUserAction } from "./fb-logging.js";
 
 /**
  * Local utility: Same as ESML but specifically allows <br> tags for line breaks
@@ -456,6 +457,10 @@ async function handleQuery() {
             }
 
             renderDataTable();
+            
+            // [Report to Brain]
+            logUserAction("view", { datasetId, aqsSite, stateVal, url });
+            
             if (drawAQSPlots) drawAQSPlots(currentTableData, currentDatasetId, currentAqs);
 
             pendingFlyTo = true;
@@ -758,6 +763,14 @@ function downloadCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // [Report to Brain]
+    logUserAction("download", {
+        dataset: currentDatasetId,
+        aqsSite: currentAqs,
+        filename: fileName,
+        itemCount: currentTableData.length
+    });
 }
 
 

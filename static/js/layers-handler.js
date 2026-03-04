@@ -17,6 +17,7 @@ import {
     NaShadingEnabled,
     closedLegendIds
 } from "./layers-state.js";
+import { logUserAction } from "./fb-logging.js";
 
 export function addSourceIfMissing(sourceId) {
     if (!map.getSource(sourceId)) {
@@ -73,17 +74,37 @@ export function bindHover(layerId, getHTML) {
     });
 }
 
+
+const layerDataMap = {}; // Tracks { layerId: dataSource } for global click detection
 export function bindClick(layerId, dataSource) {
-    map.on("click", layerId, (e) => {
-        e.preventDefault();
-        const f = e.features?.[0];
-        if (f?.geometry?.type !== "Point") return;
+    // [Refactored] Instead of per-layer listeners, we register the layer as "interactive"
+    // and handle clicks globally once to ensure top-most accuracy.
+    layerDataMap[layerId] = dataSource;
 
-        const coords = f.geometry.coordinates;
-        const sourceKey = DATASET_SOURCE_MAP[dataSource] || dataSource;
+    // Register a one-time global click listener if not already present
+    if (!map._globalInteractionBound) {
+        map.on("click", (e) => {
+            const interactiveLayerIds = Object.keys(layerDataMap);
+            const features = map.queryRenderedFeatures(e.point, { layers: interactiveLayerIds });
 
-        highlightLocation?.(coords, f.properties, sourceKey);
-    });
+            if (features.length > 0) {
+                // Mapbox guarantees features[0] is the top-most rendered feature
+                const topF = features[0];
+                const fullKey = layerDataMap[topF.layer.id];
+                const def = LAYER_DEFS[fullKey];
+                const dsKey = def?.dsKey || fullKey;
+                const sourceKey = DATASET_SOURCE_MAP[dsKey] || dsKey;
+
+                const coords = topF.geometry.coordinates;
+                highlightLocation?.(coords, topF.properties, sourceKey);
+                e.preventDefault();
+
+                // [Report to Brain]
+                logUserAction("click_point", { ...topF.properties, clicked_layer: fullKey });
+            }
+        });
+        map._globalInteractionBound = true;
+    }
 }
 
 export function getAllInteractiveLayerIds() {
@@ -121,7 +142,7 @@ export function ensureLayers() {
             map._hoverBound = map._hoverBound || {};
             if (!map._hoverBound[def.hoverOn]) {
                 bindHover(def.hoverOn, def.hoverHTML);
-                bindClick(def.hoverOn, def.dsKey);
+                bindClick(def.hoverOn, key);
                 map._hoverBound[def.hoverOn] = true;
             }
         }
