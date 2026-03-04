@@ -181,11 +181,21 @@ export async function loadSourceData(sourceKey, isoDate) {
             loadedSources[sourceKey] = isoDate;
             loadedGeoJSON[sourceKey] = data;
             
-            // [Report to Brain]
+            // [Refined] Identify which UI toggles (checkboxes) are using this source
+            const currentDataset = document.getElementById("MapDataSelect")?.value;
+            const activeLayers = Array.from(document.querySelectorAll("input[type=checkbox][id^='layer-']:checked"))
+                .map(cb => cb.id.replace("layer-", ""))
+                .filter(shortId => {
+                    const cfg = DATA_IMPORT_METHOD[`${shortId}-${currentDataset}`] || DATA_IMPORT_METHOD[shortId];
+                    return cfg && cfg.source === sourceKey;
+                })
+                .join(", ");
+
             logUserAction("view", {
-                sourceKey: sourceKey,
+                dataset: sourceKey,
+                layer: activeLayers || sourceKey,
                 date: isoDate,
-                gcs_path: url
+                filename: url
             });
             
             if (utils.refreshHighlight) {

@@ -308,7 +308,11 @@ async function generateReport() {
         renderDatadbReportTable();
           
         // [Report to Brain]
-        logUserAction("view", { datasetId, state, reportType, period });
+        logUserAction("view", {
+            dataset: datasetId,
+            state: state,
+            report_type: reportType
+        });
         
         // Update Title with Truncated Report Type
         const titleEl = document.getElementById("DatadbReportTableTitle");
@@ -556,7 +560,12 @@ function downloadReportCSV() {
     document.body.removeChild(link);
     
     // [Report to Brain]
-    logUserAction("download", { datasetId, state, reportType, fileName, itemCount: reportResults.data.length });
+    logUserAction("download", {
+        dataset: datasetId,
+        state: state,
+        report_type: reportType,
+        filename: fileName
+    });
 }
 
 // --- Initialization ---

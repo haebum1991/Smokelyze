@@ -76,7 +76,10 @@ async function loadAnnualReports() {
         renderTypeTable("o3_gam_v2", reportsByType.o3_gam_v2, tableO3_gam_v2);
 
         // [Report to Brain]
-        logUserAction("view", { dataset: "annual_reports", fileCount: files.length });
+        logUserAction("view", {
+            dataset: "annual_reports",
+            filename: "/smokeday/smoke_id/?list=1"
+        });
         
     } catch (err) {
         console.error("Error loading annual reports:", err);

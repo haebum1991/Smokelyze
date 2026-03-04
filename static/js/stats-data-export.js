@@ -164,7 +164,7 @@ export async function handleDownload() {
         downloadCSV(filename, csv);
 
         // [Report to Brain]
-        logUserAction("download", { dataset, date, filename, itemCount: loadedData.features ? loadedData.features.length : 0 });
+        logUserAction("download", { dataset, date, filename });
     } else {
         alert("Failed to convert data to CSV.");
     }

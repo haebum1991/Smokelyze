@@ -459,7 +459,11 @@ async function handleQuery() {
             renderDataTable();
             
             // [Report to Brain]
-            logUserAction("view", { datasetId, aqsSite, stateVal, url });
+            logUserAction("view", {
+                dataset: datasetId,
+                aqs: aqsSite,
+                state: stateVal
+            });
             
             if (drawAQSPlots) drawAQSPlots(currentTableData, currentDatasetId, currentAqs);
 
@@ -767,10 +771,9 @@ function downloadCSV() {
     // [Report to Brain]
     logUserAction("download", {
         dataset: currentDatasetId,
-        aqsSite: currentAqs,
+        aqs: currentAqs,
         state: currentQueryState,
-        filename: fileName,
-        itemCount: currentTableData.length
+        filename: fileName
     });
 }
 

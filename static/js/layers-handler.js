@@ -100,7 +100,14 @@ export function bindClick(layerId, dataSource) {
                 e.preventDefault();
 
                 // [Report to Brain]
-                logUserAction("click_point", { ...topF.properties, clicked_layer: fullKey });
+                const props = topF.properties;
+                const cleanLayerId = fullKey.replace(`-${dsKey}`, "");
+                logUserAction("click_point", {
+                    dataset: sourceKey,
+                    layer: cleanLayerId,
+                    aqs: props.AQS || props.AQS_O3 || props.AQS_PM,
+                    state: props.state || "N/A"
+                });
             }
         });
         map._globalInteractionBound = true;
