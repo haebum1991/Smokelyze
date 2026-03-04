@@ -1,18 +1,28 @@
 
-import { db, auth, collection, addDoc, serverTimestamp } from "./fb-init.js";
+import { analytics, logEvent, auth } from "./fb-init.js";
 import { DATA_IMPORT_METHOD, LAYER_TEMPLATES } from "./layers-def.js";
 
 // Brain State: Robust Unique IDs for globally unique analysis in R
 let sessionId = Date.now().toString(36) + Math.random().toString(36).substring(2);
 let currentViewId = null;
 
+// Emergency Kill Switch: Set to false to stop all logging immediately
+window.loggingEnabled = true;
+window.toggleLogging = (bool) => {
+    window.loggingEnabled = bool;
+    console.log(`📡 Logging has been ${bool ? 'ENABLED' : 'DISABLED'}.`);
+};
+
 /**
- * [Centralized Brain] Logs all user actions.
- * Optimized for R / BigQuery Wide-Format Analysis.
+ * [Centralized Brain] Logs all user actions via Firebase Analytics.
+ * Optimized for BigQuery / R Analysis.
  */
 export async function logUserAction(type, payload = {}) {
+    if (window.loggingEnabled === false) return;
+
     const user = auth.currentUser;
-    if (!user) return;
+    // Guest support for testing
+    const uid = user ? user.uid : "GUEST_" + sessionId;
 
     // 1. Brain: Robust Page Detection
     const path = window.location.pathname.toLowerCase();
@@ -32,13 +42,13 @@ export async function logUserAction(type, payload = {}) {
     const targetDate = payload.date || (datePicker ? datePicker.value : null);
 
     // [Unified Schema Template] Every row has identical columns for R bind_rows()
+    // NOTE: Firebase Analytics automatically includes timestamp, device info, etc.
     let logEntry = {
-        uid: user.uid,        // Keep for Firebase Security Rules [REQUIRED]
+        id_user: uid,
         id_session: sessionId,
         id_view: currentViewId,
         id_page: page,
         id_action: type,
-        timestamp: serverTimestamp(),
 
         // Background Context (View)
         key_dataset: null,
@@ -134,19 +144,19 @@ export async function logUserAction(type, payload = {}) {
         logEntry.key_aqs = payload.selected_id || payload.aqsSite;
     }
 
-    // Final Clean-up (Removing old field names and unwanted fields)
+    // Final Clean-up (Removing unwanted fields)
     const cleanup = [
         "email", "layer", "url", "userAgent", "date", "itemCount", "item_count",
         "dataset", "selected_id", "view_dataset", "view_active_layers", "view_target_date",
         "view_gcs_path", "aqs_code", "state", "session_id", "view_id", "page", "action",
-        "filename", "report_type"
+        "filename", "report_type", "uid", "timestamp"
     ];
     cleanup.forEach(key => delete logEntry[key]);
 
     try {
-        await addDoc(collection(db, "smokelyze_interaction_logs"), logEntry);
+        logEvent(analytics, type, logEntry);
     } catch (e) {
-        console.error("Centralized Logging Error:", e);
+        console.error("[Analytics Error]:", e);
     }
 }
 
