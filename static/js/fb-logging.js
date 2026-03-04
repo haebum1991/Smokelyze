@@ -38,7 +38,7 @@ export async function logUserAction(type, payload = {}) {
         // Background Context & Specific Details (Normalized to Strings)
         key_dataset: String(payload.dataset || ""),
         key_layer: String(payload.layer || ""),
-        key_aqs: String(payload.aqs || ""),
+        key_aqs: payload.aqs ? "aqs_" + String(payload.aqs) : "none",
         key_state: String(payload.state || ""),
         key_filename: String(payload.filename || ""),
         key_report_type: String(payload.report_type || ""),
