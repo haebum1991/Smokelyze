@@ -131,7 +131,7 @@
   # Content Security Policy
   Content-Security-Policy = """
     default-src 'self' https://*.firebaseapp.com https://apis.google.com https://www.gstatic.com https://*.googleapis.com https://tiles.openfreemap.org; 
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.plot.ly https://instant.page https://cdnjs.cloudflare.com; 
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://apis.google.com https://unpkg.com https://cdn.jsdelivr.net https://cdn.plot.ly https://instant.page https://cdnjs.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com; 
     style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://fonts.googleapis.com; 
     img-src 'self' data: https: blob: https://storage.googleapis.com https://tiles.openfreemap.org https://*.googleusercontent.com; 
     font-src 'self' data: https://fonts.gstatic.com https://unpkg.com https://cdnjs.cloudflare.com; 
