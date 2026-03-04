@@ -30,19 +30,19 @@ export async function logUserAction(type, payload = {}) {
     // 3. Unified Schema Template (R bind_rows() friendly)
     // All calls must now provide: dataset, aqs, state, filename, report_type, layer, date
     let logEntry = {
-        id_user: uid,
-        id_session: sessionId,
-        id_view: currentViewId,
-        id_page: page,
+        id_user: String(uid || ""),
+        id_session: String(sessionId || ""),
+        id_view: String(currentViewId || ""),
+        id_page: String(page || ""),
 
-        // Background Context & Specific Details
-        key_dataset: payload.dataset || null,
-        key_layer: payload.layer || null,
-        key_aqs: payload.aqs || null,
-        key_state: payload.state || null,
-        key_filename: payload.filename || null,
-        key_report_type: payload.report_type || null,
-        key_date: payload.date || document.getElementById("datePicker")?.value || null
+        // Background Context & Specific Details (Normalized to Strings)
+        key_dataset: String(payload.dataset || ""),
+        key_layer: String(payload.layer || ""),
+        key_aqs: String(payload.aqs || ""),
+        key_state: String(payload.state || ""),
+        key_filename: String(payload.filename || ""),
+        key_report_type: String(payload.report_type || ""),
+        key_date: String(payload.date || document.getElementById("datePicker")?.value || "")
     };
 
     const EXCLUDE = ["wildfire_news", "map_post", "wildfire-news", "map-post"];
