@@ -1,0 +1,69 @@
+
+<h2>EPA/AirNow Data Processing</h2>
+<hr>
+
+<section id="airnow">
+    <p>Fetches real-time and historical air quality monitoring data (PM2.5, MDA8 O3, etc.) from AirNow S3
+        archives and processes it into spatial formats for web visualization.</p>
+
+    <h3>1. Key Information</h3>
+    <ul class="doc-list">
+        <li><strong>Purpose:</strong> Retrieve daily mean PM2.5 and MDA8 O3 concentrations from the EPA/AirNow
+            monitoring network across the US, Canada, and Mexico.</li>
+        <li><strong>Source:</strong> AirNow S3 public buckets
+            (<code>s3-us-west-1.amazonaws.com/files.airnowtech.org</code>).</li>
+        <li><strong>Environment:</strong> Designed for Docker and Google Cloud Run.</li>
+        <li><strong>Output:</strong> Compressed GeoJSON (.gz) files uploaded to Google Cloud Storage (GCS).</li>
+    </ul>
+
+    <h3>2. Main Workflow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>Authenticate:</strong> Connects to Google
+            Cloud Services (GCS) via service account or Cloud Run identity.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>Download:</strong> Constructs direct URLs
+            to AirNow S3 buckets and downloads daily pipe-delimited (<code>|</code>) data files.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Spatial Join:</strong> Maps monitoring
+            stations to US states, Canadian provinces, and Mexico boundaries using
+            <code>rnaturalearth</code>.
+        </div>
+        <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>Format:</strong> Cleans, pivots variables
+            (PM2.5 and O3), assigns AQS codes, and converts to GeoJSON (RFC 7946).</div>
+        <div class="doc-flow-step"><span class="doc-step-num">5</span><strong>Upload:</strong> Saves compressed (.gz)
+            GeoJSON files to the <code>smokelyze_bucket</code>.</div>
+    </div>
+
+    <h3>3. R Libraries Used</h3>
+    <pre><code>library(dplyr)
+library(stringr)
+library(lubridate)
+library(sf)
+library(httr)
+library(googleCloudStorageR)
+library(rnaturalearth)
+library(raster)</code></pre>
+
+    <h3>4. Technical Implementation</h3>
+    <h4>- S3 Data Retrieval</h4>
+    <p>Constructs direct URLs to AirNow S3 buckets to pull daily raw data packets in a pipe-delimited format.</p>
+    <pre><code># Construction of S3 URLs
+url_datetime <- paste0(url_year, "/", url_date, "/daily_data_v2.dat")
+dataset_url <- paste0("https://s3-us-west-1.amazonaws.com//files.airnowtech.org/airnow/", url_datetime)
+
+# Parsing pipe-delimited data
+output_sub <- read.csv(dataset_url, sep = "|", header = F)
+colnames(output_sub) <- c("date", "AQS_code", "lat", "lon", "site_name", "var", "value")</code></pre>
+
+    <h4>- Spatial Join & Boundary Mapping</h4>
+    <p>Using <code>sf</code>, the script intersects monitoring points with political boundaries (States/Provinces) from
+        <code>rnaturalearth</code> to assign geographic context.
+    </p>
+    <pre><code># Convert coordinates to SF points
+sf_airnow <- st_as_sf(df_airnow, coords = c("lon", "lat"), crs = 4326)
+
+# Load boundary data
+ne_states <- ne_states(country = c("united states of america", "canada", "mexico"), returnclass = "sf")
+
+# Spatial intersection
+sf_joined <- st_join(sf_airnow, ne_states[, c("name", "iso_a2")])</code></pre>
+</section>
+

@@ -1,0 +1,89 @@
+
+<h2>S5P/TROPOMI Satellite Retrieval</h2>
+<hr>
+
+<section id="tropomi">
+    <p>Retrieves tropospheric vertical column densities (VCD) of NO2 and HCHO from the Sentinel-5P TROPOMI satellite to
+        serve as predictor variables for the GAM-v2 model.</p>
+
+    <h3>1. Key Information</h3>
+    <ul class="doc-list">
+        <li><strong>Purpose:</strong> Extract tropospheric NO2 and HCHO column densities at AQS station
+            coordinates as GAM-v2 predictor features.</li>
+        <li><strong>Source:</strong> S5P-PAL (Product Algorithm Laboratory) Level-3 daily data portal.</li>
+        <li><strong>Products:</strong> <code>no2-tropospheric</code> (Tropospheric NO2 VCD) and
+            <code>hcho</code> (HCHO VCD).
+        </li>
+        <li><strong>Resolution:</strong> Up to 3.5 &times; 5.5 km grid cells.</li>
+    </ul>
+
+    <h3>2. Main Workflow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>API Query:</strong> Queries the S5P-PAL
+            data portal API for available Level-3 daily product links by year.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>NC Download:</strong> Fetches NetCDF
+            files containing daily tropospheric NO2 or HCHO data.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Unit Conversion:</strong> Converts
+            raw satellite data from &mu;mol/m<sup>2</sup> into standard scientific units
+            (molec./cm<sup>2</sup>) using Avogadro's constant.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>Point Extraction:</strong> Samples
+            the converted raster values at AQS monitoring station coordinates.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">5</span><strong>Temporal Smoothing:</strong> Applies a
+            15-day rolling mean to account for day-over-day satellite observation gaps.</div>
+    </div>
+
+    <h3>3. R Libraries Used</h3>
+    <pre><code>library(httr)     # API & download
+library(ncdf4)    # NetCDF handling
+library(raster)   # Raster extraction
+library(terra)    # SpatRaster engine
+library(googleCloudStorageR)</code></pre>
+
+    <h3>4. Technical Implementation</h3>
+    <h4>- S5P-PAL Data Portal API Query</h4>
+    <p>Queries the Sentinel-5P Product Algorithm Laboratory (PAL) for Level-3 daily tropospheric NO2/HCHO data
+        granules, organized by product and year.</p>
+    <pre><code># Query PAL API for specific product & year
+main_query <- paste0(
+  "https://data-portal.s5p-pal.com/api/s5p-l3/",
+  product, "/day/", year
+)
+main_q <- jsonlite::fromJSON(txt = main_query, flatten = TRUE)
+link_list <- main_q[main_q$date %in% date_list, c("date", "href")]</code></pre>
+
+    <h4>- NetCDF Processing & AQS Point Extraction</h4>
+    <p>Opens NetCDF files, selects the appropriate variable based on the product type, removes negative (invalid)
+        values, and extracts raster values at each AQS monitoring station coordinate.</p>
+    <pre><code># Variable selection based on product
+if (output_var == "no2-tropospheric") var_name <- "tropospheric_NO2_column_number_density"
+if (output_var == "hcho") var_name <- "tropospheric_HCHO_column_number_density"
+
+# Open NC and extract the target subdataset
+nc_data <- ncdf4::nc_open(file.path(saved_path, file_name))
+r_layer <- terra::rast(file.path(saved_path, file_name), var_name)
+r_layer <- raster::raster(r_layer)
+raster::values(r_layer)[raster::values(r_layer) < 0] <- NA  # Remove negative fill values
+
+# Extract at AQS monitor locations
+coordinates(lon_lat_df) <- ~lon+lat
+crs(lon_lat_df) <- "+proj=longlat +datum=WGS84"
+r_value <- raster::extract(r_layer, lon_lat_df)
+
+# Unit conversion: µmol/m² -> molec./cm²
+r_value <- r_value * 6.022e13</code></pre>
+
+    <h4>- 15-Day Rolling Mean</h4>
+    <p>Loads the past 15 days of extracted data from GCS, splits by AQS site, and applies a centered 15-day
+        rolling mean using <code>data.table::frollmean</code> to smooth day-over-day satellite observation gaps.</p>
+    <pre><code># 15-day rolling mean per AQS site
+rolling_window <- seq.Date(as.Date(target_date) - 15, as.Date(target_date) - 1, by = "1 day")
+output_list <- split(output, output$AQS)
+
+for (ii in seq_along(output_list)) {
+  q <- as.data.table(output_list[[ii]])
+  q$NO2S5P <- data.table::frollmean(q$NO2S5P_raw, n = 15, na.rm = TRUE, align = "center")
+  q$HCHOS5P <- data.table::frollmean(q$HCHOS5P_raw, n = 15, na.rm = TRUE, align = "center")
+  output_list[[ii]] <- q[q$date == rolling_date, ]
+}</code></pre>
+</section>
+

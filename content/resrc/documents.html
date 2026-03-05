@@ -3,35 +3,662 @@
 title: ""
 ---
 
-<h1 style="text-align: center;">
-  Documents
-</h1>
+<div class="doc-layout">
 
-<div class="card-about reveal-on-scroll">
-    <h3>
-    Impacts of smoke on PM2.5 and O3 concentrations (v6)
-    <a href="/docs/Impacts_of_smoke_on_PM2.5_and_O3_concentrations_v6.pdf" target="_blank" rel="noopener noreferrer">
-    → PDF
-    </a>
-    </h3>
-    <ul>
-        <li>
-        This technical note provides a comprehensive overview of the statistical methodologies used to quantify
-        wildfire smoke impacts on surface PM2.5 and O3 concentrations.
-        It details the integration of satellite-derived HMS products with ground-level data, utilizing Median
-        Absolute Deviation (MAD) to establish robust thresholds for smoke
-        influence in non-normal distributions. The document further explains the application of Generalized
-        Additive Models (GAMs) to isolate the wildfire contribution to
-        ambient ozone levels by predicting concentrations in the absence of smoke based on meteorological
-        drivers. A critical highlight is the implementation of
-        Empirical Distribution Matching (EDM) to correct inherent model biases, which significantly enhances the
-        reliability of the analysis and improves the identification
-        of smoke-driven exceedance events by approximately 18% compared to standard models.
-        </li>
-    </ul>
+    <!-- Left Sidebar -->
+    <nav class="doc-sidebar" id="DocSidebar">
+        <div class="doc-sidebar-header">
+            <div class="doc-sidebar-title">Documents</div>
+            <button class="doc-sidebar-close" id="DocSidebarClose">&times;</button>
+        </div>
+        <ul class="doc-toc" id="DocToc">
+
+            <li class="doc-sidebar-divider">App Information</li>
+            <li class="doc-toc-h1 active" data-doc="doc-arch"><a href="#">Technical Stack</a></li>
+
+            <li class="doc-sidebar-divider">Research Methodology</li>
+            <li class="doc-toc-h1" data-doc="doc-pmcrit"><a href="#">PM2.5-criteria</a></li>
+            <li class="doc-toc-h1" data-doc="doc-smokeday"><a href="#">Smoke Day</a></li>
+            <li class="doc-toc-h1" data-doc="doc-gam"><a href="#">GAM</a></li>
+            <li class="doc-toc-h1" data-doc="doc-smoke-impacts"><a href="#">Smoke O3 and PM2.5</a></li>
+
+            <li class="doc-sidebar-divider">Data Pipeline</li>
+            <li class="doc-toc-h1" data-doc="doc-wildfire"><a href="#">News/NIFC</a></li>
+            <li class="doc-toc-h1" data-doc="doc-airnow"><a href="#">EPA/AirNow</a></li>
+            <li class="doc-toc-h1" data-doc="doc-hms"><a href="#">NOAA/HMS</a></li>
+            <li class="doc-toc-h1" data-doc="doc-merra2"><a href="#">NASA/MERRA-2</a></li>
+            <li class="doc-toc-h1" data-doc="doc-tropomi"><a href="#">S5P/TROPOMI</a></li>
+            <li class="doc-toc-h1" data-doc="doc-hysplit"><a href="#">NOAA/HYSPLIT</a></li>
+            <li class="doc-toc-h1" data-doc="doc-pred-gam-v2"><a href="#">UW GAM-v2 pred.</a></li>
+        </ul>
+    </nav>
+
+    <!-- Mobile TOC toggle -->
+    <button class="doc-toc-toggle" id="DocTocToggle">
+        ☰ Contents
+    </button>
+
+    <!-- Right Content Area -->
+    <main class="doc-main">
+
+        <!-- Document pages loaded via fetch() from /docs/ -->
+        <div class="doc-page" id="doc-arch">
+            <p class="doc-loading">Loading...</p>
+        </div>
+        <div class="doc-page" id="doc-pmcrit" style="display:none;">
+            <p class="doc-loading">Loading...</p>
+        </div>
+        <div class="doc-page" id="doc-smokeday" style="display:none;">
+            <p class="doc-loading">Loading...</p>
+        </div>
+        <div class="doc-page" id="doc-gam" style="display:none;">
+            <p class="doc-loading">Loading...</p>
+        </div>
+        <div class="doc-page" id="doc-smoke-impacts" style="display:none;">
+            <p class="doc-loading">Loading...</p>
+        </div>
+        <div class="doc-page" id="doc-wildfire" style="display:none;">
+            <p class="doc-loading">Loading...</p>
+        </div>
+        <div class="doc-page" id="doc-airnow" style="display:none;">
+            <p class="doc-loading">Loading...</p>
+        </div>
+        <div class="doc-page" id="doc-hms" style="display:none;">
+            <p class="doc-loading">Loading...</p>
+        </div>
+        <div class="doc-page" id="doc-merra2" style="display:none;">
+            <p class="doc-loading">Loading...</p>
+        </div>
+        <div class="doc-page" id="doc-tropomi" style="display:none;">
+            <p class="doc-loading">Loading...</p>
+        </div>
+        <div class="doc-page" id="doc-hysplit" style="display:none;">
+            <p class="doc-loading">Loading...</p>
+        </div>
+        <div class="doc-page" id="doc-pred-gam-v2" style="display:none;">
+            <p class="doc-loading">Loading...</p>
+        </div>
+
+    </main>
 </div>
 
-<br>
-<br>
-<br>
+
+<style>
+    .doc-layout {
+        display: flex;
+        min-height: calc(100vh - var(--header-height-total) - 4rem);
+        max-width: 100%;
+        width: 100%;
+        margin: 0;
+    }
+
+    /* Sidebar */
+    .doc-sidebar {
+        position: sticky;
+        top: var(--header-height-total);
+        align-self: flex-start;
+        width: 26rem;
+        min-width: 26rem;
+        height: calc(100vh - var(--header-height-total));
+        overflow-y: auto;
+        padding: 1.5rem 0;
+        border-right: 0.1rem solid var(--border-main);
+        background: var(--color-bg);
+        scrollbar-width: thin;
+    }
+
+    .doc-sidebar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1.5rem 0.5rem;
+        border-bottom: 0.1rem solid var(--border-main);
+        margin-bottom: 0.8rem;
+    }
+
+    .doc-sidebar-title {
+        font-size: 1.6rem;
+        font-weight: bold;
+        color: var(--text-heading);
+    }
+
+    .doc-sidebar-close {
+        display: none;
+        background: none;
+        border: none;
+        color: var(--text-main);
+        font-size: 2.8rem;
+        cursor: pointer;
+        line-height: 1;
+        padding: 0.5rem;
+    }
+
+    .doc-sidebar-divider {
+        padding: 2rem 1.5rem 0.5rem;
+        font-size: 1rem;
+        font-weight: bold;
+        color: var(--text-main);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .doc-toc {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .doc-toc li a {
+        display: block;
+        padding: 0.5rem 1.5rem;
+        font-size: 1.3rem;
+        color: var(--text-main);
+        text-decoration: none;
+        border-left: 0.3rem solid transparent;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .doc-toc li a:hover {
+        color: var(--card-shadow);
+        background: var(--color-code-bg);
+        border-left-color: var(--card-shadow);
+    }
+
+    .doc-toc li.active>a {
+        color: var(--card-shadow);
+        font-weight: bold;
+        border-left-color: var(--card-shadow);
+        background: var(--color-code-bg);
+    }
+
+    .doc-toc-h1>a {
+        font-weight: bold !important;
+        font-size: 1.4rem !important;
+        padding-left: 2rem !important;
+        padding-top: 0.5rem !important;
+    }
+
+    .doc-toc-h2>a {
+        padding-left: 3rem !important;
+        font-size: 1.25rem !important;
+    }
+
+    .doc-toc-sub {
+        display: none;
+    }
+
+    .doc-toc-sub.visible {
+        display: list-item;
+    }
+
+    .doc-toc-toggle {
+        display: none;
+        position: sticky;
+        top: var(--header-height-total);
+        z-index: 100;
+        width: 100%;
+        padding: 1rem 2rem;
+        background: var(--sidebar-widget-bg);
+        border: none;
+        border-bottom: 0.1rem solid var(--border-main);
+        color: var(--text-heading);
+        font-size: 1.4rem;
+        font-weight: bold;
+        cursor: pointer;
+        text-align: left;
+    }
+
+    /* Main */
+    .doc-main {
+        flex: 1;
+        min-width: 0;
+        max-width: 90rem;
+        padding: 3rem 4rem 6rem;
+        line-height: 1.75;
+    }
+
+    .doc-page section {
+        scroll-margin-top: calc(var(--header-height-total) + 1rem);
+    }
+
+    .doc-main hr {
+        margin: 0 !important;
+    }
+
+    .doc-main h2 {
+        font-size: 2.2rem;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .doc-main h3 {
+        font-size: 1.7rem;
+        margin-top: 2.5rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .doc-main h4 {
+        font-size: 1.5rem;
+        margin-top: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .doc-main p {
+        font-size: 1.5rem;
+        color: var(--text-main);
+        margin-bottom: 1.2rem;
+    }
+
+    .doc-main ul {
+        margin-left: 2rem;
+        margin-bottom: 1.4rem;
+    }
+
+    .doc-main li {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-main);
+    }
+
+    .doc-main code {
+        font-family: "Consolas", "Monaco", monospace;
+        font-size: 1.3rem;
+        background: var(--color-code-bg2);
+        padding: 0.15rem 0.5rem;
+        border-radius: 0.3rem;
+        color: var(--text-heading);
+    }
+
+    .doc-main pre {
+        background: var(--color-code-bg);
+        border: 0.1rem solid var(--border-main);
+        border-left: 0.4rem solid var(--card-shadow);
+        border-radius: var(--border-radius-0p8rem);
+        padding: 1.4rem 1.8rem;
+        overflow-x: auto;
+        margin: 1rem 0 2rem;
+        font-size: 1.25rem;
+        line-height: 1.55;
+    }
+
+    .doc-main pre code {
+        background: none;
+        padding: 0;
+        font-size: 1.4rem;
+        color: var(--text-main);
+    }
+
+    .doc-callout {
+        background: var(--color-code-bg);
+        border-left: 0.5rem solid var(--card-shadow);
+        padding: 1.2rem 1.6rem;
+        border-radius: 0 var(--border-radius-0p8rem) var(--border-radius-0p8rem) 0;
+        margin: 1.4rem 0 2rem;
+        font-size: 1.4rem;
+        color: var(--text-main);
+        line-height: 1.7;
+    }
+
+    .doc-formula {
+        background: var(--color-code-bg);
+        border: 0.1rem solid var(--border-main);
+        border-radius: var(--border-radius-0p8rem);
+        padding: 1.6rem 2rem;
+        margin: 1.4rem 0 2rem;
+        text-align: center;
+        font-family: "Consolas", monospace;
+        font-size: 1.6rem;
+        line-height: 2.2;
+        text-align: center;
+        color: var(--text-heading);
+    }
+
+    .doc-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0 2rem;
+        font-size: 1.4rem;
+    }
+
+    .doc-table th,
+    .doc-table td {
+        padding: 0.8rem 1.2rem;
+        text-align: left;
+        border-bottom: 0.1rem solid var(--border-main);
+        color: var(--text-main);
+    }
+
+    .doc-table th {
+        background: var(--color-code-bg);
+        font-weight: bold;
+        font-size: 1.25rem;
+        color: var(--text-heading);
+        text-transform: uppercase;
+        letter-spacing: 0.05rem;
+        border-bottom: 0.2rem solid var(--card-shadow);
+    }
+
+    .doc-table tr:hover {
+        background: var(--color-code-bg);
+    }
+
+    .doc-flow {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        margin: 1.4rem 0 2rem;
+    }
+
+    .doc-flow-step {
+        position: relative;
+        padding: 1rem 1.4rem 1rem 4.4rem;
+        background: var(--sidebar-widget-bg);
+        border-radius: var(--border-radius-0p8rem);
+        border: 0.1rem solid var(--border-main);
+        font-size: 1.4rem;
+        color: var(--text-main);
+    }
+
+    .doc-step-num {
+        position: absolute;
+        left: 1.4rem;
+        top: 1rem;
+        background: var(--card-shadow) !important;
+        color: var(--color-bg) !important;
+        width: 2.2rem;
+        height: 2.2rem;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        box-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.3);
+    }
+
+    .doc-flow-arrow {
+        text-align: center;
+        color: var(--card-shadow);
+        font-size: 1.6rem;
+        line-height: 1;
+        margin: 0.5rem 0;
+    }
+
+    .doc-tag {
+        display: inline-block;
+        padding: 0.1rem 0.6rem;
+        border-radius: 0.4rem;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+
+    .doc-tag-yes {
+        background: #2d6a4f;
+        color: #b7e4c7;
+    }
+
+    .doc-tag-no {
+        background: #6a2d2d;
+        color: #e4b7b7;
+    }
+
+    .doc-footer-text {
+        color: var(--text-muted) !important;
+        font-size: 1.3rem !important;
+    }
+
+    @media (max-width: 1024px) {
+        .container:has(.doc-layout) {
+            max-width: 100%;
+            padding: 0;
+        }
+
+        .content:has(.doc-layout) {
+            max-width: 100%;
+            padding: 0;
+        }
+
+        .doc-layout {
+            flex-direction: column;
+        }
+
+        .doc-sidebar {
+            position: fixed;
+            top: var(--header-height-total);
+            left: 0;
+            z-index: 500;
+            width: 85vw;
+            max-width: 32rem;
+            min-width: unset;
+            height: calc(100vh - var(--header-height-total));
+            box-shadow: 0.4rem 0 3rem rgba(0, 0, 0, 0.4);
+            background: var(--mobile-nav-bg) !important;
+            color: var(--color-white) !important;
+            border-right: none;
+
+            /* Slide Animation */
+            transform: translateX(-100%);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.35s;
+            visibility: hidden;
+        }
+
+        .doc-sidebar.open {
+            transform: translateX(0);
+            visibility: visible;
+        }
+
+        .doc-toc-toggle {
+            display: block;
+            background: var(--card-shadow);
+            color: var(--color-bg);
+            border: none;
+            font-weight: bold;
+            box-shadow: 0 0.2rem 1rem rgba(0, 0, 0, 0.2);
+        }
+
+        .doc-sidebar-header {
+            border-bottom-color: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem 1.6rem;
+        }
+
+        .doc-sidebar-title,
+        .doc-sidebar-divider {
+            color: var(--color-white) !important;
+            opacity: 0.9;
+        }
+
+        .doc-sidebar-close {
+            display: block;
+            color: var(--color-white);
+        }
+
+        .doc-toc li a {
+            color: var(--color-white) !important;
+            font-weight: bold;
+        }
+
+        .doc-toc li.active>a,
+        .doc-toc li a:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-left-color: var(--color-white) !important;
+            color: var(--color-white) !important;
+        }
+
+        .doc-main {
+            padding: 1rem 1.5rem 6rem;
+            max-width: 100%;
+        }
+
+        .doc-main h2 {
+            font-size: 1.8rem;
+        }
+
+        .doc-main h3 {
+            font-size: 1.5rem;
+        }
+
+        .doc-main pre {
+            padding: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .doc-table {
+            display: block;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .doc-formula {
+            font-size: 1.3rem;
+            padding: 1.2rem 1rem;
+        }
+
+        .doc-flow-step {
+            font-size: 1.3rem;
+            padding: 0.8rem 1rem 0.8rem 3.6rem;
+        }
+
+        .doc-step-num {
+            left: 1rem;
+            top: 0.8rem;
+            width: 2rem;
+            height: 2rem;
+            font-size: 1.1rem;
+        }
+    }
+</style>
+
+<script>
+    (function () {
+        const pages = document.querySelectorAll(".doc-page");
+        const tocItems = document.querySelectorAll(".doc-toc li");
+        const subItems = document.querySelectorAll(".doc-toc-sub");
+        const sidebar = document.getElementById("DocSidebar");
+
+        // Document source mapping - add new docs here
+        const docSources = {
+            "doc-arch": "/docs/doc-architecture.html",
+            "doc-pmcrit": "/docs/doc-pmcrit.html",
+            "doc-smokeday": "/docs/doc-smokeday.html",
+            "doc-gam": "/docs/doc-gam.html",
+            "doc-smoke-impacts": "/docs/doc-smoke-impacts.html",
+            "doc-wildfire": "/docs/doc-wildfire.html",
+            "doc-airnow": "/docs/doc-airnow.html",
+            "doc-hms": "/docs/doc-hms.html",
+            "doc-merra2": "/docs/doc-merra2.html",
+            "doc-tropomi": "/docs/doc-tropomi.html",
+            "doc-hysplit": "/docs/doc-hysplit.html",
+            "doc-pred-gam-v2": "/docs/doc-pred-gam-v2.html"
+        };
+        const loaded = {};
+
+        // Create overlay for mobile
+        const overlay = document.createElement("div");
+        overlay.id = "DocOverlay";
+        overlay.style.cssText = "display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);z-index:499;";
+        document.body.appendChild(overlay);
+        overlay.addEventListener("click", () => closeSidebar());
+
+        function closeSidebar() {
+            sidebar.classList.remove("open");
+            overlay.style.display = "none";
+        }
+
+        function openSidebar() {
+            sidebar.classList.add("open");
+            overlay.style.display = "block";
+        }
+
+        const toggleBtn = document.querySelector(".doc-toc-toggle");
+        const closeBtn = document.getElementById("DocSidebarClose");
+
+        if (toggleBtn) {
+            toggleBtn.onclick = function () {
+                sidebar.classList.contains("open") ? closeSidebar() : openSidebar();
+            };
+        }
+
+        if (closeBtn) {
+            closeBtn.onclick = closeSidebar;
+        }
+
+        async function loadDoc(docId) {
+            if (loaded[docId]) return;
+            const baseUrl = docSources[docId];
+            if (!baseUrl) return;
+
+            // Append cache-buster (timestamp) to ensure we get fresh content
+            const url = `${baseUrl}?t=${new Date().getTime()}`;
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                const html = await res.text();
+                const container = document.getElementById(docId);
+                if (container) {
+                    container.innerHTML = html;
+                    loaded[docId] = true;
+                }
+            } catch (e) {
+                console.error(`[Docs] Load failed for ${docId}:`, e);
+                const container = document.getElementById(docId);
+                if (container) {
+                    container.innerHTML = `
+                        <div style="padding: 2rem; border: 1px dashed var(--border-main); color: var(--text-muted);">
+                            <p><strong>Failed to load document.</strong></p>
+                            <p style="font-size: 0.9rem; margin-top: 0.5rem;">Reason: ${e.message}</p>
+                            <p style="font-size: 0.8rem;">Path: ${baseUrl}</p>
+                            <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; cursor: pointer; background: var(--card-shadow); color: var(--color-bg); border: none; border-radius: 4px; font-weight: bold;">Retry</button>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function showDoc(docId, sectionId) {
+            pages.forEach(p => p.style.display = (p.id === docId) ? "block" : "none");
+            tocItems.forEach(li => {
+                if (li.classList.contains("doc-toc-h1")) {
+                    li.classList.toggle("active", li.dataset.doc === docId);
+                }
+            });
+            subItems.forEach(s => {
+                s.classList.toggle("visible", s.dataset.doc === docId);
+                s.classList.remove("active");
+            });
+            if (sectionId) {
+                subItems.forEach(s => {
+                    if (s.dataset.section === sectionId) s.classList.add("active");
+                });
+            }
+
+            loadDoc(docId).then(() => {
+                if (sectionId) {
+                    const el = document.getElementById(sectionId);
+                    if (el) setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+                } else {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+            });
+
+            closeSidebar();
+        }
+
+        tocItems.forEach(li => {
+            const link = li.querySelector("a");
+            if (link && li.dataset.doc) {
+                link.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    showDoc(li.dataset.doc, li.dataset.section || null);
+                });
+            }
+        });
+
+        showDoc("doc-arch", null);
+    })();
+</script>
 

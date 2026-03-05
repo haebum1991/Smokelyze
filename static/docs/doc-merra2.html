@@ -1,0 +1,68 @@
+
+<h2>NASA MERRA-2 Processing</h2>
+<hr>
+
+<section id="merra2">
+    <p>Downloads and processes NASA Modern-Era Retrospective analysis for Research and Applications, Version 2 (MERRA-2)
+        data to provide meteorological predictor variables for the GAM-v2 model.</p>
+
+    <h3>1. Key Information</h3>
+    <ul class="doc-list">
+        <li><strong>Purpose:</strong> Extract meteorological variables (T2MAX, SRAD, QV2M, U10M, V10M, PBLH) at AQS
+            monitoring station coordinates.</li>
+        <li><strong>Source:</strong> NASA GES DISC EarthData portal (GOLDSMR4 archive).</li>
+        <li><strong>Products:</strong> M2T1NXSLV (hourly surface), M2T1NXRAD (hourly radiation), M2STATMNXSLV
+            (monthly statistics).</li>
+        <li><strong>Target:</strong> Input predictor features for the GAM-v2 Smoke O3 model.</li>
+    </ul>
+
+    <h3>2. Main Workflow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>Token Auth:</strong> Generates an
+            EarthData bearer token via <code>.netrc</code> configuration for secure NetCDF downloads.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>NC Download:</strong> Fetches hourly and
+            daily multi-dimensional NetCDF4 files (M2T1NXSLV, M2T1NXRAD, etc.) using <code>curl</code>.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Point Extraction:</strong> Samples
+            raster grid values at exact monitoring station coordinates using <code>raster::extract</code>.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>Statistics:</strong> Computes daily
+            aggregates: max temperature (T2MAX), mean solar radiation (SRAD), and mean wind components (U10M, V10M).</div>
+        <div class="doc-flow-step"><span class="doc-step-num">5</span><strong>Integration:</strong> Formats extracted
+            data into GeoJSON for direct use in GAM prediction or model training.</div>
+    </div>
+
+    <h3>3. R Libraries Used</h3>
+    <pre><code>library(httr)    # NASA EarthData authentication
+library(ncdf4)   # NetCDF file handling
+library(raster)  # Spatial raster extraction
+library(rvest)   # HTML scraping for download links
+library(googleCloudStorageR)</code></pre>
+
+    <h3>4. Technical Implementation</h3>
+    <h4>- EarthData Authentication</h4>
+    <p>Authenticates with NASA URS using <code>.netrc</code> credentials to retrieve a temporary bearer token for
+        accessing MERRA-2 data layers.</p>
+    <pre><code># Find or create EarthData token
+res <- GET(
+  "https://urs.earthdata.nasa.gov/api/users/find_or_create_token",
+  authenticate(user, pass)
+)
+token <- content(res)$access_token</code></pre>
+
+    <h4>- Remote NetCDF Download</h4>
+    <p>Downloads hourly/daily meteorological NetCDF files (temperature, radiation, wind, humidity) using the secured
+        bearer token. The download list is dynamically scraped from the GOLDSMR4 archive catalog.</p>
+    <pre><code># Download with Bearer Auth via curl
+curl::curl_download(
+  url = dataset_url,
+  destfile = output_path,
+  handle = handle
+)</code></pre>
+
+    <h4>- Grid-to-Point Extraction</h4>
+    <p>Extracts meteorological variables from 2D NetCDF raster grids at specific AQS monitoring station locations.</p>
+    <pre><code># Raster stacking and point extraction
+nc_raster <- raster::stack(local_path, varname = "T2MMAX")
+station_points <- sp::SpatialPoints(cbind(df_aqs$lon, df_aqs$lat), crs_wgs84)
+extracted_vals <- raster::extract(nc_raster, station_points)</code></pre>
+</section>
+

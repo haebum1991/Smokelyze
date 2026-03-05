@@ -1,0 +1,92 @@
+
+<h2>UW GAM-v2 Prediction Pipeline</h2>
+<hr>
+
+<section id="pred-gam-v2">
+    <p>The core prediction engine that applies pre-trained Generalized Additive Models (GAM-v2) to new data (2025+),
+        utilizing collected predictor variables from MERRA-2, TROPOMI, and HYSPLIT, with Empirical Distribution
+        Matching (EDM) for bias correction.</p>
+
+    <h3>1. Key Information</h3>
+    <ul class="doc-list">
+        <li><strong>Purpose:</strong> Predict background MDA8 O3 on smoke days using the pre-trained GAM-v2
+            architecture (<strong style="color: var(--card-shadow);">Lee and Jaffe, 2025</strong>), then calculate
+            Smoke O3 (SMO) as the residual.</li>
+        <li><strong>Model:</strong> Site-specific GAMs stored as pre-trained <code>.rds</code> objects, loaded via
+            <code>mgcv</code>.
+        </li>
+        <li><strong>Pipeline:</strong> Merges daily features from MERRA-2 (T2MAX, SRAD, etc.), TROPOMI (NO2, HCHO VCDs),
+            and HYSPLIT (transport distance/height) before running predictions.</li>
+    </ul>
+
+    <h3>2. Main Workflow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>Feature Merging:</strong> Combines
+            meteorological (MERRA-2), satellite-derived (TROPOMI), and trajectory (HYSPLIT) metrics into a unified
+            predictor dataframe.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>HMS Overlay:</strong> Loads the HMS smoke
+            plume GeoJSON from GCS and performs a spatial overlay to assign a binary smoke flag (HMS = 0/1) to each
+            site.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Parallel Prediction:</strong> Runs
+            site-specific GAM predictions across multiple CPU cores via <code>foreach</code> and
+            <code>doSNOW</code>.
+        </div>
+        <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>EDM Bias Correction:</strong> Applies
+            Empirical Distribution Matching (EDM) to re-align predicted distributions with historical ground truth,
+            correcting for regression-to-the-mean bias.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">5</span><strong>Deployment:</strong> Uploads final GeoJSON
+            predictions (including SMO, predicted MDA8 O3, and smoke flags) to GCS for the dashboard.</div>
+    </div>
+
+    <h3>3. R Libraries Used</h3>
+    <pre><code>library(mgcv)     # GAM modeling
+library(dplyr)
+library(stringr)
+library(lubridate)
+library(sf)
+library(foreach)  # Parallel loop
+library(doSNOW)   # Parallel backend
+library(googleCloudStorageR)</code></pre>
+
+    <h3>4. Technical Implementation</h3>
+    <h4>- High-Performance Parallel Prediction</h4>
+    <p>Utilizes multi-core processing to run site-specific GAM predictions across all AQS stations simultaneously.</p>
+    <pre><code># Initialize parallel cluster
+cl <- makeCluster(detectCores() - 1)
+registerDoSNOW(cl)
+
+# Predict in parallel (site-by-site)
+preds <- foreach(i = 1:n_sites, .packages = c("mgcv")) %dopar% {
+  predict(gam_models[[i]], newdata = site_data[[i]], type = "response")
+}</code></pre>
+
+    <h4>- Empirical Distribution Matching (EDM)</h4>
+    <p>Applies EDM (<strong style="color: var(--card-shadow);">Lee and Jaffe, 2024a; 2025</strong>) to correct
+        systematic biases in raw GAM outputs by mapping the predicted distribution to match the historical observed
+        distribution of the training period.</p>
+    <pre><code># EDM bias correction
+gam.bias.correction <- function(y_true, y_pred, y_new, method = "edm") {
+  # Step 1: Build ECDFs from training data
+  ecdf_y_pred <- ecdf(y_pred)
+
+  # Step 2: Inverse ECDF from observed data
+  inverse_ecdf_obs <- approxfun(
+    sort(y_true), seq_along(y_true) / length(y_true)
+  )
+
+  # Step 3: Map new predictions through the quantile transfer
+  prob <- ecdf_y_pred(y_new)
+  y_new_corr <- quantile(y_true, probs = prob, type = 7)
+  return(y_new_corr)
+}</code></pre>
+
+    <h4>- HMS Smoke Flag Overlay</h4>
+    <p>Loads the daily HMS smoke plume GeoJSON from GCS and performs a point-in-polygon overlay to determine which
+        AQS stations are under overhead smoke plumes.</p>
+    <pre><code># Spatial overlay for smoke flag assignment
+shp_smoke <- sf::st_read(hms_geojson_path, quiet = TRUE)
+shp_smoke_uni <- sf::st_union(shp_smoke)
+over_result <- sp::over(station_points, sf::as_Spatial(shp_smoke_uni))
+hms_flag <- ifelse(is.na(over_result), 0, 1)</code></pre>
+</section>
+

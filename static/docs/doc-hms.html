@@ -1,0 +1,82 @@
+
+<h2>NOAA Hazard Mapping System (HMS) Processing</h2>
+<hr>
+
+<section id="hms">
+    <p>Fetches and processes NOAA HMS (Hazard Mapping System) smoke plume and fire hotspot data. It downloads raw
+        shapefiles from NOAA NESDIS, unions smoke polygons by density category, computes state-level smoke coverage
+        areas, and converts results into lightweight GeoJSON for web visualization.</p>
+
+    <h3>1. Key Information</h3>
+    <ul class="doc-list">
+        <li><strong>Purpose:</strong> Track smoke plumes and fire hotspots across North America for smoke day
+            identification and mapping.</li>
+        <li><strong>Source:</strong> NOAA NESDIS Office of Satellite and Product Operations — HMS Smoke/Fire shapefile
+            archive.</li>
+        <li><strong>Smoke Categories:</strong> Light, Medium, Heavy (density-based classification).</li>
+        <li><strong>Output:</strong> GeoJSON for smoke plumes, fire points, and JSON for state-level smoke area
+            statistics (km&sup2;).</li>
+    </ul>
+
+    <h3>2. Main Workflow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>Download:</strong> Retrieves daily ZIP
+            files containing HMS smoke polygon and fire point shapefiles from NOAA servers.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>Geometry Validation:</strong> Transforms
+            shapefiles to WGS84 (EPSG:4326), validates geometries, and removes invalid features.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Polygon Union:</strong> Unions smoke
+            plume polygons by density category (Light, Medium, Heavy) and as a combined total layer.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>Area Calculation:</strong> Intersects
+            unified smoke polygons with US state and Canadian province boundaries, then computes coverage area in
+            km&sup2;.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">5</span><strong>Serialization:</strong> Converts all
+            results to compressed GeoJSON and uploads to GCS.</div>
+    </div>
+
+    <h3>3. R Libraries Used</h3>
+    <pre><code>library(dplyr)
+library(stringr)
+library(lubridate)
+library(sf)
+library(terra)
+library(rnaturalearth)
+library(units)
+library(googleCloudStorageR)</code></pre>
+
+    <h3>4. Technical Implementation</h3>
+    <h4>- Shapefile Extraction & Validation</h4>
+    <p>HMS data is distributed as daily ZIP files. The script unzips, loads shapefiles into <code>sf</code> objects,
+        transforms to WGS84, and validates geometries before processing.</p>
+    <pre><code># Unzip and load shapefile
+unzip(zip_path, exdir = temp_dir)
+shp_smoke <- st_read(file.path(temp_dir, shp_name), quiet = TRUE) %>%
+  st_transform(crs = 4326)
+
+# Validate and remove invalid geometries
+validity <- st_is_valid(shp_smoke, reason = TRUE)
+invalid <- which(!str_detect(validity, "Valid"))
+if (length(invalid) != 0) shp_smoke <- shp_smoke[-invalid, ]</code></pre>
+
+    <h4>- Polygon Union by Density</h4>
+    <p>Multiple overlapping smoke plumes are unified based on their density category (Light, Medium, Heavy) to avoid
+        double-counting areas and create clean map layers.</p>
+    <pre><code># Union all polygons for combined layer
+shp_smoke_uni <- sf::st_union(shp_smoke)
+
+# Separate by density category
+shp_smoke_light  <- shp_smoke[shp_smoke$Density == "Light", ] %>% st_union()
+shp_smoke_medium <- shp_smoke[shp_smoke$Density == "Medium", ] %>% st_union()
+shp_smoke_heavy  <- shp_smoke[shp_smoke$Density == "Heavy", ] %>% st_union()</code></pre>
+
+    <h4>- Smoke Coverage Area Calculation</h4>
+    <p>Calculates the exact geographic smoke coverage (km&sup2;) within each US state and Canadian province by
+        intersecting the unified smoke polygons with administrative boundaries.</p>
+    <pre><code># Spatial intersection with states
+smoke_intersect <- st_intersection(shp_smoke_union, ne_states)
+
+# Area calculation in km^2
+smoke_intersect$area_km2 <- st_area(smoke_intersect) %>%
+  set_units("km^2") %>%
+  as.numeric()</code></pre>
+</section>
+

@@ -1,0 +1,133 @@
+
+<h2>Generalized Additive Model (GAM) for Smoke O3 (SMO) Calculation</h2>
+<hr>
+
+<section id="gam-overview">
+    <h3>1. Scientific Objective</h3>
+    <p>
+        The core analysis utilizes <strong>Generalized Additive Models (GAM)</strong> to precisely quantify the
+        portion of ground-level MDA8 O3 (and PM2.5) directly attributable to wildfire smoke.
+        Developed and validated across multiple studies (<strong style="color: var(--card-shadow);">Lee and Jaffe,
+            2024a; 2024b; 2025</strong>),
+        this methodology identifies <strong>Smoke O3 (SMO)</strong> by isolating the wildfire signal from meteorological
+        and seasonal drivers.
+    </p>
+    <div class="doc-callout">
+        <strong>Smoke O3 (SMO):</strong> The O3 enhancement attributed to wildfire smoke, calculated as the
+        difference between the observed concentration and the GAM-predicted background:
+        <br>
+        <span style="display: block; text-align: center; margin-top: 0.5rem; font-weight: bold;">
+            SMO = Residual = Obs MDA8 O3 - Pred MDA8 O3
+        </span>
+    </div>
+</section>
+
+<section id="gam-workflow">
+    <h3>2. Analysis Workflow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step">
+            <span class="doc-step-num">1</span>
+            <div>
+                <strong>Data Partitioning:</strong> Using HMS satellite flags and <strong>PM2.5-criteria</strong>, the
+                dataset is split into <strong>Non-smoke days</strong> (Background) and <strong>Smoke days</strong>
+                (Event).
+            </div>
+        </div>
+        <div class="doc-flow-step">
+            <span class="doc-step-num">2</span>
+            <div>
+                <strong>Background Training:</strong> The GAM is trained exclusively on <strong>Non-smoke day
+                    data</strong>
+                to establish the relationship between meteorology and background air quality.
+            </div>
+        </div>
+        <div class="doc-flow-step">
+            <span class="doc-step-num">3</span>
+            <div>
+                <strong>Counterfactual Prediction:</strong> Meteorological data from <strong>Smoke days</strong> is
+                inputted into the trained background model to predict what the concentration <em>would have been</em>
+                without wildfire influence (Predicted MDA8 O3).
+            </div>
+        </div>
+        <div class="doc-flow-step">
+            <span class="doc-step-num">4</span>
+            <div>
+                <strong>SMO Derivation:</strong> The <strong>SMO</strong> is calculated as the residual (Observed -
+                Predicted)
+                on smoke days, representing the quantified wildfire contribution.
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="gam-configuration">
+    <h3>3. Technical Framework (e.g., GAM-v2 Implementation)</h3>
+    <p>
+        The quantification process leverages site-specific GAMs. To illustrate this methodology using
+        the <strong>GAM-v2</strong> framework (<strong style="color: var(--card-shadow);">Lee and Jaffe,
+            2025</strong>) as an example, the model utilizes 14 independent predictors and <strong>interaction smooth
+            terms</strong> to capture complex atmospheric nonlinearities.
+    </p>
+    <ul class="doc-list">
+        <li><strong>Meteorological Drivers (MERRA-2):</strong> MAX-Temperature, Specific Humidity, and Solar Radiation.</li>
+        <li><strong>Wind Vector Tensor Smooths:</strong> Tensor product terms `te(U10M, V10M)` account for the combined
+            influence of wind speed and direction on pollution stagnation and transport.</li>
+        <li><strong>Synergistic Photochemical Interactions:</strong> Interaction smooths `ti(T2MAX, SRAD)` capture the
+            nonlinear relationship between temperature and solar radiation, which is critical for O3 formation.</li>
+        <li><strong>Transport & Precursor Tracers:</strong> Includes HYSPLIT backward trajectory statistics (transport
+            distance/height) and satellite-derived tracers (TROPOMI NO2 and HCHO VCDs).</li>
+    </ul>
+    <pre><code># Representative R implementation (mgcv framework)
+df_train <- df[df$smoke == 0, ] # Training data (non-smoke days)
+df_smoke <- df[df$smoke == 1, ] # Smoke days data
+gam_model <- gam(MDA8O3 ~ s(T2MAX) + s(RH2M) + s(SRAD) + 
+                 s(NO2VCD) + s(HCHOVCD) +
+                 te(U10M, V10M) +      # Wind field interaction
+                 ti(T2MAX, SRAD) +     # Weather synergy
+                 ..., 
+                 data = df_train) # Trained on HMS=0 & PM2.5 < criteria (i.e., non-smoke days)
+
+# Predict background O3 on smoke days
+pred_MDA8O3 <- predict(gam_model, newdata = df_smoke, type = "response")
+
+# Calculate Smoke O3 (SMO)
+df_smoke$SMO <- df_smoke$MDA8O3 - pred_MDA8O3
+</code></pre>
+</section>
+
+<section id="gam-edm">
+    <h3>4. Empirical Distribution Matching (EDM)</h3>
+    <p>
+        To address the model's tendency to underestimate extreme values (regression to the mean),
+        <strong>Empirical Distribution Matching (EDM)</strong> is applied. EDM maps the predicted distribution to match
+        the historical observed distribution of the background period.
+    </p>
+    <div class="doc-formula">
+        Y<sub>EDM</sub> = Q<sup>Tr</sup><sub>obs</sub> ( F<sup>Tr</sup><sub>pred</sub> ( Y<sub>pred</sub> ) )
+    </div>
+    <p>Using EDM (<strong style="color: var(--card-shadow);">Lee and Jaffe, 2024a; 2025</strong>) ensures that the
+        predicted background is statistically consistent with observations, leading to a more robust isolation of SMO.
+    </p>
+</section>
+
+<br>
+<hr>
+<p class="doc-footer-text">
+    Lee, H. and Jaffe, D. A. (2025): Impact of Wildfires on O3 and Air Quality Across the United States for 2019–2024
+    Using Generalized Additive Models, <em>J. Geophys. Res.: Atmos.</em>, 130, e2025JD044088.
+    <a href="https://doi.org/10.1029/2025JD044088" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1029/2025JD044088</a>
+    <br><br>
+    Lee, H. and Jaffe, D. A. (2024a): Wildfire impacts on O3 in the continental United States using PM2.5 and a
+    generalized additive model (2018–2023), <em>Environ. Sci. Technol.</em>, 58, 14764–14774.
+    <a href="https://doi.org/10.1021/acs.est.4c05870" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1021/acs.est.4c05870</a>
+    <br><br>
+    Lee, H. and Jaffe, D. A. (2024b): Impact of wildfire smoke on ozone concentrations using a Generalized Additive
+    Model
+    in Salt Lake City, Utah, USA, 2006–2022, <em>J. Air Waste Manag. Assoc.</em>, 74, 116–130.
+    <a href="https://doi.org/10.1080/10962247.2023.2291197" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1080/10962247.2023.2291197</a>
+</p>
+<br>
+

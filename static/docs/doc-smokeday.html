@@ -1,0 +1,139 @@
+
+<h2>Smoke Day Identification</h2>
+<hr>
+
+<section id="smokeday-concept">
+    <h3>1. Definition of a Smoke Day</h3>
+    <p>
+        Identifying the presence of surface-level smoke is the critical first
+        step. A <strong>"Smoke Day"</strong> is defined as the intersection of overhead smoke plumes detected
+        via satellite and abnormal ground-level PM2.5 concentrations (<strong style="color: var(--card-shadow);">Lee and
+            Jaffe, 2024a; 2024b; 2025</strong>).
+    </p>
+    <div class="doc-callout">
+        <strong>Identifying Surface Impacts:</strong> Satellite data (HMS) indicates the presence of smoke in the
+        atmospheric column, but not necessarily at breathing level. By cross-referencing HMS with local
+        <strong>PM2.5-criteria</strong>, we identify meaningful surface impacts that directly affect public health.
+    </div>
+
+</section>
+
+<section id="smokeday-logic">
+    <h3>2. Identification Logic</h3>
+    <p>
+        The identification algorithm uses a <strong>dual-conditional approach</strong>. The stringency of the PM2.5
+        threshold (k-factor) varies depending on the pollutant being analyzed to ensure scientific accuracy.
+    </p>
+
+    <div class="doc-formula">
+        <strong>Smoke Day</strong> &nbsp;=&nbsp; (HMS == 1) &nbsp;&cap;&nbsp; (PM2.5 &nbsp;>&nbsp; PM2.5-criteria)
+    </div>
+
+    <div class="doc-flow">
+        <div class="doc-flow-step">
+            <span class="doc-step-num">1</span>
+            <div>
+                <strong>Overhead Smoke (HMS == 1):</strong> NOAA Hazard Mapping System (HMS) indicates that a smoke
+                plume polygon is present over the monitor station's coordinates.
+            </div>
+        </div>
+        <div class="doc-flow-step">
+            <span class="doc-step-num">2</span>
+            <div>
+                <strong>Daily PM2.5 > PM2.5-criteria:</strong> Daily PM2.5 concentration exceeds the local
+                baseline. The stringency level applied depends on the research focus:
+                <ul>
+                    <li><strong>Smoke O3 Analysis (e.g., UW GAM-v2 dataset):</strong> Uses <strong>k = 1.0</strong>
+                        (Median + 1.0 &times; MAD) as the standard filter.</li>
+                    <li><strong>Smoke PM2.5 Analysis (e.g., UW Smoke PM2.5 dataset):</strong> Reports both <strong>k =
+                            0.5</strong> and <strong>k = 1.0</strong> to capture a broader
+                        range of impacts.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <pre><code># Smoke Day Identification (example R code)
+df$smoke_m0p5m <- if_else(df$PM2.5 > df$PM2.5_Crit_m0p5m & df$HMS == 1, 1, 0)
+df$smoke_m1p0m <- if_else(df$PM2.5 > df$PM2.5_Crit_m1p0m & df$HMS == 1, 1, 0)</code></pre>
+</section>
+
+
+<section id="smokeday-output">
+    <h3>3. Data Output Structure</h3>
+    <p>The systematic identification process aggregates various identifiers into a unified structure
+        suitable for mapping and time-series analysis.</p>
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>Column</th>
+                <th>Logic / Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>HMS</code></td>
+                <td>HMS flag: 0 (non-overhead smoke plume) or 1 (overhead smoke plume)</td>
+            </tr>
+            <tr>
+                <td><code>PM2.5</code></td>
+                <td>Daily mean PM2.5 concentration in µg/m³</td>
+            </tr>
+            <tr>
+                <td><code>PM2.5_Crit_m0p5m</code></td>
+                <td>PM2.5-Criteria (Med+0.5MAD): Value in µg/m³</td>
+            </tr>
+            <tr>
+                <td><code>PM2.5_Crit_m1p0m</code></td>
+                <td>PM2.5-Criteria (Med+1MAD): Value in µg/m³</td>
+            </tr>
+            <tr>
+                <td><code>smoke_m0p5m</code></td>
+                <td>Smoke Day (Med+0.5MAD): 0 (Non-smoke day) or 1 (smoke day)</td>
+            </tr>
+            <tr>
+                <td><code>smoke_m1p0m</code></td>
+                <td>Smoke Day (Med+1MAD): 0 (Non-smoke day) or 1 (smoke day)</td>
+            </tr>
+            <tr>
+                <td><code>smoke_PM2.5_m0p5m</code></td>
+                <td>Smoke PM2.5 (Med+0.5MAD): PM2.5 - PM2.5_Crit_m0p5m (if PM2.5 > PM2.5_Crit_m0p5m, else 0)</td>
+            </tr>
+            <tr>
+                <td><code>smoke_PM2.5_m1p0m</code></td>
+                <td>Smoke PM2.5 (Med+1MAD): PM2.5 - PM2.5_Crit_m1p0m (if PM2.5 > PM2.5_Crit_m1p0m, else 0)</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<section id="smokeday-usage">
+    <h3>4. Visualization & Analysis</h3>
+    <p>
+        In the tool dashboard, identified smoke days are highlighted for direct comparison with background periods. This
+        differentiation allows users to isolate the specific impact of wildfire events on local air quality (O3 and
+        PM2.5) while controlling for seasonal "normal" fluctuations.
+    </p>
+</section>
+
+<br>
+<hr>
+<p class="doc-footer-text">
+    Lee, H. and Jaffe, D. A. (2025): Impact of Wildfires on O3 and Air Quality Across the United States for 2019–2024
+    Using Generalized Additive Models, <em>J. Geophys. Res.: Atmos.</em>, 130, e2025JD044088.
+    <a href="https://doi.org/10.1029/2025JD044088" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1029/2025JD044088</a>
+    <br><br>
+    Lee, H. and Jaffe, D. A. (2024a): Wildfire impacts on O3 in the continental United States using PM2.5 and a
+    generalized additive model (2018–2023), <em>Environ. Sci. Technol.</em>, 58, 14764–14774.
+    <a href="https://doi.org/10.1021/acs.est.4c05870" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1021/acs.est.4c05870</a>
+    <br><br>
+    Lee, H. and Jaffe, D. A. (2024b): Impact of wildfire smoke on ozone concentrations using a Generalized Additive
+    Model
+    in Salt Lake City, Utah, USA, 2006–2022, <em>J. Air Waste Manag. Assoc.</em>, 74, 116–130.
+    <a href="https://doi.org/10.1080/10962247.2023.2291197" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1080/10962247.2023.2291197</a>
+</p>
+<br>
+

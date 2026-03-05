@@ -1,0 +1,82 @@
+
+<h2>NOAA HYSPLIT Backward Trajectory</h2>
+<hr>
+
+<section id="hysplit">
+    <p>Runs the HYSPLIT (Hybrid Single-Particle Lagrangian Integrated Trajectory) model to calculate backward
+        trajectories at AQS monitoring stations, deriving transport distance and height metrics as predictor features
+        for the GAM-v2 model.</p>
+
+    <h3>1. Key Information</h3>
+    <ul class="doc-list">
+        <li><strong>Purpose:</strong> Compute 12-hour backward trajectory statistics (transport distance, height,
+            direction) for use as GAM-v2 predictor variables.</li>
+        <li><strong>Meteorology:</strong> Uses NAM12 Met. data.</li>
+        <li><strong>Heights:</strong> Trajectories initiated at 500m above ground level.</li>
+        <li><strong>Output:</strong> Statistical summaries (Haversine distance, bearing, transport speed) for each
+            site and date.</li>
+    </ul>
+
+    <h3>2. Main Workflow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>Met-Data Sync:</strong> Downloads
+            required NAM12 meteorological files from ARL/NOAA servers.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>Execution:</strong> Spawns HYSPLIT
+            processes (<code>hyts_std</code>) for each AQS monitor at multiple receptor heights.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Distance Calculation:</strong> Computes
+            Haversine great-circle distance between the receptor and the terminal trajectory point.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>Bearing Analysis:</strong> Calculates
+            bearing (directional sector) and transport speed along each trajectory path.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">5</span><strong>Archiving:</strong> Aggregates results
+            and uploads as GeoJSON to GCS for downstream integration.</div>
+    </div>
+
+    <h3>3. R Libraries Used</h3>
+    <pre><code>library(splitr)
+library(dplyr)
+library(stringr)
+library(lubridate)
+library(sf)
+library(doSNOW)   # Parallel backend
+library(foreach)  # Parallel loop
+library(googleCloudStorageR)</code></pre>
+
+    <h3>4. Technical Implementation</h3>
+    <h4>- Meteorological Data Synchronization</h4>
+    <p>Ensures required NAM12 weather modeling data is available locally by checking existing files and downloading
+        missing ones from NOAA ARL servers.</p>
+    <pre><code># Check and download met files
+met_files <- get_met_files(
+  start_year = year,
+  start_month = month,
+  met_type = "nam12"
+)</code></pre>
+
+    <h4>- Trajectory Core Execution</h4>
+    <p>Spawns HYSPLIT model runs for each AQS monitoring station at multiple receptor heights using parallel
+        processing.</p>
+    <pre><code># Run HYSPLIT trajectory
+traj_model <- hysplit_trajectory(
+  lat = site_lat, lon = site_lon,
+  height = 500,
+  duration = 48, # 48 hours backward
+  days = target_date,
+  direction = "backward",
+  met_type = "nam12"
+)</code></pre>
+
+    <h4>- Transport Distance & Bearing</h4>
+    <p>Calculates the great-circle transport distance and bearing using the Haversine formula between the receptor
+        site and the terminal trajectory point.</p>
+    <pre><code># Haversine distance calculation
+dist_haversine <- function(p1, p2, r = 6378137) {
+  toRad <- pi / 180
+  p1 <- matrix(p1) * toRad
+  p2 <- matrix(p2) * toRad
+  dLat <- p2[, 2] - p1[, 2]
+  dLon <- p2[, 1] - p1[, 1]
+  a <- sin(dLat/2)^2 + cos(p1[,2]) * cos(p2[,2]) * sin(dLon/2)^2
+  return(r * (2 * atan2(sqrt(a), sqrt(1 - a)))) # Result in meters
+}</code></pre>
+</section>
+

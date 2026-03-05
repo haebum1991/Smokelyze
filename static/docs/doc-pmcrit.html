@@ -1,0 +1,283 @@
+
+<h2>PM2.5-criteria Calculation</h2>
+<hr>
+
+<section id="pmcrit-overview">
+    <h3>1. Overview</h3>
+    <p>
+        The <strong>PM2.5-criteria</strong> is a site-specific and month-specific threshold used to distinguish
+        background "normal" PM2.5 from smoke-influenced elevated concentrations. This methodology has evolved to
+        improve robustness against outliers and non-normal distributions typical of air quality data.
+    </p>
+    <div class="doc-callout">
+        <strong>Methodological Improvement:</strong> While <strong style="color: var(--card-shadow);">Lee and Jaffe
+            (2024a; 2024b)</strong> utilized a
+        <strong>Mean + Standard Deviation (SD)</strong> approach, the <strong>Median + Median Absolute Deviation
+            (MAD)</strong>
+        method was adopted in <strong style="color: var(--card-shadow);">Lee and Jaffe (2025)</strong> to better handle
+        extreme values and provide a more
+        reliable baseline.
+    </div>
+</section>
+
+<section id="pmcrit-algorithm">
+    <h3>2. Main Workflow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step">
+            <span class="doc-step-num">1</span>
+            <div>
+                <strong>Data Partitioning:</strong> Categorizes daily <strong>PM2.5 concentrations</strong> into "HMS=0"
+                (background, non-overhead smoke) and "HMS=1" (overhead smoke) based on NOAA HMS data.
+            </div>
+        </div>
+        <div class="doc-flow-step">
+            <span class="doc-step-num">2</span>
+            <div>
+                <strong>Seasonal Baselining:</strong> Aggregates <strong>background PM2.5 data</strong> (HMS=0) by
+                calendar month using a rolling 5-year window to capture region-specific seasonality.
+            </div>
+        </div>
+        <div class="doc-flow-step">
+            <span class="doc-step-num">3</span>
+            <div>
+                <strong>Event Filtering:</strong> Excludes non-smoke PM2.5 anomalies, such as Independence Day
+                fireworks (July 4–5), to prevent background contamination.
+            </div>
+        </div>
+        <div class="doc-flow-step">
+            <span class="doc-step-num">4</span>
+            <div>
+                <strong>Robust Statistics:</strong> Calculates the monthly <strong>Median and MAD of background
+                    PM2.5</strong> for each station (requires >= 10 valid observations).
+            </div>
+        </div>
+        <div class="doc-flow-step">
+            <span class="doc-step-num">5</span>
+            <div>
+                <strong>Threshold Synthesis:</strong> Computes the <strong>PM2.5-criteria</strong> = Median + (k ×
+                MAD), establishing the site-specific threshold for surface smoke identification.
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="pmcrit-details">
+    <h3>3. Step-by-Step Implementation</h3>
+
+    <h4>- Data Input & Structure (df_pm25)</h4>
+    <p>
+        The input dataset (<code>df_pm25</code>) merges EPA/AirNow monitoring networks with NOAA HMS smoke plumes.
+    </p>
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>Column</th>
+                <th>Description</th>
+                <th>Example</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>date</code></td>
+                <td>Observation date (April-October)</td>
+                <td>2023-08-15</td>
+            </tr>
+            <tr>
+                <td><code>year</code>, <code>month</code>, <code>day</code></td>
+                <td>Calendar components for filtering</td>
+                <td>2023, 8, 15</td>
+            </tr>
+            <tr>
+                <td><code>state</code></td>
+                <td>State identifier</td>
+                <td>California</td>
+            </tr>
+            <tr>
+                <td><code>AQS</code></td>
+                <td>EPA AQS site identifier</td>
+                <td>aqs_060731002</td>
+            </tr>
+            <tr>
+                <td><code>pm25</code></td>
+                <td>Daily average PM2.5 (µg/m³)</td>
+                <td>12.4</td>
+            </tr>
+            <tr>
+                <td><code>HMS</code></td>
+                <td>Binary smoke flag (1=Smoke, 0=None)</td>
+                <td>1</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>- Baseline Isolation</h4>
+    <p>We first establish a site-specific background by isolating days where satellite instruments detect non-overhead
+        smoke (HMS=0) and excluding known non-smoke anomalies (fireworks).</p>
+    <pre><code># Background filtering logic
+df_hms0 <- df_pm25[, c("AQS", "pm25", "HMS", "year", "month", "day")] %>%
+  dplyr::filter(HMS == 0) %>%
+  dplyr::filter(!(month == 7 & day %in% c(4, 5))) # Fireworks exclusion</code></pre>
+
+    <h4>- Calculating PM2.5-criteria</h4>
+    <p>For each site and month, the criteria are calculated using the 5-year aggregate distribution to balance stability
+        and relevance.</p>
+    <div class="doc-callout">
+        <strong>Example (Rolling Baseline):</strong> The criteria for <strong>January 2025</strong> at Site A is
+        calculated as the <code>Median + 1 × MAD</code> of all "HMS=0" days in January across the
+        <strong>2021–2025</strong> period.
+    </div>
+
+    <pre><code># Monthly robust statistics (Aggregated over 5 years)
+
+year_target <- max(unique(df_hms0$year))
+year_from <- year_target - 4
+
+df_hms0 <- df_hms0 %>%
+  dplyr::filter(year %in% c((year_from:year_target))) %>%
+  dplyr::select(-year, -HMS, -day) %>%
+  na.omit()
+
+df_crit <- df_hms0 %>%
+  dplyr::group_by(AQS, month) %>%
+  dplyr::summarize(
+    n_pm_hms0 = n(),
+    pm_crit_med = median(pm25, na.rm = TRUE),
+    pm_crit_mad = mad(pm25, na.rm = TRUE, constant = 1.4826) # R default
+  )
+df_crit$year <- year_target
+
+# Criteria calculation (k = 1.0, or 0.5 if you want)
+k <- 1
+df_crit$pm_crit <- df_crit$pm_crit_med + (k * df_crit$pm_crit_mad)</code></pre>
+
+
+    <h4>- Stringency Levels (k-factor)</h4>
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>k Factor</th>
+                <th>Classification</th>
+                <th>Scientific Use</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0.5</td>
+                <td>Low Stringency</td>
+                <td>Capturing subtle/diluted smoke influence</td>
+            </tr>
+            <tr>
+                <td><strong>1.0</strong></td>
+                <td><strong>Standard</strong></td>
+                <td><strong>Optimized balance for national studies (JGR 2025)</strong></td>
+            </tr>
+            <tr>
+                <td>1.5</td>
+                <td>High Stringency</td>
+                <td>Conservative identification of heavy smoke events</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4 style="margin-top: 2rem;">- State-level Fallback (Imputation)</h4>
+    <p>To maintain spatial continuity across the monitoring network, a <strong>State-level Fallback</strong> mechanism
+        is applied. Stations failing the <strong>minimum data sufficiency check</strong> (n < 10 valid HMS=0
+            observations) have their local thresholds replaced by the <strong>state-wide average criteria</strong> for
+            the
+            corresponding month. This imputation ensures that even sites with sparse background data can effectively
+            isolate
+            smoke events using regional baseline context.</p>
+
+    <!-- 
+    <pre><code># Imputation and State-level Fallback logic
+                
+df_crit <- df_crit %>% dplyr::select(-pm_crit_med, -pm_crit_mad)
+df_crit <- merge(
+  df_crit,
+  df_pm25[, c("AQS", "state")] %>% distinct(),
+  by = "AQS",
+  all.x = T
+)
+
+df_crit_list <- split(df_crit, df_crit$state)
+df_crit_list <- lapply(df_crit_list, function(q) {
+  split(q, q$AQS)  
+})
+
+df_crit_list <- lapply(df_crit_list, function(q1) {
+  df_crit_list_sub <- lapply(q1, function(q2) {
+    df_anchor <- data.frame(expand.grid(year = year_target,
+                                        month = 1:12),
+                            AQS = unique(q2$AQS),
+                            state = unique(q2$state))
+    q2 <- merge(df_anchor,
+                q2,
+                by = c("year", "month", "AQS", "state"),
+                all = T)
+    q2 <- q2[order(q2$year, q2$month),]
+    q2
+  })
+  do.call(rbind, df_crit_list_sub)
+})
+
+df_crit_list <- lapply(df_crit_list, function(q1) {
+  q1 <- split(q1, q1$year)  
+  q1 <- lapply(q1, function(q2) {
+    split(q2, q2$month)
+  })
+  q1
+})
+
+df_crit_list <- lapply(df_crit_list, function(q1) {
+  df_crit_list_sub_1 <- lapply(q1, function(q2) {
+    df_crit_list_sub_2 <- lapply(q2, function(q3) {
+      target <- "pm_crit"
+      
+      # 1. Minimum Data Sufficiency (n >= 10) check
+      q3 <- q3 %>% dplyr::mutate(dplyr::across(all_of(target), 
+                                  ~ if_else(n_pm_hms0 < 10, NA_real_, .)))
+      
+      # 2. State-level Fallback Imputation
+      q3 <- q3 %>% dplyr::mutate(mark = if_else(is.na(pm_crit), "state", "AQS"))
+      q3 <- q3 %>% dplyr::mutate(dplyr::across(all_of(target), 
+                                  ~ if_else(is.na(.), mean(., na.rm = TRUE), .)))
+      q3
+    })
+    data.table::rbindlist(df_crit_list_sub_2) %>% data.frame()
+  })
+  data.table::rbindlist(df_crit_list_sub_1) %>% data.frame()
+})
+
+df_crit <- data.table::rbindlist(df_crit_list) %>% data.frame()</code></pre>
+    -->
+</section>
+
+<section id="pmcrit-mapping">
+    <h3>4. Web App Integration</h3>
+    <p>Following the methodology inspired by <strong style="color: var(--card-shadow);">Lee and Jaffe
+            (2025)</strong>—which used a fixed 6-year period (2019-2024)—this application recalibrates these 5-year
+        rolling criteria annually to provide the most current context for smoke identification in the dynamic US
+        wildfire environment.</p>
+</section>
+
+<br>
+<hr>
+<p class="doc-footer-text">
+    Lee, H. and Jaffe, D. A. (2025): Impact of Wildfires on O3 and Air Quality Across the United States for 2019–2024
+    Using Generalized Additive Models, <em>J. Geophys. Res.: Atmos.</em>, 130, e2025JD044088.
+    <a href="https://doi.org/10.1029/2025JD044088" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1029/2025JD044088</a>
+    <br><br>
+    Lee, H. and Jaffe, D. A. (2024a): Wildfire impacts on O3 in the continental United States using PM2.5 and a
+    generalized additive model (2018–2023), <em>Environ. Sci. Technol.</em>, 58, 14764–14774.
+    <a href="https://doi.org/10.1021/acs.est.4c05870" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1021/acs.est.4c05870</a>
+    <br><br>
+    Lee, H. and Jaffe, D. A. (2024b): Impact of wildfire smoke on ozone concentrations using a Generalized Additive
+    model
+    in Salt Lake City, Utah, USA, 2006–2022, <em>J. Air Waste Manag. Assoc.</em>, 74, 116–130.
+    <a href="https://doi.org/10.1080/10962247.2023.2291197" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1080/10962247.2023.2291197</a>
+</p>
+<br>
+

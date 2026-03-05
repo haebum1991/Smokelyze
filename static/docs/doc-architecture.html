@@ -1,0 +1,118 @@
+
+<h2>Technical Stack & Architecture</h2>
+<hr>
+
+<section id="doc-architecture">
+    <p>Smokelyze is a cloud-native geospatial platform designed to monitor and analyze wildfire smoke impacts. It
+        utilizes a three-tier architecture combining R-based data science with a modern, responsive web frontend.</p>
+
+    <div class="doc-callout">
+        <strong>Mission:</strong> Precisely quantify the impact of wildfire smoke on air quality (O3 & PM2.5) by
+        disentangling smoke contributions from meteorological factors using advanced spatiotemporal modeling (GAM).
+    </div>
+
+    <h3>1. Frontend (Client-Side)</h3>
+    <ul class="doc-list">
+        <li><strong>Static Site Generator:</strong> Hugo (Go-based) for high performance and SEO.</li>
+        <li><strong>Interactive Maps:</strong> "MapLibre GL" with OpenFreeMap vector tiles and customized
+            GeoJSON layers.</li>
+        <li><strong>Data Visualization:</strong> "Plotly.js" for interactive temporal and statistical
+            plotting (bar, line, scatter, etc.).</li>
+        <li><strong>Real-time Interaction:</strong> "Firebase" for community MapPosts and opinion
+            sharing.</li>
+        <li><strong>Styling:</strong> Vanilla CSS and responsive layouts (Optimized for Laptop, Desktop & Mobile).
+        </li>
+    </ul>
+
+    <h3>2. Backend & Data Pipeline (Server-Side)</h3>
+    <p>The backend is built as a series of automated R pipelines running in a containerized environment (Docker), with
+        real-time services powered by Firebase.</p>
+
+    <ul class="doc-list">
+        <li><strong>Runtime Engine:</strong> R Language (4.3+) specialized for GIS and statistical modeling.</li>
+        <li><strong>Serverless Services (Firebase):</strong>
+            <ul>
+                <li><strong>Authentication:</strong> Secure user sign-in and profile management.</li>
+                <li><strong>Realtime Database:</strong> Instant syncing of <code>MapPosts</code> (user opinions/reports)
+                    across clients.</li>
+                <li><strong>Cloud Firestore:</strong> Structured storage for <code>Announcements</code> and metadata.
+                </li>
+                <li><strong>Event Logging:</strong> Tracking user engagement and data pipeline execution status.</li>
+            </ul>
+        </li>
+        <li><strong>Core R Pipelines (Cloud Run Jobs):</strong>
+            <ul>
+                <li><code>fetch_wildfire.R</code>: Integration of NIFC fire data and Google News RSS tracking.</li>
+                <li><code>fetch_airnow.R</code>: Retrieval and processing of daily mean PM2.5 and MDA8 O3 monitoring
+                    data.</li>
+                <li><code>fetch_hms.R</code>: Collection and processing of NOAA HMS satellite smoke and fire data.</li>
+                <li><code>fetch_smokeday.R</code>: Data aggregation and processing tool for the Smoke Day
+                    identification.</li>
+                <li><code>fetch_merra2.R</code>: Retrieval of NASA MERRA-2 meteorological variables (e.g., T2MAX, SRAD)
+                    for GAM-v2 predictors.</li>
+                <li><code>fetch_tropomi.R</code>: Processing of Sentinel-5P TROPOMI trace gas densities (NO2, HCHO) for
+                    GAM-v2 predictors.</li>
+                <li><code>fetch_hysplit.R</code>: Atmospheric back-trajectory modeling to derive transport path metrics
+                    for GAM-v2 predictors.</li>
+                <li><code>fetch_pred_gam_v2.R</code>: Predictive modeling for Smoke O3 (2025+) using collected
+                    predictors and pre-trained GAM-v2 architectures.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h3>3. Infrastructure & Storage</h3>
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>Component</th>
+                <th>Technology</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Source Control</strong></td>
+                <td>GitHub</td>
+                <td>Version control and centralized repository for all project assets.</td>
+            </tr>
+            <tr>
+                <td><strong>Web Hosting</strong></td>
+                <td>Netlify</td>
+                <td>Global CDN hosting for the responsive Hugo-based frontend.</td>
+            </tr>
+            <tr>
+                <td><strong>Real-time Services</strong></td>
+                <td>Firebase</td>
+                <td>User Authentication, MapPost synchronization, and Event Logging.</td>
+            </tr>
+            <tr>
+                <td><strong>Object Storage</strong></td>
+                <td>Google Cloud Storage (GCS)</td>
+                <td>Binary storage for processed GeoJSON, RData, and high-res artifacts.</td>
+            </tr>
+            <tr>
+                <td><strong>Analytics DB</strong></td>
+                <td>Google BigQuery</td>
+                <td>High-speed data warehouse for spatial and temporal trend analysis.</td>
+            </tr>
+            <tr>
+                <td><strong>Compute</strong></td>
+                <td>Google Cloud Run</td>
+                <td>Serverless execution of Docker-encapsulated R pipelines.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>4. System Data Flow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>Ingestion:</strong> Multiple R pipelines
+            fetch raw data via NASA, NOAA, and EPA APIs.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>Processing:</strong> R-GIS (sf, terra)
+            handles spatial joins, unit conversions, and GAM predictions.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Aggregation:</strong> Processed results
+            are synced to BigQuery (for analysis) and GCS (for delivery).</div>
+        <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>Visualization:</strong> The client-side
+            MapLibre GL engine renders light GeoJSON layers dynamically.</div>
+    </div>
+</section>
+
