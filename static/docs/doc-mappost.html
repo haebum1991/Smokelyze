@@ -1,0 +1,145 @@
+
+<h2>MapPost: Collaborative Research Workspace</h2>
+<hr>
+
+<p><strong>MapPost</strong> is a core collaborative feature of the Smokelyze platform, designed to enable researchers
+    and users to document, share, and discuss specific geospatial observations in real-time. It moves beyond simple
+    static notes by preserving the complete analytical context of the map.</p>
+
+<section>
+    <h3>1. Getting Started: Authentication</h3>
+    <p>To ensure data integrity and community accountability, MapPost is an <strong>identity-based feature</strong>.</p>
+    <div class="doc-callout">
+        <ul>
+            <li><strong>Read-Only Access:</strong> Guest users can view existing MapPost pins and read discussions but
+                cannot interact.</li>
+            <li><strong>Full Interaction:</strong> You must <strong>Sign In</strong> (via Google) to create new posts,
+                like existing ones, or reply to threads.</li>
+            <li><strong>Author Identity:</strong> Your display name or a custom nickname will be attached to every post
+                you create.</li>
+        </ul>
+    </div>
+</section>
+
+<section>
+    <h3>2. How to Create a MapPost</h3>
+    <p>There are three intuitive ways to initiate a MapPost at a specific location:</p>
+
+    <div class="doc-flow">
+        <div class="doc-flow-step">
+            <span class="doc-step-num">1</span>
+            <div>
+                <strong>Quick-Add Mode:</strong> Click the "MapPost" toggle in the toolbar to enter placement mode, then
+                click anywhere on the map to drop a pin.
+            </div>
+        </div>
+        <div class="doc-flow-step">
+            <span class="doc-step-num">2</span>
+            <div>
+                <strong>Context Menu:</strong> Right-click on any location on the map and select "Write" button from the
+                context menu.
+            </div>
+        </div>
+        <div class="doc-flow-step">
+            <span class="doc-step-num">3</span>
+            <div>
+                <strong>Drawer Shortcut:</strong> Open the MapPost drawer on the right and click the
+                <code>+MapPost</code>
+                button.
+            </div>
+        </div>
+    </div>
+
+    <h4>- The Submission Form</h4>
+    <p>Once a location is selected, a modal will appear where you can define the following:</p>
+    <ul>
+        <li><strong>Title & Text:</strong> Provide a descriptive title (max 100 chars) and detailed analysis (max
+            2000 chars).</li>
+        <li><strong>Visibility Selection:</strong> Choose who can see your post (Public / Group / Private).</li>
+        <li><strong>Automatic Metadata:</strong> The system automatically attaches the current <strong>Target
+                Date</strong> and <strong>Active Dataset</strong> (e.g., GAM-v2) to your post.</li>
+    </ul>
+</section>
+
+<section>
+    <h3>3. Advanced Features: Map State Preservation</h3>
+    <p>Unlike traditional comments, MapPosts capture the <strong>entire analytical environment</strong> at the moment of
+        creation.</p>
+
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th>Captured Data</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Coordinates</strong></td>
+                <td>Precise Longitude and Latitude of the observation.</td>
+            </tr>
+            <tr>
+                <td><strong>View State</strong></td>
+                <td>The exact Zoom level and Map Center for consistent framing.</td>
+            </tr>
+            <tr>
+                <td><strong>Active Layers</strong></td>
+                <td>Every visible GeoJSON and Tile layer (e.g., HMS Smoke, AirNow Markers).</td>
+            </tr>
+            <tr>
+                <td><strong>Temporal State</strong></td>
+                <td>The specific date being analyzed on the timeline.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>
+        Restore View:
+        Users viewing your post can click the <strong>"Get map condition"</strong> button to instantly revert their map
+        to <em>exactly</em> what you were seeing, allowing for seamless collaborative verification.
+    </p>
+</section>
+
+<section>
+    <h3>4. Privacy Tiers & Collaboration</h3>
+    <p>Flexible privacy settings allow MapPost to be used for both public dissemination and private research.</p>
+
+    <table class="doc-table">
+        <thead>
+            <tr>
+                <th style="width: 120px;">Tier</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Public</strong></td>
+                <td>Visible to the entire Smokelyze community. Ideal for reporting major wildfire events or public
+                    health alerts.</td>
+            </tr>
+            <tr>
+                <td><strong>Group</strong></td>
+                <td>Restricted to designated research team members. Perfect for internal discussions and data
+                    validation.</td>
+            </tr>
+            <tr>
+                <td><strong>Private</strong></td>
+                <td>Visible only to you. Use this for personal notes and "Bookmarks" of interesting wildfire patterns.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h3>5. Data Persistence</h3>
+    <ul>
+        <li><strong>Infrastructure:</strong> Powered by <strong>Google Firebase Cloud Firestore</strong> for real-time,
+            low-latency updates.</li>
+        <li><strong>Scalability:</strong> Optimized to handle thousands of concurrent geospatial markers across the
+            CONUS.</li>
+        <li><strong>Security:</strong> Granular "Security Rules" ensure that only the original author can edit or delete
+            their posts.</li>
+    </ul>
+</section>
+

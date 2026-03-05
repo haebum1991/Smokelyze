@@ -43,7 +43,12 @@
   --z-projects-orbit-item: 5;
   --z-projects-orbit-item-hover: 20;
   --z-projects-modal-header: 10;
-
+  
+  /* z-Index: Documents Page */
+  --z-doc-toggle: 2000;
+  --z-doc-sidebar: 2001;
+  --z-doc-overlay: 1999;
+  
   /* Stats parameters */
   --stats-plot-font-size: 1.6rem;
   --drawer-resizer-width: 1.5rem;

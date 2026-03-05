@@ -12,7 +12,7 @@
     </div>
 
     <h3>1. Frontend (Client-Side)</h3>
-    <ul class="doc-list">
+    <ul>
         <li><strong>Static Site Generator:</strong> Hugo (Go-based) for high performance and SEO.</li>
         <li><strong>Interactive Maps:</strong> "MapLibre GL" with OpenFreeMap vector tiles and customized
             GeoJSON layers.</li>
@@ -28,7 +28,7 @@
     <p>The backend is built as a series of automated R pipelines running in a containerized environment (Docker), with
         real-time services powered by Firebase.</p>
 
-    <ul class="doc-list">
+    <ul>
         <li><strong>Runtime Engine:</strong> R Language (4.3+) specialized for GIS and statistical modeling.</li>
         <li><strong>Serverless Services (Firebase):</strong>
             <ul>
@@ -106,9 +106,9 @@
     <h3>4. System Data Flow</h3>
     <div class="doc-flow">
         <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>Ingestion:</strong> Multiple R pipelines
-            fetch raw data via NASA, NOAA, and EPA APIs.</div>
+            fetch raw data via NOAA, EPA Airnow, etc.</div>
         <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>Processing:</strong> R-GIS (sf, terra)
-            handles spatial joins, unit conversions, and GAM predictions.</div>
+            handles spatial joins, unit conversions, and GAM predictions (using trained models).</div>
         <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Aggregation:</strong> Processed results
             are synced to BigQuery (for analysis) and GCS (for delivery).</div>
         <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>Visualization:</strong> The client-side
