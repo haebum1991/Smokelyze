@@ -727,7 +727,7 @@ details[open] summary {
 
 @media (max-width: 1024px) {
   .accordion {
-    width: 60vw;
+    width: 65vw;
     max-height: calc((100vh - var(--header-height-total) - var(--footer-height) - var(--toolbar-date-height) - 6rem));
     max-height: calc((100dvh - var(--header-height-total) - var(--footer-height) - var(--toolbar-date-height) - 6rem));
   }

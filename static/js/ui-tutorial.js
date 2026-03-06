@@ -257,6 +257,7 @@ export class MapTutorial {
     }
 
     _markComplete() {
+        document.body.classList.remove("map-tut-active");
         try {
             localStorage.setItem("smokelyze_tutorial_done", "1");
         } catch (e) {
