@@ -114,7 +114,7 @@
 
 [[redirects]]
   from = "/api/chat"
-  to   = "https://fetch-aichat-go-1068523865415.us-central1.run.app/api/chat"
+  to   = "https://fetch-aichat-go-service-1068523865415.us-central1.run.app/api/chat"
   status = 200
   force  = true
   
