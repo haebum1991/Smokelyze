@@ -203,9 +203,19 @@ export async function handleAiToolCall(functionName, args) {
 
                         const findMatch = (sourceList) => {
                             for (const src of sourceList) {
-                                const data = loadedGeoJSON[src] || loadedGeoJSON[loadedSources[src]];
+                                const data = loadedGeoJSON[src] || (loadedSources && loadedSources[src] ? loadedGeoJSON[loadedSources[src]] : null);
                                 if (!data || !data.features) continue;
 
+                                // 1. ID/Name match (Best & most accurate)
+                                const idKeys = ["AQS", "AQS_O3", "AQS_PM", "site_name"];
+                                for (const key of idKeys) {
+                                    if (props[key]) {
+                                        const match = data.features.find(f => f.properties[key] === props[key]);
+                                        if (match) return match.properties;
+                                    }
+                                }
+
+                                // 2. Coordinate fallback
                                 const match = data.features.find(f => {
                                     const c = f.geometry?.coordinates;
                                     return c && Math.abs(c[0] - targetLon) < EPSILON && Math.abs(c[1] - targetLat) < EPSILON;
@@ -214,10 +224,7 @@ export async function handleAiToolCall(functionName, args) {
                                 if (match) {
                                     // Validate: skip if this data is from a different date
                                     const matchDate = match.properties?.date;
-                                    if (currentDate && matchDate && String(matchDate) !== currentDate) {
-                                        console.warn(`[move_to_location] Skipping stale match from ${src} (date: ${matchDate}, expected: ${currentDate})`);
-                                        continue;
-                                    }
+                                    if (currentDate && matchDate && String(matchDate) !== currentDate) continue;
                                     return match.properties;
                                 }
                             }
