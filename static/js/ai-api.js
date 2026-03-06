@@ -8,7 +8,7 @@
 import { handleAiToolCall } from "./ai-tools.js";
 
 // 사용할 AI 백엔드 주소 (배포 후 Cloud Run URL로 교체 필요)
-const AI_BACKEND_URL = "https://fetch-aichat-service-1068523865415.us-central1.run.app/api/chat";
+const AI_BACKEND_URL = "/api/chat";
 
 // 브라우저가 열려있는 동안 유지되는 대화 기록 (컨텍스트 유지를 위함)
 let sessionHistory = [];
