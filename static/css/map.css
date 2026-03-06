@@ -628,8 +628,8 @@ body.FigurePage-drawer-open .toolbar-date-page {
   z-index: var(--z-accordion);
 
   width: 40rem;
-  max-height: calc((100vh - var(--header-height-total) - var(--footer-height)) - (11rem));
-  max-height: calc((100dvh - var(--header-height-total) - var(--footer-height)) - (11rem));
+  max-height: calc((100vh - var(--header-height-total) - var(--footer-height)) - (6rem));
+  max-height: calc((100dvh - var(--header-height-total) - var(--footer-height)) - (6rem));
 
   overflow-y: auto;
   overflow-x: hidden;
@@ -638,6 +638,7 @@ body.FigurePage-drawer-open .toolbar-date-page {
   padding-bottom: 0.3rem;
   padding-right: 0.8rem;
   padding-left: 0.8rem;
+  box-sizing: border-box;
 
   background: var(--map-toolbar-bg);
   border: 0.1rem solid var(--card-shadow);
@@ -726,7 +727,9 @@ details[open] summary {
 
 @media (max-width: 1024px) {
   .accordion {
-    width: 50vw;
+    width: 60vw;
+    max-height: calc((100vh - var(--header-height-total) - var(--footer-height) - var(--toolbar-date-height) - 6rem));
+    max-height: calc((100dvh - var(--header-height-total) - var(--footer-height) - var(--toolbar-date-height) - 6rem));
   }
 
   .accordion-page {

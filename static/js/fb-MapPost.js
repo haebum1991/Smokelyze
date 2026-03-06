@@ -798,11 +798,9 @@ function startRecentPostsListener() {
 
         // [Optimization] Only restart reply listener if the set of IDs has actually changed
         const currentIdsStr = JSON.stringify(ids);
-        if (currentIdsStr === state.lastRecentIdsStr) {
-            
-            console.log("Without any server communication.");
-            
-            // Still update UI in case only data changed (likes, etc)
+        if (currentIdsStr === state.lastRecentIdsStr && state.unsubscribeRecentReplies) {
+            console.log("Without any server communication (Recent IDs unchanged).");
+            // Still update UI
             renderMapPostList();
             if (state.viewingDocId) renderMapPostDetail(state.viewingDocId);
             return;
@@ -841,14 +839,43 @@ function startRecentPostsListener() {
 
 
 // --- 10. External Auth & Date Interaction ---
-
 // --- 11. Final Initialization ---
 state.currentUser = auth.currentUser;
 
-// Consolidated Listener Control
+// Consolidated Listener Control [Smart Fetch]
 const initMapPostListener = utils.debounce(() => {
-    startRecentPostsListener();
-}, 200);
+    const mappostSwitchOn = document.getElementById("layer-MapPost")?.checked;
+    const mappostDrawerOpen = document.getElementById("MapPostDrawer")?.classList.contains("open");
+
+    if (mappostSwitchOn || mappostDrawerOpen) {
+        // Start listener if not active
+        startRecentPostsListener();
+    } else {
+        // Stop listener to save resources
+        if (state.unsubscribeRecent) {
+            state.unsubscribeRecent();
+            state.unsubscribeRecent = null;
+        }
+        if (state.unsubscribeRecentReplies) {
+            state.unsubscribeRecentReplies();
+            state.unsubscribeRecentReplies = null;
+        }
+        // Force re-sync on next start
+        state.lastRecentIdsStr = "";
+
+        // Clear map and list
+        state.RecentIds = [];
+        mapUpdateGeoJSON();
+        renderMapPostList();
+    }
+}, 300);
+
+// Bind smart-fetch triggers
+window.addEventListener("mappost-drawer-opened", initMapPostListener);
+window.addEventListener("mappost-drawer-closed", initMapPostListener);
+document.body.addEventListener("change", (e) => {
+    if (e.target.id === "layer-MapPost") initMapPostListener();
+});
 
 onAuthStateChanged(auth, (user) => {
     const oldUid = state.currentUser ? state.currentUser.uid : null;

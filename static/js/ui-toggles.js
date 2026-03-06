@@ -436,10 +436,14 @@ export function setMapPostDrawer(open) {
             closeAllExcept("MapPost");
             clearHighlight?.();
         }
+        // [Smart MapPost Fetch] Notify system
+        window.dispatchEvent(new CustomEvent("mappost-drawer-opened"));
     } else {
         drawer.classList.remove("open");
         btn.classList.remove("active");
         document.body.classList.remove("MapPost-drawer-open");
+        // [Smart MapPost Fetch] Notify system
+        window.dispatchEvent(new CustomEvent("mappost-drawer-closed"));
     }
 }
 
