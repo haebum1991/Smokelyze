@@ -88,6 +88,19 @@ title: ""
     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
     <line x1="12" y1="17" x2="12.01" y2="17"></line>
   </symbol>
+  <symbol id="icon-keyboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+    <line x1="6" y1="8" x2="6" y2="8"></line>
+    <line x1="10" y1="8" x2="10" y2="8"></line>
+    <line x1="14" y1="8" x2="14" y2="8"></line>
+    <line x1="18" y1="8" x2="18" y2="8"></line>
+    <line x1="6" y1="12" x2="6" y2="12"></line>
+    <line x1="10" y1="12" x2="10" y2="12"></line>
+    <line x1="14" y1="12" x2="14" y2="12"></line>
+    <line x1="18" y1="12" x2="18" y2="12"></line>
+    <line x1="7" y1="16" x2="17" y2="16"></line>
+  </symbol>
 </svg>
 
 <link rel="preconnect" href="https://unpkg.com">
@@ -157,6 +170,12 @@ title: ""
           <use xlink:href="#icon-help" />
         </svg>
       </button>
+      
+      <button class="map-btn-shortcuts" id="MapBtnShortcuts" title="Keyboard Shortcuts">
+        <svg width="28" height="28">
+          <use xlink:href="#icon-keyboard" />
+        </svg>
+      </button>
     </div>
 
   </div>
@@ -217,13 +236,13 @@ title: ""
   </div>
 
   <!-- Layer Toggle Button (Always on Map) -->
-  <button class="accordion-toggle" id="AccordionToggle" title="Open Layers">
+  <button class="accordion-toggle" id="AccordionToggle" title="Layers">
     <svg width="24" height="24">
       <use xlink:href="#icon-layers" />
     </svg>
   </button>
 
-  <button class="accordion-toggle" id="AiChatToggle" title="Open Ai Chat">
+  <button class="accordion-toggle" id="AiChatToggle" title="Ai Chat">
     <svg width="24" height="24">
       <use xlink:href="#icon-chat" />
     </svg>

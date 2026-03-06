@@ -221,7 +221,7 @@ function appendMessage(role, text, usage = null) {
     // Append Token Usage Info if available
     if (usage) {
         const usageDiv = document.createElement("div");
-        usageDiv.style = "font-size: 1.2rem; color: var(--text-main); border-top: 1px solid var(--card-shadow); margin-top: 0.8rem; padding-top: 0.4rem; font-family: monospace; opacity: 0.8;";
+        usageDiv.style = "font-size: 1.2rem; color: var(--text-main); border-top: 0.1rem solid var(--card-shadow); margin-top: 0.8rem; padding-top: 0.4rem; font-family: monospace; opacity: 0.8;";
         usageDiv.innerText = `In:${usage.promptTokenCount} | Out:${usage.candidatesTokenCount} | Tot:${usage.totalTokenCount}`;
         div.appendChild(usageDiv);
     }

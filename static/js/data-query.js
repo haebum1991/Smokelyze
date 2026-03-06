@@ -205,13 +205,13 @@ function renderDataMeta(data) {
 
         data.terms.forEach(term => {
             if (term.term) {
-                html += `<div class="datadb-meta-item" style="border-bottom: none; background: rgba(0,0,0,0.02); padding: 0.5rem; border-radius: 0.4rem;">
+                html += `<div class="datadb-meta-item" style="border-bottom: none; background: rgba(0,0,0,0.02); padding: 0.5rem; border-radius: var(--border-radius-0p8rem);">
                             <span class="datadb-meta-label" style="font-size: 1.2rem;">${ESML(term.term)}</span>
                             <span class="datadb-meta-value" style="font-size: 1.2rem;">EDF: ${ESML(term.edf)} / F: ${ESML(term.F)}</span>
                          </div>`;
             }
             if (term["term.1"]) {
-                html += `<div class="datadb-meta-item" style="border-bottom: none; background: rgba(0,0,0,0.02); padding: 0.5rem; border-radius: 0.4rem;">
+                html += `<div class="datadb-meta-item" style="border-bottom: none; background: rgba(0,0,0,0.02); padding: 0.5rem; border-radius: var(--border-radius-0p8rem);">
                             <span class="datadb-meta-label" style="font-size: 1.2rem;">${ESML(term["term.1"])}</span>
                             <span class="datadb-meta-value" style="font-size: 1.2rem;">EDF: ${ESML(term["edf.1"])} / F: ${ESML(term["F.1"])}</span>
                          </div>`;

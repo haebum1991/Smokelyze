@@ -7,7 +7,7 @@
 
 .board-post-card {
     background: var(--color-bg);
-    border: 1px solid var(--border-light);
+    border: 0.1rem solid var(--border-light);
     border-radius: var(--border-radius-0p8rem);
     padding: 2rem;
     cursor: pointer;
@@ -15,8 +15,8 @@
 }
 
 .board-post-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    transform: translateY(-0.3rem);
+    box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.1);
     border-color: var(--card-shadow);
 }
 

@@ -82,11 +82,28 @@ export const CLICK_HANDLERS = {
 
 function handleLocationClick(element) {
     const { id, lon, lat } = element.dataset;
-    utils.highlightLocation(
-        [parseFloat(lon), parseFloat(lat)],
-        { ...state.MapPostData[id], docId: id },
-        "MapPost"
-    );
+
+    // Ensure the MapPost layer is ON before moving
+    const toggle = document.getElementById("layer-MapPost");
+    let toggleWasOff = false;
+    if (toggle && !toggle.checked) {
+        toggleWasOff = true;
+        toggle.checked = true;
+        // Trigger the change manually since we set .checked via JS
+        toggle.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    const targetCoords = [parseFloat(lon), parseFloat(lat)];
+    const targetProps = { ...state.MapPostData[id], docId: id };
+
+    if (toggleWasOff) {
+        // Wait for the debounced update (200ms) to finish map refresh
+        setTimeout(() => {
+            utils.highlightLocation(targetCoords, targetProps, "MapPost");
+        }, 300);
+    } else {
+        utils.highlightLocation(targetCoords, targetProps, "MapPost");
+    }
 }
 
 function handleAddFromDrawer(element) {

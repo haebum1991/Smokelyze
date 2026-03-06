@@ -103,7 +103,7 @@ export function updateWildfireNewsList(features) {
             data-lon="${utils.ESML(String(coords[0]))}"
             data-lat="${utils.ESML(String(coords[1]))}"
             data-idx="${idx}">
-            Location
+            State location
           </button>
         `;
         }

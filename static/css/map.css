@@ -36,12 +36,12 @@ body.page-map .main-footer {
   -webkit-backdrop-filter: blur(0.8rem);
   color: var(--text-main);
   padding: 0.8rem 1.4rem;
-  border-radius: 1rem;
+  border-radius: var(--border-radius-0p8rem);
   font-size: 1.3rem;
   font-weight: 600;
   pointer-events: none;
   box-shadow: 0 0.1rem 0.5rem var(--card-shadow);
-  border: 1px solid var(--card-shadow);
+  border: 0.1rem solid var(--card-shadow);
 
   /* Animation */
   opacity: 0;
@@ -188,14 +188,16 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
 
 .map-btn-reset,
 .map-btn-capture,
-.map-btn-tutorial {
+.map-btn-tutorial,
+.map-btn-shortcuts {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
 .map-btn-reset,
 .map-btn-capture,
-.map-btn-tutorial {
+.map-btn-tutorial,
+.map-btn-shortcuts {
   font-size: 2rem;
   font-weight: bold;
 
@@ -216,7 +218,8 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
 
 .map-btn-reset:hover,
 .map-btn-capture:hover,
-.map-btn-tutorial:hover {
+.map-btn-tutorial:hover,
+.map-btn-shortcuts:hover {
   transform: scale(1.05);
 }
 
@@ -322,7 +325,7 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
   height: 0.16rem;
   background: var(--text-main);
   transform: translate(-50%, -50%);
-  border-radius: 0.1rem;
+  border-radius: var(--border-radius-0p8rem);
 }
 
 /* 세로 획 설정 (수학적 정중앙 정렬) */
@@ -335,7 +338,7 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
   height: 1rem;
   background: var(--text-main);
   transform: translate(-50%, -50%);
-  border-radius: 0.1rem;
+  border-radius: var(--border-radius-0p8rem);
 }
 
 /* 튜닝: 아코디언이 열린(.is-top) 상태면 세로 획 숨김 (-) 표시 */
@@ -1524,11 +1527,13 @@ tr.stats-state-row-ca.show {
 #WFnewsToggle {
   bottom: calc(var(--footer-height) + var(--toolbar-date-height) + 5rem);
   left: 1rem;
+  transition: transform 0.3s ease-out;
 }
 
 #MapPostToggle {
   bottom: calc(var(--footer-height) + 6rem);
   left: 1rem;
+  transition: transform 0.3s ease-out;
 }
 
 .MapPost-drawer-header,

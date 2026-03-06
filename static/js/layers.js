@@ -181,12 +181,33 @@ if (map) {
     const newsLocBtn = target.closest(".action-news-location");
     if (newsLocBtn) {
       e.stopPropagation();
+
+      // Ensure the layer is ON before moving
+      const toggle = document.getElementById("layer-wildfire-news");
+      let toggleWasOff = false;
+      if (toggle && !toggle.checked) {
+        toggleWasOff = true;
+        toggle.checked = true;
+        // Trigger the change manually since we set .checked via JS
+        toggle.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+
       const lon = parseFloat(newsLocBtn.getAttribute("data-lon"));
       const lat = parseFloat(newsLocBtn.getAttribute("data-lat"));
       const idx = parseInt(newsLocBtn.getAttribute("data-idx"));
       const feats = getLoadedNewsFeatures();
-      if (highlightLocation && feats) {
-        highlightLocation([lon, lat], feats[idx].properties, "wildfire_news");
+
+      if (toggleWasOff) {
+        // Wait for the debounced updateAllActiveSources (200ms) to finish clearing the map
+        setTimeout(() => {
+          if (highlightLocation && feats) {
+            highlightLocation([lon, lat], feats[idx].properties, "wildfire_news");
+          }
+        }, 300); // 300ms is safe for 200ms debounce
+      } else {
+        if (highlightLocation && feats) {
+          highlightLocation([lon, lat], feats[idx].properties, "wildfire_news");
+        }
       }
       return;
     }

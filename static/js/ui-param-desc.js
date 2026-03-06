@@ -7,7 +7,7 @@ export const DescData = {
         { 
           id: "wildfire-news",
           title: "Wildfire News", 
-          desc: "<b style='color: var(--card-shadow);'>Wildfire (WF) news</b> are automatically retrieved from Google News based on <b style='color: var(--card-shadow);'>UTC time</b>. " +
+          desc: "<b style='color: var(--card-shadow);'>Wildfire News</b> are automatically retrieved from Google News based on <b style='color: var(--card-shadow);'>UTC time</b>. " +
                 "The system monitors key terms such as <em>'wildfire'</em>, <em>'smoke plume'</em>, <em>'forest fire'</em>, etc. to provide the latest updates. " +
                 "Since precise incident coordinates are rarely available in news feeds, articles are assigned to <b style='color: var(--card-shadow);'>representative state-level locations</b>. " +
                 "To ensure visibility when multiple articles share the same state, a <b style='color: var(--card-shadow);'>small random jitter</b> is applied to prevent markers from overlapping. " +

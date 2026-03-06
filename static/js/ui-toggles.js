@@ -50,7 +50,7 @@ const SWITCH_STYLE = `
   bottom: 0;
   background-color: grey; 
   transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 1rem;
+  border-radius: var(--border-radius-0p8rem);
   overflow: hidden;
 }
 .toggle-switch-slider:before {
@@ -409,7 +409,7 @@ export function initNewsDrawer() {
     if (container) {
         appendSwitch(container, {
             id: "layer-wildfire-news",
-            label: "Show News on Map",
+            label: "Show Locations on Map",
             checked: false,
             iconHTML: `<canvas class="ui-pulsing-icon" data-type="news" width="24" height="24" style="vertical-align:middle;"></canvas>`
         });
@@ -498,4 +498,280 @@ setOnSetAccordionCollapsed(setAccordionCollapsed);
 
 // Make global for external module interaction (like ui-param-desc.js)
 window.setDescDrawer = setDescDrawer;
+
+// --- Sequential Keyboard Shortcuts (Key Tips) System ---
+const KEY_TIPS_MAP = {
+    "d": { id: "datePicker", label: "D" },    // Date (Date Picker)
+    "q": { id: "AccordionToggle", label: "Q", fallbackId: "AccordionClose" }, // Layers (Query)
+    "s": { id: "FigurePageToggle", label: "S" }, // Stats (Graph)
+    "i": { id: "DescToggle", label: "I" },       // Information (Descriptions)
+    "n": { id: "WFnewsToggle", label: "N" },     // News
+    "p": { id: "MapPostToggle", label: "P" },    // Post (MapPost)
+    "a": { id: "AiChatToggle", label: "A", fallbackId: "AiChatDrawerClose" },  // AiChat
+    "c": { id: "MapBtnCapture", label: "C" },    // Capture
+    "r": { id: "MapBtnReset", label: "R" },      // Reset All
+    "t": { id: "MapBtnTutorial", label: "T" }    // Tutorial
+};
+
+let isKeyTipMode = false;
+
+const injectKeyTipCSS = () => {
+    if (document.getElementById("key-tip-style")) return;
+    const style = document.createElement("style");
+    style.id = "key-tip-style";
+    style.textContent = `
+        /* Overlay on buttons */
+        .key-tip-badge {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(2px);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            font-weight: bold;
+            font-family: "Outfit", sans-serif;
+            z-index: 10000;
+            pointer-events: none;
+            text-transform: uppercase;
+            animation: keyTipOverlayIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            line-height: 1;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 1.5rem rgba(0,0,0,0.4);
+        }
+
+        /* Central Summary Modal */
+        .key-tip-summary {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--color-bg);
+            backdrop-filter: blur(1.2rem);
+            -webkit-backdrop-filter: blur(1.2rem);
+            border: 0.1rem solid var(--card-shadow);
+            border-radius: calc(var(--border-radius-0p8rem) * 2);
+            padding: 3rem;
+            z-index: 10001;
+            box-shadow: 0 2.5rem 5rem -1.2rem var(--card-shadow);
+            color: var(--text-main);
+            width: 45rem;
+            max-width: 90vw;
+            pointer-events: none;
+            animation: keyTipSummaryIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: "Outfit", sans-serif;
+        }
+
+        .key-tip-summary-title {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            letter-spacing: 0.1rem;
+            color: var(--text-main);
+            text-transform: uppercase;
+        }
+
+        .key-tip-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.2rem;
+        }
+
+        .key-tip-item {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            padding: 0.8rem 1.2rem;
+            background: var(--sidebar-widget-bg);
+            border-radius: var(--border-radius-0p8rem);
+            border: 0.1rem solid var(--text-soft);
+        }
+
+        .key-tip-key {
+            background: var(--color-bg);
+            color: var(--text-main);
+            width: auto;
+            min-width: 3.5rem;
+            height: 3.2rem;
+            padding: 0 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--border-radius-0p8rem);
+            font-weight: bold;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+            border: 0.1rem solid var(--text-soft);
+        }
+
+        .key-tip-desc {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--text-main);
+            white-space: nowrap;
+        }
+
+        @keyframes keyTipOverlayIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes keyTipSummaryIn {
+            from { opacity: 0; transform: translate(-50%, -45%) scale(0.98); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+    `;
+    document.head.appendChild(style);
+};
+
+const clearKeyTips = () => {
+    document.querySelectorAll(".key-tip-badge, .key-tip-summary").forEach(el => el.remove());
+    isKeyTipMode = false;
+};
+
+const showKeyTips = () => {
+    clearKeyTips();
+    injectKeyTipCSS();
+    isKeyTipMode = true;
+
+    // 1. Create Central Summary
+    const summary = document.createElement("div");
+    summary.className = "key-tip-summary";
+
+    let gridHTML = `<div class="key-tip-summary-title">Keyboard Shortcuts</div><div class="key-tip-summary-grid">`;
+
+    const displayNames = {
+        "d": "Date Picker",
+        "q": "Layers",
+        "s": "Stats/Charts",
+        "i": "Layer Descriptions",
+        "n": "Wildfire News",
+        "p": "MapPost",
+        "a": "AI Chat",
+        "c": "Map Capture",
+        "r": "Reset All",
+        "t": "Quick Start"
+    };
+
+    Object.entries(KEY_TIPS_MAP).forEach(([key, cfg]) => {
+        const desc = displayNames[key] || cfg.id;
+        gridHTML += `
+            <div class="key-tip-item">
+                <div class="key-tip-key">Alt + ${cfg.label}</div>
+                <div class="key-tip-desc">${desc}</div>
+            </div>
+        `;
+
+        // 2. Create Overlays on actual elements
+        let el = document.getElementById(cfg.id);
+        if (!el || el.getClientRects().length === 0) {
+            if (cfg.fallbackId) el = document.getElementById(cfg.fallbackId);
+        }
+        if (el && el.getClientRects().length > 0) {
+            const rect = el.getBoundingClientRect();
+            const badge = document.createElement("div");
+            badge.className = "key-tip-badge";
+            badge.textContent = cfg.label;
+            const styles = window.getComputedStyle(el);
+            badge.style.borderRadius = styles.borderRadius;
+            badge.style.width = `${rect.width}px`;
+            badge.style.height = `${rect.height}px`;
+            badge.style.left = `${rect.left}px`;
+            badge.style.top = `${rect.top}px`;
+            document.body.appendChild(badge);
+        }
+    });
+
+    gridHTML += `</div>`;
+    summary.innerHTML = gridHTML;
+    document.body.appendChild(summary);
+};
+
+const handleCommonShortcut = (key) => {
+    switch (key) {
+        case "s": setStatsDrawer(); break;
+        case "n": setNewsDrawer(); break;
+        case "p": setMapPostDrawer(); break;
+        case "i": setDescDrawer(); break;
+        case "q":
+            const accordion = document.getElementById("AccordionPage");
+            setAccordionCollapsed(!accordion?.classList.contains("collapsed"));
+            break;
+        case "a":
+            document.getElementById("AiChatToggle")?.click();
+            break;
+        case "c":
+            document.getElementById("MapBtnCapture")?.click();
+            break;
+        case "r":
+            document.getElementById("MapBtnReset")?.click();
+            break;
+        case "t":
+            document.getElementById("MapBtnTutorial")?.click();
+            break;
+        case "d":
+            const dp = document.getElementById("datePicker");
+            if (dp) {
+                if (typeof dp.showPicker === "function") {
+                    dp.showPicker();
+                } else {
+                    dp.focus();
+                    dp.click();
+                }
+            }
+            break;
+    }
+    clearKeyTips();
+};
+
+window.addEventListener("keydown", (e) => {
+    const activeTag = document.activeElement?.tagName;
+    const isTyping = activeTag === "INPUT" || activeTag === "TEXTAREA" || document.activeElement?.isContentEditable;
+
+    if (isTyping) {
+        clearKeyTips();
+        return;
+    }
+
+    if (e.key === "Escape" && isKeyTipMode) {
+        clearKeyTips();
+        return;
+    }
+
+    if (isKeyTipMode) {
+        const key = e.key.toLowerCase();
+        if (KEY_TIPS_MAP[key]) {
+            e.preventDefault();
+            e.stopPropagation();
+            handleCommonShortcut(key);
+            return;
+        }
+        if (e.key !== "Alt") clearKeyTips();
+    }
+
+    // Original Alt+Key behavior (Checking altKey flag handles both, 
+    // but sequential mode is now Left-Alt centric)
+    if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+        const key = e.key.toLowerCase();
+        if (KEY_TIPS_MAP[key]) {
+            e.preventDefault();
+            handleCommonShortcut(key);
+        }
+    }
+});
+
+window.addEventListener("mousedown", () => {
+    if (isKeyTipMode) setTimeout(clearKeyTips, 100);
+});
+
+// --- Manual Shortcut Help Button ---
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("MapBtnShortcuts")?.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent mousedown from clearing it immediately
+        if (isKeyTipMode) clearKeyTips();
+        else showKeyTips();
+    });
+});
 
