@@ -216,29 +216,27 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
   transition: transform 0.3s ease-out, background 0.3s ease;
 }
 
-.map-btn-reset:hover,
-.map-btn-capture:hover,
-.map-btn-tutorial:hover,
-.map-btn-shortcuts:hover {
-  transform: scale(1.05);
-}
-
 .map-btn-reset:active {
   background-color: var(--accent-highlight);
   color: var(--text-main);
   border-color: var(--accent-highlight);
 }
 
-@media (max-width: 1024px) {
-  .map-btn-reset:hover {
-    transform: none;
-  }
-
-  .map-btn-capture {
-    display: none;
+@media (hover: hover) {
+  .map-btn-reset:hover,
+  .map-btn-capture:hover,
+  .map-btn-tutorial:hover,
+  .map-btn-shortcuts:hover {
+    transform: scale(1.05);
   }
 }
 
+@media (max-width: 1024px) {
+  .map-btn-capture,
+  .map-btn-shortcuts {
+    display: none;
+  }
+}
 
 
 /* ================ Map Legends ================ */
