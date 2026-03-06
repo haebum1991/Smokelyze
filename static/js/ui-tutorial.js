@@ -9,7 +9,7 @@
    ================================================================ */
 const TUTORIAL_STEPS = [
     {
-        element: "#MapWrapper",
+        element: "#map",
         popover: {
             title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-map"/></svg></span> Interactive Map',
             description: "This is your main workspace — an interactive map showing wildfire smoke and air-quality data across North America. Explore layers, navigate time, and check stats using the controls below.",
@@ -42,6 +42,24 @@ const TUTORIAL_STEPS = [
             title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-chat"/></svg></span> AI Assistant (Beta)',
             description: "Got questions? Chat with our AI assistant about wildfire smoke, air quality, or anything on the map. It understands the data you're looking at! (This feature is currently under further development.)",
             side: "left",
+            align: "start",
+        },
+    },
+    {
+        element: "#WFnewsToggle",
+        popover: {
+            title: '<span class="map-tut-pop-icon-box"><canvas class="ui-pulsing-icon" data-type="news" width="24" height="24"></canvas></span> Wildfire News',
+            description: "Stay updated with real-time wildfire news from across the region. Open this drawer to browse articles and see their locations on the map.",
+            side: "right",
+            align: "start",
+        },
+    },
+    {
+        element: "#MapPostToggle",
+        popover: {
+            title: '<span class="map-tut-pop-icon-box"><canvas class="ui-pulsing-icon" data-type="alert" width="24" height="24"></canvas></span> Community MapPost',
+            description: "Share your own observations or read reports from other users. MapPost allows the community to pin real-time updates directly on the map.",
+            side: "right",
             align: "start",
         },
     },
@@ -293,14 +311,14 @@ export class MapTutorial {
         const newsDrawer = document.getElementById("WFnewsDrawer");
         const newsToggle = document.getElementById("WFnewsToggle");
         if (newsDrawer) newsDrawer.classList.remove("open");
-        if (newsToggle) newsToggle.style.display = "none";
+        if (newsToggle) newsToggle.classList.remove("active");
         document.body.classList.remove("WFnews-drawer-open");
 
         // 6. MapPost Drawer
         const mapPostDrawer = document.getElementById("MapPostDrawer");
         const mapPostToggle = document.getElementById("MapPostToggle");
         if (mapPostDrawer) mapPostDrawer.classList.remove("open");
-        if (mapPostToggle) mapPostToggle.style.display = "none";
+        if (mapPostToggle) mapPostToggle.classList.remove("active");
         document.body.classList.remove("MapPost-drawer-open");
 
         // Ensure no leftover drawer-width property

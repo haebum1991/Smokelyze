@@ -48,7 +48,8 @@ title: ""
     <path
       d="M12 3c-5.5 0-10 3.58-10 8c0 1.95.86 3.73 2.3 5.1c-.24 1.1-.9 2.75-2.3 3.9c0 0 3.45.15 6.15-2.15c1.23.4 2.58.65 3.85.65c5.5 0 10-3.58 10-8s-4.5-8-10-8z" />
   </symbol>
-  <symbol id="icon-drag-handle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <symbol id="icon-drag-handle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+    stroke-linecap="round" stroke-linejoin="round">
     <circle cx="9" cy="5" r="1"></circle>
     <circle cx="9" cy="12" r="1"></circle>
     <circle cx="9" cy="19" r="1"></circle>
@@ -56,7 +57,7 @@ title: ""
     <circle cx="15" cy="12" r="1"></circle>
     <circle cx="15" cy="19" r="1"></circle>
   </symbol>
-    <symbol id="icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+  <symbol id="icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
     stroke-linecap="round" stroke-linejoin="round">
     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
     <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -121,10 +122,12 @@ title: ""
       </svg>
     </button>
 
-    <button class="WFnews-toggle" id="WFnewsToggle" title="Wildfire News" style="display:none;">
+    <button class="accordion-toggle" id="WFnewsToggle" title="Wildfire News">
+      <canvas class="ui-pulsing-icon" data-type="news" width="36" height="36" style="vertical-align:middle;"></canvas>
     </button>
 
-    <button class="MapPost-toggle" id="MapPostToggle" title="MapPost List" style="display:none;">
+    <button class="accordion-toggle" id="MapPostToggle" title="MapPost List">
+      <canvas class="ui-pulsing-icon" data-type="alert" width="36" height="36" style="vertical-align:middle;"></canvas>
     </button>
 
     <button class="Desc-toggle" id="DescToggle" title="Layer Descriptions">
@@ -148,7 +151,7 @@ title: ""
           <use xlink:href="#icon-refresh" />
         </svg>
       </button>
-      
+
       <button class="map-btn-tutorial" id="MapBtnTutorial" title="Quick Start">
         <svg width="28" height="28">
           <use xlink:href="#icon-help" />
@@ -161,10 +164,10 @@ title: ""
 
   <div class="toolbar-date toolbar-date-page">
     <div class="date-input">
-      
+
       <!-- Date picker -->
       <input id="datePicker" type="date">
-      
+
       <!-- Time picker -->
       <select id="timePicker" style="display: none;">
         <option value="00">00:00</option>
@@ -192,26 +195,27 @@ title: ""
         <option value="22">22:00</option>
         <option value="23">23:00</option>
       </select>
-      <span id="timezoneLabel" style="display: none; font-size: 1.4rem; font-weight: bold; color: var(--text-main);"></span>
-        
+      <span id="timezoneLabel"
+        style="display: none; font-size: 1.4rem; font-weight: bold; color: var(--text-main);"></span>
+
     </div>
-    
+
     <div class="date-controls">
       <button class="minus1y" id="onMapMinus1y" title="-1 Year">-y</button>
       <button class="minus1m" id="onMapMinus1m" title="-1 Month">-m</button>
       <button class="minus1d" id="onMapMinus1d" title="-1 Day">-d</button>
-      
+
       <!-- Hour buttons -->
       <button class="minus1h" id="onMapMinus1h" title="-1 Hour" style="display: none;">-h</button>
       <button class="plus1h" id="onMapPlus1h" title="+1 Hour" style="display: none;">+h</button>
       <!-- Hour buttons -->
-      
+
       <button class="plus1d" id="onMapPlus1d" title="+1 Day">+d</button>
       <button class="plus1m" id="onMapPlus1m" title="+1 Month">+m</button>
       <button class="plus1y" id="onMapPlus1y" title="+1 Year">+y</button>
     </div>
   </div>
-  
+
   <!-- Layer Toggle Button (Always on Map) -->
   <button class="accordion-toggle" id="AccordionToggle" title="Open Layers">
     <svg width="24" height="24">
@@ -224,7 +228,7 @@ title: ""
       <use xlink:href="#icon-chat" />
     </svg>
   </button>
-  
+
   <!-- topright: accordion panel -->
   <div class="accordion-page collapsed" id="AccordionPage">
     <div class="accordion">
@@ -236,36 +240,24 @@ title: ""
           </svg>
         </button>
       </div>
-      
+
       <!-- State Shading Toggle (Injected via JS) -->
       <div id="ToggleSwitchStateShading"></div>
-      
+
       <!-- Point Layers Toggle (Injected via JS) -->
       <div id="ToggleSwitchPointLayers"></div>
-      
+
       <!-- NA Values Toggle (Injected via JS) -->
       <div id="ToggleSwitchNaShading"></div>
-      
+
       <hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
-      
+
       <details open>
-        <summary>Live Updates</summary>
-        <label>
-          <input type="checkbox" id="layer-wildfire-news" checked>
-          WF news
-          <canvas class="ui-pulsing-icon" data-type="news" width="24" height="24"
-            style="vertical-align:middle; margin-right:0.4rem;"></canvas>
-        </label>
+        <summary>NIFC</summary>
         <label>
           <input type="checkbox" id="layer-wildfire-nifc">
           WF incident locations
           <canvas class="ui-pulsing-icon" data-type="fire" width="24" height="24"
-            style="vertical-align:middle; margin-right:0.4rem;"></canvas>
-        </label>
-        <label>
-          <input type="checkbox" id="layer-MapPost">
-          MapPost
-          <canvas class="ui-pulsing-icon" data-type="alert" width="24" height="24"
             style="vertical-align:middle; margin-right:0.4rem;"></canvas>
           <hr style="margin-top: 0.2rem; margin-bottom: 0.2rem;">
         </label>
@@ -281,7 +273,7 @@ title: ""
         </label>
 
       </details>
-      
+
       <details>
         <summary>AirNow</summary>
         <div id="SiteSearchWrapperAirNow"></div>
@@ -294,7 +286,7 @@ title: ""
           <hr style="margin-top: 0.2rem; margin-bottom: 0.2rem;">
         </label>
       </details>
-      
+
       <details>
         <summary>Published & Latest</summary>
 
@@ -380,7 +372,7 @@ title: ""
   </div>
 
   <div class="Desc-tab-main">
-    <button class="Desc-tab-main-btn active" Desc-group="LyrGroupRealtime">Live Updates</button>
+    <button class="Desc-tab-main-btn active" Desc-group="LyrGroupNIFC">NIFC</button>
     <button class="Desc-tab-main-btn" Desc-group="LyrGroupAirnow">AirNow</button>
     <button class="Desc-tab-main-btn" Desc-group="LyrGroupSatellite">Satellite</button>
     <button class="Desc-tab-main-btn" Desc-group="LyrGroupPublished">Published & Latest</button>
@@ -405,6 +397,8 @@ title: ""
     <h3 id="WFnewsDrawerTitle">Wildfire News</h3>
     <button class="WFnews-drawer-close" id="WFnewsDrawerClose">×</button>
   </div>
+  <div id="ToggleSwitchWildfire" style="padding: 1rem 1.5rem 1rem; border-bottom: 0.1rem solid var(--border-main);">
+  </div>
   <div class="WFnews-drawer-list" id="WFnewsDrawerList">
     <!-- Content injected via JS -->
   </div>
@@ -414,6 +408,8 @@ title: ""
   <div class="MapPost-drawer-header" style="background: linear-gradient(135deg, #6a11cb, #2575fc);">
     <h3 id="MapPostDrawerTitle">MapPost detail</h3>
     <button class="MapPost-drawer-close" id="MapPostDrawerClose">×</button>
+  </div>
+  <div id="ToggleSwitchMapPost" style="padding: 1rem 1.5rem 1rem; border-bottom: 0.1rem solid var(--border-main);">
   </div>
   <div class="MapPost-drawer-list" id="MapPostDrawerList">
     <!-- Content injected via JS -->
@@ -473,9 +469,9 @@ title: ""
         <button class="minus1m" id="StatsInputMinus1m" title="-1 Month">-m</button>
         <button class="minus1d" id="StatsInputMinus1d" title="-1 Day">-d</button>
         <button class="minus1h" id="StatsInputMinus1h" title="-1 Hour" style="display: none;">-h</button>
-        
+
         <div class="stats-input-date" id="StatsInputDate"></div>
-        
+
         <button class="plus1h" id="StatsInputPlus1h" title="+1 Hour" style="display: none;">+h</button>
         <button class="plus1d" id="StatsInputPlus1d" title="+1 Day">+d</button>
         <button class="plus1m" id="StatsInputPlus1m" title="+1 Month">+m</button>
@@ -608,7 +604,7 @@ title: ""
       "layer-smokeday", "layer-smokeday-975",
       "layer-ExcDays"
     ],
-    
+
     "pm-cbsa": [
       "layer-pm25-obs", "layer-pm25-quant",
       "layer-pm25-crit-m0p5m", "layer-pm25-crit-m1p0m",
@@ -621,8 +617,8 @@ title: ""
       "layer-mda8-obs", "layer-mda8-pred", "layer-smo", "layer-resids",
       "layer-ExcDays"
     ],
-    
-    
+
+
     "gam-v2-pred": [
       "layer-mda8-obs", "layer-mda8-pred", "layer-smo", "layer-resids", "layer-resids-quant",
       "layer-pm25-obs", "layer-pm25-quant", "layer-pm25-crit",
@@ -631,7 +627,7 @@ title: ""
       "layer-smokeday", "layer-smokeday-975", "layer-smokeday-975-edm",
       "layer-ExcDays", "layer-ExcDays-edm"
     ],
-    
+
     "pm-cbsa-pred": [
       "layer-pm25-obs", "layer-pm25-quant",
       "layer-pm25-crit-m0p5m", "layer-pm25-crit-m1p0m",
@@ -702,7 +698,8 @@ title: ""
     <div id="MapPostModalEditBody" style="display:flex; flex:1; flex-direction:column;">
       <div class="MapPost-modal-body">
         <div class="MapPost-form-group">
-          <label for="MapPostFormTitle">Title <small id="MapPostTitleCounter" style="float: right;">0/100</small></label>
+          <label for="MapPostFormTitle">Title <small id="MapPostTitleCounter"
+              style="float: right;">0/100</small></label>
           <input type="text" id="MapPostFormTitle" placeholder="Enter title...">
         </div>
 
@@ -722,7 +719,8 @@ title: ""
         </div>
 
         <div class="MapPost-form-group">
-          <label for="MapPostFormContent">Content <small id="MapPostContentCounter" style="float: right;">0/2000</small></label>
+          <label for="MapPostFormContent">Content <small id="MapPostContentCounter"
+              style="float: right;">0/2000</small></label>
           <textarea id="MapPostFormContent" placeholder="Enter your opinion..."></textarea>
         </div>
       </div>

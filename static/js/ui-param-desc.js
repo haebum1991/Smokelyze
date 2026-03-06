@@ -2,11 +2,11 @@
 import { ESML } from "./utils.js";
 import { initUIPulsingIcons } from "./layers-icon.js";
 
-const DescData = {
-    "desc-realtime": [
+export const DescData = {
+    "desc-drawer-only": [
         { 
           id: "wildfire-news",
-          title: "WF news", 
+          title: "Wildfire News", 
           desc: "<b style='color: var(--card-shadow);'>Wildfire (WF) news</b> are automatically retrieved from Google News based on <b style='color: var(--card-shadow);'>UTC time</b>. " +
                 "The system monitors key terms such as <em>'wildfire'</em>, <em>'smoke plume'</em>, <em>'forest fire'</em>, etc. to provide the latest updates. " +
                 "Since precise incident coordinates are rarely available in news feeds, articles are assigned to <b style='color: var(--card-shadow);'>representative state-level locations</b>. " +
@@ -18,6 +18,20 @@ const DescData = {
                 "It is updated daily, and the data is collected every 6 hours. </li>" +
                 "<li>Depending on the keywords used for collection, irrelevant news articles may be included in the results.</li></ul>"
         },
+        {
+            id: "MapPost",
+            title: "MapPost",
+            desc: "<b style='color: var(--card-shadow);'>MapPost</b> is a community-driven feature that allows users to share insights, opinions, and observations directly on the map. " +
+                "Users can pin a location and add a title and detailed content. " +
+                "Other members can also reply to MapPost to foster discussion. " +
+                "To add a MapPost, toggle the MapPost layer and click [+MapPost] button (or Right-click on the map)." +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Real-time</b></li>" +
+                "<li><b style='color: var(--card-shadow);'>" +
+                "In our app, this data is managed in real-time. </b>" +
+                "Only registered users can create or reply to MapPost. </li></ul>"
+        }
+    ],
+    "desc-nifc": [
         {
           id: "wildfire-nifc",
           title: "WF incident locations",
@@ -32,18 +46,6 @@ const DescData = {
                 "<li><b style='color: var(--card-shadow);'>" +
                 "In our app, this data is available starting from 2018-01-01. </b>" +
                 "It is updated daily, and the data is collected every 6 hours. </ul></li>"
-        },
-        {
-            id: "MapPost",
-            title: "MapPost",
-            desc: "<b style='color: var(--card-shadow);'>MapPost</b> is a community-driven feature that allows users to share insights, opinions, and observations directly on the map. " +
-                "Users can pin a location and add a title and detailed content. " +
-                "Other members can also reply to MapPost to foster discussion. " +
-                "To add a MapPost, toggle the MapPost layer and click [+MapPost] button (or Right-click on the map)." +
-                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Real-time</b></li>" +
-                "<li><b style='color: var(--card-shadow);'>" +
-                "In our app, this data is managed in real-time. </b>" +
-                "Only registered users can create or reply to MapPost. </li></ul>"
         }
     ],
     "desc-airnow": [
@@ -358,9 +360,9 @@ function switchGroup(group) {
     } else if (group === "LyrGroupAirnow") {
         subTabContainer.style.display = "none";
         renderParamDesc("desc-airnow");
-    } else if (group === "LyrGroupRealtime") {
+    } else if (group === "LyrGroupNIFC") {
         subTabContainer.style.display = "none";
-        renderParamDesc("desc-realtime");
+        renderParamDesc("desc-nifc");
     } else if (group === "LyrGroupSatellite") {
         subTabContainer.style.display = "none";
         renderParamDesc("desc-satellite");
@@ -386,9 +388,80 @@ subTabBtns.forEach(btn => {
     });
 });
 
-// Export for ui-toggles.js
+
+/**
+ * Programmatically open a specific description category
+ */
 export function onDescDrawerOpen() {
     const activeMain = document.querySelector(".Desc-tab-main-btn.active") || mainTabBtns[0];
     if (activeMain) switchGroup(activeMain.getAttribute("Desc-group"));
+}
+
+/**
+ * Creates and appends a help icon click handler that shows a help modal.
+ */
+export function appendDrawerHelpIcon(drawerId, descId) {
+    const drawer = document.getElementById(drawerId);
+    if (!drawer) return;
+
+    const toggleItem = drawer.querySelector(".toggle-switch-item");
+    if (!toggleItem) return;
+
+    const helpBtn = document.createElement("button");
+    helpBtn.className = "drawer-help-btn";
+    helpBtn.title = "Learn more about this data";
+
+    helpBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" 
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+    `;
+
+    helpBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        showHelpModal(descId);
+    });
+
+    toggleItem.appendChild(helpBtn);
+}
+
+/**
+ * Displays a standalone help modal with content from DescData
+ */
+export function showHelpModal(descId) {
+    let found = null;
+    for (const group in DescData) {
+        found = DescData[group].find(item => item.id === descId);
+        if (found) break;
+    }
+    if (!found) return;
+
+    const overlay = document.createElement("div");
+    overlay.className = "drawer-help-overlay";
+
+    overlay.innerHTML = `
+        <div class="drawer-help-modal">
+            <div class="drawer-help-header">
+                <h3>${ESML(found.title)}</h3>
+                <button class="drawer-help-close">&times;</button>
+            </div>
+            <div class="drawer-help-body">
+                <p>${found.desc}</p>
+            </div>
+        </div>
+    `;
+
+    const close = () => {
+        overlay.style.opacity = "0";
+        setTimeout(() => overlay.remove(), 200);
+    };
+
+    overlay.querySelector(".drawer-help-close").addEventListener("click", close);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+
+    document.body.appendChild(overlay);
 }
 

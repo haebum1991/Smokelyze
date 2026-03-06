@@ -1,7 +1,7 @@
 
 /* ================ Map-page base ================ */
 body.page-map {
-  --footer-height: 5.5rem; 
+  --footer-height: 5.5rem;
 }
 
 body.page-map .container {
@@ -157,13 +157,13 @@ body.FigurePage-drawer-open #MapTooltip {
 }
 
 body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
-    transform: translateX(var(--FigurePage-drawer-width));
+  transform: translateX(var(--FigurePage-drawer-width));
 }
 
 @media (max-width: 1024px) {
-    body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
-        transform: none;
-    }
+  body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
+    transform: none;
+  }
 }
 
 
@@ -241,13 +241,13 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
 /* ================ Map Legends ================ */
 .map-legend {
   z-index: var(--z-map-legend);
-  
+
   max-width: max-content;
   max-height: calc((65vh - var(--header-height-total) - var(--footer-height)));
   max-height: calc((65dvh - var(--header-height-total) - var(--footer-height)));
   overflow-y: auto;
   overflow-x: hidden;
-  
+
   position: fixed;
   top: calc(var(--header-height-total) + var(--toolbar-date-height));
   left: 0;
@@ -392,9 +392,9 @@ body.FigurePage-drawer-open .map-legend {
 
 @media (max-width: 1024px) {
   body.FigurePage-drawer-open .map-legend {
-      transform: none;
+    transform: none;
   }
-    
+
   .map-legend {
     top: calc(var(--header-height-total) + var(--toolbar-date-height));
   }
@@ -413,7 +413,7 @@ body.FigurePage-drawer-open .map-legend {
   z-index: var(--z-toolbar-date);
   display: flex;
   flex-direction: column;
-  justify-content: center; 
+  justify-content: center;
   width: var(--toolbar-date-width);
   height: var(--toolbar-date-height);
   background: var(--map-toolbar-bg);
@@ -423,8 +423,8 @@ body.FigurePage-drawer-open .map-legend {
 }
 
 .date-input {
-  display: flex; 
-  gap: 0.5rem; 
+  display: flex;
+  gap: 0.5rem;
   align-items: center;
 }
 
@@ -499,20 +499,20 @@ body.FigurePage-drawer-open .toolbar-date-page {
   body.FigurePage-drawer-open .toolbar-date-page {
     transform: none;
   }
-  
+
   .toolbar-date {
     width: 100%;
     flex-direction: row;
     align-items: center;
     gap: 0.5rem;
   }
-  
+
   /* display: contents; div를 지우는 기능임 */
   .date-input,
   .date-controls {
-    display: contents; 
+    display: contents;
   }
-  
+
   #datePicker,
   #timePicker {
     flex: 0 1 auto;
@@ -520,18 +520,52 @@ body.FigurePage-drawer-open .toolbar-date-page {
     width: auto;
     max-width: max-content;
   }
-  
-  #onMapMinus1y { order: 1; display: none; }
-  #onMapMinus1m { order: 2; }
-  #onMapMinus1d { order: 3; }
-  #onMapMinus1h { order: 4; }
-  #datePicker { order: 5; }
-  #timePicker { order: 6; }
-  #timezoneLabel { order: 7; }
-  #onMapPlus1h { order: 8; }
-  #onMapPlus1d { order: 9; }
-  #onMapPlus1m { order: 10; }
-  #onMapPlus1y { order: 11; display: none; }
+
+  #onMapMinus1y {
+    order: 1;
+    display: none;
+  }
+
+  #onMapMinus1m {
+    order: 2;
+  }
+
+  #onMapMinus1d {
+    order: 3;
+  }
+
+  #onMapMinus1h {
+    order: 4;
+  }
+
+  #datePicker {
+    order: 5;
+  }
+
+  #timePicker {
+    order: 6;
+  }
+
+  #timezoneLabel {
+    order: 7;
+  }
+
+  #onMapPlus1h {
+    order: 8;
+  }
+
+  #onMapPlus1d {
+    order: 9;
+  }
+
+  #onMapPlus1m {
+    order: 10;
+  }
+
+  #onMapPlus1y {
+    order: 11;
+    display: none;
+  }
 }
 
 
@@ -563,10 +597,7 @@ body.FigurePage-drawer-open .toolbar-date-page {
 
 .accordion-toggle {
   z-index: var(--z-accordion-toggle);
-  
   position: fixed;
-  top: calc(var(--header-height-total) + 1rem);
-  right: 1rem;
   width: 5rem;
   height: 5rem;
 
@@ -579,7 +610,12 @@ body.FigurePage-drawer-open .toolbar-date-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s, background-color 0.3s, color 0.3s;
+  transition: transform 0.3s, background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+#AccordionToggle {
+  top: calc(var(--header-height-total) + 1rem);
+  right: 1rem;
 }
 
 .accordion-toggle.active {
@@ -651,6 +687,7 @@ body.FigurePage-drawer-open .toolbar-date-page {
 }
 
 @media (hover: hover) {
+
   .accordion-toggle:hover,
   .accordion-close-btn:hover {
     background-color: var(--map-accordion-gradient-start);
@@ -695,11 +732,11 @@ details[open] summary {
   .accordion-page {
     top: calc(var(--header-height-total) + var(--toolbar-date-height));
   }
-  
-  .accordion-toggle {
+
+  #AccordionToggle {
     top: calc(var(--header-height-total) + var(--toolbar-date-height) + 1rem);
   }
-  
+
   #ExportBtnDaily {
     display: none !important;
   }
@@ -728,7 +765,7 @@ details[open] summary {
   z-index: var(--z-FigurePage-toggle);
   font-size: 2rem;
   font-weight: bold;
-  
+
   display: flex;
   align-items: center;
   gap: 0.8rem;
@@ -786,7 +823,7 @@ details[open] summary {
   background-color: var(--color-bg);
   border-top: 0.1rem solid var(--card-shadow);
   border-bottom: 0.1rem solid var(--card-shadow);
-  overflow-y: hidden; 
+  overflow-y: hidden;
   overscroll-behavior: contain;
 }
 
@@ -843,7 +880,7 @@ body.FigurePage-drawer-open[data-stats-active-tab="stats-plot-for-scatter-date"]
   .drawer-resizer:hover {
     background-color: var(--accent-highlight);
   }
-  
+
   .drawer-resizer:hover::after {
     opacity: 0.8;
     border-color: var(--text-main);
@@ -938,6 +975,7 @@ tr.stats-state-row-ca.show {
 }
 
 @media (hover: hover) {
+
   #AnnStatsInputMinus1y:hover,
   #AnnStatsInputPlus1y:hover,
   #StatsInputMinus1y:hover,
@@ -960,6 +998,7 @@ tr.stats-state-row-ca.show {
 }
 
 @media (hover: hover) {
+
   .stats-expand-btn.expanded:hover,
   .stats-expand-btn:not(.expanded):hover {
     background-color: var(--accent-highlight);
@@ -1007,6 +1046,7 @@ tr.stats-state-row-ca.show {
 }
 
 @media (hover: hover) {
+
   .stats-tab-sub[stats-tab-sub-data="date"]:hover,
   .stats-tab-sub[stats-tab-sub-data="year"]:hover {
     background-color: var(--accent-highlight);
@@ -1076,7 +1116,7 @@ tr.stats-state-row-ca.show {
   flex-direction: column;
   flex: 1;
   overflow: hidden;
-  
+
   text-align: center;
   background-color: var(--color-bg);
 }
@@ -1316,7 +1356,7 @@ tr.stats-state-row-ca.show {
   z-index: var(--z-FigurePage-toggle);
   font-size: 2rem;
   font-weight: bold;
-  
+
   display: flex;
   align-items: center;
   gap: 0.8rem;
@@ -1443,6 +1483,7 @@ tr.stats-state-row-ca.show {
 }
 
 @media (hover: hover) {
+
   .Desc-tab-main-btn:hover,
   .Desc-tab-sub-btn:hover {
     background-color: var(--accent-highlight);
@@ -1477,97 +1518,14 @@ tr.stats-state-row-ca.show {
 
 
 /* ================ MapPost & WFNews modules ================ */
-.MapPost-toggle {
-  z-index: var(--z-WFnews-toggle);
-  cursor: pointer;
-  font-size: 1.6rem;
-  font-weight: bold;
-  display: block;
-
-  max-height: max-content;
-  max-width: max-content;
-  padding: 0.5rem 0.5rem;
-
-  position: fixed;
-  bottom: calc(var(--footer-height) + 14rem);
-  left: 0;
-
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
-  color: var(--color-white);
-  border: none;
-  border-radius: 0 var(--border-radius-0p8rem) var(--border-radius-0p8rem) 0;
-  box-shadow: 0 0.2rem 1rem rgba(106, 17, 203, 0.4);
-
-  transition: transform 0.3s ease, background 0.3s ease;
-  animation: MapPost-pulse 2s infinite;
-  overflow: hidden;
+#WFnewsToggle {
+  bottom: calc(var(--footer-height) + var(--toolbar-date-height) + 5rem);
+  left: 1rem;
 }
 
-@keyframes MapPost-pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(106, 17, 203, 0.7);
-  }
-
-  70% {
-    box-shadow: 0 0 0 1.5rem rgba(106, 17, 203, 0);
-  }
-
-  100% {
-    box-shadow: 0 0 0 0 rgba(106, 17, 203, 0);
-  }
-}
-
-.WFnews-toggle {
-  z-index: var(--z-WFnews-toggle);
-  cursor: pointer;
-  font-size: 1.6rem;
-  font-weight: bold;
-  display: block;
-
-  max-height: max-content;
-  max-width: max-content;
-  padding: 0.5rem 0.5rem;
-
-  position: fixed;
+#MapPostToggle {
   bottom: calc(var(--footer-height) + 6rem);
-  left: 0;
-
-  background: linear-gradient(135deg, #0072ff, #00c6ff);
-  color: var(--color-white);
-  border: none;
-  border-radius: 0 var(--border-radius-0p8rem) var(--border-radius-0p8rem) 0;
-  box-shadow: 0 0.2rem 1rem rgba(0, 114, 255, 0.4);
-
-  transition: transform 0.3s ease, background 0.3s ease;
-  animation: news-pulse 2s infinite;
-  overflow: hidden;
-}
-
-@keyframes news-pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(0, 114, 255, 0.7);
-  }
-
-  70% {
-    box-shadow: 0 0 0 1.5rem rgba(0, 114, 255, 0);
-  }
-
-  100% {
-    box-shadow: 0 0 0 0 rgba(0, 114, 255, 0);
-  }
-}
-
-@media (hover: hover) {
-  .MapPost-toggle:hover,
-  .WFnews-toggle:hover {
-    transform: scale(1.05);
-  }
-}
-
-.MapPost-toggle.active,
-.WFnews-toggle.active {
-  background-color: var(--card-shadow);
-  color: var(--color-bg);
+  left: 1rem;
 }
 
 .MapPost-drawer-header,
@@ -1664,13 +1622,14 @@ tr.stats-state-row-ca.show {
 }
 
 @media (hover: hover) {
+
   .MapPost-drawer-close:hover,
   .WFnews-drawer-close:hover {
     background: rgba(255, 255, 255, 0.4);
   }
 }
 
-.MapPost-drawer-list, 
+.MapPost-drawer-list,
 .WFnews-drawer-list {
   flex: 1;
   overflow-y: auto;
@@ -1691,6 +1650,7 @@ tr.stats-state-row-ca.show {
 }
 
 @media (hover: hover) {
+
   .MapPost-item:hover,
   .WFnews-item:hover {
     border-color: var(--card-shadow);
@@ -1751,6 +1711,7 @@ tr.stats-state-row-ca.show {
 }
 
 @media (hover: hover) {
+
   .MapPost-item-link:hover,
   .WFnews-item-link:hover {
     filter: brightness(1.2);
@@ -1763,21 +1724,26 @@ tr.stats-state-row-ca.show {
   -webkit-tap-highlight-color: transparent;
 }
 
-body.FigurePage-drawer-open .WFnews-toggle,
+body.FigurePage-drawer-open #WFnewsToggle,
 body.FigurePage-drawer-open .WFnews-drawer.open,
-body.FigurePage-drawer-open .MapPost-toggle,
+body.FigurePage-drawer-open #MapPostToggle,
 body.FigurePage-drawer-open .MapPost-drawer.open {
   transform: translateX(var(--FigurePage-drawer-width));
 }
 
 @media (max-width: 1024px) {
-  body.FigurePage-drawer-open .WFnews-toggle,
+
+  body.FigurePage-drawer-open #WFnewsToggle,
   body.FigurePage-drawer-open .WFnews-drawer.open,
-  body.FigurePage-drawer-open .MapPost-toggle,
+  body.FigurePage-drawer-open #MapPostToggle,
   body.FigurePage-drawer-open .MapPost-drawer.open {
     transform: none;
   }
-  
+
+  #WFnewsToggle {
+    bottom: calc(var(--footer-height) + var(--toolbar-date-height) + 8rem);
+  }
+
   .MapPost-drawer,
   .WFnews-drawer {
     width: 100%;
@@ -1836,10 +1802,10 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
   justify-content: center;
 }
 
-.MapPost-modal {  
+.MapPost-modal {
   display: flex;
   flex-direction: column;
-  
+
   position: fixed;
   top: var(--header-height-total);
   bottom: 0;
@@ -1848,7 +1814,7 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
   height: calc(100vh - var(--header-height-total) - var(--footer-height));
   height: calc(100dvh - var(--header-height-total) - var(--footer-height));
   transform: translateX(-50%);
-  
+
   background: var(--color-bg);
   border-radius: var(--border-radius-0p8rem);
   box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.3);
@@ -1907,7 +1873,7 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  min-height: 0; 
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   word-wrap: break-word;
@@ -1976,7 +1942,7 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
 }
 
 .reply-section-start {
-  display: flex; 
+  display: flex;
   justify-content: space-between;
   font-size: 1.4rem;
   font-weight: bold;
@@ -1994,15 +1960,15 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
 
 .cm-area-display,
 .cm-area-edit {
-  font-size: 1.4rem; 
+  font-size: 1.4rem;
   color: var(--text-main);
-} 
+}
 
 .cm-area-display {
   white-space: pre-wrap;
-} 
+}
 
-.cm-text-typing, 
+.cm-text-typing,
 .reply-text-typing {
   width: 100%;
   background: var(--color-bg);
@@ -2045,8 +2011,8 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
 
 .reply-item-nested {
   padding-left: 1rem;
-  margin-left: 2rem; 
-  border-left: 0.2rem solid var(--card-shadow); 
+  margin-left: 2rem;
+  border-left: 0.2rem solid var(--card-shadow);
 }
 
 /* Reply Buttons */
@@ -2087,31 +2053,32 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
 
 .reply-btn-edit,
 .reply-btn-edit-detail {
-  cursor: pointer; 
-  border: 0.1rem solid var(--card-shadow); 
+  cursor: pointer;
+  border: 0.1rem solid var(--card-shadow);
   color: var(--card-shadow);
-  background: transparent; 
-  padding: 0.6rem 1.2rem; 
-  border-radius: var(--border-radius-0p8rem); 
-  font-weight: bold; 
+  background: transparent;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--border-radius-0p8rem);
+  font-weight: bold;
   font-size: 1.3rem;
   transition: background 0.3s;
 }
 
 .reply-btn-delete,
 .reply-btn-delete-detail {
-  cursor: pointer; 
+  cursor: pointer;
   border: 0.1rem solid #ff4d4d;
-  color: #ff4d4d; 
-  background: transparent; 
-  padding: 0.6rem 1.2rem; 
+  color: #ff4d4d;
+  background: transparent;
+  padding: 0.6rem 1.2rem;
   border-radius: var(--border-radius-0p8rem);
-  font-weight: bold; 
+  font-weight: bold;
   font-size: 1.3rem;
   transition: background 0.3s;
 }
 
 @media (hover: hover) {
+
   .MapPost-btn-restore:hover,
   .reply-btn-reply:hover,
   .reply-btn-edit:hover,
@@ -2130,6 +2097,7 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
 /* ================ Ai Chat setting ================ */
 #AiChatToggle {
   top: calc(var(--header-height-total) + var(--toolbar-date-height));
+  right: 1rem;
 }
 
 #AiChatDrawer {
@@ -2249,7 +2217,7 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
   background: rgba(0, 0, 0, 0.1);
   width: auto;
   height: auto;
-  
+
   background: var(--card-shadow) !important;
   color: var(--color-bg) !important;
   font-size: 1.4rem !important;
@@ -2343,11 +2311,11 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
 }
 
 @media (max-width: 1024px) {
-  
+
   #AiChatToggle {
     top: calc(var(--header-height-total) + var(--toolbar-date-height) + 7rem);
   }
-  
+
   #AiChatDrawer {
     top: auto !important;
     bottom: 0 !important;
@@ -2379,7 +2347,7 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
     border-radius: var(--border-radius-0p8rem) var(--border-radius-0p8rem) 0 0;
     box-shadow: 0 -0.5rem 2rem rgba(0, 0, 0, 0.2);
   }
-  
+
   .ai-chat-header-handle {
     display: none;
   }
@@ -2389,222 +2357,229 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
 /* ================ Tutorial: Driver.js Overrides ================ */
 /* ---- Tutorial Overlays (Welcome & Finish) ---- */
 .map-tut-overlay {
-    z-index: var(--z-highest);
-    position: fixed;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
+  z-index: var(--z-highest);
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
 
-    background: radial-gradient(ellipse at center, rgba(15, 23, 42, 0.88) 0%, rgba(0, 0, 0, 0.95) 100%);
-    backdrop-filter: blur(1rem);
-    -webkit-backdrop-filter: blur(1rem);
-    animation: map-tut-overlay-in 0.5s ease forwards;
+  background: radial-gradient(ellipse at center, rgba(15, 23, 42, 0.88) 0%, rgba(0, 0, 0, 0.95) 100%);
+  backdrop-filter: blur(1rem);
+  -webkit-backdrop-filter: blur(1rem);
+  animation: map-tut-overlay-in 0.5s ease forwards;
 }
 
 .map-tut-overlay.map-tut-fade-out {
-    animation: map-tut-overlay-out 0.5s ease forwards;
+  animation: map-tut-overlay-out 0.5s ease forwards;
 }
 
 @keyframes map-tut-overlay-in {
-    0% {
-        opacity: 0;
-    }
+  0% {
+    opacity: 0;
+  }
 
-    100% {
-        opacity: 1;
-    }
+  100% {
+    opacity: 1;
+  }
 }
 
 @keyframes map-tut-overlay-out {
-    0% {
-        opacity: 1;
-    }
+  0% {
+    opacity: 1;
+  }
 
-    100% {
-        opacity: 0;
-    }
+  100% {
+    opacity: 0;
+  }
 }
 
 .map-tut-overlay-title {
-    font-size: 3.6rem;
-    font-weight: bold;
-    text-align: center;
-    color: var(--color-white);
-    animation: map-tut-title-in 0.8s 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  font-size: 3.6rem;
+  font-weight: bold;
+  text-align: center;
+  color: var(--color-white);
+  animation: map-tut-title-in 0.8s 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes map-tut-title-in {
-    0% {
-        opacity: 0;
-        transform: translateY(2rem);
-    }
+  0% {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
 
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .map-tut-overlay-sub {
-    font-size: 1.7rem;
-    color: var(--color-white);
-    text-align: center;
-    max-width: 44rem;
-    line-height: 1.6;
-    animation: map-tut-title-in 0.8s 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  font-size: 1.7rem;
+  color: var(--color-white);
+  text-align: center;
+  max-width: 44rem;
+  line-height: 1.6;
+  animation: map-tut-title-in 0.8s 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .map-tut-overlay-btn {
-    margin-top: 1.5rem;
-    padding: 1.3rem 4rem;
-    font-size: 1.7rem;
-    font-weight: bold;
-    color: var(--color-bg);
-    background: var(--card-shadow);
-    border: none;
-    border-radius: 10rem;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    animation: map-tut-title-in 0.8s 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-    box-shadow: 0 0.8rem 2rem rgba(163, 102, 255, 0.3);
+  margin-top: 1.5rem;
+  padding: 1.3rem 4rem;
+  font-size: 1.7rem;
+  font-weight: bold;
+  color: var(--color-bg);
+  background: var(--card-shadow);
+  border: none;
+  border-radius: 10rem;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: map-tut-title-in 0.8s 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  box-shadow: 0 0.8rem 2rem rgba(163, 102, 255, 0.3);
 }
 
 .map-tut-overlay-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 1.2rem 3rem rgba(163, 102, 255, 0.5);
+  transform: scale(1.05);
+  box-shadow: 0 1.2rem 3rem rgba(163, 102, 255, 0.5);
 }
 
 .map-tut-overlay-skip {
-    margin-top: 0.8rem;
-    font-size: 1.4rem;
-    color: var(--text-soft);
-    background: none;
-    border: none;
-    cursor: pointer;
-    transition: color 0.3s;
-    animation: map-tut-title-in 0.8s 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  margin-top: 0.8rem;
+  font-size: 1.4rem;
+  color: var(--text-soft);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s;
+  animation: map-tut-title-in 0.8s 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .map-tut-overlay-skip:hover {
-    color: var(--text-main);
+  color: var(--text-main);
 }
 
 
 /* ---- Driver.js theme overrides (Scoped to app theme) ---- */
 .driver-popover {
-    background-color: var(--color-bg) !important;
-    backdrop-filter: blur(2rem) !important;
-    -webkit-backdrop-filter: blur(2rem) !important;
-    border: 0.1rem solid var(--card-shadow) !important;
-    border-radius: 1.6rem !important;
-    color: var(--text-main) !important;
-    box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.5) !important;
-    padding: 2.22rem !important;
-    max-width: 36rem !important;
+  background-color: var(--color-bg) !important;
+  backdrop-filter: blur(2rem) !important;
+  -webkit-backdrop-filter: blur(2rem) !important;
+  border: 0.1rem solid var(--card-shadow) !important;
+  border-radius: 1.6rem !important;
+  color: var(--text-main) !important;
+  box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.5) !important;
+  padding: 2.22rem !important;
+  max-width: 36rem !important;
 }
 
 .driver-popover * {
-    color: var(--text-main);
+  color: var(--text-main);
 }
 
 .driver-popover .driver-popover-title {
-    font-size: 1.9rem !important;
-    font-weight: bold !important;
-    color: var(--text-strong) !important;
-    margin-bottom: 0.8rem !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 1rem !important;
+  font-size: 1.9rem !important;
+  font-weight: bold !important;
+  color: var(--text-strong) !important;
+  margin-bottom: 0.8rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
 }
 
 .map-tut-pop-icon-box {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.8rem;
-    height: 2.8rem;
-    border-radius: 0.6rem;
-    background: rgba(255, 255, 255, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 0.6rem;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .map-tut-pop-icon {
-    width: 1.8rem;
-    height: 1.8rem;
-    stroke: var(--card-shadow);
-    fill: none;
-    stroke-width: 2.5;
+  width: 1.8rem;
+  height: 1.8rem;
+  stroke: var(--card-shadow);
+  fill: none;
+  stroke-width: 2.5;
 }
 
 .driver-popover .driver-popover-description {
-    font-size: 1.5rem !important;
-    line-height: 1.6 !important;
-    color: var(--text-main) !important;
-    opacity: 0.9 !important;
+  font-size: 1.5rem !important;
+  line-height: 1.6 !important;
+  color: var(--text-main) !important;
+  opacity: 0.9 !important;
 }
 
 .driver-popover .driver-popover-progress-text {
-    font-size: 1.2rem !important;
-    font-weight: bold !important;
-    color: var(--card-shadow) !important;
-    opacity: 0.8 !important;
+  font-size: 1.2rem !important;
+  font-weight: bold !important;
+  color: var(--card-shadow) !important;
+  opacity: 0.8 !important;
 }
 
 /* Navigation & Buttons */
 .driver-popover .driver-popover-prev-btn,
 .driver-popover .driver-popover-next-btn {
-    background: var(--card-shadow) !important;
-    color: var(--color-bg) !important;
-    text-shadow: none !important;
-    border: none !important;
-    padding: 0.85rem 1.8rem !important;
-    border-radius: var(--border-radius-0p8rem) !important;
-    font-size: 1.4rem !important;
-    font-weight: bold !important;
-    transition: all 0.3s ease !important;
+  background: var(--card-shadow) !important;
+  color: var(--color-bg) !important;
+  text-shadow: none !important;
+  border: none !important;
+  padding: 0.85rem 1.8rem !important;
+  border-radius: var(--border-radius-0p8rem) !important;
+  font-size: 1.4rem !important;
+  font-weight: bold !important;
+  transition: all 0.3s ease !important;
 }
 
 /* Close button appearance */
 .driver-popover .driver-popover-close-btn {
-    color: var(--text-main) !important;
+  color: var(--text-main) !important;
 }
 
 .driver-popover .driver-popover-close-btn:hover {
-    color: var(--text-strong) !important;
+  color: var(--text-strong) !important;
 }
 
 /* Arrow customization (Basic reset) */
 .driver-popover .driver-popover-arrow {
-    border: none !important;
+  border: none !important;
 }
 
 .driver-popover-arrow-side-top {
-    border-bottom-color: var(--color-bg) !important;
+  border-bottom-color: var(--color-bg) !important;
 }
 
 .driver-popover-arrow-side-bottom {
-    border-top-color: var(--color-bg) !important;
+  border-top-color: var(--color-bg) !important;
 }
 
 .driver-popover-arrow-side-left {
-    border-right-color: var(--color-bg) !important;
+  border-right-color: var(--color-bg) !important;
 }
 
 .driver-popover-arrow-side-right {
-    border-left-color: var(--color-bg) !important;
+  border-left-color: var(--color-bg) !important;
 }
 
 /* Active element visibility high-priority rules */
 .driver-active-element {
-    z-index: var(--z-highest) !important;
+  z-index: var(--z-highest) !important;
 }
 
 body.map-tut-active #MapWrapper {
-    overflow: visible !important;
+  overflow: visible !important;
+}
+
+/* Ensure toggles stay behind the tutorial overlay unless highlighted */
+body.map-tut-active .accordion-toggle,
+body.map-tut-active .FigurePage-toggle,
+body.map-tut-active .Desc-toggle {
+  z-index: 1 !important;
 }
 
 body.map-tut-active #FigurePageToggle,
@@ -2614,19 +2589,114 @@ body.map-tut-active #MapBtnCapture,
 body.map-tut-active .map-btn-tutorial,
 body.map-tut-active .maplibregl-ctrl-top-right,
 body.map-tut-active .maplibregl-ctrl-bottom-left {
-    z-index: var(--z-highest) !important;
-}
-
-/* Hide other non-tutorial elements */
-body.map-tut-active #WFnewsToggle,
-body.map-tut-active #MapPostToggle {
-    display: none !important;
+  z-index: var(--z-highest) !important;
 }
 
 /* Responsive */
 @media (max-width: 1024px) {
-    .map-tut-overlay-title {
-        font-size: 2.8rem;
-    }
+  .map-tut-overlay-title {
+    font-size: 2.8rem;
+  }
+}
+
+
+
+/* ================ Drawer Help Modal (Decoupled from ui-toggles.js) ================ */
+.drawer-help-btn {
+  background: none;
+  border: none;
+  padding: 0.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: var(--text-main);
+  transition: all 0.3s ease;
+}
+
+.drawer-help-btn:hover {
+  color: var(--card-shadow);
+}
+
+.drawer-help-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(0.2rem);
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.drawer-help-modal {
+  background: var(--color-bg);
+  width: 90%;
+  max-width: 50rem;
+  max-height: 80vh;
+  border-radius: var(--border-radius-0p8rem);
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modal-pop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.drawer-help-header {
+  padding: 0.5rem 2rem 0.5rem;
+  background: linear-gradient(135deg, var(--map-accordion-gradient-start), var(--map-accordion-gradient-end));
+  color: var(--text-strong);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.drawer-help-header h3 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.drawer-help-body {
+  padding: 2rem;
+  overflow-y: auto;
+  font-size: 1.6rem;
+  line-height: 1.4;
+  color: var(--text-main);
+}
+
+.drawer-help-body p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.drawer-help-body b,
+.drawer-help-body strong {
+  color: var(--card-shadow);
+}
+
+.drawer-help-close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 2.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  line-height: 1;
 }
 

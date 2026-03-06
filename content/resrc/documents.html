@@ -448,7 +448,10 @@ title: ""
     }
 </style>
 
-<script>
+<script type="module">
+    import { addSwipeClose } from "/js/ui-toggles.js";
+    import { ESML } from "/js/utils.js";
+
     (function () {
         const tocItems = document.querySelectorAll(".doc-toc li");
         const subItems = document.querySelectorAll(".doc-toc-sub");
@@ -527,6 +530,9 @@ title: ""
         if (closeBtn) {
             closeBtn.onclick = closeSidebar;
         }
+        
+        // Use the existing utility function from ui-toggles.js
+        addSwipeClose(sidebar, { direction: "left", onClose: closeSidebar });
 
         async function loadDoc(docId) {
             if (loaded[docId]) return;
@@ -555,8 +561,8 @@ title: ""
                     container.innerHTML = `
                         <div style="padding: 2rem; border: 1px dashed var(--border-main); color: var(--text-muted);">
                             <p><strong>Failed to load document.</strong></p>
-                            <p style="font-size: 0.9rem; margin-top: 0.5rem;">Reason: ${e.message}</p>
-                            <p style="font-size: 0.8rem;">Path: ${baseUrl}</p>
+                            <p style="font-size: 0.9rem; margin-top: 0.5rem;">Reason: ${ESML(e.message)}</p>
+                            <p style="font-size: 0.8rem;">Path: ${ESML(baseUrl)}</p>
                             <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; cursor: pointer; background: var(--card-shadow); color: var(--color-bg); border: none; border-radius: 4px; font-weight: bold;">Retry</button>
                         </div>
                     `;

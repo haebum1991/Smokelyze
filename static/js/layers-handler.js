@@ -188,23 +188,7 @@ export function applyLayerToggles() {
         }
     });
 
-    // 4. Update Drawers Logic
-    const updateDrawerUI = (shortId, drawerId, toggleId, bodyCls) => {
-        const drawer = document.getElementById(drawerId);
-        const toggle = document.getElementById(toggleId);
-        if (!drawer) return;
-
-        if (currentCheckedIds.includes(shortId)) {
-            if (toggle) toggle.style.display = drawer.classList.contains("open") ? "none" : "block";
-        } else {
-            drawer.classList.remove("open");
-            if (bodyCls) document.body.classList.remove(bodyCls);
-            if (toggle) toggle.style.display = "none";
-        }
-    };
-
-    updateDrawerUI("wildfire-news", "WFnewsDrawer", "WFnewsToggle", "WFnews-drawer-open");
-    updateDrawerUI("MapPost", "MapPostDrawer", "MapPostToggle", "MapPost-drawer-open");
+    // 4. Update Drawers Logic (removed)
 
     // 5. Build and Update Active Layer Stack
     const newStack = activeLayerStack.filter(id => currentCheckedIds.includes(id));
@@ -283,10 +267,8 @@ export function applyLayerToggles() {
             const dr = document.getElementById(id);
             if (dr?.classList.contains("open")) {
                 dr.classList.remove("open");
-                const toggle = document.getElementById(id === "WFnewsDrawer" ? "WFnewsToggle" : "MapPostToggle");
                 const bodyCls = id === "WFnewsDrawer" ? "WFnews-drawer-open" : "MapPost-drawer-open";
                 document.body.classList.remove(bodyCls);
-                if (toggle) toggle.style.display = "block";
             }
         });
     }

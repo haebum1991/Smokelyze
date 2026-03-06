@@ -1,6 +1,6 @@
 
 import { savePatch, read, initStateShadingToggle, initPointLayersToggle, initNaShadingToggle } from "./ui-state.js";
-import { onDescDrawerOpen } from "./ui-param-desc.js";
+import { onDescDrawerOpen, appendDrawerHelpIcon } from "./ui-param-desc.js";
 import {
     clearHighlight,
     setOnSetNewsDrawer,
@@ -16,11 +16,18 @@ const SWITCH_STYLE = `
 .toggle-switch-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
   gap: 1rem;
   padding-top: 0.5rem;
   padding-left: 0;
   font-size: 1.4rem;
   color: var(--text-main);
+}
+.toggle-switch-left-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 .toggle-switch-label {
   position: relative;
@@ -84,11 +91,13 @@ export function createSwitchHTML(id, label, checked = false) {
     const isChecked = checked ? "checked" : "";
     return `
     <div class="toggle-switch-item">
-      <label class="toggle-switch-label">
-        <input type="checkbox" id="${id}" ${isChecked}>
-        <span class="toggle-switch-slider"></span>
-      </label>
-      <span>${ESML(label)}</span>
+      <div class="toggle-switch-left-group">
+        <label class="toggle-switch-label">
+          <input type="checkbox" id="${id}" ${isChecked}>
+          <span class="toggle-switch-slider"></span>
+        </label>
+        <span>${ESML(label)}</span>
+      </div>
     </div>
   `.trim();
 }
@@ -110,6 +119,7 @@ export function appendSwitch(parent, options) {
     }
     return switchEl;
 }
+
 
 /**
  * Helper: Close other drawers (especially on mobile)
@@ -133,7 +143,6 @@ export function closeAllExcept(activeId) {
                 drawerEl.classList.remove("open");
                 btnEl?.classList.remove("active");
                 if (cls) document.body.classList.remove(cls);
-                if (["news", "MapPost"].includes(id) && btnEl) btnEl.style.display = "block";
             }
         }
     });
@@ -270,7 +279,7 @@ export function initAccordion() {
         });
         initStateShadingToggle();
     }
-    
+
     const PointLayersContainer = document.getElementById("ToggleSwitchPointLayers");
     if (PointLayersContainer) {
         appendSwitch(PointLayersContainer, {
@@ -280,7 +289,7 @@ export function initAccordion() {
         });
         initPointLayersToggle();
     }
-    
+
     const NaShadingContainer = document.getElementById("ToggleSwitchNaShading");
     if (NaShadingContainer) {
         appendSwitch(NaShadingContainer, {
@@ -290,7 +299,7 @@ export function initAccordion() {
         });
         initNaShadingToggle();
     }
-    
+
     const s = read?.();
     const isCollapsed = s?.accordionCollapsed ?? true;
     setAccordionCollapsed(isCollapsed);
@@ -370,19 +379,19 @@ export function setNewsDrawer(open) {
 
     const actualOpen = (open !== undefined) ? open : !drawer.classList.contains("open");
     if (actualOpen) {
-        if (drawer.classList.contains("open")) return;
         drawer.classList.add("open");
+        btn.classList.add("active");
         document.body.classList.add("WFnews-drawer-open");
-        btn.style.display = "none";
         if (window.innerWidth <= 1024) {
             closeAllExcept("news");
             clearHighlight?.();
         }
+        // [Smart News Fetch] Notify system to check for news data
+        window.dispatchEvent(new CustomEvent("news-drawer-opened"));
     } else {
-        if (!drawer.classList.contains("open")) return;
         drawer.classList.remove("open");
+        btn.classList.remove("active");
         document.body.classList.remove("WFnews-drawer-open");
-        btn.style.display = "block";
     }
 }
 
@@ -395,6 +404,19 @@ export function initNewsDrawer() {
     btn.addEventListener("click", () => setNewsDrawer());
     addCloseHandler(closeBtn, () => setNewsDrawer(false));
     addSwipeClose(drawer, { direction: "left", onClose: () => setNewsDrawer(false) });
+
+    const container = document.getElementById("ToggleSwitchWildfire");
+    if (container) {
+        appendSwitch(container, {
+            id: "layer-wildfire-news",
+            label: "Show News on Map",
+            checked: false,
+            iconHTML: `<canvas class="ui-pulsing-icon" data-type="news" width="24" height="24" style="vertical-align:middle;"></canvas>`
+        });
+    }
+
+    // Add help icon for standalone modal
+    appendDrawerHelpIcon("WFnewsDrawer", "wildfire-news");
 }
 
 /**
@@ -407,19 +429,17 @@ export function setMapPostDrawer(open) {
 
     const actualOpen = (open !== undefined) ? open : !drawer.classList.contains("open");
     if (actualOpen) {
-        if (drawer.classList.contains("open")) return;
         drawer.classList.add("open");
+        btn.classList.add("active");
         document.body.classList.add("MapPost-drawer-open");
-        if (btn) btn.style.display = "none";
         if (window.innerWidth <= 1024) {
             closeAllExcept("MapPost");
             clearHighlight?.();
         }
     } else {
-        if (!drawer.classList.contains("open")) return;
         drawer.classList.remove("open");
+        btn.classList.remove("active");
         document.body.classList.remove("MapPost-drawer-open");
-        if (btn) btn.style.display = "block";
     }
 }
 
@@ -432,44 +452,21 @@ export function initMapPostDrawer() {
     if (btn) btn.addEventListener("click", () => setMapPostDrawer());
     addCloseHandler(closeBtn, () => setMapPostDrawer(false));
     addSwipeClose(drawer, { direction: "left", onClose: () => setMapPostDrawer(false) });
+
+    const container = document.getElementById("ToggleSwitchMapPost");
+    if (container) {
+        appendSwitch(container, {
+            id: "layer-MapPost",
+            label: "Show MapPost on Map",
+            checked: false,
+            iconHTML: `<canvas class="ui-pulsing-icon" data-type="alert" width="24" height="24" style="vertical-align:middle;"></canvas>`
+        });
+    }
+
+    // Add help icon for standalone modal
+    appendDrawerHelpIcon("MapPostDrawer", "MapPost");
 }
 
-/**
- * 6. Checkbox & Drawer Sync Logic
- */
-export function initCheckboxDrawerSync() {
-    const newsCb = document.getElementById("layer-wildfire-news");
-    const MapPostCb = document.getElementById("layer-MapPost");
-    if (!newsCb || !MapPostCb) return;
-
-    const isMobile = window.innerWidth <= 1024;
-
-    newsCb.addEventListener("change", () => {
-        if (newsCb.checked) {
-            const isLegendOn = document.getElementById("MapLegend")?.style.display === "block";
-            if (!isMobile && !isLegendOn) setNewsDrawer(true);
-            setMapPostDrawer(false);
-        } else {
-            setNewsDrawer(false);
-        }
-    });
-
-    MapPostCb.addEventListener("change", () => {
-        if (MapPostCb.checked) {
-            const isLegendOn = document.getElementById("MapLegend")?.style.display === "block";
-            if (!isMobile && !isLegendOn) setMapPostDrawer(true);
-            setNewsDrawer(false);
-        } else {
-            setMapPostDrawer(false);
-        }
-    });
-
-    setTimeout(() => {
-        if (isMobile) return;
-        if (newsCb.checked && !MapPostCb.checked) setNewsDrawer(true);
-        if (!newsCb.checked && MapPostCb.checked) setMapPostDrawer(true);
-    }, 500);
-}
 
 /**
  * Main Initialization
@@ -480,7 +477,6 @@ export function initAll() {
     initDescDrawer();
     initNewsDrawer();
     initMapPostDrawer();
-    initCheckboxDrawerSync();
 }
 
 if (document.readyState === "loading") {
@@ -495,4 +491,7 @@ setOnSetStatsDrawer(setStatsDrawer);
 setOnSetDescDrawer(setDescDrawer);
 setOnSetMapPostDrawer(setMapPostDrawer);
 setOnSetAccordionCollapsed(setAccordionCollapsed);
+
+// Make global for external module interaction (like ui-param-desc.js)
+window.setDescDrawer = setDescDrawer;
 

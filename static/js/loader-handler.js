@@ -438,8 +438,17 @@ export async function updateAllActiveSources() {
         const isoDate = utils.currentDate();
         const currentDataset = document.getElementById("MapDataSelect")?.value;
         const checkboxes = document.querySelectorAll("input[type=checkbox][id^='layer-']");
-
         const sourcesToLoad = new Set();
+        
+        // [Smart News Fetch] Load news if switch is on, drawer is open, or first load of the session
+        const newsSwitchOn = document.getElementById("layer-wildfire-news")?.checked;
+        const newsDrawerOpen = document.getElementById("WFnewsDrawer")?.classList.contains("open");
+
+        if (newsSwitchOn || newsDrawerOpen || !window._newsInitiallyLoaded) {
+            sourcesToLoad.add("wildfire_news");
+            window._newsInitiallyLoaded = true; // Mark as loaded once for today
+        }
+
         const activeShortIds = new Set();
 
         checkboxes.forEach(cb => {
@@ -587,12 +596,14 @@ export function bindEvents() {
         updateAllActiveSources();
     }, 200);
 
-    document.querySelectorAll("input[type=checkbox][id^='layer-']").forEach(cb => {
-        cb.addEventListener("change", () => {
+    // Event Delegation for all layer checkboxes (handles dynamic switches)
+    document.body.addEventListener("change", (e) => {
+        const cb = e.target;
+        if (cb.type === "checkbox" && cb.id.startsWith("layer-")) {
             const shortId = cb.id.replace("layer-", "");
             if (saveLayerFlag) saveLayerFlag(shortId, cb.checked);
 
-            // Published data 체크 시 로그인 확인 (사용자 클릭 이벤트 내에서 처리)
+            // Published data 체크 시 로그인 확인
             if (cb.checked && !auth.currentUser) {
                 const restrictedSources = ExcludeLayerGroups.restrictedSources;
                 const currentDataset = document.getElementById("MapDataSelect")?.value;
@@ -606,7 +617,6 @@ export function bindEvents() {
                     targetConfig = DATA_IMPORT_METHOD[globalKey];
                 }
 
-                // Published data인 경우 오버레이 표시 및 체크박스 해제
                 if (targetConfig?.source && restrictedSources.includes(targetConfig.source)) {
                     cb.checked = false;
                     utils.showAuthOverlay();
@@ -620,7 +630,7 @@ export function bindEvents() {
             }
 
             onLayerChange();
-        });
+        }
     });
 
     // ---- [External data] AirNow ----
@@ -639,5 +649,13 @@ export function bindEvents() {
         }, 200));
     }
     // ---- [External data] AirNow ----
+    
+    // [Smart News Fetch] Listen for drawer opening to load missing data
+    window.addEventListener("news-drawer-opened", () => {
+        const isoDate = utils.currentDate();
+        if (loadedSources["wildfire_news"] !== isoDate) {
+            updateAllActiveSources();
+        }
+    });
 }
 

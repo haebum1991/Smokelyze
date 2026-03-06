@@ -2,7 +2,6 @@
 import * as fb from "./fb-init.js";
 import * as utils from "./utils.js";
 import { map } from "./map-init.js";
-import { initUIPulsingIcons } from "./layers-icon.js";
 import { updateAuthButton } from "./signin.js";
 import { resetLoadedSources, updateAllActiveSources, showErrorToast } from "./loader.js";
 import { initHandlers, setupClickHandlers } from "./fb-MapPost-handler.js";
@@ -483,14 +482,6 @@ function renderMapPostList() {
 
     const totalCount = recentPosts.length;
     titleEl.textContent = `Recent MapPosts (${totalCount})`;
-
-    if (toggleBtn) {
-        toggleBtn.innerHTML = `
-                    <canvas class="ui-pulsing-icon" data-type="alert" width="35" height="35" style="margin-bottom:0.4rem;"></canvas>
-                    <br>(${totalCount})
-                `;
-        if (initUIPulsingIcons) initUIPulsingIcons();
-    }
 
     let html = `
                 <button class="MapPost-item-link clickOnAddFromDrawer" style="width: max-content; margin: 0 auto; display: block;">

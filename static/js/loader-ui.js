@@ -85,15 +85,6 @@ export function updateWildfireNewsList(features) {
         titleEl.textContent = `Wildfire News (${totalCount})`;
     }
 
-    const wfToggle = document.getElementById("WFnewsToggle");
-    if (wfToggle) {
-        wfToggle.innerHTML = `
-        <canvas class="ui-pulsing-icon" data-type="news" width="35" height="35" style="margin-bottom:0.4rem;"></canvas>
-        <br>(${utils.ESML(String(totalCount))})
-      `;
-        if (initUIPulsingIcons) initUIPulsingIcons();
-    }
-
     if (totalCount === 0) {
         listContainer.innerHTML = '<div style="padding:2rem; text-align:center; color:var(--text-main); font-size:1.4rem;">No additional news today or <br>No data was collected on this date.</div>';
         return;
