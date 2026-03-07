@@ -1822,15 +1822,6 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
   color: var(--text-heading);
 }
 
-#MapPostModalClose {
-  background: none;
-  border: none;
-  font-size: 2.5rem;
-  cursor: pointer;
-  color: var(--text-main);
-  line-height: 1;
-}
-
 .MapPost-modal-body {
   flex: 1;
   padding: 2rem;
