@@ -661,19 +661,6 @@ body.FigurePage-drawer-open .toolbar-date-page {
   color: var(--text-strong);
 }
 
-.accordion-close-btn {
-  background: none;
-  border: none;
-  color: var(--text-strong);
-  cursor: pointer;
-  padding: 0.4rem;
-  border-radius: calc(var(--border-radius-0p8rem) * 3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.3s;
-}
-
 .accordion summary {
   cursor: pointer;
   font-weight: bold;
@@ -690,13 +677,11 @@ body.FigurePage-drawer-open .toolbar-date-page {
 
 @media (hover: hover) {
 
-  .accordion-toggle:hover,
-  .accordion-close-btn:hover {
+  .accordion-toggle:hover {
     background-color: var(--map-accordion-gradient-start);
   }
 
   .accordion-toggle:hover,
-  .accordion-close-btn:hover,
   .accordion summary:hover {
     transform: scale(1.05);
   }
@@ -835,7 +820,7 @@ details[open] summary {
   transform: translateX(0);
 }
 
-.FigurePage-drawer-close {
+#FigurePageDrawerClose {
   position: absolute;
   top: 1rem;
   right: 3rem;
@@ -1442,17 +1427,6 @@ tr.stats-state-row-ca.show {
   color: var(--text-strong);
 }
 
-.Desc-drawer-close,
-.FigurePage-drawer-close {
-  background: none;
-  border: none;
-  font-size: 3rem;
-  color: var(--text-main);
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-}
-
 .Desc-tab-main,
 .Desc-tab-sub {
   padding: 1rem 1rem;
@@ -1609,22 +1583,6 @@ tr.stats-state-row-ca.show {
 .MapPost-drawer.open,
 .WFnews-drawer.open {
   transform: translateX(0);
-}
-
-.MapPost-drawer-close,
-.WFnews-drawer-close {
-  color: var(--text-strong);
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  font-size: 2rem;
-  cursor: pointer;
-  width: 2.8rem;
-  height: 2.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background 0.3s;
 }
 
 @media (hover: hover) {
@@ -1864,7 +1822,7 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
   color: var(--text-heading);
 }
 
-.MapPost-modal-close {
+#MapPostModalClose {
   background: none;
   border: none;
   font-size: 2.5rem;
@@ -2694,15 +2652,5 @@ body.map-tut-active .maplibregl-ctrl-bottom-left {
 .drawer-help-body b,
 .drawer-help-body strong {
   color: var(--card-shadow);
-}
-
-.drawer-help-close {
-  background: none;
-  border: none;
-  color: inherit;
-  font-size: 2.5rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  line-height: 1;
 }
 

@@ -1,0 +1,56 @@
+
+<h2>Wildfire News Tracking</h2>
+<hr>
+
+<section id="wildfire-news">
+    <p>6-hourly tracker for new wildfire-related news using national news RSS feeds, providing narrative situational
+    
+    <h3>1. Key Information</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Aggregate current wildfire news for the US and Canada.</li>
+        <li><strong>Source:</strong> Google News RSS via <code>tidyRSS</code> with keyword-based queries.</li>
+        <li><strong>Output:</strong> GeoJSON files (News) uploaded daily to GCS.</li>
+    </ul>
+
+    <h3>2. Main Workflow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>RSS Feed Sync:</strong> Scrapes Google
+            News using multiple wildfire-related keywords (e.g., "wildland fire", "wildfire smoke", "prescribed fire").
+        </div>
+        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>Geocoding:</strong> Maps US state
+            and Canadian province names found in headlines to pre-defined center coordinates for map placement.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Historical Merge:</strong> Loads existing
+            daily GeoJSON from GCS and appends new records, avoiding duplicates.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>Archiving:</strong> Saves finalized
+            GeoJSON FeatureCollections to GCS, organized by year.</div>
+    </div>
+
+    <h3>3. R Libraries Used</h3>
+    <pre><code>library(dplyr)
+library(stringr)
+library(lubridate)
+library(tidyRSS)     # Google News RSS parsing
+library(jsonlite)    # GeoJSON construction
+library(googleCloudStorageR)</code></pre>
+
+    <h3>4. Technical Implementation</h3>
+    <h4>- Google News RSS Scraping</h4>
+    <p>Queries Google News using keyword-based RSS feeds and parses results with <code>tidyRSS</code>. Summaries are
+        cleaned of HTML tags and truncated to 300 characters.</p>
+    <pre><code># Keyword-based RSS search
+NEWS_RSS_URL <- paste0("https://news.google.com/rss/search?q=", URLencode(QUERY))
+feed <- tidyRSS::tidyfeed(NEWS_RSS_URL) %>%
+  filter(as.Date(item_pub_date) >= q_date)</code></pre>
+
+    <h4>- State-level Geocoding</h4>
+    <p>News headlines are matched against a built-in lookup table of US states and Canadian provinces to assign
+        approximate geographic coordinates for map visualization.</p>
+    <pre><code># Pre-defined state center coordinates
+STATE_COORDS <- list(
+  "California" = c(-119.4179, 36.7783),
+  "Oregon" = c(-120.5542, 43.8041),
+  "British Columbia" = c(-127.6476, 53.7267),
+  ...
+)</code></pre>
+</section>
+

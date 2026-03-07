@@ -248,18 +248,12 @@ img {
   cursor: pointer;
 }
 
-.nav-toggle-close {
+#NavToggleClose {
   display: none;
   z-index: var(--z-mobile-close);
   align-self: flex-end;
-  font-size: 3rem;
-  font-weight: bold;
   padding: 1rem 1.5rem;
   margin: 1rem;
-  background: transparent;
-  color: var(--color-white, #fff);
-  border: none;
-  cursor: pointer;
 }
 
 @media (hover: hover) {
@@ -634,6 +628,26 @@ body.page-about .sidebar {
   display: block;
 }
 
+
+/* UI Components */
+.ui-btn-close {
+  background: none;
+  border: none;
+  color: var(--text-strong);
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: calc(var(--border-radius-0p8rem) * 3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+@media (hover: hover) {
+  .ui-btn-close:hover {
+    background-color: var(--map-accordion-gradient-start);
+  }
+}
 
 /* Back to top setting */
 #BackToTop {
@@ -1022,18 +1036,11 @@ body.page-about .sidebar {
   margin-bottom: 0.5rem;
 }
 
-.auth-btn-close {
+#ProfileBtnClose,
+#SettingsBtnClose {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
-  background: transparent;
-  border: none;
-  font-size: 3rem;
-  color: var(--text-strong);
-  cursor: pointer;
-  transition: opacity 0.3s;
-  line-height: 1;
-  padding: 0;
 }
 
 @media (hover: hover) {
@@ -1185,7 +1192,7 @@ body.page-about .sidebar {
     display: block;
   }
 
-  .nav-toggle-close {
+  #NavToggleClose {
     display: flex;
   }
     

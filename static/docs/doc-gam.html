@@ -13,8 +13,8 @@
         and seasonal drivers.
     </p>
     <div class="doc-callout">
-        <strong>Smoke O3 (SMO):</strong> The O3 enhancement attributed to wildfire smoke, calculated as the
-        difference between the observed concentration and the GAM-predicted background:
+        <strong>Smoke O3 (SMO):</strong> Smoke contribution to O3 MDA8, calculated as the
+        difference between the observed and the GAM-predicted concentration on smoke days:
         <br>
         <span style="display: block; text-align: center; margin-top: 0.5rem; font-weight: bold;">
             SMO = Residual = Obs MDA8 O3 - Pred MDA8 O3
@@ -105,7 +105,7 @@ df_smoke$SMO <- df_smoke$MDA8O3 - pred_MDA8O3
     <div class="doc-formula">
         Y<sub>EDM</sub> = Q<sup>Tr</sup><sub>obs</sub> ( F<sup>Tr</sup><sub>pred</sub> ( Y<sub>pred</sub> ) )
     </div>
-    <p>Using EDM (<strong style="color: var(--card-shadow);">Lee and Jaffe, 2024a; 2025</strong>) ensures that the
+    <p>Using EDM (<strong style="color: var(--card-shadow);">Lee and Jaffe, 2025</strong>) ensures that the
         predicted background is statistically consistent with observations, leading to a more robust isolation of SMO.
     </p>
 </section>

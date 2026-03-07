@@ -50,7 +50,7 @@ const SWITCH_STYLE = `
   bottom: 0;
   background-color: grey; 
   transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: var(--border-radius-0p8rem);
+  border-radius: calc(var(--border-radius-0p8rem) * 2);
   overflow: hidden;
 }
 .toggle-switch-slider:before {
@@ -410,8 +410,7 @@ export function initNewsDrawer() {
         appendSwitch(container, {
             id: "layer-wildfire-news",
             label: "Show Locations on Map",
-            checked: false,
-            iconHTML: `<canvas class="ui-pulsing-icon" data-type="news" width="24" height="24" style="vertical-align:middle;"></canvas>`
+            checked: false
         });
     }
 
@@ -462,8 +461,7 @@ export function initMapPostDrawer() {
         appendSwitch(container, {
             id: "layer-MapPost",
             label: "Show MapPost on Map",
-            checked: false,
-            iconHTML: `<canvas class="ui-pulsing-icon" data-type="alert" width="24" height="24" style="vertical-align:middle;"></canvas>`
+            checked: false
         });
     }
 
@@ -558,19 +556,30 @@ const injectKeyTipCSS = () => {
             color: var(--text-main);
             width: 45rem;
             max-width: 90vw;
-            pointer-events: none;
+            pointer-events: auto;
             animation: keyTipSummaryIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: "Outfit", sans-serif;
         }
 
+        .key-tip-summary-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            border-bottom: 0.1rem solid var(--card-shadow);
+            padding-bottom: 1rem;
+        }
+
         .key-tip-summary-title {
-            text-align: center;
             font-size: 1.8rem;
             font-weight: bold;
-            margin-bottom: 2rem;
             letter-spacing: 0.1rem;
             color: var(--text-main);
             text-transform: uppercase;
+        }
+
+        .key-tip-summary-close {
+            /* Standard styles for close button will be applied via class */
         }
 
         .key-tip-summary-grid {
@@ -640,7 +649,17 @@ const showKeyTips = () => {
     const summary = document.createElement("div");
     summary.className = "key-tip-summary";
 
-    let gridHTML = `<div class="key-tip-summary-title">Keyboard Shortcuts</div><div class="key-tip-summary-grid">`;
+    let gridHTML = `
+        <div class="key-tip-summary-header">
+            <div class="key-tip-summary-title">Keyboard Shortcuts</div>
+            <button class="ui-btn-close" id="ShortcutModalClose">
+                <svg width="20" height="20">
+                    <use xlink:href="#icon-close" />
+                </svg>
+            </button>
+        </div>
+        <div class="key-tip-summary-grid">
+    `;
 
     const displayNames = {
         "d": "Date Picker",
@@ -686,7 +705,17 @@ const showKeyTips = () => {
 
     gridHTML += `</div>`;
     summary.innerHTML = gridHTML;
+    
+    // Enable interaction for the summary (previously pointer-events: none)
+    summary.style.pointerEvents = "auto";
+
     document.body.appendChild(summary);
+
+    // Bind Close Event
+    document.getElementById("ShortcutModalClose")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        clearKeyTips();
+    });
 };
 
 const handleCommonShortcut = (key) => {

@@ -9,7 +9,11 @@ title: ""
     <nav class="doc-sidebar" id="DocSidebar">
         <div class="doc-sidebar-header">
             <div class="doc-sidebar-title">Documents</div>
-            <button class="doc-sidebar-close" id="DocSidebarClose">&times;</button>
+            <button class="ui-btn-close" id="DocSidebarClose">
+                <svg width="20" height="20">
+                    <use xlink:href="#icon-close" />
+                </svg>
+            </button>
         </div>
         <ul class="doc-toc" id="DocToc">
 
@@ -24,7 +28,8 @@ title: ""
             <li class="doc-toc-h1" data-doc="doc-smoke-impacts"><a href="#">Technical Note</a></li>
 
             <li class="doc-sidebar-divider">Data Pipeline</li>
-            <li class="doc-toc-h1" data-doc="doc-wildfire"><a href="#">News/NIFC</a></li>
+            <li class="doc-toc-h1" data-doc="doc-wildfire-news"><a href="#">News</a></li>
+            <li class="doc-toc-h1" data-doc="doc-wildfire-nifc"><a href="#">NIFC</a></li>
             <li class="doc-toc-h1" data-doc="doc-airnow"><a href="#">EPA/AirNow</a></li>
             <li class="doc-toc-h1" data-doc="doc-hms"><a href="#">NOAA/HMS</a></li>
             <li class="doc-toc-h1" data-doc="doc-merra2"><a href="#">NASA/MERRA-2</a></li>
@@ -103,16 +108,8 @@ title: ""
         color: var(--text-heading);
     }
 
-    .doc-sidebar-close {
+    #DocSidebarClose {
         display: none;
-        background: none;
-        border: none;
-        color: var(--text-main);
-        font-size: 2.8rem;
-        /* Special icon size */
-        cursor: pointer;
-        line-height: 1;
-        padding: 0.5rem;
     }
 
     .doc-sidebar-divider {
@@ -320,8 +317,10 @@ title: ""
         border-bottom: 0.2rem solid var(--card-shadow);
     }
 
-    .doc-table tr:hover {
-        background: var(--color-code-bg);
+    @media (hover: hover) {
+        .doc-table tr:hover {
+            background: var(--color-code-bg);
+        }
     }
 
     .doc-flow {
@@ -430,7 +429,7 @@ title: ""
             color: var(--color-white) !important;
         }
 
-        .doc-sidebar-close {
+        #DocSidebarClose {
             display: block;
             color: var(--color-white);
         }
@@ -467,7 +466,8 @@ title: ""
             "doc-smokeday": "/docs/doc-smokeday.html",
             "doc-gam": "/docs/doc-gam.html",
             "doc-smoke-impacts": "/docs/doc-smoke-impacts.html",
-            "doc-wildfire": "/docs/doc-wildfire.html",
+            "doc-wildfire-news": "/docs/doc-wildfire-news.html",
+            "doc-wildfire-nifc": "/docs/doc-wildfire-nifc.html",
             "doc-airnow": "/docs/doc-airnow.html",
             "doc-hms": "/docs/doc-hms.html",
             "doc-merra2": "/docs/doc-merra2.html",

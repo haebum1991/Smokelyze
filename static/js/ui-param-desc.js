@@ -446,7 +446,11 @@ export function showHelpModal(descId) {
         <div class="drawer-help-modal">
             <div class="drawer-help-header">
                 <h3>${ESML(found.title)}</h3>
-                <button class="drawer-help-close">&times;</button>
+                <button class="ui-btn-close" id="DrawerHelpClose">
+                    <svg width="20" height="20">
+                        <use xlink:href="#icon-close" />
+                    </svg>
+                </button>
             </div>
             <div class="drawer-help-body">
                 <p>${found.desc}</p>
@@ -459,7 +463,7 @@ export function showHelpModal(descId) {
         setTimeout(() => overlay.remove(), 200);
     };
 
-    overlay.querySelector(".drawer-help-close").addEventListener("click", close);
+    overlay.querySelector("#DrawerHelpClose").addEventListener("click", close);
     overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
 
     document.body.appendChild(overlay);

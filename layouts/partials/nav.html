@@ -3,7 +3,7 @@
   function setupNavToggle() {
     const nav = document.getElementById("mainNav");
     const openBtn = document.getElementById("navToggle");
-    const closeBtn = nav ? nav.querySelector(".nav-toggle-close") : null;
+    const closeBtn = document.getElementById("NavToggleClose");
     
     if (!nav || !openBtn) return;
     
@@ -122,7 +122,11 @@
   <button class="nav-toggle" id="navToggle">☰</button>
 
   <ul class="nav-links" id="mainNav">
-    <button class="nav-toggle-close" aria-label="Close">&times;</button>
+    <button class="ui-btn-close" id="NavToggleClose" aria-label="Close">
+      <svg width="20" height="20">
+        <use xlink:href="#icon-close" />
+      </svg>
+    </button>
 
     {{ range .Site.Menus.main }}
     {{ if .HasChildren }}

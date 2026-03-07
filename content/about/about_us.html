@@ -255,7 +255,11 @@ body.page-about .content {
   <div class="projects-modal-content" onclick="event.stopPropagation()">
     <div class="projects-modal-header">
       <h3>Wildfire & Air Quality</h3>
-      <button class="projects-close-btn" onclick="closeModalProjects(null, 'projects-modal-1')">&times;</button>
+      <button class="ui-btn-close" id="ProjectModalClose1" onclick="closeModalProjects(null, 'projects-modal-1')">
+        <svg width="20" height="20">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
     </div>
     <div class="projects-modal-body">
       <h2>Impact of wildfire smoke on air quality in the United States</h2>
@@ -301,7 +305,11 @@ body.page-about .content {
   <div class="projects-modal-content" onclick="event.stopPropagation()">
     <div class="projects-modal-header">
       <h3>PM2.5 Characteristics</h3>
-      <button class="projects-close-btn" onclick="closeModalProjects(null, 'projects-modal-2')">&times;</button>
+      <button class="ui-btn-close" id="ProjectModalClose2" onclick="closeModalProjects(null, 'projects-modal-2')">
+        <svg width="20" height="20">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
     </div>
     <div class="projects-modal-body">
       <h2>A study on the comprehensive characteristics of fine particulate matter (PM2.5)</h2>
@@ -360,7 +368,11 @@ body.page-about .content {
   <div class="projects-modal-content" onclick="event.stopPropagation()">
     <div class="projects-modal-header">
       <h3>New Particle Formation (NPF)</h3>
-      <button class="projects-close-btn" onclick="closeModalProjects(null, 'projects-modal-3')">&times;</button>
+      <button class="ui-btn-close" id="ProjectModalClose3" onclick="closeModalProjects(null, 'projects-modal-3')">
+        <svg width="20" height="20">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
     </div>
     <div class="projects-modal-body">
       <h2>A study on new particle formation (NPF) in the ambient atmosphere</h2>
@@ -396,7 +408,11 @@ body.page-about .content {
   <div class="projects-modal-content" onclick="event.stopPropagation()">
     <div class="projects-modal-header">
       <h3>LIBS System Development</h3>
-      <button class="projects-close-btn" onclick="closeModalProjects(null, 'projects-modal-4')">&times;</button>
+      <button class="ui-btn-close" id="ProjectModalClose4" onclick="closeModalProjects(null, 'projects-modal-4')">
+        <svg width="20" height="20">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
     </div>
     <div class="projects-modal-body">
       <h2>Development of laser-induced breakdown spectroscopy (LIBS) system</h2>
@@ -641,13 +657,11 @@ body.page-about .content {
   margin-top: 0;
 }
 
-.projects-close-btn {
+#ProjectModalClose1,
+#ProjectModalClose2,
+#ProjectModalClose3,
+#ProjectModalClose4 {
   color: var(--color-bg);
-  background: none;
-  border: none;
-  font-size: 3rem;
-  cursor: pointer;
-  line-height: 1;
 }
 
 @keyframes slideUp {
