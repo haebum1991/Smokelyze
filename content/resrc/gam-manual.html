@@ -367,7 +367,7 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
   .gm-head-strip {
     background: var(--card-shadow);
     color: var(--color-bg);
-    padding: 1rem 2rem;
+    padding: 0.5rem 2rem;
     font-size: 1.8rem;
     font-weight: bold;
     border-radius: var(--border-radius-0p8rem) var(--border-radius-0p8rem) 0 0;
@@ -478,7 +478,15 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
     background: var(--color-code-bg2);
     border-color: var(--card-shadow);
   }
-
+  
+  .gm-input:disabled {
+    opacity: 0.3 !important;
+    background: rgba(0, 0, 0, 0.1) !important;
+    border: 0.1rem dashed var(--text-muted) !important;
+    cursor: not-allowed !important;
+    color: var(--text-muted) !important;
+  }
+  
   .gm-input option {
     background: var(--color-bg);
     color: var(--text-main);
@@ -613,15 +621,15 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
   }
 
   .gm-echo {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     color: var(--card-shadow);
     background: rgba(0, 0, 0, 0.25);
     padding: 0.8rem 1.2rem;
     border-radius: var(--border-radius-0p8rem);
     font-family: "Fira Code", monospace;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-all;
+    line-height: 1.4;
     min-width: 0;
     width: 100%;
     box-sizing: border-box;
@@ -1154,7 +1162,7 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
       updateClass();
 
       row.querySelectorAll("select, input").forEach(el => el.addEventListener("change", () => {
-        if (el.id.startsWith("class_") || el.id.startsWith("func_")) syncConstraints(id);
+        if (el.id.startsWith("class_") || el.id.startsWith("func_") || el.id.startsWith("bs_")) syncConstraints(id);
         updateFormula();
       }));
 
@@ -1166,9 +1174,23 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
     function syncConstraints(id) {
       const cls = document.getElementById(`class_${id}`).value;
       const fn = document.getElementById(`func_${id}`).value;
+      const bsEl = document.getElementById(`bs_${id}`);
+      const kEl = document.getElementById(`k_${id}`);
+
       const isFixed = (cls === "categorical" || fn === "none");
-      document.getElementById(`bs_${id}`).disabled = isFixed;
-      document.getElementById(`k_${id}`).disabled = isFixed;
+      bsEl.disabled = isFixed;
+
+      if (isFixed) {
+        kEl.disabled = true;
+      } else {
+        // If basis is [ad] (adaptive), k should be -1 and disabled
+        if (bsEl.value === "ad") {
+          kEl.value = "-1";
+          kEl.disabled = true;
+        } else {
+          kEl.disabled = false;
+        }
+      }
     }
 
     window.loadSplitLevels = () => {
