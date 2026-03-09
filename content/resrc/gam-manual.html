@@ -293,13 +293,13 @@ title: ""
             <button id="BtnNextPred" class="gm-page-btn">Next</button>
           </div>
 
-          <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+          <div class="gm-desktop-only" style="display: flex; gap: 1rem; justify-content: flex-end;">
             <button id="BtnDownloadCSVResults" class="gm-btn">Export Table (.csv)</button>
             <button id="BtnDownloadRDS" class="gm-btn">Export Results (.rds)</button>
           </div>
 
-          <br>
-          <div class="gm-note">
+          <br class="gm-desktop-only">
+          <div class="gm-note gm-desktop-only">
             <p>Once you download the .rds file, you can load and inspect the results in R:</p>
             <pre class="gm-formula-box">
 library(mgcv)
@@ -761,6 +761,10 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
       flex-direction: column;
       align-items: stretch;
       gap: 1.5rem;
+    }
+    
+    .gm-desktop-only {
+      display: none !important;
     }
   }
 
