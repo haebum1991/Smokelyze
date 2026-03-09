@@ -3,6 +3,23 @@ import { ESML } from "./utils.js";
 import { initUIPulsingIcons } from "./layers-icon.js";
 
 export const DescData = {
+    "desc-toggle-only": [
+        {
+            id: "show-state-shading",
+            title: "Show State Shading",
+            desc: "If enabled, the states or regions are filled with colors corresponding to the selected layer values."
+        },
+        {
+            id: "show-points",
+            title: "Show Points",
+            desc: "If enabled, individual monitoring station points (e.g., AQS points) are displayed on the map."
+        },
+        {
+            id: "show-na-values",
+            title: "Show N/A values",
+            desc: "If enabled, regions or points with missing (N/A) values are displayed on the map."
+        }
+    ],
     "desc-drawer-only": [
         { 
           id: "wildfire-news",
@@ -214,7 +231,7 @@ export const DescData = {
                 "<a href='https://doi.org/10.1029/2025JD044088' target='_blank'>https://doi.org/10.1029/2025JD044088</a>"
         },
         { id: "mda8-obs", title: "Obs MDA8", desc: "Daily maximum 8-hour average O3 concentration (MDA8) observed at AQS monitoring sites" },
-        { id: "mda8-pred", title: "Pred MDA8", desc: "Predicted MDA8 using the Generalized Additive Model (GAM)" },
+        { id: "mda8-pred", title: "Pred MDA8", desc: "Predicted MDA8 from the Generalized Additive Model (GAM)" },
         { id: "smo", title: "SMO", desc: "Smoke contribution to O3 (or Smoke O3, SMO), SMO is equal to Residual on smoke days (NA for non-smoke day)" },
         { id: "resids", title: "Residual", desc: "The difference between observed and predicted MDA8 (Obs MDA8 - Pred MDA8) from GAM" },
         { id: "resids-quant", title: "Quant residual", desc: "Estimated residual quantile based on non-smoke days" },
@@ -223,7 +240,7 @@ export const DescData = {
         { id: "pm25-crit", title: "PM2.5-crit", desc: "PM2.5-criteria using Med + 1.0 MAD method" },
         { id: "tmax", title: "TMAX", desc: "Daily maximum temperature (K) from MERRA-2" },
         { id: "srad", title: "SRAD", desc: "Daily mean surface shortwave solar flux (W m⁻²) from MERRA-2" },
-        { id: "mda8-pred-edm", title: "Pred MDA8 (EDM)", desc: "Predicted MDA8 using the Generalized Additive Model (GAM) (EDM version)" },
+        { id: "mda8-pred-edm", title: "Pred MDA8 (EDM)", desc: "Predicted MDA8 from the Generalized Additive Model (GAM) (EDM version)" },
         { id: "smo-edm", title: "SMO (EDM)", desc: "Smoke contribution to O3 (or Smoke O3, SMO), SMO is equal to Residual on smoke days (NA for non-smoke day) (EDM version)" },
         { id: "resids-edm", title: "Residual (EDM)", desc: "The difference between observed and predicted MDA8 (Obs MDA8 - Pred MDA8) from GAM (EDM version)" },
         { id: "resids-quant-edm", title: "Quant residual (EDM)", desc: "Estimated PM2.5 quantile based on HMS = 0 (non-overhead smoke plume) (EDM version)" },
@@ -243,7 +260,7 @@ export const DescData = {
                 "<a href='https://doi.org/10.1021/acs.est.4c05870' target='_blank'>https://doi.org/10.1021/acs.est.4c05870</a>"
         },
         { id: "mda8-obs", title: "Obs MDA8", desc: "Daily maximum 8-hour average O3 concentration (MDA8) observed at AQS monitoring sites" },
-        { id: "mda8-pred", title: "Pred MDA8", desc: "Predicted MDA8 using the Generalized Additive Model (GAM)" },
+        { id: "mda8-pred", title: "Pred MDA8", desc: "Predicted MDA8 from the Generalized Additive Model (GAM)" },
         { id: "smo", title: "SMO", desc: "Smoke contribution to O3 (or Smoke O3, SMO), SMO is equal to Residual on smoke days (NA for non-smoke day)" },
         { id: "resids", title: "Residual", desc: "The difference between observed and predicted MDA8 (Obs MDA8 - Pred MDA8) from GAM" },
         { id: "resids-quant", title: "Quant residual", desc: "Estimated residual quantile based on non-smoke days" },
@@ -285,9 +302,9 @@ export const DescData = {
                 "<a href='https://doi.org/10.1016/j.dib.2024.111208' target='_blank'>https://doi.org/10.1016/j.dib.2024.111208</a>"
         },
         { id: "mda8-obs", title: "Obs MDA8", desc: "Daily maximum 8-hour average O3 concentration (MDA8) observed at AQS monitoring sites" },
-        { id: "mda8-pred", title: "Pred MDA8", desc: "Predicted MDA8 using the Generalized Additive Model (GAM)" },
-        { id: "smo", title: "SMO", desc: "Smoke contribution to O3 (or Smoke O3, SMO), SMO is equal to Residual on smoke days (NA for non-smoke day)" },
-        { id: "resids", title: "Residual", desc: "The difference between observed and predicted MDA8 (Obs MDA8 - Pred MDA8) from GAM" },
+        { id: "mda8-pred", title: "Pred MDA8", desc: "Predicted MDA8 from the EMBER model" },
+        { id: "smo", title: "SMO", desc: "Smoke contribution to O3 (or Smoke O3, SMO)" },
+        { id: "resids", title: "Residual", desc: "The difference between observed and predicted MDA8 (Obs MDA8 - Pred MDA8) from EMBER model" },
         { id: "ExcDays", title: "Exc. day", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 0) = caused by smoke" }
     ]
 };
@@ -401,22 +418,29 @@ export function onDescDrawerOpen() {
  * Creates and appends a help icon click handler that shows a help modal.
  */
 export function appendDrawerHelpIcon(drawerId, descId) {
+    
     const drawer = document.getElementById(drawerId);
     if (!drawer) return;
 
     const toggleItem = drawer.querySelector(".toggle-switch-item");
     if (!toggleItem) return;
 
+    let foundItem = null;
+    for (const group in DescData) {
+        foundItem = DescData[group].find(item => item.id === descId);
+        if (foundItem) break;
+    }
+
     const helpBtn = document.createElement("button");
     helpBtn.className = "drawer-help-btn";
-    helpBtn.title = "Learn more about this data";
+
+    // Dynamic tooltip based on found title
+    const itemName = foundItem ? foundItem.title : "this data";
+    helpBtn.title = `? ${itemName}`;
 
     helpBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" 
-             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        <svg width="20" height="20">
+            <use xlink:href="#icon-help" />
         </svg>
     `;
 
@@ -431,11 +455,16 @@ export function appendDrawerHelpIcon(drawerId, descId) {
 /**
  * Displays a standalone help modal with content from DescData
  */
-export function showHelpModal(descId) {
+export function showHelpModal(descId, targetGroup = null) {
     let found = null;
-    for (const group in DescData) {
-        found = DescData[group].find(item => item.id === descId);
-        if (found) break;
+    if (targetGroup && DescData[targetGroup]) {
+        found = DescData[targetGroup].find(item => item.id === descId);
+    }
+    if (!found) {
+        for (const group in DescData) {
+            found = DescData[group].find(item => item.id === descId);
+            if (found) break;
+        }
     }
     if (!found) return;
 
@@ -467,5 +496,81 @@ export function showHelpModal(descId) {
     overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
 
     document.body.appendChild(overlay);
+}
+
+
+/**
+ * Appends a help icon to all layer checkboxes in the accordion that have a corresponding DescData entry.
+ */
+export function appendAllLayerHelpIcons() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"][id^="layer-"]');
+    checkboxes.forEach(chk => {
+        const descId = chk.id.replace("layer-", "");
+
+        // 1. Validate if drawing is even needed BEFORE generating DOM nodes.
+        let foundItem = null;
+        for (const group in DescData) {
+            foundItem = DescData[group].find(item => item.id === descId);
+            if (foundItem) {
+                break;
+            }
+        }
+        if (!foundItem) return;
+
+        const parentLabel = chk.closest("label");
+        if (!parentLabel) return;
+        
+        // Skip modern toggle switches, they are handled separately by appendDrawerHelpIcon
+        if (parentLabel.classList.contains("toggle-switch-label")) return;
+
+        // Skip if already attached
+        if (parentLabel.querySelector(".layer-help-btn")) return;
+
+        const helpBtn = document.createElement("span");
+        helpBtn.className = "layer-help-btn drawer-help-btn";
+        helpBtn.title = `? ${foundItem.title}`;
+
+        // Apply absolute positioning for perfect vertical centering
+        parentLabel.style.position = "relative";
+        parentLabel.style.paddingRight = "2.5rem"; // prevent text overlap
+
+        helpBtn.style.position = "absolute";
+        helpBtn.style.right = "0.5rem";
+        helpBtn.style.top = "50%";
+        helpBtn.style.transform = "translateY(-50%)";
+        helpBtn.style.padding = "0.2rem";
+        helpBtn.style.margin = "0";
+        helpBtn.style.display = "flex";
+        helpBtn.style.alignItems = "center";
+
+        helpBtn.innerHTML = `
+            <svg width="20" height="20">
+                <use xlink:href="#icon-help" />
+            </svg>
+        `;
+
+        helpBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Determine active dataset to fetch correct description
+            const datasetSelect = document.getElementById("MapDataSelect");
+            let targetGroup = null;
+
+            if (datasetSelect && chk.closest("#MapCheckboxPublished")) {
+                const val = datasetSelect.value;
+                if (val === "gam-v2" || val === "gam-v2-pred") targetGroup = "desc-published-gam-v2";
+                else if (val === "gam-v1") targetGroup = "desc-published-gam-v1";
+                else if (val === "pm-cbsa" || val === "pm-cbsa-pred") targetGroup = "desc-published-pm-cbsa";
+                else if (val === "epa-ember") targetGroup = "desc-published-epa-ember";
+            }
+
+            // Reuse the main help modal logic
+            showHelpModal(descId, targetGroup);
+        });
+
+        // Insert just before the checkbox
+        parentLabel.insertBefore(helpBtn, chk);
+    });
 }
 

@@ -1,6 +1,6 @@
 
 import { savePatch, read, initStateShadingToggle, initPointLayersToggle, initNaShadingToggle } from "./ui-state.js";
-import { onDescDrawerOpen, appendDrawerHelpIcon } from "./ui-param-desc.js";
+import { onDescDrawerOpen, appendDrawerHelpIcon, appendAllLayerHelpIcons } from "./ui-param-desc.js";
 import {
     clearHighlight,
     setOnSetNewsDrawer,
@@ -21,7 +21,7 @@ const SWITCH_STYLE = `
   gap: 1rem;
   padding-top: 0.5rem;
   padding-left: 0;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   color: var(--text-main);
 }
 .toggle-switch-left-group {
@@ -278,6 +278,7 @@ export function initAccordion() {
             checked: true
         });
         initStateShadingToggle();
+        appendDrawerHelpIcon("ToggleSwitchStateShading", "show-state-shading");
     }
 
     const PointLayersContainer = document.getElementById("ToggleSwitchPointLayers");
@@ -288,6 +289,7 @@ export function initAccordion() {
             checked: true
         });
         initPointLayersToggle();
+        appendDrawerHelpIcon("ToggleSwitchPointLayers", "show-points");
     }
 
     const NaShadingContainer = document.getElementById("ToggleSwitchNaShading");
@@ -298,6 +300,7 @@ export function initAccordion() {
             checked: true
         });
         initNaShadingToggle();
+        appendDrawerHelpIcon("ToggleSwitchNaShading", "show-na-values");
     }
 
     const s = read?.();
@@ -479,6 +482,7 @@ export function initAll() {
     initDescDrawer();
     initNewsDrawer();
     initMapPostDrawer();
+    appendAllLayerHelpIcons();
 }
 
 if (document.readyState === "loading") {
