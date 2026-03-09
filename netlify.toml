@@ -118,6 +118,12 @@
   status = 200
   force  = true
   
+[[redirects]]
+  from = "/api/gam/*"
+  to   = "https://fetch-gam-manual-service-1068523865415.us-central1.run.app/:splat"
+  status = 200
+  force  = true
+  
 # ---- Security & Caching rules ----
 
 # Apply Security Headers to ALL content
@@ -141,7 +147,7 @@
     style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://fonts.googleapis.com; 
     img-src 'self' data: https: blob: https://storage.googleapis.com https://tiles.openfreemap.org https://*.googleusercontent.com https://*.google-analytics.com https://*.googletagmanager.com; 
     font-src 'self' data: https://fonts.gstatic.com https://unpkg.com https://cdnjs.cloudflare.com; 
-    connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.cloudfunctions.net https://tiles.openfreemap.org https://storage.googleapis.com https://unpkg.com https://www.gstatic.com https://cdn.plot.ly https://instant.page https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://apis.google.com https://*.googleusercontent.com https://ofmpub.epa.gov https://*.google-analytics.com https://*.googletagmanager.com; 
+    connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.cloudfunctions.net https://tiles.openfreemap.org https://storage.googleapis.com https://unpkg.com https://www.gstatic.com https://cdn.plot.ly https://instant.page https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://apis.google.com https://*.googleusercontent.com https://ofmpub.epa.gov https://*.google-analytics.com https://*.googletagmanager.com https://*.run.app; 
     worker-src 'self' blob:; 
     frame-src 'self' https://*.firebaseapp.com https://*.shinyapps.io https://apis.google.com;"""
 

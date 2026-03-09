@@ -8,7 +8,7 @@
 import { handleAiToolCall } from "./ai-tools.js";
 
 // 사용할 AI 백엔드 주소 (배포 후 Cloud Run URL로 교체 필요)
-const AI_BACKEND_URL = "/api/chat";
+const API_URL_AI = "/api/chat";
 
 // 브라우저가 열려있는 동안 유지되는 대화 기록 (컨텍스트 유지를 위함)
 let sessionHistory = [];
@@ -42,7 +42,7 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                 dashboardContext: currentContext
             };
 
-            const response = await fetch(AI_BACKEND_URL, {
+            const response = await fetch(API_URL_AI, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

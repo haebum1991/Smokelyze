@@ -29,6 +29,7 @@ import { airnowHasActiveLayers } from "./airnow.js";
 // ---- [External data] AirNow ----
 
 export async function loadSourceData(sourceKey, isoDate) {
+    if (!map) return;
     initializeMetrics();
 
     const restrictedSources = ExcludeLayerGroups.restrictedSources;
@@ -384,7 +385,7 @@ function handleLoadingError(sourceKey, isoDate, ds = null) {
     });
 
     // 2. Clear Source data if config is provided
-    if (ds?.source) {
+    if (map && ds?.source) {
         map.getSource(ds.source)?.setData(EMPTY_FC);
     }
 
@@ -433,6 +434,7 @@ function handleLoadingError(sourceKey, isoDate, ds = null) {
 }
 
 export async function updateAllActiveSources() {
+    if (!map) return;
     toggleSpinner(true);
     try {
         const isoDate = utils.currentDate();

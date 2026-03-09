@@ -1,0 +1,1453 @@
+
+---
+title: ""
+---
+
+<link rel="stylesheet" href="/css/board.css">
+<link rel="stylesheet" href="/css/map.css">
+<link rel="stylesheet" href="/css/data.css">
+
+<h1 style="text-align: center;">
+  GAM Manual Analysis
+</h1>
+<p style="text-align: center;">
+  Professional interface for Generalized Additive Models.
+  Build, configure, and execute R-based statistical models in real-time.
+</p>
+
+<div class="gm-wrapper article-content">
+  <div class="gm-container">
+
+    <!-- [STEP 1] DATA INITIALIZATION -->
+    <h2>Step 1: Import Data </h2>
+
+    <div class="gm-card gm-card-flat">
+      <div class="gm-head-strip">
+        Select Source Dataset
+      </div>
+      <div class="gm-pad-lg">
+        <div class="gm-flex-end">
+          <div class="gm-input-group">
+            <select id="gamDataset" class="gm-input">
+              <option value="browser_upload">Load the data from your browser...</option>
+              <option value="sample_aqs_490353006">Sample: AQS-490353006 (Hawthorne, Utah)</option>
+              <option value="sample_aqs_230031100">Sample: AQS-230031100 (MICMAC HEALTHMaine)</option>
+            </select>
+          </div>
+          <input type="file" id="InputUserFile" accept=".csv" style="display:none;">
+          <button id="BtnLoadData" class="gm-btn">Load data</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Warning & Preview -->
+    <div id="DataLimitWarning" class="gm-warning-box">
+      This tool supports simple GAM simulations only. For large datasets (> 3000 rows), please perform the analysis
+      directly in R.
+    </div>
+    <div id="DataPreviewContainer" class="gm-data-preview-container">
+      <table id="DataPreviewTable" class="gm-data-preview-table">
+        <thead id="DataPreviewHead"></thead>
+        <tbody id="DataPreviewBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Pagination matching AQS query table footer -->
+    <div id="DataPagination" class="gm-data-pagination">
+      <button id="BtnPrevData" class="gm-page-btn">Previous</button>
+      <span id="DataPageInfo" class="gm-page-info">Page 1 of 1</span>
+      <button id="BtnNextData" class="gm-page-btn">Next</button>
+    </div>
+
+    <br>
+    <div id="MainSetupArea" class="gm-hidden gm-container">
+
+      <h2>Step 2: GAM Building Pipeline</h2>
+
+      <!-- [Step 3 Instructions from user request] -->
+      <div class="gm-note">
+        <h3 style="margin-bottom: 1rem;">
+          Quick Guide:
+        </h3>
+        <p style="margin-bottom: 1rem;">For those familiar with <code>mgcv</code> GAM, you can configure the model
+          settings as follows:</p>
+        <ul style="margin-bottom: 1rem;">
+          <li>Set response (y) and predictors (x) in the [Variables & Term Tuning] box.
+            To add or interaction terms, click "Add term" in their respective areas.</li>
+          <li>Set smooth function (f(x)), basis, and k for each predictor</li>
+          <li>Set global GAM parameters like 'family', 'link', 'method', etc. in the [Model Parameters] section
+            (Section 2).</li>
+          <li>Detailed information for <i>mgcv</i> GAM options can be found in the official documentation (Wood,
+            2023).</li>
+          <li>When all settings are finished, click the "Run GAM" button in the Step 3:
+            Execution section.</li>
+        </ul>
+        <p>
+          * Please note that the time required will depend on data size and GAM options.
+        </p>
+      </div>
+
+      <!-- 2-1: Variables & Term Settings & Interactions -->
+      <div class="gm-card gm-card-flat">
+
+        <div class="gm-head-strip">
+          Variables & Term Tuning
+        </div>
+
+        <div class="gm-pad-lg">
+          <h4 class="gm-sublabel">Generated Formula:</h4>
+          <div id="FormulaDisplay" class="gm-formula-box">
+            Waiting for configuration...
+          </div>
+          <br>
+
+          <h4 class="gm-sublabel">Response (y):</h4>
+          <div id="YSelectorGroup" style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;"></div>
+          <br>
+
+          <div class="gm-flex-center">
+            <h4 class="gm-sublabel">Predictor: Main effect terms</h4>
+            <button id="BtnAddPredictor" type="button" class="gm-btn" onclick="addPredictorRow()">
+              Add term
+            </button>
+          </div>
+          <div class="gm-table-header gm-term-grid">
+            <span>Term:</span>
+            <span>Class:</span>
+            <span>f(x):</span>
+            <span>Basis:</span>
+            <span>k:</span>
+            <span>Term formula:</span>
+            <span></span>
+          </div>
+          <div id="ParamSettingsGroup">
+            <div id="NoXMsg" class="gm-empty-state">Click "Add term" to configure term rows.</div>
+          </div>
+          <br>
+
+          <div class="gm-flex-center">
+            <h4 class="gm-sublabel">Predictor: Interaction terms</h4>
+            <button id="BtnAddInt" type="button" class="gm-btn" onclick="addIntRow()">
+              Add term
+            </button>
+          </div>
+          <div class="gm-table-header gm-int-grid">
+            <span>Pairs:</span>
+            <span>Class:</span>
+            <span>f(x):</span>
+            <span>Basis:</span>
+            <span>k:</span>
+            <span>Term formula:</span>
+            <span></span>
+          </div>
+          <div id="InteractionGroup">
+            <div id="NoIntMsg" class="gm-empty-state">Click "Add term" to configure term rows.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3-3 & 3-4: Formula & Model Parameters -->
+      <div class="gm-card gm-card-flat">
+        <div class="gm-head-strip">
+          Model Parameters
+        </div>
+
+        <div class="gm-pad-lg">
+          <div class="gm-note">
+            <p>
+              Computational efficiency: The default function in this app is <code>bam()</code>. Unlike
+              <code>gam()</code>, which is also from the <code>mgcv</code> package, <code>bam()</code> is optimized for
+              faster computation and lower memory usage, making it well-suited for applications dealing with large or
+              complex data. You can change it to <code>gam()</code> if you want, but be aware that it may overload this
+              app if you have a lot of data.
+            </p>
+          </div>
+          <div class="gm-grid-3">
+            <div class="gm-input-group">
+              <label class="gm-input-label">function:</label>
+              <select id="gamFunc" class="gm-input">
+                <option value="bam">bam</option>
+                <option value="gam">gam</option>
+              </select>
+            </div>
+            <div class="gm-input-group">
+              <label class="gm-input-label">family:</label>
+              <select id="gamFamily" class="gm-input">
+                <option value="gaussian">gaussian</option>
+                <option value="poisson">poisson</option>
+                <option value="Gamma">Gamma</option>
+                <option value="binomial">binomial</option>
+              </select>
+            </div>
+            <div class="gm-input-group">
+              <label class="gm-input-label">link:</label>
+              <select id="gamLink" class="gm-input">
+                <option value="identity">identity</option>
+                <option value="log">log</option>
+                <option value="inverse">inverse</option>
+                <option value="logit">logit</option>
+              </select>
+            </div>
+            <div class="gm-input-group">
+              <label class="gm-input-label">method:</label>
+              <select id="gamMethod" class="gm-input">
+                <option value="REML">REML</option>
+                <option value="GCV.Cp">GCV.Cp</option>
+              </select>
+            </div>
+            <div class="gm-input-group">
+              <label class="gm-input-label">select:</label>
+              <select id="gamSelect" class="gm-input">
+                <option value="TRUE">TRUE</option>
+                <option value="FALSE">FALSE</option>
+              </select>
+            </div>
+            <div class="gm-input-group">
+              <label class="gm-input-label">Gamma (0-1):</label>
+              <input type="number" id="gamGamma" value="1" min="0" max="1" step="0.01" class="gm-input"
+                onblur="if(this.value<0)this.value=0;if(this.value>1)this.value=1;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3-5: Data Subsetting -->
+      <div class="gm-card gm-card-flat">
+        <div class="gm-head-strip">
+          Training Data Subset
+        </div>
+        <div class="gm-pad-lg">
+          <div class="gm-note">
+            <p>
+              To run GAM only on specific category data, select the options below (data not included in the model will
+              only be used for prediction).
+            </p>
+          </div>
+
+          <div class="gm-grid-2" style="margin-bottom: 0;">
+            <div class="gm-input-group">
+              <label class="gm-input-label">Which categories would you like to include?</label>
+              <select id="gamSplitCol" class="gm-input" onchange="loadSplitLevels()"></select>
+            </div>
+            <div class="gm-input-group">
+              <label class="gm-input-label">Which values would you like to run the GAM?</label>
+              <select id="gamSplitLevel" class="gm-input"></select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <br>
+      <!-- [STEP 3] EXECUTION -->
+      <h2>Step 3: Execution</h2>
+      <div class="gm-card">
+        <div class="gm-note">
+          <p>
+            * Note: The time required for fitting will depend on your data size and selected GAM options.
+          </p>
+        </div>
+        <button id="BtnRunGam" class="gm-btn">
+          Run GAM
+        </button>
+      </div>
+
+      <br>
+      <h2>Step 4: GAM Results</h2>
+      <div id="GamResults" class="gm-card gm-card-flat gm-hidden">
+        <div class="gm-head-strip">
+          Model Output Analysis & Visualization
+        </div>
+        <div class="gm-pad-lg">
+
+          <h4 class="gm-sublabel">Model Summary:</h4>
+          <pre id="GamSummaryText" class="gm-formula-box"></pre>
+
+          <br>
+          <h4 class="gm-sublabel">Diagnostics:</h4>
+          <div class="gm-grid-2">
+            <div>
+              <img id="GamCheckPlot" src="" alt="Diagnostic"
+                style="width:100%; border-radius: var(--border-radius-0p8rem); background:#fff; box-shadow:0 0.5rem 2rem var(--shadow-soft);">
+              <small style="display:block; text-align:center; margin-top:0.5rem; color:var(--text-main);">Residual
+                &amp; Fit Diagnostics</small>
+            </div>
+            <div>
+              <img id="GamSmoothPlot" src="" alt="Smooth"
+                style="width:100%; border-radius: var(--border-radius-0p8rem); background:#fff; box-shadow:0 0.5rem 2rem var(--shadow-soft);">
+              <small style="display:block; text-align:center; margin-top:0.5rem; color:var(--text-main);">Smooth
+                Component Partial Effects</small>
+            </div>
+          </div>
+
+          <br>
+          <h4 class="gm-sublabel">Prediction Results:</h4>
+          <div id="PredictionPreviewContainer" class="gm-data-preview-container">
+            <table id="PredictionPreviewTable" class="gm-data-preview-table">
+              <thead id="PredictionPreviewHead"></thead>
+              <tbody id="PredictionPreviewBody"></tbody>
+            </table>
+          </div>
+          <div id="PredictionPagination" class="gm-data-pagination">
+            <button id="BtnPrevPred" class="gm-page-btn">Previous</button>
+            <span id="PredictionPageInfo" class="gm-page-info">Page 1 of 1</span>
+            <button id="BtnNextPred" class="gm-page-btn">Next</button>
+          </div>
+
+          <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button id="BtnDownloadCSVResults" class="gm-btn">Export Table (.csv)</button>
+            <button id="BtnDownloadRDS" class="gm-btn">Export Results (.rds)</button>
+          </div>
+
+          <br>
+          <div class="gm-note">
+            <p>Once you download the .rds file, you can load and inspect the results in R:</p>
+            <pre class="gm-formula-box">
+library(mgcv)
+
+# Load the downloaded RDS file (replace '/your_directory/' with your actual path)
+gam_result <- readRDS('/your_directory/gam_results_<span id="GuideFileName">dataset</span>.rds')
+
+# Inspect exported objects
+gam_result$gam_formula  # The used formula
+gam_result$gam_model    # The fitted GAM/BAM object
+gam_result$gam_pred     # Dataframe with predicted values
+
+# Run diagnostics and view effects
+mgcv::gam.check(gam_result$gam_model)
+mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, shade = TRUE)</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOADING & RESULTS -->
+    <div id="GamSpinner" class="gm-hidden"
+      style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+      <div class="gm-loader"></div>
+      <p style="color:var(--card-shadow); font-size:2rem; margin-top:2rem;">R Engine: Fitting GAM Model...</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* MINIMAL UNIFIED CSS WITH gm- PREFIX */
+  .gm-wrapper {
+    max-width: 140rem;
+    margin: 0 auto;
+    padding: 0rem;
+    padding-bottom: 10rem;
+    color: var(--text-main);
+    font-size: 1.6rem;
+    background: var(--color-bg);
+  }
+
+  .gm-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* CARDS: Reusing the same standard box style */
+  .gm-card {
+    background: var(--color-bg);
+    border: 0.1rem solid var(--border-main);
+    border-radius: var(--border-radius-0p8rem);
+    padding: 1rem;
+  }
+
+  .gm-card-flat {
+    padding: 0 !important;
+  }
+
+  .gm-pad-lg {
+    padding: 2rem;
+  }
+
+  /* BADGE & HEADERS */
+  .gm-head-strip {
+    background: var(--card-shadow);
+    color: var(--color-bg);
+    padding: 1rem 2rem;
+    font-size: 1.8rem;
+    font-weight: bold;
+    border-radius: var(--border-radius-0p8rem) var(--border-radius-0p8rem) 0 0;
+  }
+
+  .gm-title {
+    font-size: 1.6rem;
+    color: var(--text-main);
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+  }
+
+  .gm-title::after {
+    content: "";
+    flex: 1;
+    height: 0.1rem;
+    background: var(--border-main);
+    opacity: 0.4;
+  }
+
+  .gm-title-inverse {
+    margin: 0 !important;
+    color: var(--color-bg) !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+  }
+
+  .gm-sublabel {
+    font-size: 1.6rem;
+    display: block;
+    border: none;
+    padding: 0;
+    margin-bottom: 1rem;
+    border-left: 0.4rem solid var(--card-shadow);
+    padding-left: 1rem;
+    color: var(--card-shadow);
+  }
+
+  /* BUTTONS: Unified scaling & coloring */
+  .gm-btn {
+    background: var(--card-shadow);
+    color: var(--color-bg);
+    border: none;
+    padding: 1rem 1rem;
+    border-radius: var(--border-radius-0p8rem);
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1.6rem;
+    white-space: nowrap;
+    transition: transform 0.2s;
+  }
+
+  .gm-btn-muted {
+    background: var(--bg-dark) !important;
+    color: var(--text-muted) !important;
+  }
+
+  .gm-btn-remove {
+    background: rgba(255, 60, 60, 0.1) !important;
+    color: #ff4a4a !important;
+    border: 0.1rem solid rgba(255, 60, 60, 0.2) !important;
+
+    width: 3.2rem !important;
+    height: 3.2rem !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: center;
+    /* 그리드 칸 안에서 중앙 정렬 */
+    transition: all 0.2s;
+  }
+
+  .gm-btn-remove span {
+    font-size: 2.4rem;
+  }
+
+  .gm-btn-remove:hover {
+    background: rgba(255, 60, 60, 0.25) !important;
+  }
+
+  .gm-btn:hover {
+    transform: scale(1.05);
+  }
+
+  .gm-input {
+    background: var(--color-code-bg);
+    color: var(--text-main);
+    border: 0.1rem solid var(--border-main);
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-0p8rem);
+    font-size: 1.6rem;
+    outline: none;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+    box-sizing: border-box;
+    font-family: inherit;
+  }
+
+  .gm-input:focus {
+    background: var(--color-code-bg2);
+    border-color: var(--card-shadow);
+  }
+
+  .gm-input option {
+    background: var(--color-bg);
+    color: var(--text-main);
+    font-weight: bold;
+  }
+
+  .gm-input-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 1.4rem;
+    color: var(--text-main);
+    font-weight: bold;
+  }
+
+  .gm-note {
+    background: var(--sidebar-widget-bg);
+    border-left: 0.4rem solid var(--card-shadow);
+    padding: 1rem 2rem;
+    color: var(--text-main);
+    margin-bottom: 1rem;
+  }
+
+  .gm-note p,
+  .gm-note ul,
+  .gm-note li {
+    margin: 0 auto;
+    font-size: 1.4rem;
+    /* 혹은 원하시는 크기 */
+  }
+
+  .gm-input-group {
+    width: 100%;
+  }
+
+  /* HIDE NUMBER SPINNERS FOR CLEAN TYPING */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 1.8rem;
+    height: 1.8rem;
+    cursor: pointer;
+    accent-color: var(--card-shadow);
+  }
+
+  /* LAYOUT GRIDS & FLEX */
+  .gm-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+
+  .gm-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .gm-flex-end {
+    display: flex;
+    align-items: flex-end;
+    gap: 3rem;
+  }
+
+  .gm-flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .gm-scroll {
+    overflow-y: auto;
+    padding-right: 1rem;
+  }
+
+  .gm-scroll::-webkit-scrollbar {
+    width: 0.6rem;
+  }
+
+  .gm-scroll::-webkit-scrollbar-thumb {
+    background: var(--border-main);
+    border-radius: var(--border-radius-0p8rem);
+  }
+
+  .gm-row {
+    background: var(--color-code-bg);
+    border: 0.1rem solid var(--border-main);
+    border-radius: var(--border-radius-0p8rem);
+    padding: 0.5rem 1rem !important;
+    margin-bottom: 0.5rem;
+  }
+
+  .gm-term-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1.5fr 1fr 1fr 1fr 3fr 5rem;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .gm-int-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1.5fr 1fr 3.5fr 5rem;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .gm-int-col-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .gm-mobile-label-row {
+    display: none;
+  }
+
+  .gm-table-header {
+    padding: 0 1.5rem 1rem;
+    font-size: 1.4rem;
+    color: var(--text-main);
+    font-weight: bold;
+  }
+
+  .gm-echo {
+    font-size: 1.6rem;
+    color: var(--card-shadow);
+    background: rgba(0, 0, 0, 0.25);
+    padding: 0.8rem 1.2rem;
+    border-radius: var(--border-radius-0p8rem);
+    font-family: "Fira Code", monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .gm-x-item {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1rem;
+    border-radius: var(--border-radius-0p8rem);
+    font-size: 1.6rem;
+  }
+
+  /* UTILS */
+  .gm-hidden {
+    display: none !important;
+  }
+
+  .gm-empty-state {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    border: 0.2rem dashed var(--border-main);
+    border-radius: var(--border-radius-0p8rem);
+    font-size: 1.6rem;
+  }
+
+  .gm-formula-box {
+    background: var(--color-black);
+    color: #40ff00;
+    padding: 1rem 2rem;
+    border-radius: var(--border-radius-0p8rem);
+    font-family: "Fira Code", monospace;
+    font-size: 1.6rem;
+    border: 0.1rem solid var(--border-main);
+    overflow-x: auto;
+  }
+
+  .gm-loader {
+    width: 6rem;
+    height: 6rem;
+    border: 0.6rem solid var(--sidebar-widget-bg);
+    border-top-color: var(--card-shadow);
+    border-radius: 50%;
+    animation: spin 1.2s ease-in-out infinite;
+  }
+
+  .gm-input-group-sm {
+    display: contents;
+  }
+
+  .gm-mobile-label {
+    display: none;
+  }
+
+  @keyframes spin {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 1024px) {
+    .gm-grid-2 {
+      grid-template-columns: 1fr;
+    }
+
+    .gm-grid-3 {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 1rem !important;
+    }
+
+    .gm-row {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 1rem 1rem !important;
+      /* vertical gap larger for label spacing */
+    }
+
+    .gm-input-group-sm {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .gm-mobile-label {
+      display: block;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--text-main);
+    }
+
+    /* Interaction specific logic: dissolve containers to make variables side-by-side */
+    .gm-int-col-group {
+      display: contents !important;
+    }
+
+    .gm-mobile-label-row {
+      display: contents !important;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--card-shadow);
+      text-transform: uppercase;
+      letter-spacing: 0.1rem;
+    }
+
+    .gm-mobile-label-row span {
+      padding: 0.5rem 0;
+      text-align: center;
+      border-bottom: 0.1rem solid var(--border-main);
+      margin-bottom: 0.5rem;
+    }
+
+    #gamMethod+.gm-input-group,
+    #gamSelect+.gm-input-group {
+      grid-column: auto;
+    }
+
+    /* Full width items in the 2-col interaction grid */
+    select[id^="it_"],
+    .gm-echo,
+    .gm-btn-remove {
+      grid-column: span 2;
+    }
+
+    .gm-table-header {
+      display: none !important;
+    }
+
+    .gm-echo {
+      white-space: normal;
+      height: auto;
+    }
+
+    .gm-flex-end {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1.5rem;
+    }
+  }
+
+  /* DATA PREVIEW & WARNING BOX (matching AQS query table style) */
+  .gm-data-preview-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 1.5rem;
+    background: var(--color-bg);
+    border-radius: var(--border-radius-0p8rem);
+    border: 0.1rem solid var(--border-main);
+    max-height: 45rem;
+    margin-bottom: 0;
+    overflow-y: auto;
+    display: none;
+    box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.05);
+  }
+
+  .gm-data-preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1.3rem;
+    color: var(--text-main);
+  }
+
+  .gm-data-preview-table th {
+    z-index: 10;
+    position: sticky;
+    top: 0;
+    background-color: var(--sidebar-widget-bg);
+    color: var(--card-shadow);
+    padding: 1.2rem;
+    text-align: left;
+    font-weight: bold;
+    border-bottom: 0.2rem solid var(--border-main);
+  }
+
+  .gm-data-preview-table td {
+    padding: 1rem 1.2rem;
+    border-bottom: 0.1rem solid var(--border-main);
+    white-space: nowrap;
+  }
+
+  .gm-data-preview-table tr:hover {
+    background-color: rgba(163, 102, 255, 0.05);
+  }
+
+  /* Pagination styles matching data.css */
+  .gm-data-pagination {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .gm-page-btn {
+    padding: 0.8rem 1.6rem;
+    background: var(--color-code-bg);
+    color: var(--text-heading);
+    border: 0.1rem solid var(--border-main);
+    border-radius: var(--border-radius-0p8rem);
+    cursor: pointer;
+    font-size: 1.4rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+  }
+
+  .gm-page-btn:hover:not(:disabled) {
+    background: var(--card-shadow);
+    color: var(--color-bg);
+    border-color: var(--card-shadow);
+  }
+
+  .gm-page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .gm-page-info {
+    font-size: 1.4rem;
+    color: var(--text-main);
+    font-weight: 500;
+  }
+
+  .gm-warning-box {
+    background: rgba(255, 60, 60, 0.1);
+    color: #ff4a4a;
+    border: 0.1rem solid rgba(255, 60, 60, 0.2);
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius-0p8rem);
+    margin-top: 1.5rem;
+    font-weight: bold;
+    font-size: 1.4rem;
+    display: none;
+  }
+</style>
+
+<script type="module">
+  import { ESML } from "/js/utils.js";
+
+  (function () {
+    const API_URL_GAM = "/api/gam";
+    const kOpts = '<option value="-1">-1</option>' + Array.from({ length: 50 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("");
+    let metadata = { columns: [], types: {} };
+    let interactions = [];
+    let currentCSVData = [];
+    let rawCSVText = "";
+    let dataCurrentPage = 1;
+    const dataPageSize = 15;
+
+    let predictionData = [];
+    let predCurrentPage = 1;
+    let currentRdsB64 = "";
+
+    const extract = (val) => Array.isArray(val) ? val[0] : val;
+
+    const refs = {
+      dsSelect: document.getElementById("gamDataset"),
+      loadBtn: document.getElementById("BtnLoadData"),
+      warningBox: document.getElementById("DataLimitWarning"),
+      previewContainer: document.getElementById("DataPreviewContainer"),
+      previewHead: document.getElementById("DataPreviewHead"),
+      previewBody: document.getElementById("DataPreviewBody"),
+      dataPagination: document.getElementById("DataPagination"),
+      dataPageInfo: document.getElementById("DataPageInfo"),
+      btnPrevData: document.getElementById("BtnPrevData"),
+      btnNextData: document.getElementById("BtnNextData"),
+      mainArea: document.getElementById("MainSetupArea"),
+      yTarget: document.getElementById("YSelectorGroup"),
+      paramList: document.getElementById("ParamSettingsGroup"),
+      intList: document.getElementById("InteractionGroup"),
+      formula: document.getElementById("FormulaDisplay"),
+      splitCol: document.getElementById("gamSplitCol"),
+      splitLvl: document.getElementById("gamSplitLevel"),
+      runBtn: document.getElementById("BtnRunGam"),
+      spinner: document.getElementById("GamSpinner"),
+      results: document.getElementById("GamResults"),
+      predContainer: document.getElementById("PredictionPreviewContainer"),
+      predHead: document.getElementById("PredictionPreviewHead"),
+      predBody: document.getElementById("PredictionPreviewBody"),
+      predPagination: document.getElementById("PredictionPagination"),
+      predPageInfo: document.getElementById("PredictionPageInfo"),
+      btnPrevPred: document.getElementById("BtnPrevPred"),
+      btnNextPred: document.getElementById("BtnNextPred"),
+      localFile: document.getElementById("InputUserFile"),
+      localBtn: document.getElementById("BtnUploadLocal")
+    };
+
+    async function loadCSVMetadata() {
+      const ds = refs.dsSelect.value;
+
+      if (ds === "browser_upload") {
+        refs.localFile.click();
+        return;
+      }
+
+      if (ds === "local_upload") {
+        // If already in memory, just re-process to show preview/setup
+        processCSV(rawCSVText);
+        return;
+      }
+
+      refs.loadBtn.disabled = true;
+
+      try {
+        const resp = await fetch(`/sample/${ds}.csv`);
+        if (!resp.ok) throw new Error("Connection failed");
+        rawCSVText = await resp.text();
+        processCSV(rawCSVText);
+      } catch (e) {
+        alert("Failed to reach data asset.");
+      } finally {
+        refs.loadBtn.disabled = false;
+      }
+    }
+
+    function processCSV(text) {
+      if (!text) return;
+      const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+
+      // 1. Check Row Limit (> 3000 rows exclude header)
+      const isTooLarge = lines.length > 3001;
+      if (isTooLarge) {
+        refs.warningBox.style.display = "block";
+        refs.mainArea.classList.add("gm-hidden");
+      } else {
+        refs.warningBox.style.display = "none";
+        refs.mainArea.classList.remove("gm-hidden");
+      }
+
+      currentCSVData = lines.map(line => line.split(","));
+      const headers = currentCSVData[0].map(h => h.replace(/^"|"$/g, ""));
+
+      // Setup initial pagination
+      dataCurrentPage = 1;
+      renderDataPreview(headers);
+
+      const previewFirst = currentCSVData[1] || [];
+
+      metadata.columns = headers;
+      metadata.types = {};
+      headers.forEach((col, idx) => {
+        const val = (previewFirst[idx] || "").replace(/^"|"$/g, "");
+        metadata.types[col] = (!isNaN(parseFloat(val)) && isFinite(val)) ? "numeric" : "character";
+      });
+
+      // Reset
+      refs.paramList.innerHTML = '<div id="NoXMsg" class="gm-empty-state">Click "Add term" to configure term rows.</div>';
+      refs.intList.innerHTML = '<div id="NoIntMsg" class="gm-empty-state">Click "Add term" to configure term rows.</div>';
+      interactions = [];
+
+      renderRegistry();
+    }
+
+    function renderDataPreview(headers) {
+      const dataRows = currentCSVData.slice(1);
+      const totalRows = dataRows.length;
+      const totalPages = Math.ceil(totalRows / dataPageSize);
+
+      refs.previewHead.innerHTML = `<tr>${headers.map(h => `<th>${ESML(h)}</th>`).join("")}</tr>`;
+
+      const start = (dataCurrentPage - 1) * dataPageSize;
+      const pageRows = dataRows.slice(start, start + dataPageSize);
+
+      refs.previewBody.innerHTML = pageRows.map(row => {
+        return `<tr>${row.map(cell => `<td>${ESML((cell || "").replace(/^"|"$/g, ""))}</td>`).join("")}</tr>`;
+      }).join("");
+
+      refs.previewContainer.style.display = "block";
+      refs.dataPagination.style.display = "flex";
+      refs.dataPageInfo.innerText = `Page ${dataCurrentPage} of ${totalPages} (${totalRows} total rows)`;
+
+      refs.btnPrevData.disabled = dataCurrentPage === 1;
+      refs.btnNextData.disabled = dataCurrentPage === totalPages || totalPages === 0;
+    }
+
+    refs.btnPrevData.addEventListener("click", () => {
+      if (dataCurrentPage > 1) {
+        dataCurrentPage--;
+        renderDataPreview(metadata.columns);
+        refs.previewContainer.scrollTop = 0;
+      }
+    });
+
+    refs.btnNextData.addEventListener("click", () => {
+      const totalPages = Math.ceil((currentCSVData.length - 1) / dataPageSize);
+      if (dataCurrentPage < totalPages) {
+        dataCurrentPage++;
+        renderDataPreview(metadata.columns);
+        refs.previewContainer.scrollTop = 0;
+      }
+    });
+
+    function renderPredictionTable() {
+      if (!predictionData || predictionData.length === 0) {
+        refs.predContainer.style.display = "none";
+        refs.predPagination.style.display = "none";
+        return;
+      }
+
+      const headers = Object.keys(predictionData[0]);
+      const totalRows = predictionData.length;
+      const totalPages = Math.ceil(totalRows / dataPageSize);
+
+      refs.predHead.innerHTML = `<tr>${headers.map(h => `<th>${ESML(h)}</th>`).join("")}</tr>`;
+
+      const start = (predCurrentPage - 1) * dataPageSize;
+      const pageRows = predictionData.slice(start, start + dataPageSize);
+
+      refs.predBody.innerHTML = pageRows.map(row => {
+        return `<tr>${headers.map(h => `<td>${ESML(row[h])}</td>`).join("")}</tr>`;
+      }).join("");
+
+      refs.predContainer.style.display = "block";
+      refs.predPagination.style.display = "flex";
+      refs.predPageInfo.innerText = `Page ${predCurrentPage} of ${totalPages} (${totalRows} total rows)`;
+
+      refs.btnPrevPred.disabled = predCurrentPage === 1;
+      refs.btnNextPred.disabled = predCurrentPage === totalPages || totalPages === 0;
+    }
+
+    refs.btnPrevPred.onclick = () => {
+      if (predCurrentPage > 1) {
+        predCurrentPage--;
+        renderPredictionTable();
+        refs.predContainer.scrollTop = 0;
+      }
+    };
+
+    refs.btnNextPred.onclick = () => {
+      const totalPages = Math.ceil(predictionData.length / dataPageSize);
+      if (predCurrentPage < totalPages) {
+        predCurrentPage++;
+        renderPredictionTable();
+        refs.predContainer.scrollTop = 0;
+      }
+    };
+
+    function renderRegistry() {
+      refs.yTarget.innerHTML = "";
+      refs.splitCol.innerHTML = '<option value="None">Full Dataset</option>';
+
+      let isFirstY = true;
+      metadata.columns.forEach(c => {
+        const type = metadata.types[c];
+        if (type === "numeric") {
+          const yLabel = document.createElement("label");
+          yLabel.className = "gm-x-item";
+          yLabel.style.padding = "0.5rem 1rem";
+          yLabel.style.background = "var(--color-bg)";
+          yLabel.style.color = "var(--text-main)";
+          yLabel.style.border = "0.1rem solid var(--border-main)";
+          yLabel.innerHTML = `<input type="radio" name="gamY" value="${c}" ${isFirstY ? "checked" : ""}> <span>${c}</span>`;
+          yLabel.querySelector("input").onchange = updateFormula;
+          refs.yTarget.appendChild(yLabel);
+          isFirstY = false;
+        }
+
+        refs.splitCol.appendChild(new Option(c, c));
+      });
+
+      refs.splitCol.onchange = loadSplitLevels;
+      loadSplitLevels();
+      updateFormula();
+    }
+
+    let predictorIdCounter = 0;
+
+    window.addPredictorRow = () => {
+      const id = "p_" + Date.now() + "_" + (predictorIdCounter++);
+      const msg = document.getElementById("NoXMsg");
+      if (msg) msg.remove();
+
+      const row = document.createElement("div");
+      row.id = `row_${id}`;
+      row.className = "gm-row gm-term-grid predictor-row-item";
+
+      const opts = metadata.columns.filter(c => !/date|id|site|code|cbsa|state/i.test(c))
+        .map(c => `<option value="${c}">${c}</option>`).join("");
+
+      row.innerHTML = `
+        <div class="gm-input-group-sm"><span class="gm-mobile-label">Term:</span><select id="term_${id}" class="gm-input gm-predictor-select">${opts}</select></div>
+        <div class="gm-input-group-sm"><span class="gm-mobile-label">Class:</span><select id="class_${id}" class="gm-input">
+          <option value="numeric">numeric</option>
+          <option value="categorical">categorical</option>
+        </select></div>
+        <div class="gm-input-group-sm"><span class="gm-mobile-label">f(x):</span><select id="func_${id}" class="gm-input">
+          <option value="s">s</option>
+          <option value="none">none</option>
+        </select></div>
+        <div class="gm-input-group-sm"><span class="gm-mobile-label">Basis:</span><select id="bs_${id}" class="gm-input">
+          <option value="cr" selected>cr</option>
+          <option value="cs">cs</option>
+          <option value="cc">cc</option>
+          <option value="tp">tp</option>
+          <option value="bs">bs</option>
+          <option value="ps">ps</option>
+          <option value="ad">ad</option>
+        </select></div>
+        <div class="gm-input-group-sm"><span class="gm-mobile-label">k:</span><select id="k_${id}" class="gm-input">${kOpts}</select></div>
+        <div id="echo_${id}" class="gm-echo"></div>
+        <button class="remove-trigger gm-btn gm-btn-remove"><span>&times;</span></button>
+      `;
+
+      row.querySelector(".remove-trigger").onclick = () => {
+        row.remove();
+        if (refs.paramList.children.length === 0) {
+          refs.paramList.innerHTML = '<div id="NoXMsg" class="gm-empty-state">Click "Add term" to configure term rows.</div>';
+        }
+        updateFormula();
+      };
+
+      const termSelect = row.querySelector(`#term_${id}`);
+      const updateClass = () => {
+        const val = termSelect.value;
+        const isCat = (metadata.types[val] === "character");
+        row.querySelector(`#class_${id}`).value = isCat ? "categorical" : "numeric";
+      };
+
+      termSelect.addEventListener("change", () => {
+        updateClass();
+        syncConstraints(id);
+        updateFormula();
+      });
+      updateClass();
+
+      row.querySelectorAll("select, input").forEach(el => el.addEventListener("change", () => {
+        if (el.id.startsWith("class_") || el.id.startsWith("func_")) syncConstraints(id);
+        updateFormula();
+      }));
+
+      refs.paramList.appendChild(row);
+      syncConstraints(id);
+      updateFormula();
+    }
+
+    function syncConstraints(id) {
+      const cls = document.getElementById(`class_${id}`).value;
+      const fn = document.getElementById(`func_${id}`).value;
+      const isFixed = (cls === "categorical" || fn === "none");
+      document.getElementById(`bs_${id}`).disabled = isFixed;
+      document.getElementById(`k_${id}`).disabled = isFixed;
+    }
+
+    window.loadSplitLevels = () => {
+      const col = refs.splitCol.value;
+      refs.splitLvl.innerHTML = '<option value="None">None</option>';
+      if (col === "None") return;
+      const idx = metadata.columns.indexOf(col);
+      const levels = new Set();
+      for (let i = 1; i < currentCSVData.length; i++) {
+        const v = (currentCSVData[i][idx] || "").replace(/^"|"$/g, "");
+        if (v !== "") levels.add(v);
+      }
+      Array.from(levels).sort().forEach(l => refs.splitLvl.appendChild(new Option(l, l)));
+    };
+
+    window.addIntRow = () => {
+      const id = Date.now();
+      interactions.push({ id });
+
+      const msg = document.getElementById("NoIntMsg");
+      if (msg) msg.remove();
+
+      const row = document.createElement("div");
+      row.id = `int_${id}`;
+      row.className = "gm-row gm-int-grid";
+      const opts = metadata.columns.map(c => `<option value="${c}">${c}</option>`).join("");
+
+      row.innerHTML = `
+      <div class="gm-mobile-label-row">
+        <span>var1</span>
+        <span>var2</span>
+      </div>
+      <div class="gm-int-col-group">
+        <div class="gm-input-group-sm"><span class="gm-mobile-label">Term 1:</span><select id="i1_${id}" class="gm-input">${opts}</select></div>
+        <div class="gm-input-group-sm"><span class="gm-mobile-label">Term 2:</span><select id="i2_${id}" class="gm-input">${opts}</select></div>
+      </div>
+      <div class="gm-int-col-group">
+        <div class="gm-input-group-sm"><span class="gm-mobile-label">Class 1:</span><select id="ic1_${id}" class="gm-input">
+          <option value="numeric">numeric</option>
+          <option value="categorical">categorical</option>
+        </select></div>
+        <div class="gm-input-group-sm"><span class="gm-mobile-label">Class 2:</span><select id="ic2_${id}" class="gm-input">
+          <option value="numeric">numeric</option>
+          <option value="categorical">categorical</option>
+        </select></div>
+      </div>
+      <div class="gm-input-group-sm"><span class="gm-mobile-label">f(x):</span><select id="it_${id}" class="gm-input">
+        <option value="ti">ti</option>
+        <option value="te">te</option>
+        <option value="s">s</option>
+      </select></div>
+      <div class="gm-int-col-group">
+        <div class="gm-input-group-sm"><span class="gm-mobile-label">Basis1:</span><select id="ib1_${id}" class="gm-input">
+          <option value="cr" selected>cr</option>
+          <option value="cs">cs</option>
+          <option value="cc">cc</option>
+          <option value="tp">tp</option>
+          <option value="bs">bs</option>
+          <option value="ps">ps</option>
+        </select></div>
+        <div class="gm-input-group-sm"><span class="gm-mobile-label">Basis2:</span><select id="ib2_${id}" class="gm-input">
+          <option value="cr" selected>cr</option>
+          <option value="cs">cs</option>
+          <option value="cc">cc</option>
+          <option value="tp">tp</option>
+          <option value="bs">bs</option>
+          <option value="ps">ps</option>
+        </select></div>
+      </div>
+      <div class="gm-int-col-group">
+        <div class="gm-input-group-sm"><span class="gm-mobile-label">k1:</span><select id="ik1_${id}" class="gm-input">${kOpts}</select></div>
+        <div class="gm-input-group-sm"><span class="gm-mobile-label">k2:</span><select id="ik2_${id}" class="gm-input">${kOpts}</select></div>
+      </div>
+      <div id="echo_int_${id}" class="gm-echo"></div>
+      <button class="remove-trigger gm-btn gm-btn-remove"><span>&times;</span></button>
+    `;
+
+      row.querySelector(".remove-trigger").onclick = () => {
+        row.remove();
+        interactions = interactions.filter(i => i.id !== id);
+        if (refs.intList.children.length === 0) {
+          refs.intList.innerHTML = '<div id="NoIntMsg" class="gm-empty-state">Click "Add term" to configure term rows.</div>';
+        }
+        updateFormula();
+      };
+      row.querySelectorAll("select, input").forEach(el => el.onchange = updateFormula);
+      refs.intList.appendChild(row);
+      updateFormula();
+    }
+
+    function updateFormula() {
+      const yNode = document.querySelector('input[name="gamY"]:checked');
+      const y = yNode ? yNode.value : null;
+      if (!y) { refs.formula.innerText = "Select Response..."; return; }
+
+      let terms = [];
+      const predictorRows = document.querySelectorAll(".predictor-row-item");
+      predictorRows.forEach(row => {
+        const selectEl = row.querySelector(".gm-predictor-select");
+        const id = selectEl.id.replace("term_", "");
+        const col = selectEl.value;
+        const clsVal = document.getElementById(`class_${id}`).value;
+        const fnVal = document.getElementById(`func_${id}`).value;
+        const bsVal = document.getElementById(`bs_${id}`).value;
+        const kVal = document.getElementById(`k_${id}`).value;
+        const echoEl = document.getElementById(`echo_${id}`);
+
+        let part = "";
+        if (clsVal === "categorical" || fnVal === "none") {
+          part = col;
+        } else {
+          part = `${fnVal}(${col}, bs="${bsVal}"${parseInt(kVal) !== -1 ? ', k=' + kVal : ''})`;
+        }
+        if (echoEl) echoEl.innerText = part;
+        terms.push(part);
+      });
+
+      interactions.forEach(item => {
+        const i = item.id;
+        const v1 = document.getElementById(`i1_${i}`).value, v2 = document.getElementById(`i2_${i}`).value;
+        const it = document.getElementById(`it_${i}`).value;
+        const ic1 = document.getElementById(`ic1_${i}`).value, ic2 = document.getElementById(`ic2_${i}`).value;
+        const echoEl = document.getElementById(`echo_int_${i}`);
+
+        let bit = "";
+        if (ic1 === "categorical" || ic2 === "categorical") {
+          bit = `${v1}:${v2}`;
+        } else {
+          const ib1 = document.getElementById(`ib1_${i}`).value, ib2 = document.getElementById(`ib2_${i}`).value;
+          const ik1 = document.getElementById(`ik1_${i}`).value, ik2 = document.getElementById(`ik2_${i}`).value;
+          bit = `${it}(${v1}, ${v2}`;
+          if (it === "s") bit += `, bs="${ib1}"${ik1 !== "-1" ? `, k=${ik1}` : ""}`;
+          else {
+            if (ib1 === "tp") bit += `, bs="tp"${ik1 !== "-1" ? `, k=${ik1}` : ""}`;
+            else {
+              bit += `, bs=c("${ib1}","${ib2}")`;
+              if (ik1 !== "-1" || ik2 !== "-1") bit += `, k=c(${ik1 === "-1" ? "NA" : ik1},${ik2 === "-1" ? "NA" : ik2})`;
+            }
+          }
+          bit += `)`;
+        }
+
+        if (echoEl) echoEl.innerText = bit;
+        terms.push(bit);
+      });
+
+      refs.formula.innerText = `${y} ~ ${terms.length > 0 ? terms.join(" + ") : "1"}`;
+    }
+
+    refs.runBtn.onclick = async () => {
+      refs.results.classList.remove("gm-hidden");
+      refs.results.style.display = "none"; // Temporarily hide to fade in later
+      document.getElementById("GamSpinner").classList.remove("gm-hidden");
+      refs.runBtn.disabled = true;
+
+      try {
+        const resp = await fetch(`${API_URL_GAM}/compute_gam`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            csv_data: rawCSVText,
+            dataset_id: refs.dsSelect.value,
+            formula: refs.formula.innerText,
+            func: document.getElementById("gamFunc").value,
+            method: (document.getElementById("gamFunc").value === "bam" && document.getElementById("gamMethod").value === "REML") ? "fREML" : document.getElementById("gamMethod").value,
+            family: document.getElementById("gamFamily").value,
+            link: document.getElementById("gamLink").value,
+            gamma: parseFloat(document.getElementById("gamGamma").value),
+            select: document.getElementById("gamSelect").value === "true",
+            split_col: refs.splitCol.value,
+            split_level: refs.splitLvl.value
+          })
+        });
+        const data = await resp.json();
+        if (extract(data.status) === "success") {
+          document.getElementById("GamSummaryText").textContent = extract(data.summary);
+          document.getElementById("GamCheckPlot").src = extract(data.plot_check);
+          document.getElementById("GamSmoothPlot").src = extract(data.plot_smooth);
+
+          // Update Prediction Table
+          predictionData = (data.prediction_data) || [];
+          predCurrentPage = 1;
+          renderPredictionTable();
+
+          // Store RDS Base64
+          currentRdsB64 = data.rds_b64 || "";
+
+          // Update filename in guide for current dataset
+          const gfn = document.getElementById("GuideFileName");
+          if (gfn) gfn.innerText = refs.dsSelect.value;
+
+          refs.results.style.display = "block";
+          refs.results.scrollIntoView({ behavior: "smooth" });
+        } else {
+          alert("R Backend Error: " + (data.message || "Failed"));
+        }
+      } catch (e) {
+        alert("Connectivity Error: " + e.message);
+      } finally {
+        document.getElementById("GamSpinner").classList.add("gm-hidden");
+        refs.runBtn.disabled = false;
+      }
+    };
+
+    refs.loadBtn.onclick = loadCSVMetadata;
+
+    refs.localFile.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        rawCSVText = event.target.result;
+
+        // Add local file as a selected option in the dropdown
+        const existing = refs.dsSelect.querySelector('option[value="local_upload"]');
+        if (existing) existing.remove();
+
+        const localOpt = document.createElement("option");
+        localOpt.value = "local_upload";
+        localOpt.innerText = `[Local] ${file.name}`;
+        localOpt.selected = true;
+        refs.dsSelect.appendChild(localOpt);
+
+        processCSV(rawCSVText);
+      };
+      reader.readAsText(file);
+    };
+
+    document.getElementById("BtnDownloadCSVResults").onclick = () => {
+      if (!predictionData || predictionData.length === 0) return;
+      const headers = Object.keys(predictionData[0]);
+      const csvContent = [
+        headers.join(","),
+        ...predictionData.map(row => headers.map(h => {
+          const val = row[h];
+          return (typeof val === "string") ? `"${val}"` : val;
+        }).join(","))
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `gam_results_${refs.dsSelect.value}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    document.getElementById("BtnDownloadRDS").onclick = () => {
+      if (!currentRdsB64) {
+        alert("No RDS result available. Please run GAM first.");
+        return;
+      }
+
+      try {
+        // Convert base64 to Blob
+        const byteCharacters = atob(currentRdsB64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/octet-stream" });
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `gam_results_${refs.dsSelect.value}.rds`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        alert("RDS Export Failed: " + e.message);
+      }
+    };
+    refs.dsSelect.onchange = () => {
+      refs.mainArea.classList.add("gm-hidden");
+      refs.previewContainer.style.display = "none";
+      refs.dataPagination.style.display = "none";
+      refs.warningBox.style.display = "none";
+      refs.results.classList.add("gm-hidden");
+    };
+
+  })();
+</script>
+
