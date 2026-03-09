@@ -10,11 +10,9 @@ export const mapConfig = {
 function createMap() {
     // Check if we are on the map page (have container and library)
     if (typeof maplibregl === "undefined") {
-        console.warn("Maplibre GL not found. Skipping map initialization.");
         return null;
     }
     if (!document.getElementById("map")) {
-        console.warn("Map container (#map) not found. Skipping map initialization.");
         return null;
     }
 
