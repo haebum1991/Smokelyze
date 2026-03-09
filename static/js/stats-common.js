@@ -686,7 +686,7 @@ export function getPlotTheme() {
                     
                     <br> 
                     [Note] <br>
-                    This plot tab does not work for [Live Updates], [AirNow], [Satellite], and [Satellite] data.
+                    This plot tab does not work for [NIFC], [AirNow], [Satellite], and [Satellite] data.
                 `.trim(),
             heatmap: `
                     If you see this message, it could be due to the following reasons: <br>

@@ -31,7 +31,7 @@ const TUTORIAL_STEPS = [
         element: "#AccordionToggle",
         popover: {
             title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-layers"/></svg></span> Toggle Map Layers',
-            description: "Open the Layers panel to turn data layers on or off. Choose from Live Updates, Satellite imagery, AirNow observations, and Published & Latest analysis datasets.",
+            description: "Open the Layers panel to turn data layers on or off. Choose from NIFC, Satellite, AirNow, and Published & Latest analysis datasets.",
             side: "left",
             align: "start",
         },
