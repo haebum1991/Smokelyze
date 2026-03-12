@@ -308,7 +308,10 @@ export async function tempoLoadData(isoDate) {
             continue;
         }
 
-        const { jsonUrl, pngUrl } = getTempoUrls(utcIsoDate, utcHour, cfg.productId);
+        const { jsonUrl: baseJson, pngUrl: basePng } = getTempoUrls(utcIsoDate, utcHour, cfg.productId);
+        const buster = utils.getCacheBuster(utcIsoDate);
+        const jsonUrl = baseJson + buster;
+        const pngUrl = basePng + buster;
 
         try {
             const res = await fetch(jsonUrl);

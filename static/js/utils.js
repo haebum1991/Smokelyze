@@ -6,7 +6,7 @@ import { auth } from "./fb-init.js";
 import { loadedGeoJSON, loadedSources } from "./loader-state.js";
 import { DATA_IMPORT_METHOD } from "./layers-def.js";
 
-function getCacheBuster(isoDate) {
+export function getCacheBuster(isoDate) {
   const now = new Date();
   const targetDate = new Date(isoDate);
   const daysDiff = Math.floor((now - targetDate) / (24 * 60 * 60 * 1000));
