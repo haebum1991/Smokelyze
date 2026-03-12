@@ -907,7 +907,7 @@ body.page-about .sidebar {
 }
 
 .update-btn-refresh {
-  background: #0076ff;
+  background: var(--btn-action);
   color: white;
   border: none;
   padding: 0.8rem 1.6rem;
@@ -920,7 +920,7 @@ body.page-about .sidebar {
 
 @media (hover: hover) {
   .update-btn-refresh:hover {
-    background: #006ae6;
+    background: var(--btn-action-hover);
   }
 }
 
@@ -1012,7 +1012,7 @@ body.page-about .sidebar {
 
   .profile-btn-item.logout:hover {
     background: rgba(255, 77, 77, 0.1);
-    color: #ff4d4d;
+    color: var(--color-danger);
   }
 }
 
@@ -1084,7 +1084,7 @@ body.page-about .sidebar {
 .profile-input:focus,
 .settings-input:focus {
   outline: none;
-  border-color: #0076ff;
+  border-color: var(--btn-action);
 }
 
 .profile-input.readonly,
@@ -1098,7 +1098,7 @@ body.page-about .sidebar {
   width: 100%;
   padding: 1.2rem;
   margin-top: 1rem;
-  background: #0076ff;
+  background: var(--btn-action);
   color: white;
   border: none;
   border-radius: calc(var(--border-radius-0p8rem) * 4);
@@ -1110,7 +1110,7 @@ body.page-about .sidebar {
 
 @media (hover: hover) {
   .profile-btn-save:hover {
-    background: #006ae6;
+    background: var(--btn-action-hover);
   }
 }
 
@@ -1125,11 +1125,11 @@ body.page-about .sidebar {
 }
 
 .profile-message.success {
-  color: #2ecc71;
+  color: var(--color-success);
 }
 
 .profile-message.error {
-  color: #e74c3c;
+  color: var(--color-error);
 }
 
 /* Login required css */
@@ -1148,6 +1148,37 @@ body.page-about .sidebar {
   }
 }
 
+/* Group member list (Settings modal) */
+.group-member-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  border-bottom: 0.1rem solid var(--border-light);
+}
+
+.group-remove-btn {
+  font-size: 2.4rem;
+  color: var(--color-danger);
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+/* Utility: center message / loading state */
+.ui-center-message {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-main);
+}
+
+.ui-center-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-main);
+}
 
 /* Mobile version setting */
 @media (max-width: 1024px) {

@@ -166,7 +166,7 @@ function handleReplyOpen(element) {
                 const len = textarea.value.length;
                 const max = 2000;
                 counter.textContent = `${len}/${max}`;
-                counter.style.color = len > max ? "#e74c3c" : "var(--text-main)";
+                counter.style.color = len > max ? "var(--btn-minus)" : "var(--text-main)";
             }
         }
         element.style.display = "none";
@@ -258,7 +258,7 @@ function handleInlineEdit(element) {
                     const len = textarea.value.length;
                     const max = 2000;
                     counter.textContent = `${len}/${max}`;
-                    counter.style.color = len > max ? "#e74c3c" : "var(--text-main)";
+                    counter.style.color = len > max ? "var(--btn-minus)" : "var(--text-main)";
                 }
             }
         }

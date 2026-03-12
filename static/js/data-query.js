@@ -547,7 +547,7 @@ async function initLocationMap() {
     const libraryLoaded = await loadMapLibrary();
     if (!libraryLoaded) {
         const errorDiv = document.createElement("div");
-        errorDiv.style.cssText = "padding: 2rem; text-align: center; color: var(--text-main);";
+        errorDiv.className = "ui-center-message";
         errorDiv.textContent = "Failed to load map library. Please refresh the page.";
         mapContainer.innerHTML = "";
         mapContainer.appendChild(errorDiv);
@@ -574,7 +574,7 @@ async function initLocationMap() {
     const loadingDiv = document.createElement("div");
     const loadingSpan = document.createElement("span");
     
-    loadingDiv.style.cssText = "display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-main);";
+    loadingDiv.className = "ui-center-loading";
     loadingSpan.textContent = "Loading map...";
     loadingDiv.appendChild(loadingSpan);
     mapContainer.innerHTML = "";

@@ -182,8 +182,8 @@ function renderLikeButton(id, likes, isSmall = false) {
         ? "background: none; border: none; padding: 0; margin-right: 1.5rem; display: flex; align-items: center; cursor: pointer; color: var(--text-main);"
         : "text-align: center; cursor: pointer; min-width: 40px;";
 
-    const svgFill = isLiked ? "#e74c3c" : "none";
-    const svgStroke = isLiked ? "#e74c3c" : "currentColor";
+    const svgFill = isLiked ? "var(--btn-minus)" : "none";
+    const svgStroke = isLiked ? "var(--btn-minus)" : "currentColor";
     const svgStrokeWidth = isLiked ? "0" : "2";
 
     const svgHtml = `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${svgFill}" stroke="${svgStroke}" stroke-width="${svgStrokeWidth}"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
@@ -218,7 +218,7 @@ function uiShowModal(editData = null) {
         if (state.previewMarker) state.previewMarker.remove();
         const el = document.createElement("div");
         el.className = "MapPost-pointer-preview";
-        el.innerHTML = `<svg viewBox="0 0 24 24" width="40" height="40"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" fill="#ff4d4d" stroke="white" stroke-width="1.5"/><circle cx="12" cy="10" r="3" fill="white"/></svg>`;
+        el.innerHTML = `<svg viewBox="0 0 24 24" width="40" height="40"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" fill="var(--color-danger)" stroke="white" stroke-width="1.5"/><circle cx="12" cy="10" r="3" fill="white"/></svg>`;
         state.previewMarker = new maplibregl.Marker({ element: el, anchor: "bottom" }).setLngLat(state.pendingLngLat).addTo(map);
     }
 
@@ -269,7 +269,7 @@ function updateCounter(inputId, counterId, max) {
     if (input && counter) {
         const len = input.value.length;
         counter.textContent = `${len}/${max}`;
-        counter.style.color = len > max ? "#e74c3c" : "var(--text-main)";
+        counter.style.color = len > max ? "var(--btn-minus)" : "var(--text-main)";
     }
 }
 
@@ -281,7 +281,7 @@ function updateReplyCounter(textarea) {
         const len = textarea.value.length;
         const max = 2000;
         counter.textContent = `${len}/${max}`;
-        counter.style.color = len > max ? "#e74c3c" : "var(--text-main)";
+        counter.style.color = len > max ? "var(--btn-minus)" : "var(--text-main)";
     }
 }
 

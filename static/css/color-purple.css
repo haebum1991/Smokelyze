@@ -56,5 +56,14 @@
   --map-toolbar-button-bg: var(--mobile-nav-bg); /* toolbar 버튼 배경 */
   --map-toolbar-button-text: var(--color-white); /* toolbar 버튼 텍스트 */
   --map-legend-bg: rgba(255, 255, 255, 0.9);     /* legend 박스 배경 */
+  
+  /* Unified Button & Status colors */
+  --btn-minus:        #e74c3c;   /* 날짜 Minus (과거) 버튼 */
+  --btn-plus:         #4a90e2;   /* 날짜 Plus (미래) 버튼 */
+  --btn-action:       #0076ff;   /* CTA / Save / Refresh 버튼 */
+  --btn-action-hover: #006ae6;   /* CTA hover */
+  --color-success:    #2ecc71;   /* 성공 메시지 */
+  --color-error:      #e74c3c;   /* 에러 메시지 */
+  --color-danger:     #ff4d4d;   /* 삭제 / 위험 표시 */
 }
 

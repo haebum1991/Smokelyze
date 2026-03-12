@@ -38,7 +38,7 @@ body.page-map .main-footer {
   padding: 0.8rem 1.4rem;
   border-radius: var(--border-radius-0p8rem);
   font-size: 1.3rem;
-  font-weight: bold;
+  font-weight: 600;
   pointer-events: none;
   box-shadow: 0 0.1rem 0.5rem var(--card-shadow);
   border: 0.1rem solid var(--card-shadow);
@@ -223,6 +223,7 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
 }
 
 @media (hover: hover) {
+
   .map-btn-reset:hover,
   .map-btn-capture:hover,
   .map-btn-tutorial:hover,
@@ -232,6 +233,7 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
 }
 
 @media (max-width: 1024px) {
+
   .map-btn-capture,
   .map-btn-shortcuts {
     display: none;
@@ -479,7 +481,7 @@ body.FigurePage-drawer-open .map-legend {
 #onMapMinus1m,
 #onMapMinus1d,
 #onMapMinus1h {
-  background: #e74c3c;
+  background: var(--btn-minus);
   color: white;
 }
 
@@ -488,7 +490,7 @@ body.FigurePage-drawer-open .map-legend {
 #onMapPlus1m,
 #onMapPlus1d,
 #onMapPlus1h {
-  background: #4a90e2;
+  background: var(--btn-plus);
   color: white;
 }
 
@@ -750,7 +752,9 @@ details[open] summary {
   -webkit-tap-highlight-color: transparent;
 }
 
-.FigurePage-toggle {
+/* --- Drawer Toggle (shared base for FigurePage & Desc) --- */
+.FigurePage-toggle,
+.Desc-toggle {
   z-index: var(--z-FigurePage-toggle);
   font-size: 2rem;
   font-weight: bold;
@@ -761,7 +765,6 @@ details[open] summary {
 
   position: absolute;
   bottom: -4.8rem;
-  left: 0.3rem;
   padding: 0.6rem 0.8rem;
 
   background-color: var(--map-accordion-gradient-start);
@@ -773,21 +776,30 @@ details[open] summary {
   transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
 }
 
-.FigurePage-toggle .chevron {
+.FigurePage-toggle {
+  left: 0.3rem;
+}
+
+.FigurePage-toggle .chevron,
+.Desc-toggle .chevron {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.FigurePage-toggle.active .chevron {
+.FigurePage-toggle.active .chevron,
+.Desc-toggle.active .chevron {
   transform: rotate(180deg);
 }
 
 @media (hover: hover) {
-  .FigurePage-toggle:hover {
+
+  .FigurePage-toggle:hover,
+  .Desc-toggle:hover {
     transform: scale(1.05);
   }
 }
 
-.FigurePage-toggle.active {
+.FigurePage-toggle.active,
+.Desc-toggle.active {
   background-color: var(--card-shadow);
   color: var(--color-bg);
 }
@@ -930,7 +942,7 @@ tr.stats-state-row-ca.show {
 #StatsInputMinus1m,
 #StatsInputMinus1d,
 #StatsInputMinus1h {
-  background: #e74c3c;
+  background: var(--btn-minus);
   color: white;
 }
 
@@ -940,7 +952,7 @@ tr.stats-state-row-ca.show {
 #StatsInputPlus1d,
 #StatsInputPlus1m,
 #StatsInputPlus1y {
-  background: #4a90e2;
+  background: var(--btn-plus);
   color: white;
 }
 
@@ -1011,12 +1023,15 @@ tr.stats-state-row-ca.show {
   gap: 1rem;
 }
 
-.stats-tab-sub {
-  font-size: 2rem;
+/* --- Tab Button (shared base for Stats / Plot / Desc tabs) --- */
+.stats-tab-sub,
+.stats-plot-tab-sub,
+.Desc-tab-main-btn,
+.Desc-tab-sub-btn {
+  font-size: 1.6rem;
   font-weight: bold;
   display: inline-block;
-  margin-top: 1rem;
-  padding: 0.6rem 1.2rem;
+  padding: 0.6rem 0.8rem;
   border-radius: var(--border-radius-0p8rem);
   cursor: pointer;
 
@@ -1028,7 +1043,10 @@ tr.stats-state-row-ca.show {
   transition: all 0.3s ease;
 }
 
-.stats-tab-sub.active {
+.stats-tab-sub.active,
+.stats-plot-tab-sub.active,
+.Desc-tab-main-btn.active,
+.Desc-tab-sub-btn.active {
   background-color: var(--accent-highlight);
   border-color: var(--accent-highlight);
   color: var(--text-main);
@@ -1036,12 +1054,20 @@ tr.stats-state-row-ca.show {
 
 @media (hover: hover) {
 
-  .stats-tab-sub[stats-tab-sub-data="date"]:hover,
-  .stats-tab-sub[stats-tab-sub-data="year"]:hover {
+  .stats-tab-sub:hover,
+  .stats-plot-tab-sub:hover,
+  .Desc-tab-main-btn:hover,
+  .Desc-tab-sub-btn:hover {
     background-color: var(--accent-highlight);
     color: var(--text-main);
-    border-color: var(--accent-highlight);
   }
+}
+
+/* stats-tab-sub overrides (larger size) */
+.stats-tab-sub {
+  font-size: 2rem;
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
 }
 
 .stats-tab-month-main {
@@ -1246,34 +1272,7 @@ tr.stats-state-row-ca.show {
   border-bottom: 0.1rem solid var(--card-shadow);
 }
 
-.stats-plot-tab-sub {
-  font-size: 1.6rem;
-  font-weight: bold;
-  display: inline-block;
-  padding: 0.6rem 0.8rem;
-  border-radius: var(--border-radius-0p8rem);
-  cursor: pointer;
-
-  background-color: var(--color-bg);
-  color: var(--text-main);
-  border: 0;
-  box-shadow: 0.1rem 0.1rem 0.2rem var(--text-soft);
-
-  transition: all 0.3s ease;
-}
-
-.stats-plot-tab-sub.active {
-  background-color: var(--accent-highlight);
-  border-color: var(--accent-highlight);
-  color: var(--text-main);
-}
-
-@media (hover: hover) {
-  .stats-plot-tab-sub:hover {
-    background-color: var(--accent-highlight);
-    color: var(--text-main);
-  }
-}
+/* stats-plot-tab-sub: base styles provided by shared tab button rule above */
 
 .stats-plot-tab-sub-container {
   display: none;
@@ -1341,46 +1340,9 @@ tr.stats-state-row-ca.show {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Desc-toggle: shared base from .FigurePage-toggle,.Desc-toggle rule above */
 .Desc-toggle {
-  z-index: var(--z-FigurePage-toggle);
-  font-size: 2rem;
-  font-weight: bold;
-
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-
-  position: absolute;
-  bottom: -4.8rem;
   right: 0.4rem;
-  padding: 0.6rem 0.8rem;
-
-  background-color: var(--map-accordion-gradient-start);
-  color: var(--text-strong);
-  border: none;
-  border-radius: var(--border-radius-0p8rem);
-  cursor: pointer;
-
-  transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
-}
-
-.Desc-toggle .chevron {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.Desc-toggle.active .chevron {
-  transform: rotate(180deg);
-}
-
-@media (hover: hover) {
-  .Desc-toggle:hover {
-    transform: scale(1.05);
-  }
-}
-
-.Desc-toggle.active {
-  background-color: var(--card-shadow);
-  color: var(--color-bg);
 }
 
 .Desc-drawer {
@@ -1437,36 +1399,7 @@ tr.stats-state-row-ca.show {
   border-bottom: 0.1rem solid var(--card-shadow);
 }
 
-.Desc-tab-main-btn,
-.Desc-tab-sub-btn {
-  font-size: 1.6rem;
-  font-weight: bold;
-  cursor: pointer;
-
-  padding: 0.6rem 0.8rem;
-  border-radius: var(--border-radius-0p8rem);
-  background-color: var(--color-bg);
-  color: var(--text-main);
-  border: 0;
-  box-shadow: 0.1rem 0.1rem 0.2rem var(--text-soft);
-
-  transition: all 0.3s ease;
-}
-
-.Desc-tab-main-btn.active,
-.Desc-tab-sub-btn.active {
-  background-color: var(--accent-highlight);
-  border-color: var(--accent-highlight);
-  color: var(--text-main);
-}
-
-@media (hover: hover) {
-
-  .Desc-tab-main-btn:hover,
-  .Desc-tab-sub-btn:hover {
-    background-color: var(--accent-highlight);
-  }
-}
+/* Desc-tab-main-btn, Desc-tab-sub-btn: base styles provided by shared tab button rule above */
 
 .Desc-content {
   flex: 1;
@@ -2022,8 +1955,8 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
 .reply-btn-delete,
 .reply-btn-delete-detail {
   cursor: pointer;
-  border: 0.1rem solid #ff4d4d;
-  color: #ff4d4d;
+  border: 0.1rem solid var(--color-danger);
+  color: var(--color-danger);
   background: transparent;
   padding: 0.6rem 1.2rem;
   border-radius: var(--border-radius-0p8rem);

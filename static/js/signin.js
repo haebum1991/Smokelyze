@@ -288,14 +288,13 @@ function renderGroupList(group) {
     }
     group.forEach(member => {
         const li = document.createElement("li");
-        li.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-bottom: 0.1rem solid var(--border-color);";
+        li.className = "group-member-item";
 
         const span = document.createElement("span");
         span.textContent = `${member.email} (${member.nickname || "No Nickname"})`;
 
         const btn = document.createElement("button");
         btn.className = "group-remove-btn";
-        btn.style.cssText = "font-size: 2.4rem; color: red; border: none; background: none; cursor: pointer;";
         btn.innerHTML = "&times;"; // Safe static symbol
         btn.addEventListener("click", () => removeGroupMember(member));
 

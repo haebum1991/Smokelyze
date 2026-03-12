@@ -309,23 +309,43 @@ export function initAccordion() {
 }
 
 /**
+ * Drawer Toggle Factory
+ * Creates a reusable set*Drawer function from a config object.
+ */
+function createDrawerToggle(config) {
+    const { id, btnId, drawerId, bodyClass, onOpen, onClose } = config;
+
+    return function setDrawer(open) {
+        const btn = document.getElementById(btnId);
+        const drawer = document.getElementById(drawerId);
+        if (!drawer) return;
+
+        const actualOpen = (open !== undefined) ? open : !drawer.classList.contains("open");
+        drawer.classList.toggle("open", actualOpen);
+        if (btn) btn.classList.toggle("active", actualOpen);
+        if (bodyClass) document.body.classList.toggle(bodyClass, actualOpen);
+
+        if (actualOpen) {
+            if (window.innerWidth <= 1024) {
+                closeAllExcept(id);
+                clearHighlight?.();
+            }
+            onOpen?.();
+        } else {
+            onClose?.();
+        }
+    };
+}
+
+/**
  * 2. Stats Drawer
  */
-export function setStatsDrawer(open) {
-    const btn = document.getElementById("FigurePageToggle");
-    const drawer = document.getElementById("FigurePageDrawer");
-    if (!btn || !drawer) return;
-
-    const actualOpen = (open !== undefined) ? open : !drawer.classList.contains("open");
-    drawer.classList.toggle("open", actualOpen);
-    btn.classList.toggle("active", actualOpen);
-    document.body.classList.toggle("FigurePage-drawer-open", actualOpen);
-
-    if (actualOpen && window.innerWidth <= 1024) {
-        closeAllExcept("stats");
-        clearHighlight?.();
-    }
-}
+export const setStatsDrawer = createDrawerToggle({
+    id: "stats",
+    btnId: "FigurePageToggle",
+    drawerId: "FigurePageDrawer",
+    bodyClass: "FigurePage-drawer-open"
+});
 
 export function initStatsDrawer() {
     const btn = document.getElementById("FigurePageToggle");
@@ -341,25 +361,12 @@ export function initStatsDrawer() {
 /**
  * 3. Desc Drawer
  */
-export function setDescDrawer(open) {
-    const btn = document.getElementById("DescToggle");
-    const drawer = document.getElementById("DescDrawer");
-    if (!btn || !drawer) return;
-
-    const actualOpen = (open !== undefined) ? open : !drawer.classList.contains("open");
-    if (actualOpen) {
-        drawer.classList.add("open");
-        btn.classList.add("active");
-        if (window.innerWidth <= 1024) {
-            closeAllExcept("desc");
-            clearHighlight?.();
-        }
-        onDescDrawerOpen?.();
-    } else {
-        drawer.classList.remove("open");
-        btn.classList.remove("active");
-    }
-}
+export const setDescDrawer = createDrawerToggle({
+    id: "desc",
+    btnId: "DescToggle",
+    drawerId: "DescDrawer",
+    onOpen: () => onDescDrawerOpen?.()
+});
 
 export function initDescDrawer() {
     const btn = document.getElementById("DescToggle");
@@ -375,28 +382,14 @@ export function initDescDrawer() {
 /**
  * 4. Wildfire News Drawer
  */
-export function setNewsDrawer(open) {
-    const btn = document.getElementById("WFnewsToggle");
-    const drawer = document.getElementById("WFnewsDrawer");
-    if (!btn || !drawer) return;
-
-    const actualOpen = (open !== undefined) ? open : !drawer.classList.contains("open");
-    if (actualOpen) {
-        drawer.classList.add("open");
-        btn.classList.add("active");
-        document.body.classList.add("WFnews-drawer-open");
-        if (window.innerWidth <= 1024) {
-            closeAllExcept("news");
-            clearHighlight?.();
-        }
-        // [Smart News Fetch] Notify system to check for news data
-        window.dispatchEvent(new CustomEvent("news-drawer-opened"));
-    } else {
-        drawer.classList.remove("open");
-        btn.classList.remove("active");
-        document.body.classList.remove("WFnews-drawer-open");
-    }
-}
+export const setNewsDrawer = createDrawerToggle({
+    id: "news",
+    btnId: "WFnewsToggle",
+    drawerId: "WFnewsDrawer",
+    bodyClass: "WFnews-drawer-open",
+    // [Smart News Fetch] Notify system to check for news data
+    onOpen: () => window.dispatchEvent(new CustomEvent("news-drawer-opened"))
+});
 
 export function initNewsDrawer() {
     const btn = document.getElementById("WFnewsToggle");
@@ -424,30 +417,15 @@ export function initNewsDrawer() {
 /**
  * 5. MapPost Drawer
  */
-export function setMapPostDrawer(open) {
-    const btn = document.getElementById("MapPostToggle");
-    const drawer = document.getElementById("MapPostDrawer");
-    if (!drawer) return;
-
-    const actualOpen = (open !== undefined) ? open : !drawer.classList.contains("open");
-    if (actualOpen) {
-        drawer.classList.add("open");
-        btn.classList.add("active");
-        document.body.classList.add("MapPost-drawer-open");
-        if (window.innerWidth <= 1024) {
-            closeAllExcept("MapPost");
-            clearHighlight?.();
-        }
-        // [Smart MapPost Fetch] Notify system
-        window.dispatchEvent(new CustomEvent("mappost-drawer-opened"));
-    } else {
-        drawer.classList.remove("open");
-        btn.classList.remove("active");
-        document.body.classList.remove("MapPost-drawer-open");
-        // [Smart MapPost Fetch] Notify system
-        window.dispatchEvent(new CustomEvent("mappost-drawer-closed"));
-    }
-}
+export const setMapPostDrawer = createDrawerToggle({
+    id: "MapPost",
+    btnId: "MapPostToggle",
+    drawerId: "MapPostDrawer",
+    bodyClass: "MapPost-drawer-open",
+    // [Smart MapPost Fetch] Notify system
+    onOpen: () => window.dispatchEvent(new CustomEvent("mappost-drawer-opened")),
+    onClose: () => window.dispatchEvent(new CustomEvent("mappost-drawer-closed"))
+});
 
 export function initMapPostDrawer() {
     const btn = document.getElementById("MapPostToggle");
