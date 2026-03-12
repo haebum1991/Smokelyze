@@ -146,22 +146,22 @@ export const DescData = {
         {
             id: "tempo-no2",
             title: "TEMPO-NO2-L3 (hourly)",
-            desc: "<b>TEMPO NO2 L3 (hourly)</b> provides high-resolution tropospheric vertical column density (VCD) of nitrogen dioxide (NO<sub>2</sub>) from NASA's geostationary TEMPO satellite. " +
+            desc: "<b>TEMPO NO2VCD L3 (hourly)</b> provides high-resolution tropospheric vertical column density (VCD) of nitrogen dioxide (NO<sub>2</sub>) from NASA's geostationary TEMPO satellite. " +
                 "Data is strictly filtered using the official <em>Main Quality Flag (0)</em> and a <em>Cloud Fraction threshold (< 10%)</em> to ensure high-accuracy, clear-sky observations. " +
                 "It allows for near real-time tracking of nitrogen dioxide levels over North America in unit of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
-                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Hourly</b></li>" +
-                "<li>Resolution: <b>Spatially aggregated (approx. 4-8km)</b> for visualization performance.</li>" +
-                "<li>Typically has a <b style='color: var(--card-shadow);'>2-3 hour reporting delay</b> from the current UTC time.</li></ul>"
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b></li>" +
+                "<li>Resolution: <b style='color: var(--card-shadow);'>Spatially aggregated to 0.04&deg; (~ 4.4 km)</b> for visualization performance.</li>" +
+                "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </ul></li>"
         },
         {
             id: "tempo-hcho",
             title: "TEMPO-HCHO-L3 (hourly)",
-            desc: "<b>TEMPO HCHO L3 (hourly)</b> provides high-resolution vertical column density (VCD) of formaldehyde (HCHO) from NASA's geostationary TEMPO satellite. " +
+            desc: "<b>TEMPO HCHOVCD L3 (hourly)</b> provides high-resolution vertical column density (VCD) of formaldehyde (HCHO) from NASA's geostationary TEMPO satellite. " +
                 "Data is strictly filtered using the official <em>Main Quality Flag (0)</em> and a <em>Cloud Fraction threshold (< 10%)</em> to ensure high-accuracy, clear-sky observations. " +
                 "It allows for near real-time tracking of formaldehyde levels over North America in unit of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
-                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Hourly</b></li>" +
-                "<li>Resolution: <b>Spatially aggregated (approx. 4-8km)</b> for visualization performance.</li>" +
-                "<li>Typically has a <b style='color: var(--card-shadow);'>2-3 hour reporting delay</b> from the current UTC time.</li></ul>"
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b></li>" +
+                "<li>Resolution: <b style='color: var(--card-shadow);'>Spatially aggregated to 0.04&deg; (~ 4.4 km)</b> for visualization performance.</li>" +
+                "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </ul></li>"
         }
     ],
     "desc-published-intro": [

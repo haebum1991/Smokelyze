@@ -11,13 +11,23 @@ const TEMPO_CONFIG = {
     "no2": {
         productId: "TEMPO_NO2_L3",
         sourceId: "tempo-no2",
-        layerId: "layer-tempo-no2"
+        layerId: "layer-tempo-no2",
+        mapLayerId: "tempo-no2-raster"
     },
     "hcho": {
         productId: "TEMPO_HCHO_L3",
         sourceId: "tempo-hcho",
-        layerId: "layer-tempo-hcho"
+        layerId: "layer-tempo-hcho",
+        mapLayerId: "tempo-hcho-raster"
     }
+};
+
+/**
+ * Stores raw pixel data and metadata for hover value sampling
+ */
+const tempoDataStore = {
+    "tempo-no2": { imageData: null, metadata: null, coordinates: null },
+    "tempo-hcho": { imageData: null, metadata: null, coordinates: null }
 };
 
 function getTempoUrls(isoDate, hour, productId) {
@@ -44,7 +54,7 @@ function hexToRgb(hex) {
 /**
  * Colorizes a grayscale PNG based on metadata and a global value scale.
  */
-function colorizeTempoImage(imgUrl, min_val, max_val, source) {
+function colorizeTempoImage(imgUrl, metadata, source, sourceId) {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.crossOrigin = "Anonymous";
@@ -60,7 +70,36 @@ function colorizeTempoImage(imgUrl, min_val, max_val, source) {
                 ctx.drawImage(img, 0, 0);
 
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const data = imageData.data;
+                const rawData = imageData.data;
+                const imgW = imageData.width;
+                const imgH = imageData.height;
+
+                // MAX EFFICIENCY: Store only the 8-bit Grayscale channel (Red) to save 75% memory
+                const grayscale = new Uint8Array(imgW * imgH);
+                for (let i = 0; i < rawData.length; i += 4) {
+                    grayscale[i / 4] = rawData[i];
+                }
+
+                // Pre-calculate Mercator constants to avoid Math.log/Math.tan on every mouse move
+                const latToMercY = (l) => Math.log(Math.tan((Math.PI / 4) + (l * Math.PI / 360)));
+                const { extent_raw, extent, min_val, max_val } = metadata;
+                const targetExtent = extent_raw || extent;
+                const [xmin, xmax, ymin, ymax] = targetExtent;
+
+                const mercYMin = latToMercY(ymin);
+                const mercYMax = latToMercY(ymax);
+
+                tempoDataStore[sourceId] = {
+                    grayscale,
+                    imgW,
+                    imgH,
+                    metadata,
+                    xmin, xmax, ymin, ymax,
+                    mercYMin, mercYMax,
+                    mercYRange: mercYMax - mercYMin,
+                    lngRange: xmax - xmin
+                };
+
                 const breaks = BREAKS_TEMPO;
                 const colors = PALETTE_TEMPO.map(hexToRgb);
 
@@ -85,26 +124,21 @@ function colorizeTempoImage(imgUrl, min_val, max_val, source) {
                 let minRec = 999;
                 let maxRec = -999;
 
-                for (let i = 0; i < data.length; i += 4) {
-                    const px = data[i];
+                for (let i = 0; i < rawData.length; i += 4) {
+                    const px = rawData[i];
                     if (px === 0) {
-                        data[i + 3] = 0;
+                        rawData[i + 3] = 0;
                     } else {
-                        // Restoration logic: Map 0-255 back to [min_val, max_val]
                         const realValue = min_val + (px / 255) * (max_val - min_val);
-                        const displayValue = realValue / 1e14; // Convert to 10^14 molecules/cm2 unit
-
-                        if (realValue < minRec) minRec = realValue;
-                        if (realValue > maxRec) maxRec = realValue;
+                        const displayValue = realValue / 1e14;
 
                         const rgb = getTempoColor(displayValue);
-                        data[i] = rgb[0];
-                        data[i + 1] = rgb[1];
-                        data[i + 2] = rgb[2];
-                        data[i + 3] = 220;
+                        rawData[i] = rgb[0];
+                        rawData[i + 1] = rgb[1];
+                        rawData[i + 2] = rgb[2];
+                        rawData[i + 3] = 220;
                     }
                 }
-                console.log(`TEMPO Colorize: px_range=[0-255], val_range=[${min_val.toFixed(2)}-${max_val.toFixed(2)}], calc_range=[${minRec.toFixed(2)}-${maxRec.toFixed(2)}]`);
 
                 ctx.putImageData(imageData, 0, 0);
 
@@ -143,13 +177,116 @@ export function clearAllTempo() {
     for (const cfg of Object.values(TEMPO_CONFIG)) {
         const source = map?.getSource(cfg.sourceId);
         if (source) clearTempoSource(source);
+        tempoDataStore[cfg.sourceId] = null;
     }
+}
+
+/**
+ * Global mousemove handler for TEMPO layers
+ */
+let tempoHoverBound = false;
+function initTempoHover() {
+    if (tempoHoverBound || !map) return;
+
+    const tooltip = document.getElementById("MapTooltip");
+    if (!tooltip) return;
+
+    map.on("mousemove", (e) => {
+        // Find visible TEMPO layers
+        const activeTempoLayer = Object.values(TEMPO_CONFIG).find(cfg => {
+            if (!map.getLayer(cfg.mapLayerId)) return false;
+            return map.getLayoutProperty(cfg.mapLayerId, "visibility") === "visible";
+        });
+
+        if (!activeTempoLayer) {
+            if (!tempoHoverBound.isShowing) return;
+            tooltip.style.display = "none";
+            map.getCanvas().style.cursor = "";
+            tempoHoverBound.isShowing = false;
+            return;
+        }
+
+        const sourceId = activeTempoLayer.sourceId;
+        const store = tempoDataStore[sourceId];
+        if (!store || !store.grayscale) return;
+
+        const wrapped = e.lngLat.wrap();
+        const { lng, lat } = wrapped;
+
+        // Check if cursor is within extent (Quick check using pre-stored constants)
+        if (lng >= store.xmin && lng <= store.xmax && lat >= store.ymin && lat <= store.ymax) {
+
+            // X is linear: (lng - xmin) / lngRange
+            const xPct = (lng - store.xmin) / store.lngRange;
+
+            // Y is Mercator: (mercYMax - mercYLat) / mercYRange
+            const mercYLat = Math.log(Math.tan((Math.PI / 4) + (lat * Math.PI / 360)));
+            const yPct = (store.mercYMax - mercYLat) / store.mercYRange;
+
+            const pxX = (xPct * store.imgW) | 0; // Bitwise OR 0 is faster than Math.floor
+            const pxY = (yPct * store.imgH) | 0;
+
+            if (pxX >= 0 && pxX < store.imgW && pxY >= 0 && pxY < store.imgH) {
+                const gray = store.grayscale[pxY * store.imgW + pxX];
+
+                if (!gray) {
+                    hideTempoTooltip();
+                    return;
+                }
+
+                // Restoration logic: Map 0-255 back to [min_val, max_val]
+                const { metadata } = store;
+                const realValue = metadata.min_val + (gray / 255) * (metadata.max_val - metadata.min_val);
+                const displayValue = realValue / 1e14; // unit: 10^14 molecules/cm2
+
+                const scanInfo = Array.isArray(metadata.scan_nos) ? metadata.scan_nos.join(", ") : metadata.scan_nos;
+
+                tooltip.innerHTML = `
+                    <div>
+                        <strong style="color: var(--card-shadow);">${activeTempoLayer.productId === "TEMPO_NO2_L3" ? "TEMPO NO2VCD" : "TEMPO HCHOVCD"}</strong>
+                    </div>
+                    <div>
+                        <div>Value: <b style="font-size: 1.6rem;">${displayValue.toFixed(2)}</b> 
+                        <span style="color: var(--text-main);">&times 10<sup>14</sup> molec. cm<sup>-2</sup></span></div>
+                        <div style="display: flex; flex-direction: column; gap: 2px;">
+                            <span><i class="far fa-clock" style="width: 14px;"></i> Time: <b>${metadata.datetime || "N/A"} UTC</b></span>
+                            <span><i class="fas fa-satellite" style="width: 14px;"></i> Scan: <b>${scanInfo || "N/A"}</b></span>
+                        </div>
+                    </div>
+                `;
+                tooltip.style.display = "block";
+                map.getCanvas().style.cursor = "pointer";
+                tempoHoverBound.isShowing = true;
+
+                let x = e.originalEvent.clientX + 15;
+                let y = e.originalEvent.clientY + 15;
+                if (x + 250 > window.innerWidth) x = e.originalEvent.clientX - 260;
+                if (y + 100 > window.innerHeight) y = e.originalEvent.clientY - 110;
+
+                tooltip.style.left = `${x / 10}rem`;
+                tooltip.style.top = `${y / 10}rem`;
+            } else {
+                hideTempoTooltip();
+            }
+        } else {
+            hideTempoTooltip();
+        }
+    });
+
+    function hideTempoTooltip() {
+        if (!tempoHoverBound.isShowing) return;
+        tooltip.style.display = "none";
+        map.getCanvas().style.cursor = "";
+        tempoHoverBound.isShowing = false;
+    }
+
+    tempoHoverBound = { active: true, isShowing: false };
 }
 
 export async function tempoLoadData(isoDate) {
     const timePicker = document.getElementById("timePicker");
     if (!timePicker) return;
-    
+
     const localHour = parseInt(timePicker.value);
     const [y, m, d] = isoDate.split("-").map(Number);
     const localDate = new Date(y, m - 1, d, localHour);
@@ -184,13 +321,19 @@ export async function tempoLoadData(isoDate) {
             const targetExtent = metadata.extent_raw || metadata.extent;
 
             if (metadata && targetExtent) {
-                const [xmin, xmax, ymin, ymax] = targetExtent;
+                const xmin = targetExtent[0];
+                const xmax = targetExtent[1];
+                const ymin = targetExtent[2];
+                const ymax = targetExtent[3];
                 const coordinates = [
                     [xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin]
                 ];
 
-                await colorizeTempoImage(pngUrl, metadata.min_val, metadata.max_val, source);
+                tempoDataStore[cfg.sourceId].coordinates = coordinates;
+                await colorizeTempoImage(pngUrl, metadata, source, cfg.sourceId);
                 source.setCoordinates(coordinates);
+
+                initTempoHover();
             } else {
                 console.warn(`TEMPO ${key}: Invalid extent in metadata`, metadata?.extent);
                 clearTempoSource(source);

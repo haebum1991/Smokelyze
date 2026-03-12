@@ -69,7 +69,7 @@ export function initBtnTooltips() {
       
       // Show with animation
       requestAnimationFrame(() => {
-        tooltip.classList.add("visible");
+        if (tooltip) tooltip.classList.add("visible");
       });
     };
 

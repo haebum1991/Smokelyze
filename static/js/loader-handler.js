@@ -445,13 +445,12 @@ export async function updateAllActiveSources() {
         const checkboxes = document.querySelectorAll("input[type=checkbox][id^='layer-']");
         const sourcesToLoad = new Set();
         
-        // [Smart News Fetch] Load news if switch is on, drawer is open, or first load of the session
+        // [Smart News Fetch] Load news if switch is on or drawer is open
         const newsSwitchOn = document.getElementById("layer-wildfire-news")?.checked;
         const newsDrawerOpen = document.getElementById("WFnewsDrawer")?.classList.contains("open");
 
-        if (newsSwitchOn || newsDrawerOpen || !window._newsInitiallyLoaded) {
+        if (newsSwitchOn || newsDrawerOpen) {
             sourcesToLoad.add("wildfire_news");
-            window._newsInitiallyLoaded = true; // Mark as loaded once for today
         }
 
         const activeShortIds = new Set();
@@ -590,6 +589,12 @@ export function bindEvents() {
         const onDateChange = utils.debounce((e) => {
             if (saveDate) saveDate(e.target.value);
             resetLoadedSources(updateWildfireNewsList);
+            
+            // Update timezone label (PST/PDT) based on the newly selected date
+            import("./ui-time.js").then(module => {
+                module.updateTimezoneLabel(e.target.value);
+            });
+            
             updateAllActiveSources();
         }, 200);
         datePicker.addEventListener("change", onDateChange);

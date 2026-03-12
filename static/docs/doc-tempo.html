@@ -1,0 +1,100 @@
+
+<h2>NASA/TEMPO Satellite Retrieval</h2>
+<hr>
+
+<section id="tempo">
+    <p>Retrieves high-resolution Tropospheric Vertical Column Densities (VCD) of NO2 and HCHO from the TEMPO
+        (Tropospheric Emissions: Monitoring of Pollution) satellite. Unlike previous polar-orbiting instruments,
+        TEMPO provides <strong>hourly</strong> observations across North America at a native (Level 2) spatial resolution of
+        approximately 2.0 &times; 4.75 km<sup>2</sup>. In this application, the gridded Level 3 data (0.02&deg; &times; 0.02&deg;) is converted to 0.04&deg; &times; 0.04&deg; resolution and rendered on the map as PNG tiles.</p>
+
+    <h3>1. Key Information</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Provide real-time, high-resolution trace gas concentrations for air quality
+            monitoring and model validation.</li>
+        <li><strong>Source:</strong> <a href="https://asdc.larc.nasa.gov/project/TEMPO" target="_blank"
+                rel="noopener noreferrer">NASA EarthData - Atmospheric Science Data Center (ASDC)</a>.</li>
+        <li><strong>Products:</strong>
+            <code>TEMPO_NO2VCD_L3_V03/04</code> and <code>TEMPO_HCHOVCD_L3_V03/04</code>
+            (Transitioned from V03 to V04 on September 16, 2025).
+        </li>
+        <li><strong>Refresh Rate:</strong> Hourly daytime scans across the Continental United States (CONUS), Canada,
+            and Mexico.</li>
+    </ul>
+
+    <h3>2. Main Workflow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>API Query (CMR):</strong> Uses NASA's
+            Common Metadata Repository (CMR) API to identify the latest Level-3 data granules by product and date.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>Cloud Authentication:</strong> Uses a
+            custom <code>.netrc</code> configuration to authenticate with GES DISC and ASDC, enabling direct cloud
+            access via <code>vsicurl</code>.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Quality Filtering:</strong> Applies NASA's
+            recommended masks: Quality Flag filtering (flag == 0) and Cloud Fraction exclusion (effective cloud < 0.1).
+        </div>
+        <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>Raster Processing:</strong> Merges multiple
+            granules, aligns to the North American extent, and reprojects to <strong>EPSG:3857</strong> (Web Mercator)
+            for high-performance web mapping.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">5</span><strong>Optimization:</strong> Encodes raw values
+            into high-performance 8-bit grayscale <strong>PNG</strong> tiles and saves accompanying <strong>JSON</strong>
+            metadata for on-the-fly value reconstruction.</div>
+    </div>
+
+    <h3>3. R Libraries Used</h3>
+    <pre><code>library(httr)                # API & Authentication
+library(jsonlite)            # Metadata parsing
+library(terra)               # High-speed Raster engine
+library(googleCloudStorageR)  # Cloud delivery
+library(foreach)             # Parallel processing
+library(doSNOW)              # Cluster management</code></pre>
+
+    <h3>4. Technical Implementation</h3>
+    <h4>- NASA EarthData CMR Query</h4>
+    <p>Queries the CMR JSON API for specific collection IDs (NO2 or HCHO) and temporal ranges to retrieve HTTPS download
+        links.</p>
+    <pre><code># Query CMR API for granules
+params <- list(
+  collection_concept_id = collection_id,
+  temporal = paste0(target_date, "T00:00:00Z,", target_date, "T23:59:59Z"),
+  page_size = 100
+)
+res <- httr::GET("https://cmr.earthdata.nasa.gov/search/granules.json", query = params)
+nc_urls <- fromJSON(content(res, "text"))$feed$entry$links</code></pre>
+
+    <h4>- Direct Cloud Access via vsicurl</h4>
+    <p>Leveraging GDAL's virtual file system, the pipeline processes NetCDF subdatasets directly from the NASA S3-backed
+        HTTPS archive without locally downloading the files, significantly reducing execution time.</p>
+    <pre><code># GDAL HTTP Configuration
+terra::setGDALconfig("GDAL_HTTP_NETRC", "YES")
+terra::setGDALconfig("GDAL_HTTP_UNAUTH_AUTH", "BASIC")
+
+# Load specifically the vertical column density and quality flag
+prod_stack <- terra::rast(nc_url, subds = "/product/vertical_column")
+flag_stack <- terra::rast(nc_url, subds = "/product/main_data_quality_flag")
+
+# Apply Quality Mask (Flag 0 = Valid)
+prod_stack[flag_stack != 0] <- NA</code></pre>
+
+        <h4>- High-Performance PNG Encoding</h4>
+        <p>To enable fast delivery to the client, the floating-point raster is normalized to an 8-bit integer range
+            (0-255)
+            and stored as a compressed PNG. The <code>min</code> and <code>max</code> values are saved in an
+            accompanying
+            JSON metadata file, allowing the frontend to reconstruct the actual scientific values using the formula:
+            <code>Val = Min + (Pixel / 255) * (Max - Min)</code>.
+        </p>
+        <pre><code># Spatial Aggregation (0.02&deg; -> 0.04&deg;)
+r_agg <- terra::aggregate(prod_stack, fact = 2, fun = "mean", na.rm = TRUE)
+
+# Reproject to EPSG:3857 (Web Mercator)
+r_proj <- terra::project(r_agg, "EPSG:3857", method = "bilinear")
+
+# 8-bit Normalization
+i_min <- min(values(r_proj), na.rm = T)
+i_max <- max(values(r_proj), na.rm = T)
+r_encoded <- (r_proj - i_min) / (i_max - i_min) * 255
+
+# Save as PNG
+terra::writeRaster(r_encoded, "tempo_no2.png", datatype = "INT1U", filetype = "PNG")</code></pre>
+</section>
+

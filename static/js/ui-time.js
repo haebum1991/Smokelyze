@@ -9,13 +9,14 @@ import { currentDate } from "./utils.js";
 import { airnowSetCurrentTime } from "./airnow.js";
 
 /**
- * Convert local hour to UTC hour
+ * Convert local hour to UTC hour for a SPECIFIC date
  * @param {number} localHour - Local hour (0-23)
+ * @param {string} isoDate - YYYY-MM-DD
  * @returns {number} UTC hour (0-23)
  */
-function localToUTC(localHour) {
-    const now = new Date();
-    const localDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), localHour, 0, 0);
+function localToUTC(localHour, isoDate) {
+    const [y, m, d] = isoDate.split("-").map(Number);
+    const localDate = new Date(y, m - 1, d, localHour, 0, 0);
     return localDate.getUTCHours();
 }
 
@@ -34,7 +35,8 @@ export function shiftTime(hours) {
 
     timePicker.value = String(newLocalHour).padStart(2, "0");
 
-    const utcHour = localToUTC(newLocalHour);
+    const utcHour = localToUTC(newLocalHour, currentDate());
+    
     airnowSetCurrentTime(utcHour);
     timePicker.dispatchEvent(new Event("change", { bubbles: true }));
 }
@@ -84,30 +86,37 @@ export function hideTimeControls() {
     }
 }
 
+export function updateTimezoneLabel(isoDate) {
+    const [y, m, d] = isoDate.split("-").map(Number);
+    const targetDate = new Date(y, m - 1, d, 12, 0, 0); // Use noon to avoid edge cases
+    
+    const tzAbbr = new Intl.DateTimeFormat("en-US", { timeZoneName: "short" })
+        .formatToParts(targetDate)
+        .find(part => part.type === "timeZoneName").value;
+
+    const tzLabel = document.getElementById("timezoneLabel");
+    if (tzLabel) tzLabel.textContent = tzAbbr;
+}
+
 export function initTimePicker() {
     const timePicker = document.getElementById("timePicker");
     if (!timePicker) return;
 
+    const initialDate = currentDate();
     const now = new Date();
     now.setHours(now.getHours() - 2);
 
     const localHour = now.getHours();
     timePicker.value = String(localHour).padStart(2, "0");
 
-    const utcHour = localToUTC(localHour);
+    const utcHour = localToUTC(localHour, initialDate);
     airnowSetCurrentTime(utcHour);
     
-    const selectedDate = new Date();
-    const tzAbbr = new Intl.DateTimeFormat("en-US", { timeZoneName: "short" })
-        .formatToParts(selectedDate)
-        .find(part => part.type === "timeZoneName").value;
-
-    const tzLabel = document.getElementById("timezoneLabel");
-    if (tzLabel) tzLabel.textContent = tzAbbr;
+    updateTimezoneLabel(initialDate);
 
     timePicker.addEventListener("change", () => {
         const selectedLocalHour = parseInt(timePicker.value);
-        const utcHour = localToUTC(selectedLocalHour);
+        const utcHour = localToUTC(selectedLocalHour, currentDate());
         airnowSetCurrentTime(utcHour);
     });
 }
