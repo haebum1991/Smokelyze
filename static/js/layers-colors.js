@@ -68,7 +68,40 @@ export function updateLegend(activeStack) {
         const isCircleLayer = layerDef?.layers?.[0]?.type === "circle" && !conf.sizeLegend;
         const swatchClass = isCircleLayer ? "legend-color-circle" : "legend-color-rect";
 
-        if (conf.labels) {
+        if (conf.continuous) {
+            const { min, max, colors, breaks, unit } = conf;
+            const legendBreaks = breaks || [];
+            const grad = `linear-gradient(to top, ${colors.join(", ")})`;
+            
+            // Build tick labels for all breaks
+            // Reversed because flex starts from top (high value)
+            const tickHtml = [...legendBreaks].reverse().map(b => {
+                return `<div style="flex:1; display:flex; align-items:center; line-height:1;">
+                            <span style="font-size:1.1rem; white-space:nowrap; color:var(--text-main);">${b}</span>
+                        </div>`;
+            }).join("");
+
+            // Determine descriptive label (e.g., Amount of NO2)
+            const substance = id.includes("no2") ? "NO₂" : id.includes("hcho") ? "HCHO" : "";
+
+            sectionHtml += `
+                <div class="legend-item" style="display:flex; align-items:stretch; gap:12px; height:200px; margin: 20px 0; position:relative; padding-right: 25px;">
+                    <div style="width:18px; background-image:${grad}; background-repeat:no-repeat; background-size:100% 100%; border-radius: 3px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 0 5px rgba(0,0,0,0.3);"></div>
+                    <div style="display:flex; flex-direction:column; justify-content:space-between; color:var(--text-main); padding: 2px 0; min-width: 35px;">
+                        ${tickHtml}
+                    </div>
+                    ${unit ? `
+                        <div style="position:absolute; right: 2rem; top:0; bottom:0; display:flex; align-items:center; justify-content:center; width:60px;">
+                            <div style="transform: rotate(-90deg); display:flex; flex-direction:column; align-items:center; white-space:nowrap; font-size:1.4rem; color:var(--text-main); font-weight:bold; line-height:1.2;">
+                                <span>Amount of ${substance}</span>
+                                <span style="font-size:1.4rem; font-weight:normal;">[ ${unit} ]</span>
+                            </div>
+                        </div>
+                    ` : ""}
+                </div>
+            `;
+            
+        } else if (conf.labels) {
             const offset = Math.max(0, conf.colors.length - conf.labels.length);
             conf.labels.forEach((label, i) => {
                 const color = conf.colors[i + offset];

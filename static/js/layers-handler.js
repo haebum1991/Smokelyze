@@ -21,7 +21,24 @@ import { logUserAction } from "./fb-logging.js";
 
 export function addSourceIfMissing(sourceId) {
     if (!map.getSource(sourceId)) {
-        map.addSource(sourceId, { type: "geojson", data: EMPTY_FC, generateId: true });
+        if (sourceId === "tempo-no2" || sourceId === "tempo-hcho") {
+            const tempoCanvas = document.createElement("canvas");
+            tempoCanvas.id = `${sourceId}-canvas`;
+            tempoCanvas.width = 1000;
+            tempoCanvas.height = 1000;
+            
+            map.addSource(sourceId, { 
+                type: "canvas", 
+                canvas: tempoCanvas, 
+                // Use a valid but out-of-view tiny area initially to avoid Infinity errors
+                coordinates: [
+                    [-1, 1], [-0.9, 1], [-0.9, 0.9], [-1, 0.9]
+                ],
+                animate: false
+            });
+        } else {
+            map.addSource(sourceId, { type: "geojson", data: EMPTY_FC, generateId: true });
+        }
     }
 }
 
@@ -232,7 +249,14 @@ export function applyLayerToggles() {
 
                     map.setLayoutProperty(l.id, "visibility", shouldShow ? "visible" : "none");
                     if (shouldShow) {
-                        map.moveLayer(l.id);
+                        if (ExcludeLayerGroups.satelliteLayers.includes(shortId)) {
+                            const anchorId = map.getStyle().layers.find(ly => 
+                                ly.type === "symbol" || ly.id.includes("road") || ly.id.includes("bridge") || ly.id.includes("highway")
+                            )?.id;
+                            map.moveLayer(l.id, anchorId);
+                        } else {
+                            map.moveLayer(l.id);
+                        }
 
                         // Dynamic NA filter & shading for Point Layers
                         if (isPointLayer && l._fieldName) {

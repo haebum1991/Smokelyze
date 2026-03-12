@@ -105,7 +105,7 @@ export const DescData = {
                 "NO2 is a primary pollutant from combustion sources and is a key precursor to ozone and secondary particulate matter formation. " +
                 "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Hourly</b></li>" +
                 "<li>Typically has a <b style='color: var(--card-shadow);'>1-2 hour reporting delay</b> from the current local time.</li></ul>"
-        },
+        }
     ],
     "desc-satellite": [
         {
@@ -143,6 +143,26 @@ export const DescData = {
                 "In our app, this data is available starting from 2018-01-01, </b>" + 
                 "and is updated on an as-available basis. </ul></li>"
         },
+        {
+            id: "tempo-no2",
+            title: "TEMPO-NO2-L3 (hourly)",
+            desc: "<b>TEMPO NO2 L3 (hourly)</b> provides high-resolution tropospheric vertical column density (VCD) of nitrogen dioxide (NO<sub>2</sub>) from NASA's geostationary TEMPO satellite. " +
+                "Data is strictly filtered using the official <em>Main Quality Flag (0)</em> and a <em>Cloud Fraction threshold (< 10%)</em> to ensure high-accuracy, clear-sky observations. " +
+                "It allows for near real-time tracking of nitrogen dioxide levels over North America in unit of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Hourly</b></li>" +
+                "<li>Resolution: <b>Spatially aggregated (approx. 4-8km)</b> for visualization performance.</li>" +
+                "<li>Typically has a <b style='color: var(--card-shadow);'>2-3 hour reporting delay</b> from the current UTC time.</li></ul>"
+        },
+        {
+            id: "tempo-hcho",
+            title: "TEMPO-HCHO-L3 (hourly)",
+            desc: "<b>TEMPO HCHO L3 (hourly)</b> provides high-resolution vertical column density (VCD) of formaldehyde (HCHO) from NASA's geostationary TEMPO satellite. " +
+                "Data is strictly filtered using the official <em>Main Quality Flag (0)</em> and a <em>Cloud Fraction threshold (< 10%)</em> to ensure high-accuracy, clear-sky observations. " +
+                "It allows for near real-time tracking of formaldehyde levels over North America in unit of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Hourly</b></li>" +
+                "<li>Resolution: <b>Spatially aggregated (approx. 4-8km)</b> for visualization performance.</li>" +
+                "<li>Typically has a <b style='color: var(--card-shadow);'>2-3 hour reporting delay</b> from the current UTC time.</li></ul>"
+        }
     ],
     "desc-published-intro": [
         {

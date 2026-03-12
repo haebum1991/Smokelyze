@@ -113,6 +113,12 @@
   force  = true
 
 [[redirects]]
+  from = "/tempo_date_png/*"
+  to   = "/.netlify/functions/gcs-proxy/tempo_date_png/:splat"
+  status = 200
+  force  = true
+  
+[[redirects]]
   from = "/api/chat"
   to   = "https://fetch-aichat-go-service-1068523865415.us-central1.run.app/api/chat"
   status = 200

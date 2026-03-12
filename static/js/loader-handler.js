@@ -28,6 +28,9 @@ import { showTimeControls, hideTimeControls } from "./ui-time.js";
 import { airnowHasActiveLayers } from "./airnow.js";
 // ---- [External data] AirNow ----
 
+import { tempoLoadData } from "./tempo-loader.js";
+
+
 export async function loadSourceData(sourceKey, isoDate) {
     if (!map) return;
     initializeMetrics();
@@ -541,7 +544,10 @@ export async function updateAllActiveSources() {
             if (typeof showTimeControls === "function") showTimeControls();
             toggleSpinner(true);
             try {
-                await airnowLoadData(isoDate);
+                await Promise.all([
+                    airnowLoadData(isoDate),
+                    tempoLoadData(isoDate)
+                ]);
             } catch (e) {
                 console.error("Hourly background load failed:", e);
             } finally {
@@ -549,6 +555,17 @@ export async function updateAllActiveSources() {
             }
         } else {
             if (typeof hideTimeControls === "function") hideTimeControls();
+            
+            // Explicitly clear hourly data to avoid stale rasters/shading
+            try {
+                // These functions clear their sources/stats when their layers are unchecked/inactive
+                await Promise.all([
+                    airnowLoadData(isoDate),
+                    tempoLoadData(isoDate)
+                ]);
+            } catch (e) {
+                console.error("Hourly clear failed:", e);
+            }
         }
         // ---- [External data] Hourly vs Daily load synchronization ----
         
@@ -640,10 +657,14 @@ export function bindEvents() {
     const timePicker = document.getElementById("timePicker");
     if (timePicker) {
         timePicker.addEventListener("change", utils.debounce(async () => {
-            if (airnowHasActiveLayers()) {
+            const hasTempo = document.getElementById("layer-tempo-no2")?.checked || document.getElementById("layer-tempo-hcho")?.checked;
+            if (airnowHasActiveLayers() || hasTempo) {
                 toggleSpinner(true);
                 try {
-                    await airnowLoadData(utils.currentDate());
+                    const tasks = [];
+                    if (airnowHasActiveLayers()) tasks.push(airnowLoadData(utils.currentDate()));
+                    if (hasTempo) tasks.push(tempoLoadData(utils.currentDate()));
+                    await Promise.all(tasks);
                 } finally {
                     toggleSpinner(false);
                 }

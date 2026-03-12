@@ -10,6 +10,11 @@ import { resetLoadedSources } from "./loader.js";
 import { resetState as resetBarLine } from "./stats-plot-dy-barline.js";
 import { resetState as resetParCoords } from "./stats-plot-dy-parcoords.js";
 import { resetState as resetScatter } from "./stats-plot-dy-scatter.js";
+import { clearModelStats } from "./loader-state.js";
+import { hideTimeControls } from "./ui-time.js";
+import { clearAllTempo } from "./tempo-loader.js";
+import { updateAllActiveSources } from "./loader-handler.js";
+import { setStatsDrawer, setDescDrawer, setNewsDrawer, setMapPostDrawer } from "./ui-toggles.js";
 
 function numOr(x, d) { return (typeof x === "number" && isFinite(x)) ? x : d; }
 
@@ -20,7 +25,10 @@ export function resetUIAndData() {
   resetGlobalStateShading?.();
   resetGlobalPointLayers?.();
   resetGlobalNaShading?.();
-  
+  clearModelStats?.();
+  hideTimeControls?.();
+  closeAllDrawersExceptAccordion();
+
   // 2) Reset Loader cache
   resetLoadedSources?.();
 
@@ -34,10 +42,7 @@ export function resetUIAndData() {
   const EMPTY = EMPTY_FC;
 
   document.querySelectorAll('input[type="checkbox"][id^="layer-"]').forEach(cb => {
-    if (cb.checked) {
-      cb.checked = false;
-      cb.dispatchEvent(new Event("change"));
-    }
+    cb.checked = false;
   });
 
   const definedSources = new Set();
@@ -46,15 +51,41 @@ export function resetUIAndData() {
   });
 
   definedSources.forEach(srcId => {
-    map?.getSource(srcId)?.setData(EMPTY);
+    const source = map?.getSource(srcId);
+    if (source && source.type === "geojson") {
+      source.setData(EMPTY);
+    }
   });
 
-  // 5) Visibility consistency
+  // 5) Clear TEMPO Canvas layers explicitly
+  clearAllTempo?.();
+
+  // 6) Visibility & Data Synchronization
   applyLayerToggles?.();
   if (activeLayerStack) activeLayerStack.length = 0;
 
   const searchWrapper = document.getElementById("SiteSearchWrapperPublished");
   if (searchWrapper) searchWrapper.style.display = "none";
+
+  // Final single refresh for loaders/UI
+  updateAllActiveSources?.();
+}
+
+/**
+ * Closes all side drawers except the main Layers accordion.
+ */
+export function closeAllDrawersExceptAccordion() {
+  // 1) Use the setter functions to ensure button states & body classes are synced
+  setStatsDrawer?.(false);
+  setDescDrawer?.(false);
+  setNewsDrawer?.(false);
+  setMapPostDrawer?.(false);
+
+  // 2) AI Chat (Uses different class structure)
+  const aiDrawer = document.getElementById("AiChatDrawer");
+  const aiToggleBtn = document.getElementById("AiChatToggle");
+  if (aiDrawer) aiDrawer.classList.add("collapsed");
+  if (aiToggleBtn) aiToggleBtn.classList.remove("active");
 }
 
 // 맵뷰를 리셋

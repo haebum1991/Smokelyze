@@ -33,6 +33,17 @@ export const PALETTE_JET = [
     "#FF0000"  // Red
 ];
 
+// [TEMPO Palette] High-contrast ramp matching NASA's official standard (Vivid version)
+  export const PALETTE_TEMPO = [
+    "#3a57ff", // 1: Bright Blue
+    "#3ad9ff", // 25: Electric Cyan
+    "#3aff53", // 50: Neon Green
+    "#f6ff3a", // 75: Vivid Yellow
+    "#ff893a", // 100: Vibrant Orange
+    "#ff3a3a", // 125: Pure Red
+    "#31004a"  // 150: Deep Purple
+  ];
+  
 // [Burn Palette]
 export const PALETTE_BURN = [
     "#fee5d9", // Very Light Red
@@ -93,6 +104,7 @@ export const BREAKS_FIRE = [1, 10, 50, 100, 500];
 export const BREAKS_FRP = [10, 50, 150, 350];
 export const BREAKS_SMOKE = [1000, 5000, 20000, 50000, 100000];
 export const BREAKS_BURN = [10, 50, 100, 500, 1000];
+export const BREAKS_TEMPO = [1, 25, 50, 75, 100, 125, 150]; // NASA Standard 7-step linear scale
 
 // --------------------------------------------------------
 // Label definitions

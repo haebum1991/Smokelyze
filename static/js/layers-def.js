@@ -5,24 +5,24 @@
 export const ExcludeLayerGroups = {
   
   // ========= Common Groups =========
-  satelliteLayers: ["burn", "smoke", "fire"],
+  satelliteLayers: ["burn", "smoke", "fire", "tempo-no2", "tempo-hcho"],
     
   // ========= Find by [key] =========
   // [layers-handler.js] > [applyLayerToggles] > [EXCLUDED]
   liveUpdateLayers: ["wildfire-news", "wildfire-nifc", "MapPost"],
 
   // [layers-colors.js] > [updateStateShading] > [EXCLUDED]
-  stateShading: ["smoke", "wildfire-news", "wildfire-nifc", "MapPost"],
+  stateShading: ["smoke", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho"],
 
   // [layers-tooltip.js] > [stateHoverHTML] > [EXCLUDED]
-  stateHover: ["wildfire-news", "wildfire-nifc", "MapPost"],
+  stateHover: ["wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho"],
 
   // [stats-common.js] > [getActiveModelLayers] > [EXCLUDED]
-  modelTable: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost"],
+  modelTable: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho"],
 
   // [stats-data-search.js] > [updateVisibility] > [EXCLUDED]
   // [loader.js] > [updateAllActiveSources] > [EXCLUDED]
-  searchSite: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2", "airnow-daily-pm25", "airnow-daily-mda8"],
+  searchSite: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2", "airnow-daily-pm25", "airnow-daily-mda8", "tempo-no2", "tempo-hcho"],
 
   // [stats-plot-dy-scatter.js] > [getActiveModelLayers] > [EXCLUDED]
   plotScatter: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost"],
@@ -42,12 +42,12 @@ export const ExcludeLayerGroups = {
 
 import { generatePopupHTML } from "./layers-tooltip.js";
 import {
-  EMPTY_FC,
-  PALETTE_EPA, PALETTE_JET, PALETTE_BIN_1, PALETTE_BIN_2, PALETTE_BIN_3, PALETTE_TRI, PALETTE_BURN, PALETTE_SMOKE,
-  BREAKS_O3, BREAKS_RESI, BREAKS_SMO_EMBER, BREAKS_PM, BREAKS_PM_CRIT,
-  BREAKS_TMAX, BREAKS_T2MAX, BREAKS_SRAD, BREAKS_QUANT, BREAKS_R2,
-  BREAKS_BIN, BREAKS_TRI, BREAKS_NO2, BREAKS_FIRE, BREAKS_SMOKE, BREAKS_BURN, BREAKS_FRP,
-  LABEL_SMOKE, LABEL_BIN, LABEL_SMO, LABEL_SMP
+    EMPTY_FC,
+    PALETTE_EPA, PALETTE_JET, PALETTE_TEMPO, PALETTE_BIN_1, PALETTE_BIN_2, PALETTE_BIN_3, PALETTE_TRI, PALETTE_BURN, PALETTE_SMOKE,
+    BREAKS_O3, BREAKS_RESI, BREAKS_SMO_EMBER, BREAKS_PM, BREAKS_PM_CRIT,
+    BREAKS_TMAX, BREAKS_T2MAX, BREAKS_SRAD, BREAKS_QUANT, BREAKS_R2,
+    BREAKS_BIN, BREAKS_TRI, BREAKS_NO2, BREAKS_FIRE, BREAKS_SMOKE, BREAKS_BURN, BREAKS_FRP, BREAKS_TEMPO,
+    LABEL_SMOKE, LABEL_BIN, LABEL_SMO, LABEL_SMP
 } from "./layers-constants.js";
 
 export const DATA_IMPORT_METHOD = {
@@ -126,6 +126,21 @@ export const DATA_IMPORT_METHOD = {
       statsBaseUrlDate: "/modis_burn_area_date_json",
       statsBaseUrlYear: "/modis_burn_area_year_json"
   },
+  
+  "tempo-no2": {
+      key: "tempo-no2",
+      source: "tempo-no2",
+      duration: "hourly",
+      hourly: true
+  },
+  
+  "tempo-hcho": {
+      key: "tempo-hcho",
+      source: "tempo-hcho",
+      duration: "hourly",
+      hourly: true
+  },
+    
   "gam_v2": {
       key: "gam_v2",
       source: "gam_v2",
@@ -276,7 +291,10 @@ export const DATASET_SOURCE_MAP = {
     
     "wildfire-news": "wildfire_news",
     "wildfire-nifc": "wildfire_nifc",
-    "MapPost": "MapPost"
+    "MapPost": "MapPost",
+    
+    "tempo-no2": "tempo-no2",
+    "tempo-hcho": "tempo-hcho"
 };
 
 export function makeStepExpr(valueField, breaks, colors, nullVal) {
@@ -443,7 +461,10 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "smoke", field: "smokeMedium", category: "medium", title: "Smoke area (medium) (km²)", breaks: BREAKS_SMOKE, colors: PALETTE_SMOKE, labelParams: LABEL_SMOKE, decimals: 0, manualLayer: true },
     { duration: "daily", id: "smoke", field: "smokeHeavy", category: "heavy", title: "Smoke area (heavy) (km²)", breaks: BREAKS_SMOKE, colors: PALETTE_SMOKE, labelParams: LABEL_SMOKE, decimals: 0, manualLayer: true },
     { duration: "daily", id: "fire", field: "fireCount", title: "Fire points", breaks: BREAKS_FIRE, colors: PALETTE_JET, decimals: 0, manualLayer: true },
-    { duration: "daily", id: "fire", field: "fireFrp", title: "FRP (MW)", breaks: BREAKS_FRP, colors: "#fd8d3c", decimals: 1, manualLayer: true }
+    { duration: "daily", id: "fire", field: "fireFrp", title: "FRP (MW)", breaks: BREAKS_FRP, colors: "#fd8d3c", decimals: 1, manualLayer: true },
+
+    { duration: "hourly", id: "tempo-no2", field: "tempo", title: "TEMPO NO2 VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true, hourly: true },
+    { duration: "hourly", id: "tempo-hcho", field: "tempo", title: "TEMPO HCHO VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true, hourly: true }
 ];
 
 export const LAYER_DEFS = (() => {
@@ -572,7 +593,55 @@ export const LAYER_DEFS = (() => {
             }
         };
     }
-
+    
+    const tempoTmpl = LAYER_TEMPLATES.find(t => t.id === "tempo-no2");
+    if (tempoTmpl) {
+        defs["tempo-no2"] = {
+            layers: [
+                { 
+                    id: "tempo-no2-raster", 
+                    type: "raster", 
+                    source: "tempo-no2", 
+                    paint: { 
+                        "raster-opacity": 0.9,
+                        "raster-resampling": "nearest" // Clean pixels on zoom
+                    } 
+                }
+            ],
+            legend: {
+                title: tempoTmpl.title,
+                breaks: tempoTmpl.breaks,
+                colors: tempoTmpl.colors,
+                continuous: true,
+                unit: "10¹⁴ molecules cm⁻²"
+            }
+        };
+    }
+    
+    const tempoHchoTmpl = LAYER_TEMPLATES.find(t => t.id === "tempo-hcho");
+    if (tempoHchoTmpl) {
+        defs["tempo-hcho"] = {
+            layers: [
+                { 
+                    id: "tempo-hcho-raster", 
+                    type: "raster", 
+                    source: "tempo-hcho", 
+                    paint: { 
+                        "raster-opacity": 0.9,
+                        "raster-resampling": "nearest"
+                    } 
+                }
+            ],
+            legend: {
+                title: tempoHchoTmpl.title,
+                breaks: tempoHchoTmpl.breaks,
+                colors: tempoHchoTmpl.colors,
+                continuous: true,
+                unit: "10¹⁴ molecules cm⁻²"
+            }
+        };
+    }
+    
     return defs;
 })();
 
