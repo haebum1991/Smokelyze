@@ -6,6 +6,7 @@
  */
 import { map } from "./map-init.js";
 import { BREAKS_TEMPO, PALETTE_TEMPO } from "./layers-constants.js";
+import * as utils from "./utils.js";
 
 const TEMPO_CONFIG = {
     "no2": {
@@ -239,8 +240,6 @@ function initTempoHover() {
                 const realValue = metadata.min_val + (gray / 255) * (metadata.max_val - metadata.min_val);
                 const displayValue = realValue / 1e14; // unit: 10^14 molecules/cm2
 
-                const scanInfo = Array.isArray(metadata.scan_nos) ? metadata.scan_nos.join(", ") : metadata.scan_nos;
-
                 tooltip.innerHTML = `
                     <div>
                         <strong style="color: var(--card-shadow);">${activeTempoLayer.productId === "TEMPO_NO2_L3" ? "TEMPO NO2VCD" : "TEMPO HCHOVCD"}</strong>
@@ -248,12 +247,13 @@ function initTempoHover() {
                     <div>
                         <div>Value: <b style="font-size: 1.6rem;">${displayValue.toFixed(2)}</b> 
                         <span style="color: var(--text-main);">&times 10<sup>14</sup> molec. cm<sup>-2</sup></span></div>
-                        <div style="display: flex; flex-direction: column; gap: 2px;">
-                            <span><i class="far fa-clock" style="width: 14px;"></i> Time: <b>${metadata.datetime || "N/A"} UTC</b></span>
-                            <span><i class="fas fa-satellite" style="width: 14px;"></i> Scan: <b>${scanInfo || "N/A"}</b></span>
+                        <div style="display: flex; flex-direction: column;">
+                            <span>Time: <b>${utils.ESML(metadata.datetime) || "NA"} UTC</b></span>
+                            <span>Scan: <b>${utils.ESML(metadata.scan_nos) || "NA"}</b></span>
                         </div>
                     </div>
                 `;
+                
                 tooltip.style.display = "block";
                 map.getCanvas().style.cursor = "pointer";
                 tempoHoverBound.isShowing = true;
