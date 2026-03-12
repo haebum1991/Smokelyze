@@ -335,7 +335,7 @@
 #DatadbDataTablePageInfo {
     font-size: 1.4rem;
     color: var(--text-main);
-    font-weight: 500;
+    font-weight: bold;
 }
 
 /* Metadata Section */

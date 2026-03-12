@@ -38,7 +38,7 @@ body.page-map .main-footer {
   padding: 0.8rem 1.4rem;
   border-radius: var(--border-radius-0p8rem);
   font-size: 1.3rem;
-  font-weight: 600;
+  font-weight: bold;
   pointer-events: none;
   box-shadow: 0 0.1rem 0.5rem var(--card-shadow);
   border: 0.1rem solid var(--card-shadow);

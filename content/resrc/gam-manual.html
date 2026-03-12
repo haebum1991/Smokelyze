@@ -856,7 +856,7 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
   .gm-page-info {
     font-size: 1.4rem;
     color: var(--text-main);
-    font-weight: 500;
+    font-weight: bold;
   }
 
   .gm-warning-box {
@@ -873,7 +873,9 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
 </style>
 
 <script type="module">
-  import { ESML } from "/js/utils.js";
+  import { auth } from "/js/fb-init.js";
+  import { ESML, showAuthOverlay } from "/js/utils.js";
+  import { updateAuthButton } from "/js/signin.js";
 
   (function () {
     const API_URL_GAM = "/api/gam";
@@ -1341,15 +1343,23 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
     }
 
     refs.runBtn.onclick = async () => {
+      if (!auth.currentUser) {
+        showAuthOverlay();
+        return;
+      }
       refs.results.classList.remove("gm-hidden");
       refs.results.style.display = "none"; // Temporarily hide to fade in later
       document.getElementById("GamSpinner").classList.remove("gm-hidden");
       refs.runBtn.disabled = true;
 
       try {
+        const idToken = await auth.currentUser.getIdToken();
         const resp = await fetch(`${API_URL_GAM}/compute_gam`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          },
           body: JSON.stringify({
             csv_data: rawCSVText,
             dataset_id: refs.dsSelect.value,
@@ -1421,6 +1431,10 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
     };
 
     document.getElementById("BtnDownloadCSVResults").onclick = () => {
+      if (!auth.currentUser) {
+          showAuthOverlay();
+          return;
+      }
       if (!predictionData || predictionData.length === 0) return;
       const headers = Object.keys(predictionData[0]);
       const csvContent = [
@@ -1441,6 +1455,11 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
     };
 
     document.getElementById("BtnDownloadRDS").onclick = () => {
+      if (!auth.currentUser) {
+          showAuthOverlay();
+          return;
+      }
+      
       if (!currentRdsB64) {
         alert("No RDS result available. Please run GAM first.");
         return;
@@ -1473,6 +1492,15 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
       refs.warningBox.style.display = "none";
       refs.results.classList.add("gm-hidden");
     };
+    
+    // Initialize & Sync Auth UI
+    const syncAuth = (user) => {
+      updateAuthButton(refs.runBtn, user, "Run GAM");
+      updateAuthButton("BtnDownloadCSVResults", user, "Export Table (.csv)");
+      updateAuthButton("BtnDownloadRDS", user, "Export Results (.rds)");
+    };
+    window.addEventListener("authStateChanged", (e) => syncAuth(e.detail.user));
+    syncAuth(auth.currentUser);
 
   })();
 </script>

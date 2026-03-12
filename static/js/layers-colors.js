@@ -94,7 +94,7 @@ export function updateLegend(activeStack) {
                         <div style="position:absolute; right: 2rem; top:0; bottom:0; display:flex; align-items:center; justify-content:center; width:60px;">
                             <div style="transform: rotate(-90deg); display:flex; flex-direction:column; align-items:center; white-space:nowrap; font-size:1.4rem; color:var(--text-main); font-weight:bold; line-height:1.2;">
                                 <span>Amount of ${substance}</span>
-                                <span style="font-size:1.4rem; font-weight:normal;">[ ${unit} ]</span>
+                                <span style="font-size:1.4rem;">[ ${unit} ]</span>
                             </div>
                         </div>
                     ` : ""}
