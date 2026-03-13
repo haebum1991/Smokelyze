@@ -80,6 +80,22 @@ export async function handleAiToolCall(functionName, args) {
                     resultMessage = "[System Error] Could not find the date picker element on the screen.";
                 }
                 break;
+                
+            case "change_hour":
+                const targetHour = args?.hour; // Expecting "00" to "23" as string
+                const timePicker = document.getElementById("timePicker");
+                if (timePicker && targetHour) {
+                    timePicker.value = targetHour;
+                    timePicker.dispatchEvent(new Event("change", { bubbles: true }));
+
+                    // Wait for background load
+                    await waitForMapIdle();
+
+                    resultMessage = `[System] Changed hour to ${targetHour}:00 and waited for data loading.`;
+                } else {
+                    resultMessage = "[System Error] Could not find the time picker element on the screen.";
+                }
+                break;
 
             case "extract_summary_aqs":
                 let rawSourceId = args?.sourceId || "gam_v2";

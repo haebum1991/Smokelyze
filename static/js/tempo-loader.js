@@ -7,6 +7,7 @@
 import { map } from "./map-init.js";
 import { BREAKS_TEMPO, PALETTE_TEMPO } from "./layers-constants.js";
 import * as utils from "./utils.js";
+import { showErrorToast } from "./loader-ui.js";
 
 const TEMPO_CONFIG = {
     "no2": {
@@ -314,14 +315,8 @@ export async function tempoLoadData(isoDate) {
         const pngUrl = basePng + buster;
 
         try {
-            const res = await fetch(jsonUrl);
-            if (!res.ok) {
-                clearTempoSource(source);
-                continue;
-            }
-
-            const metadata = await res.json();
-            const targetExtent = metadata.extent_raw || metadata.extent;
+            const metadata = await utils.fetchJson(jsonUrl, null);
+            const targetExtent = metadata?.extent_raw || metadata?.extent;
 
             if (metadata && targetExtent) {
                 const xmin = targetExtent[0];
@@ -338,12 +333,17 @@ export async function tempoLoadData(isoDate) {
 
                 initTempoHover();
             } else {
-                console.warn(`TEMPO ${key}: Invalid extent in metadata`, metadata?.extent);
-                clearTempoSource(source);
+                throw new Error("No data");
             }
         } catch (e) {
             console.error(`TEMPO ${key} load error:`, e);
             clearTempoSource(source);
+            
+            // 데이터가 없는 경우 (404 등) 사용자에게 알림
+            if (cb && cb.checked) {
+                const label = key.toUpperCase();
+                showErrorToast(`No ${label} TEMPO data available for this date and hour.`, "error");
+            }
         }
     }
 }

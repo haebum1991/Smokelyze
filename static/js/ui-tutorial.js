@@ -46,6 +46,15 @@ const TUTORIAL_STEPS = [
         },
     },
     {
+        element: "#LegendToggle",
+        popover: {
+            title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-legend"/></svg></span> Map Legend',
+            description: "View the color scales and categories for all active layers. This dynamic legend updates automatically as you toggle different data on the map.",
+            side: "right",
+            align: "start",
+        },
+    },
+    {
         element: "#WFnewsToggle",
         popover: {
             title: '<span class="map-tut-pop-icon-box"><canvas class="ui-pulsing-icon" data-type="news" width="24" height="24"></canvas></span> Wildfire News',
