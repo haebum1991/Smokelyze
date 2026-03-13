@@ -28,8 +28,8 @@ const TEMPO_CONFIG = {
  * Stores raw pixel data and metadata for hover value sampling
  */
 const tempoDataStore = {
-    "tempo-no2": { imageData: null, metadata: null, coordinates: null },
-    "tempo-hcho": { imageData: null, metadata: null, coordinates: null }
+    "tempo-no2": { grayscale: null, metadata: null, coordinates: null },
+    "tempo-hcho": { grayscale: null, metadata: null, coordinates: null }
 };
 
 function getTempoUrls(isoDate, hour, productId) {
@@ -179,7 +179,7 @@ export function clearAllTempo() {
     for (const cfg of Object.values(TEMPO_CONFIG)) {
         const source = map?.getSource(cfg.sourceId);
         if (source) clearTempoSource(source);
-        tempoDataStore[cfg.sourceId] = null;
+        tempoDataStore[cfg.sourceId] = { grayscale: null, metadata: null, coordinates: null };
     }
 }
 
@@ -326,7 +326,11 @@ export async function tempoLoadData(isoDate) {
                 const coordinates = [
                     [xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin]
                 ];
-
+                
+                if (!tempoDataStore[cfg.sourceId]) {
+                    tempoDataStore[cfg.sourceId] = { grayscale: null, metadata: null, coordinates: null };
+                }
+                
                 tempoDataStore[cfg.sourceId].coordinates = coordinates;
                 await colorizeTempoImage(pngUrl, metadata, source, cfg.sourceId);
                 source.setCoordinates(coordinates);
