@@ -242,41 +242,14 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
 
 
 /* ================ Map Legends ================ */
-.map-legend {
-  z-index: var(--z-map-legend);
-
-  max-width: max-content;
-  max-height: calc((65vh - var(--header-height-total) - var(--footer-height)));
-  max-height: calc((65dvh - var(--header-height-total) - var(--footer-height)));
-  overflow-y: auto;
-  overflow-x: hidden;
-
-  position: fixed;
-  top: calc(var(--header-height-total) + var(--toolbar-date-height));
-  left: 0;
-
-  padding: 0.8rem;
-  border-radius: var(--border-radius-0p8rem);
-
-  font-size: 1.4rem;
-  line-height: 1.5;
-
-  background-color: var(--map-toolbar-bg);
-  border: 0.1rem solid var(--card-shadow);
-  color: var(--text-main);
-  transition: transform 0.3s ease-out;
-}
-
 .legend-section {
-  border-bottom: 0.1rem solid var(--card-shadow);
-}
-
-.legend-section:last-child {
-  border-bottom: none;
+  border: 0.1rem solid var(--card-shadow);
+  border-top: none;
 }
 
 .legend-header {
-  padding: 0.4rem 0.5rem;
+  padding: 0.2rem 1rem;
+  font-size: 1.4rem;
   background: var(--map-accordion-gradient-start);
   color: var(--color-white);
   cursor: pointer;
@@ -288,6 +261,15 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
 
 .legend-header:hover {
   filter: brightness(1.1);
+}
+
+.legend-header-sub {
+  margin: 0.8rem -1rem 1rem -1rem;
+  padding: 0.3rem 1rem;
+  font-size: 1.4rem;
+  font-weight: bold;
+  background: var(--card-shadow);
+  color: var(--color-bg);
 }
 
 .legend-section.is-top .legend-header {
@@ -306,8 +288,8 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
 
 .legend-badge {
   position: relative;
-  width: 2rem;
-  height: 2rem;
+  width: 1.5rem;
+  height: 1.5rem;
   border-radius: 50%;
   background: var(--color-bg);
   flex-shrink: 0;
@@ -356,9 +338,15 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
 }
 
 .legend-item {
+  font-size: 1.4rem;
   display: flex;
   align-items: center;
   margin-bottom: 0.2rem;
+}
+
+.legend-item-continuous {
+  font-size: 1.4rem;
+  padding: 0.5rem;
 }
 
 .legend-color-rect {
@@ -381,26 +369,6 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
   border: 0;
   border-top: 0.1rem solid var(--card-shadow);
   margin: 0.6rem 0 !important;
-}
-
-.map-legend h4 {
-  margin: 0.4rem 0 0.3rem;
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-
-body.FigurePage-drawer-open .map-legend {
-  transform: translateX(var(--FigurePage-drawer-width));
-}
-
-@media (max-width: 1024px) {
-  body.FigurePage-drawer-open .map-legend {
-    transform: none;
-  }
-
-  .map-legend {
-    top: calc(var(--header-height-total) + var(--toolbar-date-height));
-  }
 }
 
 
@@ -1429,70 +1397,33 @@ tr.stats-state-row-ca.show {
 
 
 /* ================ MapPost & WFNews modules ================ */
-#WFnewsToggle {
-  bottom: calc(var(--footer-height) + var(--toolbar-date-height) + 5rem);
-  left: 1rem;
-  transition: transform 0.3s ease-out;
-}
-
 #MapPostToggle {
   bottom: calc(var(--footer-height) + 6rem);
   left: 1rem;
   transition: transform 0.3s ease-out;
 }
 
-.MapPost-drawer-header,
-.WFnews-drawer-header {
-  padding: 0.8rem 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-radius: 0 var(--border-radius-0p8rem) 0 0;
-  background: linear-gradient(135deg, #0072ff, #00c6ff);
-  color: var(--color-white);
-  position: relative;
-  overflow: hidden;
+#WFnewsToggle {
+  bottom: calc(var(--footer-height) + 12rem);
+  left: 1rem;
+  transition: transform 0.3s ease-out;
 }
 
-.MapPost-drawer-header::after,
-.WFnews-drawer-header::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(to bottom right,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.3) 50%,
-      rgba(255, 255, 255, 0) 100%);
-  transform: rotate(45deg);
-  animation: news-shimmer 3s infinite;
-  pointer-events: none;
+#LegendToggle {
+  bottom: calc(var(--footer-height) + 18rem);
+  left: 1rem;
+  transition: transform 0.3s ease-out;
 }
 
-@keyframes news-shimmer {
-  0% {
-    transform: translate(-100%, -100%) rotate(45deg);
-  }
-
-  20%,
-  100% {
-    transform: translate(100%, 100%) rotate(45deg);
-  }
+#MapPostToggle,
+#WFnewsToggle,
+#LegendToggle {
+  z-index: var(--z-map-toggle);
 }
 
-.MapPost-drawer-header h3,
-.WFnews-drawer-header h3 {
-  margin: 0;
-  font-size: 1.6rem;
-  font-weight: bold;
-  color: var(--color-white);
-}
-
+.Legend-drawer,
 .MapPost-drawer,
 .WFnews-drawer {
-  z-index: var(--z-WFnews-drawer);
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -1513,19 +1444,26 @@ tr.stats-state-row-ca.show {
   overscroll-behavior: contain;
 }
 
+.Legend-drawer {
+  z-index: var(--z-map-legend);
+  height: auto;
+  bottom: auto;
+  max-height: calc(100vh - (var(--header-height-total) + var(--toolbar-date-height)) - (var(--footer-height) + 6rem));
+  max-height: calc(100dvh - (var(--header-height-total) + var(--toolbar-date-height)) - (var(--footer-height) + 6rem));
+}
+
+.MapPost-drawer,
+.WFnews-drawer {
+  z-index: var(--z-WFnews-drawer);
+}
+
+.Legend-drawer.open,
 .MapPost-drawer.open,
 .WFnews-drawer.open {
   transform: translateX(0);
 }
 
-@media (hover: hover) {
-
-  .MapPost-drawer-close:hover,
-  .WFnews-drawer-close:hover {
-    background: rgba(255, 255, 255, 0.4);
-  }
-}
-
+.Legend-drawer-list,
 .MapPost-drawer-list,
 .WFnews-drawer-list {
   flex: 1;
@@ -1534,6 +1472,35 @@ tr.stats-state-row-ca.show {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.Legend-drawer-header,
+.MapPost-drawer-header,
+.WFnews-drawer-header {
+  padding: 0.3rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 0 var(--border-radius-0p8rem) 0 0;
+  background: var(--card-shadow);
+  color: var(--color-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.Legend-drawer-header h3,
+.MapPost-drawer-header h3,
+.WFnews-drawer-header h3 {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: var(--color-bg);
+}
+
+#LegendDrawerClose,
+#MapPostDrawerClose,
+#WFnewsDrawerClose {
+  color: var(--color-bg);
 }
 
 .MapPost-item,
@@ -1621,6 +1588,8 @@ tr.stats-state-row-ca.show {
   -webkit-tap-highlight-color: transparent;
 }
 
+body.FigurePage-drawer-open #LegendToggle,
+body.FigurePage-drawer-open .Legend-drawer.open,
 body.FigurePage-drawer-open #WFnewsToggle,
 body.FigurePage-drawer-open .WFnews-drawer.open,
 body.FigurePage-drawer-open #MapPostToggle,
@@ -1630,6 +1599,8 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
 
 @media (max-width: 1024px) {
 
+  body.FigurePage-drawer-open #LegendToggle,
+  body.FigurePage-drawer-open .Legend-drawer.open,
   body.FigurePage-drawer-open #WFnewsToggle,
   body.FigurePage-drawer-open .WFnews-drawer.open,
   body.FigurePage-drawer-open #MapPostToggle,
@@ -1637,14 +1608,15 @@ body.FigurePage-drawer-open .MapPost-drawer.open {
     transform: none;
   }
 
-  #WFnewsToggle {
-    bottom: calc(var(--footer-height) + var(--toolbar-date-height) + 8rem);
-  }
-
+  .Legend-drawer,
   .MapPost-drawer,
   .WFnews-drawer {
     width: 100%;
     top: calc(var(--header-height-total) + var(--toolbar-date-height));
+  }
+  
+  .Legend-drawer {
+    width: 50%;
   }
 }
 

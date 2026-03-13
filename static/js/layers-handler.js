@@ -18,6 +18,7 @@ import {
     closedLegendIds
 } from "./layers-state.js";
 import { logUserAction } from "./fb-logging.js";
+import { setLegendDrawer } from "./ui-toggles.js";
 
 export function addSourceIfMissing(sourceId) {
     if (!map.getSource(sourceId)) {
@@ -249,7 +250,7 @@ export function applyLayerToggles() {
 
                     map.setLayoutProperty(l.id, "visibility", shouldShow ? "visible" : "none");
                     if (shouldShow) {
-                        if (ExcludeLayerGroups.satelliteLayers.includes(shortId)) {
+                        if (l.type === "raster") {
                             const anchorId = map.getStyle().layers.find(ly => 
                                 ly.type === "symbol" || ly.id.includes("road") || ly.id.includes("bridge") || ly.id.includes("highway")
                             )?.id;
@@ -286,15 +287,17 @@ export function applyLayerToggles() {
     });
 
     if (legendWillShow) {
-        // Auto-close drawers if legend is shown
-        ["WFnewsDrawer", "MapPostDrawer"].forEach(id => {
-            const dr = document.getElementById(id);
-            if (dr?.classList.contains("open")) {
-                dr.classList.remove("open");
-                const bodyCls = id === "WFnewsDrawer" ? "WFnews-drawer-open" : "MapPost-drawer-open";
-                document.body.classList.remove(bodyCls);
-            }
-        });
+        const drawer = document.getElementById("LegendDrawer");
+        const newsDrawer = document.getElementById("WFnewsDrawer");
+        const mapPostDrawer = document.getElementById("MapPostDrawer");
+
+        // Only auto-open if the legend drawer is closed AND no other related drawer (News, MapPost) is open.
+        // This prevents the conflict where opening News/MapPost triggers a data update that forces the legend to reopen.
+        const isOthersOpen = newsDrawer?.classList.contains("open") || mapPostDrawer?.classList.contains("open");
+
+        if (drawer && !drawer.classList.contains("open") && !isOthersOpen) {
+            setLegendDrawer(true);
+        }
     }
 
     updateLegend(newStack);

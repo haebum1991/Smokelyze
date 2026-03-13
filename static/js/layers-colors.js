@@ -9,12 +9,12 @@ import { map, activeLayerStack, regionStats, StateShadingEnabled, NaShadingEnabl
  * 범례(Legend) 렌더링 함수 (최종 수정됨)
  */
 export function updateLegend(activeStack) {
-    const container = document.getElementById("MapLegend");
+    const container = document.getElementById("LegendDrawerList");
+    const toggleBtn = document.getElementById("LegendToggle");
     if (!container) return;
 
     if (!activeStack || activeStack.length === 0) {
-        container.style.display = "none";
-        container.innerHTML = "";
+        container.innerHTML = `<div style="text-align:center; padding: 2rem; color:var(--text-main); font-size:1.4rem;">No active legends</div>`;
         return;
     }
 
@@ -27,8 +27,7 @@ export function updateLegend(activeStack) {
     });
 
     if (legendLayers.length === 0) {
-        container.style.display = "none";
-        container.innerHTML = "";
+        container.innerHTML = `<div style="text-align:center; padding: 2rem; color:var(--text-main); font-size:1.4rem;">No active legends</div>`;
         return;
     }
 
@@ -71,13 +70,12 @@ export function updateLegend(activeStack) {
         if (conf.continuous) {
             const { min, max, colors, breaks, unit } = conf;
             const legendBreaks = breaks || [];
-            const grad = `linear-gradient(to top, ${colors.join(", ")})`;
+            const grad = `linear-gradient(to right, ${colors.join(", ")})`;
             
-            // Build tick labels for all breaks
-            // Reversed because flex starts from top (high value)
-            const tickHtml = [...legendBreaks].reverse().map(b => {
-                return `<div style="flex:1; display:flex; align-items:center; line-height:1;">
-                            <span style="font-size:1.1rem; white-space:nowrap; color:var(--text-main);">${b}</span>
+            // 가로형에서는 왼쪽에서 오른쪽으로 라벨 배치
+            const tickHtml = legendBreaks.map(b => {
+                return `<div style="flex:1; text-align:center;">
+                            <span style="font-size:1.1rem; color:var(--text-main);">${b}</span>
                         </div>`;
             }).join("");
 
@@ -85,17 +83,20 @@ export function updateLegend(activeStack) {
             const substance = id.includes("no2") ? "NO₂" : id.includes("hcho") ? "HCHO" : "";
 
             sectionHtml += `
-                <div class="legend-item" style="display:flex; align-items:stretch; gap:12px; height:200px; margin: 20px 0; position:relative; padding-right: 25px;">
-                    <div style="width:18px; background-image:${grad}; background-repeat:no-repeat; background-size:100% 100%; border-radius: 3px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 0 5px rgba(0,0,0,0.3);"></div>
-                    <div style="display:flex; flex-direction:column; justify-content:space-between; color:var(--text-main); padding: 2px 0; min-width: 35px;">
+                <div class="legend-item-continuous">
+                    <!-- 컬러바 -->
+                    <div style="height:1.6rem; background-image:${grad}; background-repeat:no-repeat; background-size:100% 100%; border: 0.1rem solid rgba(255,255,255,0.2); margin-bottom: 0.2rem;"></div>
+                    
+                    <!-- 수치 라벨 -->
+                    <div style="display:flex; justify-content:space-between; color:var(--text-main); padding: 0 0.2rem;">
                         ${tickHtml}
                     </div>
+                    
+                    <!-- 단위 설명 -->
                     ${unit ? `
-                        <div style="position:absolute; right: 2rem; top:0; bottom:0; display:flex; align-items:center; justify-content:center; width:60px;">
-                            <div style="transform: rotate(-90deg); display:flex; flex-direction:column; align-items:center; white-space:nowrap; font-size:1.4rem; color:var(--text-main); font-weight:bold; line-height:1.2;">
-                                <span>Amount of ${substance}</span>
-                                <span style="font-size:1.4rem;">[ ${unit} ]</span>
-                            </div>
+                        <div style="text-align:center; margin-top: 1.2rem; color:var(--text-main); font-weight:bold; line-height:1.3;">
+                            <div>Amount of ${substance}</div>
+                            <div>[ ${unit} ]</div>
                         </div>
                     ` : ""}
                 </div>
@@ -139,8 +140,7 @@ export function updateLegend(activeStack) {
 
         // Add Size Legend Section if exists
         if (conf.sizeLegend) {
-            sectionHtml += `<hr class="legend-divider">`;
-            sectionHtml += `<h4>${conf.sizeLegend.title}</h4>`;
+            sectionHtml += `<div class="legend-header-sub">${conf.sizeLegend.title}</div>`;
             conf.sizeLegend.items.forEach(item => {
                 const sizeRem = (item.radius * 2 / 10) + "rem";
                 sectionHtml += `<div class="legend-item" style="align-items: center;">

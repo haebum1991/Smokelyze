@@ -24,9 +24,10 @@
   --z-mobile-close: 3004;
 
   /* z-Index: Map Page */
-  --z-map-legend: 1000;
-  --z-toolbar-date: 1000;
-  --z-MapTooltip: 1101;
+  --z-map-toggle: 1000;
+  --z-map-legend: 1001;
+  --z-toolbar-date: 1002;
+  --z-MapTooltip: 1103;
   --z-accordion-toggle: 1200;
   --z-accordion: 1201;
   --z-WFnews-drawer: 1300;

@@ -14,7 +14,7 @@ export function initMapCapture() {
                 try {
                     // 1. Get map canvas
                     const mapCanvas = map.getCanvas();
-                    const legendDiv = document.getElementById("MapLegend");
+                    const legendDiv = document.getElementById("LegendDrawer");
 
                     // Create a temporary canvas to combine everything
                     const combinedCanvas = document.createElement("canvas");
@@ -26,7 +26,7 @@ export function initMapCapture() {
                     ctx.drawImage(mapCanvas, 0, 0);
 
                     // 3. Draw Legend if visible
-                    if (legendDiv && window.getComputedStyle(legendDiv).display !== "none") {
+                    if (legendDiv && legendDiv.classList.contains("open")) {
                         if (typeof html2canvas !== "undefined") {
                             const scale = 2; // High resolution scale
                             const legendCanvas = await html2canvas(legendDiv, {

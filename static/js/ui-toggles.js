@@ -127,16 +127,21 @@ export function appendSwitch(parent, options) {
 const LAYERS_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>`;
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
-export function closeAllExcept(activeId) {
+export function closeAllExcept(activeId, onlyIds = null) {
     const drawers = [
         { id: "stats", drawer: "FigurePageDrawer", btn: "FigurePageToggle", cls: "FigurePage-drawer-open" },
         { id: "desc", drawer: "DescDrawer", btn: "DescToggle", cls: null },
         { id: "news", drawer: "WFnewsDrawer", btn: "WFnewsToggle", cls: "WFnews-drawer-open" },
-        { id: "MapPost", drawer: "MapPostDrawer", btn: "MapPostToggle", cls: "MapPost-drawer-open" }
+        { id: "MapPost", drawer: "MapPostDrawer", btn: "MapPostToggle", cls: "MapPost-drawer-open" },
+        { id: "legend", drawer: "LegendDrawer", btn: "LegendToggle", cls: "Legend-drawer-open" }
     ];
 
     drawers.forEach(({ id, drawer, btn, cls }) => {
         if (id !== activeId) {
+            
+            // If onlyIds is provided, only close if the id is in that list
+            if (onlyIds && !onlyIds.includes(id)) return;
+            
             const drawerEl = document.getElementById(drawer);
             const btnEl = document.getElementById(btn);
             if (drawerEl?.classList.contains("open")) {
@@ -327,8 +332,12 @@ function createDrawerToggle(config) {
 
         if (actualOpen) {
             if (window.innerWidth <= 1024) {
+                // Mobile: Close everything
                 closeAllExcept(id);
                 clearHighlight?.();
+            } else if (["legend", "news", "MapPost"].includes(id)) {
+                // PC: Only close siblings in the same group (Left side drawers)
+                closeAllExcept(id, ["legend", "news", "MapPost"]);
             }
             onOpen?.();
         } else {
@@ -450,6 +459,27 @@ export function initMapPostDrawer() {
     appendDrawerHelpIcon("MapPostDrawer", "MapPost");
 }
 
+/**
+ * 6. Legend Drawer
+ */
+export const setLegendDrawer = createDrawerToggle({
+    id: "legend",
+    btnId: "LegendToggle",
+    drawerId: "LegendDrawer",
+    bodyClass: "Legend-drawer-open",
+    onOpen: () => window.dispatchEvent(new CustomEvent("legend-drawer-opened"))
+});
+
+export function initLegendDrawer() {
+    const btn = document.getElementById("LegendToggle");
+    const drawer = document.getElementById("LegendDrawer");
+    const closeBtn = document.getElementById("LegendDrawerClose");
+    if (!drawer) return;
+
+    if (btn) btn.addEventListener("click", () => setLegendDrawer());
+    addCloseHandler(closeBtn, () => setLegendDrawer(false));
+    addSwipeClose(drawer, { direction: "left", onClose: () => setLegendDrawer(false) });
+}
 
 /**
  * Main Initialization
@@ -460,6 +490,7 @@ export function initAll() {
     initDescDrawer();
     initNewsDrawer();
     initMapPostDrawer();
+    initLegendDrawer();
     appendAllLayerHelpIcons();
 }
 
@@ -490,7 +521,8 @@ const KEY_TIPS_MAP = {
     "a": { id: "AiChatToggle", label: "A", fallbackId: "AiChatDrawerClose" },  // AiChat
     "c": { id: "MapBtnCapture", label: "C" },    // Capture
     "r": { id: "MapBtnReset", label: "R" },      // Reset All
-    "t": { id: "MapBtnTutorial", label: "T" }    // Tutorial
+    "t": { id: "MapBtnTutorial", label: "T" },   // Tutorial
+    "l": { id: "LegendToggle", label: "L" }      // Legend
 };
 
 let isKeyTipMode = false;
@@ -653,7 +685,8 @@ const showKeyTips = () => {
         "a": "AI Chat",
         "c": "Map Capture",
         "r": "Reset All",
-        "t": "Quick Start"
+        "t": "Quick Start",
+        "l": "Map Legend"
     };
 
     Object.entries(KEY_TIPS_MAP).forEach(([key, cfg]) => {
@@ -732,6 +765,9 @@ const handleCommonShortcut = (key) => {
                     dp.click();
                 }
             }
+            break;
+        case "l":
+            setLegendDrawer();
             break;
     }
     clearKeyTips();

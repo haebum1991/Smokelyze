@@ -45,6 +45,12 @@ title: ""
     <button class="accordion-toggle" id="MapPostToggle" title="MapPost List">
       <canvas class="ui-pulsing-icon" data-type="alert" width="36" height="36" style="vertical-align:middle;"></canvas>
     </button>
+    
+    <button class="accordion-toggle" id="LegendToggle" title="Map Legend">
+      <svg width="24" height="24">
+        <use xlink:href="#icon-legend" />
+      </svg>
+    </button>
 
     <button class="Desc-toggle" id="DescToggle" title="Layer Descriptions">
       <svg class="chevron" width="24" height="24">
@@ -82,7 +88,8 @@ title: ""
     </div>
 
   </div>
-  <div class="map-legend" id="MapLegend" style="display:none;"></div>
+  
+  <!-- Legend Drawer will be here -->
 
   <div class="toolbar-date toolbar-date-page">
     <div class="date-input">
@@ -346,7 +353,7 @@ title: ""
 </div>
 
 <div class="MapPost-drawer" id="MapPostDrawer">
-  <div class="MapPost-drawer-header" style="background: linear-gradient(135deg, #6a11cb, #2575fc);">
+  <div class="MapPost-drawer-header">
     <h3 id="MapPostDrawerTitle">MapPost detail</h3>
     <button class="ui-btn-close" id="MapPostDrawerClose">
       <svg width="20" height="20">
@@ -358,6 +365,20 @@ title: ""
   </div>
   <div class="MapPost-drawer-list" id="MapPostDrawerList">
     <!-- Content injected via JS -->
+  </div>
+</div>
+
+<div class="Legend-drawer" id="LegendDrawer">
+  <div class="Legend-drawer-header">
+    <h3 id="LegendDrawerTitle">Legend</h3>
+    <button class="ui-btn-close" id="LegendDrawerClose">
+      <svg width="20" height="20">
+        <use xlink:href="#icon-close" />
+      </svg>
+    </button>
+  </div>
+  <div class="Legend-drawer-list" id="LegendDrawerList">
+    <!-- Content injected via JS (updateLegend) -->
   </div>
 </div>
 
