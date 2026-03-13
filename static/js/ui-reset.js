@@ -14,7 +14,7 @@ import { clearModelStats } from "./loader-state.js";
 import { hideTimeControls } from "./ui-time.js";
 import { clearAllTempo } from "./tempo-loader.js";
 import { updateAllActiveSources } from "./loader-handler.js";
-import { setStatsDrawer, setDescDrawer, setNewsDrawer, setMapPostDrawer } from "./ui-toggles.js";
+import { setStatsDrawer, setDescDrawer, setNewsDrawer, setMapPostDrawer, setLegendDrawer } from "./ui-toggles.js";
 
 function numOr(x, d) { return (typeof x === "number" && isFinite(x)) ? x : d; }
 
@@ -80,6 +80,7 @@ export function closeAllDrawersExceptAccordion() {
   setDescDrawer?.(false);
   setNewsDrawer?.(false);
   setMapPostDrawer?.(false);
+  setLegendDrawer?.(false);
 
   // 2) AI Chat (Uses different class structure)
   const aiDrawer = document.getElementById("AiChatDrawer");
