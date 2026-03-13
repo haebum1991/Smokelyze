@@ -249,8 +249,9 @@ function initTempoHover() {
                         <div>Value: <b style="font-size: 1.6rem;">${displayValue.toFixed(2)}</b> 
                         <span style="color: var(--text-main);">&times 10<sup>14</sup> molec. cm<sup>-2</sup></span></div>
                         <div style="display: flex; flex-direction: column;">
-                            <span>Time: <b>${utils.ESML(metadata.datetime) || "NA"} UTC</b></span>
-                            <span>Scan: <b>${utils.ESML(metadata.scan_nos) || "NA"}</b></span>
+                            <span>Timestamp: <b>${utils.ESML(metadata.datetime) || "NA"} UTC</b></span>
+                            <span>Scan No.: <b>${utils.ESML(metadata.scan_nos) || "NA"}</b></span>
+                            <span>Version: <b>${utils.ESML(metadata.version) || "NA"}</b></span>
                         </div>
                     </div>
                 `;
