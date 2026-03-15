@@ -131,6 +131,31 @@ export function urlByYearJson(ds, isoDate) {
   return `${ds.statsBaseUrlYear}/${ds.prefix}${yyyy}.json`;
 }
 
+// url generator for png of TEMPO
+export function urlPngTempo(isoDate, hour, productId) {
+  const [y, m, d] = isoDate.split("-");
+  const formattedHour = String(hour).padStart(2, "0");
+  const folder = `/tempo_date_png/${productId}/${y}/${m}/${d}`;
+  const baseName = `${productId}_${isoDate}_${formattedHour}T`;
+
+  return {
+    jsonUrl: `${folder}/${baseName}.json`,
+    pngUrl: `${folder}/${baseName}.png`
+  };
+}
+
+// url generator for png of TROPOMI
+export function urlPngTropomi(isoDate, productId) {
+  const [y] = isoDate.split("-");
+  const folder = `/tropomi_date_png/${productId}/${y}`;
+  const baseName = `${productId}_${isoDate}`;
+
+  return {
+    jsonUrl: `${folder}/${baseName}.json`,
+    pngUrl: `${folder}/${baseName}.png`
+  };
+}
+
 const NEGATIVE_CACHE_TTL = 15 * 60 * 1000; // 15 minutes
 export const failedUrls = new Map();
 

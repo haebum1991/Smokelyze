@@ -22,7 +22,7 @@ import { setLegendDrawer } from "./ui-toggles.js";
 
 export function addSourceIfMissing(sourceId) {
     if (!map.getSource(sourceId)) {
-        if (sourceId === "tempo-no2" || sourceId === "tempo-hcho") {
+        if (ExcludeLayerGroups.pngLayers.includes(sourceId)) {
             const tempoCanvas = document.createElement("canvas");
             tempoCanvas.id = `${sourceId}-canvas`;
             tempoCanvas.width = 1000;

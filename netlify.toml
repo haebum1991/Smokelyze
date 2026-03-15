@@ -117,6 +117,12 @@
   to   = "/.netlify/functions/gcs-proxy/tempo_date_png/:splat"
   status = 200
   force  = true
+
+[[redirects]]
+  from = "/tropomi_date_png/*"
+  to   = "/.netlify/functions/gcs-proxy/tropomi_date_png/:splat"
+  status = 200
+  force  = true
   
 [[redirects]]
   from = "/api/chat"

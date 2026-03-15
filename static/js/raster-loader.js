@@ -24,25 +24,30 @@ const TEMPO_CONFIG = {
     }
 };
 
+const TROPOMI_CONFIG = {
+    "no2": {
+        productId: "TROPOMI_NO2_L3",
+        sourceId: "tropomi-no2",
+        layerId: "layer-tropomi-no2",
+        mapLayerId: "tropomi-no2-raster"
+    },
+    "hcho": {
+        productId: "TROPOMI_HCHO_L3",
+        sourceId: "tropomi-hcho",
+        layerId: "layer-tropomi-hcho",
+        mapLayerId: "tropomi-hcho-raster"
+    }
+};
+    
 /**
  * Stores raw pixel data and metadata for hover value sampling
  */
 const tempoDataStore = {
     "tempo-no2": { grayscale: null, metadata: null, coordinates: null },
-    "tempo-hcho": { grayscale: null, metadata: null, coordinates: null }
+    "tempo-hcho": { grayscale: null, metadata: null, coordinates: null },
+    "tropomi-no2": { grayscale: null, metadata: null, coordinates: null },
+    "tropomi-hcho": { grayscale: null, metadata: null, coordinates: null }
 };
-
-function getTempoUrls(isoDate, hour, productId) {
-    const [y, m, d] = isoDate.split("-");
-    const formattedHour = String(hour).padStart(2, "0");
-    const folder = `/tempo_date_png/${productId}/${y}/${m}/${d}`;
-    const baseName = `${productId}_${isoDate}_${formattedHour}T`;
-
-    return {
-        jsonUrl: `${folder}/${baseName}.json`,
-        pngUrl: `${folder}/${baseName}.png`
-    };
-}
 
 function hexToRgb(hex) {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -173,10 +178,10 @@ function clearTempoSource(source) {
 }
 
 /**
- * Resets all TEMPO sources (clears canvases and moves them out of view)
+ * Resets all Raster sources (clears canvases and moves them out of view)
  */
-export function clearAllTempo() {
-    for (const cfg of Object.values(TEMPO_CONFIG)) {
+export function clearAllRaster() {
+    for (const cfg of [...Object.values(TEMPO_CONFIG), ...Object.values(TROPOMI_CONFIG)]) {
         const source = map?.getSource(cfg.sourceId);
         if (source) clearTempoSource(source);
         tempoDataStore[cfg.sourceId] = { grayscale: null, metadata: null, coordinates: null };
@@ -194,8 +199,8 @@ function initTempoHover() {
     if (!tooltip) return;
 
     map.on("mousemove", (e) => {
-        // Find visible TEMPO layers
-        const activeTempoLayer = Object.values(TEMPO_CONFIG).find(cfg => {
+        // Find visible TEMPO or TROPOMI layers
+        const activeTempoLayer = [...Object.values(TEMPO_CONFIG), ...Object.values(TROPOMI_CONFIG)].find(cfg => {
             if (!map.getLayer(cfg.mapLayerId)) return false;
             return map.getLayoutProperty(cfg.mapLayerId, "visibility") === "visible";
         });
@@ -241,18 +246,30 @@ function initTempoHover() {
                 const realValue = metadata.min_val + (gray / 255) * (metadata.max_val - metadata.min_val);
                 const displayValue = realValue / 1e14; // unit: 10^14 molecules/cm2
 
-                tooltip.innerHTML = `
-                    <div>
-                        <strong style="color: var(--card-shadow);">${activeTempoLayer.productId === "TEMPO_NO2_L3" ? "TEMPO NO2VCD" : "TEMPO HCHOVCD"}</strong>
-                    </div>
-                    <div>
-                        <div>Value: <b style="font-size: 1.6rem;">${displayValue.toFixed(2)}</b> 
-                        <span style="color: var(--text-main);">&times 10<sup>14</sup> molec. cm<sup>-2</sup></span></div>
+                const isTempo = activeTempoLayer.productId.includes("TEMPO");
+                const layerTitle = activeTempoLayer.productId.includes("NO2") ? 
+                    (isTempo ? "TEMPO NO2VCD" : "TROPOMI NO2VCD") : 
+                    (isTempo ? "TEMPO HCHOVCD" : "TROPOMI HCHOVCD");
+
+                let metaHtml = "";
+                if (isTempo) {
+                    metaHtml = `
                         <div style="display: flex; flex-direction: column;">
                             <span>Timestamp: <b>${utils.ESML(metadata.datetime) || "NA"} UTC</b></span>
                             <span>Scan No.: <b>${utils.ESML(metadata.scan_nos) || "NA"}</b></span>
                             <span>Version: <b>${utils.ESML(metadata.version) || "NA"}</b></span>
                         </div>
+                    `;
+                }
+
+                tooltip.innerHTML = `
+                    <div>
+                        <strong style="color: var(--card-shadow);">${layerTitle}</strong>
+                    </div>
+                    <div>
+                        <div>Value: <b style="font-size: 1.6rem; color: var(--card-shadow);">${displayValue.toFixed(2)}</b> 
+                        <span style="color: var(--text-main);">&times 10<sup>14</sup> molec. cm<sup>-2</sup></span></div>
+                        ${metaHtml}
                     </div>
                 `;
                 
@@ -310,7 +327,7 @@ export async function tempoLoadData(isoDate) {
             continue;
         }
 
-        const { jsonUrl: baseJson, pngUrl: basePng } = getTempoUrls(utcIsoDate, utcHour, cfg.productId);
+        const { jsonUrl: baseJson, pngUrl: basePng } = utils.urlPngTempo(utcIsoDate, utcHour, cfg.productId);
         const buster = utils.getCacheBuster(utcIsoDate);
         const jsonUrl = baseJson + buster;
         const pngUrl = basePng + buster;
@@ -348,6 +365,62 @@ export async function tempoLoadData(isoDate) {
             if (cb && cb.checked) {
                 const label = key.toUpperCase();
                 showErrorToast(`No ${label} TEMPO data available for this date and hour.`, "error");
+            }
+        }
+    }
+}
+
+export async function tropomiLoadData(isoDate) {
+    for (const [key, cfg] of Object.entries(TROPOMI_CONFIG)) {
+        const source = map?.getSource(cfg.sourceId);
+        if (!source) continue;
+
+        const cb = document.getElementById(cfg.layerId);
+        // Always clear first to prevent old data from sticking around while loading
+        clearTempoSource(source);
+
+        if (!cb || !cb.checked) {
+            continue;
+        }
+
+        const { jsonUrl: baseJson, pngUrl: basePng } = utils.urlPngTropomi(isoDate, cfg.productId);
+        const buster = utils.getCacheBuster(isoDate);
+        const jsonUrl = baseJson + buster;
+        const pngUrl = basePng + buster;
+
+        try {
+            const metadata = await utils.fetchJson(jsonUrl, null);
+            const targetExtent = metadata?.extent_raw || metadata?.extent;
+
+            if (metadata && targetExtent) {
+                const xmin = targetExtent[0];
+                const xmax = targetExtent[1];
+                const ymin = targetExtent[2];
+                const ymax = targetExtent[3];
+                const coordinates = [
+                    [xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin]
+                ];
+                
+                if (!tempoDataStore[cfg.sourceId]) {
+                    tempoDataStore[cfg.sourceId] = { grayscale: null, metadata: null, coordinates: null };
+                }
+                
+                tempoDataStore[cfg.sourceId].coordinates = coordinates;
+                await colorizeTempoImage(pngUrl, metadata, source, cfg.sourceId);
+                source.setCoordinates(coordinates);
+
+                initTempoHover();
+            } else {
+                throw new Error("No data");
+            }
+        } catch (e) {
+            console.error(`TROPOMI ${key} load error:`, e);
+            clearTempoSource(source);
+            
+            // Alert user if no data
+            if (cb && cb.checked) {
+                const label = key.toUpperCase();
+                showErrorToast(`No ${label} TROPOMI data available for this date.`, "error");
             }
         }
     }

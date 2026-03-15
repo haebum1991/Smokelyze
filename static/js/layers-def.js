@@ -5,24 +5,27 @@
 export const ExcludeLayerGroups = {
   
   // ========= Common Groups =========
-  satelliteLayers: ["burn", "smoke", "fire", "tempo-no2", "tempo-hcho"],
+  satelliteLayers: ["burn", "smoke", "fire", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
+    
+  // [layers-handler.js] > [addSourceIfMissing]
+  pngLayers: ["tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
     
   // ========= Find by [key] =========
   // [layers-handler.js] > [applyLayerToggles] > [EXCLUDED]
   liveUpdateLayers: ["wildfire-news", "wildfire-nifc", "MapPost"],
 
   // [layers-colors.js] > [updateStateShading] > [EXCLUDED]
-  stateShading: ["smoke", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho"],
+  stateShading: ["smoke", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
 
   // [layers-tooltip.js] > [stateHoverHTML] > [EXCLUDED]
-  stateHover: ["wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho"],
+  stateHover: ["wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
 
   // [stats-common.js] > [getActiveModelLayers] > [EXCLUDED]
-  modelTable: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho"],
+  modelTable: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
 
   // [stats-data-search.js] > [updateVisibility] > [EXCLUDED]
   // [loader.js] > [updateAllActiveSources] > [EXCLUDED]
-  searchSite: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2", "airnow-daily-pm25", "airnow-daily-mda8", "tempo-no2", "tempo-hcho"],
+  searchSite: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2", "airnow-daily-pm25", "airnow-daily-mda8", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
 
   // [stats-plot-dy-scatter.js] > [getActiveModelLayers] > [EXCLUDED]
   plotScatter: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost"],
@@ -126,7 +129,7 @@ export const DATA_IMPORT_METHOD = {
       statsBaseUrlDate: "/modis_burn_area_date_json",
       statsBaseUrlYear: "/modis_burn_area_year_json"
   },
-  
+
   "tempo-no2": {
       key: "tempo-no2",
       source: "tempo-no2",
@@ -140,7 +143,21 @@ export const DATA_IMPORT_METHOD = {
       duration: "hourly",
       hourly: true
   },
-    
+
+  "tropomi-no2": {
+      key: "tropomi-no2",
+      source: "tropomi-no2",
+      duration: "daily",
+      hourly: false
+  },
+  
+  "tropomi-hcho": {
+      key: "tropomi-hcho",
+      source: "tropomi-hcho",
+      duration: "daily",
+      hourly: false
+  },
+  
   "gam_v2": {
       key: "gam_v2",
       source: "gam_v2",
@@ -294,7 +311,10 @@ export const DATASET_SOURCE_MAP = {
     "MapPost": "MapPost",
     
     "tempo-no2": "tempo-no2",
-    "tempo-hcho": "tempo-hcho"
+    "tempo-hcho": "tempo-hcho",
+    
+    "tropomi-no2": "tropomi-no2",
+    "tropomi-hcho": "tropomi-hcho"
 };
 
 export function makeStepExpr(valueField, breaks, colors, nullVal) {
@@ -464,7 +484,9 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "fire", field: "fireFrp", title: "FRP (MW)", breaks: BREAKS_FRP, colors: "#fd8d3c", decimals: 1, manualLayer: true },
 
     { duration: "hourly", id: "tempo-no2", field: "tempo", title: "TEMPO NO2 VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true, hourly: true },
-    { duration: "hourly", id: "tempo-hcho", field: "tempo", title: "TEMPO HCHO VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true, hourly: true }
+    { duration: "hourly", id: "tempo-hcho", field: "tempo", title: "TEMPO HCHO VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true, hourly: true },
+    { duration: "daily", id: "tropomi-no2", field: "tropomi", title: "TROPOMI NO2 VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true },
+    { duration: "daily", id: "tropomi-hcho", field: "tropomi", title: "TROPOMI HCHO VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true }
 ];
 
 export const LAYER_DEFS = (() => {
@@ -636,6 +658,54 @@ export const LAYER_DEFS = (() => {
                 title: tempoHchoTmpl.title,
                 breaks: tempoHchoTmpl.breaks,
                 colors: tempoHchoTmpl.colors,
+                continuous: true,
+                unit: "10¹⁴ molecules cm⁻²"
+            }
+        };
+    }
+    
+        const tropomiTmpl = LAYER_TEMPLATES.find(t => t.id === "tropomi-no2");
+    if (tropomiTmpl) {
+        defs["tropomi-no2"] = {
+            layers: [
+                { 
+                    id: "tropomi-no2-raster", 
+                    type: "raster", 
+                    source: "tropomi-no2", 
+                    paint: { 
+                        "raster-opacity": 0.9,
+                        "raster-resampling": "nearest" 
+                    } 
+                }
+            ],
+            legend: {
+                title: tropomiTmpl.title,
+                breaks: tropomiTmpl.breaks,
+                colors: tropomiTmpl.colors,
+                continuous: true,
+                unit: "10¹⁴ molecules cm⁻²"
+            }
+        };
+    }
+    
+    const tropomiHchoTmpl = LAYER_TEMPLATES.find(t => t.id === "tropomi-hcho");
+    if (tropomiHchoTmpl) {
+        defs["tropomi-hcho"] = {
+            layers: [
+                { 
+                    id: "tropomi-hcho-raster", 
+                    type: "raster", 
+                    source: "tropomi-hcho", 
+                    paint: { 
+                        "raster-opacity": 0.9,
+                        "raster-resampling": "nearest"
+                    } 
+                }
+            ],
+            legend: {
+                title: tropomiHchoTmpl.title,
+                breaks: tropomiHchoTmpl.breaks,
+                colors: tropomiHchoTmpl.colors,
                 continuous: true,
                 unit: "10¹⁴ molecules cm⁻²"
             }

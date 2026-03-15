@@ -28,7 +28,7 @@ import { showTimeControls, hideTimeControls } from "./ui-time.js";
 import { airnowHasActiveLayers } from "./airnow.js";
 // ---- [External data] AirNow ----
 
-import { tempoLoadData } from "./tempo-loader.js";
+import { tempoLoadData, tropomiLoadData } from "./raster-loader.js";
 
 
 export async function loadSourceData(sourceKey, isoDate) {
@@ -532,6 +532,8 @@ export async function updateAllActiveSources() {
 
             if (duration === "hourly") {
                 hasHourly = true;
+            } else if (ExcludeLayerGroups.pngLayers.includes(sourceKey)) {
+                // TROPOMI (daily) and TEMPO (hourly) use shared loaders below
             } else {
                 promises.push(loadSourceData(sourceKey, isoDate));
             }
@@ -545,7 +547,8 @@ export async function updateAllActiveSources() {
             try {
                 await Promise.all([
                     airnowLoadData(isoDate),
-                    tempoLoadData(isoDate)
+                    tempoLoadData(isoDate),
+                    tropomiLoadData(isoDate)
                 ]);
             } catch (e) {
                 console.error("Hourly background load failed:", e);
@@ -560,7 +563,8 @@ export async function updateAllActiveSources() {
                 // These functions clear their sources/stats when their layers are unchecked/inactive
                 await Promise.all([
                     airnowLoadData(isoDate),
-                    tempoLoadData(isoDate)
+                    tempoLoadData(isoDate),
+                    tropomiLoadData(isoDate)
                 ]);
             } catch (e) {
                 console.error("Hourly clear failed:", e);

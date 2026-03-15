@@ -12,7 +12,7 @@ import { resetState as resetParCoords } from "./stats-plot-dy-parcoords.js";
 import { resetState as resetScatter } from "./stats-plot-dy-scatter.js";
 import { clearModelStats } from "./loader-state.js";
 import { hideTimeControls } from "./ui-time.js";
-import { clearAllTempo } from "./tempo-loader.js";
+import { clearAllRaster } from "./raster-loader.js";
 import { updateAllActiveSources } from "./loader-handler.js";
 import { setStatsDrawer, setDescDrawer, setNewsDrawer, setMapPostDrawer, setLegendDrawer } from "./ui-toggles.js";
 
@@ -58,7 +58,7 @@ export function resetUIAndData() {
   });
 
   // 5) Clear TEMPO Canvas layers explicitly
-  clearAllTempo?.();
+  clearAllRaster?.();
 
   // 6) Visibility & Data Synchronization
   applyLayerToggles?.();
