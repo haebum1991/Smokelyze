@@ -2,7 +2,7 @@
 import { map } from "./map-init.js";
 import { auth, onAuthStateChanged } from "./fb-init.js";
 import * as utils from "./utils.js";
-import { showErrorToast, showTaskNotification } from "./loader.js";
+import { showErrorToast, showTaskNotification } from "./loader-ui.js"; // CRITICAL: Use loader-ui to break circular loop
 import { updateAuthButton } from "./signin.js";
 import { setHysplitDrawer, appendSwitch } from "./ui-toggles.js";
 
@@ -27,9 +27,16 @@ const RAINBOW_COLORS = ["#007cff", "#ff4d4d", "#2ecc71", "#e67e22", "#9b59b6", "
 const LAYER_SUFFIXES = ["wall", "line", "points", "vispoints", "point"];
 
 // --- Initialization ---
-function init() {
+export function initHysplit() {
+    console.log("[HYSPLIT] Full Init Starting...");
     if (!map) return;
 
+    // Listen for reset events from ui-reset.js (Decoupled Reset)
+    document.addEventListener("smokelyze-reset-hysplit", (e) => {
+        console.log("[HYSPLIT] Reset event received.");
+        clearHysplitTrajectory(e.detail?.deleteHistory ?? false);
+    });
+    
     // 1. Capture coordinate from context menu (parallel to fb-MapPost)
     map.on("contextmenu", (e) => {
         state.pendingLngLat = e.lngLat;
@@ -166,6 +173,7 @@ function init() {
     } else {
         map.once("styledata", initFlowAnimation);
     }
+    console.log("[HYSPLIT] Full Init Complete!");
 }
 
 function initFlowAnimation() {
@@ -503,11 +511,6 @@ async function clickOnSubmitHysplit() {
             } else if (statusData.status === "error") {
                 throw new Error(statusData.message || "Background simulation failed");
             }
-
-            // Still pending... continue loop
-            if (attempts % 5 === 0) {
-                task.update(`Simulation in progress (${attempts * 2}s)...`, "running");
-            }
         }
 
         if (!finalData) throw new Error("Simulation timed out");
@@ -544,6 +547,7 @@ async function clickOnSubmitHysplit() {
 
 // --- Rendering & List Management ---
 export function clearHysplitTrajectory(clearHistory = true) {
+    console.log(`[HYSPLIT] clearing trajectory (clearHistory: ${clearHistory})`);
     if (!map) return;
     const style = map.getStyle();
 
@@ -956,7 +960,4 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
         map.fitBounds(bounds, { padding: 80, pitch: 65, duration: 1500 });
     }
 }
-
-// Run init
-init();
 

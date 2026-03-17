@@ -1,7 +1,7 @@
 
 import { map } from "./layers-state.js";
 import { highlightLocation } from "./utils.js";
-import { loadedGeoJSON, activeSources, loadedSources } from "./loader-state.js";
+import { loadedGeoJSON, activeSources, loadedSources } from "./loader.js";
 
 /**
  * 지도의 데이터 로딩이나 렌더링이 완료될 때까지 대기하는 헬퍼 함수

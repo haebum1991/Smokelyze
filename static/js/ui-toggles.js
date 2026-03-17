@@ -7,6 +7,7 @@ import {
     setOnSetStatsDrawer,
     setOnSetDescDrawer,
     setOnSetMapPostDrawer,
+    setOnSetHysplitDrawer,
     setOnSetAccordionCollapsed,
     ESML
 } from "./utils.js";
@@ -133,6 +134,7 @@ export function closeAllExcept(activeId, onlyIds = null) {
         { id: "desc", drawer: "DescDrawer", btn: "DescToggle", cls: null },
         { id: "news", drawer: "WFnewsDrawer", btn: "WFnewsToggle", cls: "WFnews-drawer-open" },
         { id: "MapPost", drawer: "MapPostDrawer", btn: "MapPostToggle", cls: "MapPost-drawer-open" },
+        { id: "hysplit", drawer: "HysplitDrawer", btn: "HysplitToggle", cls: "Hysplit-drawer-open" },
         { id: "legend", drawer: "LegendDrawer", btn: "LegendToggle", cls: "Legend-drawer-open" }
     ];
 
@@ -335,9 +337,9 @@ function createDrawerToggle(config) {
                 // Mobile: Close everything
                 closeAllExcept(id);
                 clearHighlight?.();
-            } else if (["legend", "news", "MapPost"].includes(id)) {
+            } else if (["legend", "news", "MapPost", "hysplit"].includes(id)) {
                 // PC: Only close siblings in the same group (Left side drawers)
-                closeAllExcept(id, ["legend", "news", "MapPost"]);
+                closeAllExcept(id, ["legend", "news", "MapPost", "hysplit"]);
             }
             onOpen?.();
         } else {
@@ -482,6 +484,28 @@ export function initLegendDrawer() {
 }
 
 /**
+ * 7. Hysplit Drawer
+ */
+export const setHysplitDrawer = createDrawerToggle({
+    id: "hysplit",
+    btnId: "HysplitToggle",
+    drawerId: "HysplitDrawer",
+    bodyClass: "Hysplit-drawer-open",
+    onOpen: () => window.dispatchEvent(new CustomEvent("hysplit-drawer-opened"))
+});
+
+export function initHysplitDrawer() {
+    const btn = document.getElementById("HysplitToggle");
+    const drawer = document.getElementById("HysplitDrawer");
+    const closeBtn = document.getElementById("HysplitDrawerClose");
+    if (!drawer) return;
+
+    if (btn) btn.addEventListener("click", () => setHysplitDrawer());
+    addCloseHandler(closeBtn, () => setHysplitDrawer(false));
+    addSwipeClose(drawer, { direction: "left", onClose: () => setHysplitDrawer(false) });
+}
+
+/**
  * Main Initialization
  */
 export function initAll() {
@@ -491,6 +515,7 @@ export function initAll() {
     initNewsDrawer();
     initMapPostDrawer();
     initLegendDrawer();
+    initHysplitDrawer();
     appendAllLayerHelpIcons();
 }
 
@@ -505,6 +530,7 @@ setOnSetNewsDrawer(setNewsDrawer);
 setOnSetStatsDrawer(setStatsDrawer);
 setOnSetDescDrawer(setDescDrawer);
 setOnSetMapPostDrawer(setMapPostDrawer);
+setOnSetHysplitDrawer(setHysplitDrawer);
 setOnSetAccordionCollapsed(setAccordionCollapsed);
 
 // Make global for external module interaction (like ui-param-desc.js)
@@ -522,7 +548,8 @@ const KEY_TIPS_MAP = {
     "c": { id: "MapBtnCapture", label: "C" },    // Capture
     "r": { id: "MapBtnReset", label: "R" },      // Reset All
     "t": { id: "MapBtnTutorial", label: "T" },   // Tutorial
-    "l": { id: "LegendToggle", label: "L" }      // Legend
+    "l": { id: "LegendToggle", label: "L" },     // Legend
+    "h": { id: "HysplitToggle", label: "H" }      // Hysplit
 };
 
 let isKeyTipMode = false;
@@ -686,7 +713,8 @@ const showKeyTips = () => {
         "c": "Map Capture",
         "r": "Reset All",
         "t": "Quick Start",
-        "l": "Map Legend"
+        "l": "Map Legend",
+        "h": "HYSPLIT"
     };
 
     Object.entries(KEY_TIPS_MAP).forEach(([key, cfg]) => {
@@ -768,6 +796,9 @@ const handleCommonShortcut = (key) => {
             break;
         case "l":
             setLegendDrawer();
+            break;
+        case "h":
+            setHysplitDrawer();
             break;
     }
     clearKeyTips();

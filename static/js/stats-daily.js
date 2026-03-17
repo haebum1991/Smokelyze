@@ -3,7 +3,7 @@ import { DATA_IMPORT_METHOD } from "./layers-def.js";
 import * as utils from "./utils.js";
 import * as common from "./stats-common.js";
 import { regionStats } from "./layers-state.js";
-import { activeSources } from "./loader-state.js";
+import { activeSources } from "./loader.js";
 import { modelStatsCache } from "./loader.js";
 import { renderDailyBarLine } from "./stats-plot-dy-barline.js";
 import { renderParCoords } from "./stats-plot-dy-parcoords.js";

@@ -109,11 +109,15 @@ async function airnowDecompressGzip(response) {
 /**
  * Fetch AirNow data from RSIG server
  * @param {string} url - Complete RSIG URL
+ * @param {AbortSignal} signal - Optional AbortSignal for cancellation
  * @returns {Promise<string>} CSV text data
  */
-export async function airnowFetchData(url) {
+export async function airnowFetchData(url, signal) {
     try {
-        const response = await fetch(url);
+        const fetchOptions = {};
+        if (signal) fetchOptions.signal = signal;
+        
+        const response = await fetch(url, fetchOptions);
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -123,7 +127,11 @@ export async function airnowFetchData(url) {
         const text = await airnowDecompressGzip(response);
         return text;
     } catch (e) {
-        console.error("AirNow fetch failed:", url, e);
+        if (e.name === "AbortError") {
+            console.log("AirNow fetch aborted for:", url);
+        } else {
+            console.error("AirNow fetch failed:", url, e);
+        }
         throw e;
     }
 }

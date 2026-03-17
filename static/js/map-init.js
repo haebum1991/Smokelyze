@@ -53,5 +53,15 @@ function createMap() {
     return m;
 }
 
+// Wait for maplibregl to be available ONLY if we are on the map page
+if (document.getElementById("map")) {
+    if (typeof maplibregl === "undefined") {
+        console.log("Waiting for maplibregl library...");
+        while (typeof maplibregl === "undefined") {
+            await new Promise(resolve => setTimeout(resolve, 50));
+        }
+    }
+}
+
 export const map = createMap();
 

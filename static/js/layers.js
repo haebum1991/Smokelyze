@@ -51,7 +51,7 @@ Lon: ${e.lngLat.lng.toFixed(3)}`;
 })();
 
 if (map) {
-  map.on("load", () => {
+  const onMapLoad = () => {
     // Register functional pulsing symbols
     if (iconPulsingNews) {
       map.addImage("pulsing-news", iconPulsingNews(map, 60));
@@ -148,7 +148,13 @@ if (map) {
 
     ensureLayers();
     applyLayerToggles();
-  });
+  };
+
+  if (map.loaded() || map.isStyleLoaded()) {
+    onMapLoad();
+  } else {
+    map.once("style.load", onMapLoad);
+  }
 
   // Event Delegation for Map Popups
   document.body.addEventListener("click", (e) => {

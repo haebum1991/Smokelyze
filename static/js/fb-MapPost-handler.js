@@ -175,6 +175,7 @@ function handleReplyOpen(element) {
 
 function handleReplyCancel(element) {
     const container = element.closest(".reply-text-container");
+    if (!container) return;
     container.style.display = "none";
 
     const rootId = container.id.replace("ReplyTextContainer-", "");

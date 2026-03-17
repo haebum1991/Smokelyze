@@ -16,7 +16,8 @@ export let activeSources = [];
 
 export let metricsMap = {};
 export let COUNT_METRICS = [];
-export let metricsInitialized = false;
+
+let metricsInitialized = false;
 
 export function getLoadedNewsFeatures() {
     return loadedNewsFeatures || [];

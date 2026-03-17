@@ -437,11 +437,13 @@ function handleLoadingError(sourceKey, isoDate, ds = null) {
 }
 
 export async function updateAllActiveSources() {
+    console.log("[DATA-LOAD] updateAllActiveSources started...");
     if (!map) return;
     toggleSpinner(true);
     try {
         const isoDate = utils.currentDate();
         const currentDataset = document.getElementById("MapDataSelect")?.value;
+        console.log(`[DATA-LOAD] Date: ${isoDate}, Dataset: ${currentDataset}`);
         const checkboxes = document.querySelectorAll("input[type=checkbox][id^='layer-']");
         const sourcesToLoad = new Set();
         
@@ -480,6 +482,7 @@ export async function updateAllActiveSources() {
         // Update activeSources in state so drill-down stats (AQS) can find data
         activeSources.length = 0;
         sourcesToLoad.forEach(s => activeSources.push(s));
+        console.log("[DATA-LOAD] Sources to fetch:", Array.from(sourcesToLoad));
 
         const restrictedSources = ExcludeLayerGroups.restrictedSources;
         const tryingToLoadRestricted = Array.from(sourcesToLoad).some(s => restrictedSources.includes(s));
@@ -543,10 +546,14 @@ export async function updateAllActiveSources() {
 
         if (hasHourly) {
             if (typeof showTimeControls === "function") showTimeControls();
+            
+            // 1. AirNow is fully detached, non-blocking asynchronous
+            airnowLoadData(isoDate).catch(e => console.error("Detached AirNow load failed:", e));
+
+            // 2. TEMPO and TROPOMI remain blocking with center spinner
             toggleSpinner(true);
             try {
                 await Promise.all([
-                    airnowLoadData(isoDate),
                     tempoLoadData(isoDate),
                     tropomiLoadData(isoDate)
                 ]);
@@ -557,12 +564,14 @@ export async function updateAllActiveSources() {
             }
         } else {
             if (typeof hideTimeControls === "function") hideTimeControls();
-            
+
             // Explicitly clear hourly data to avoid stale rasters/shading
+            // AirNow is fully detached, non-blocking asynchronous
+            airnowLoadData(isoDate).catch(e => console.error("Detached AirNow clear failed:", e));
+            
             try {
                 // These functions clear their sources/stats when their layers are unchecked/inactive
                 await Promise.all([
-                    airnowLoadData(isoDate),
                     tempoLoadData(isoDate),
                     tropomiLoadData(isoDate)
                 ]);
@@ -587,7 +596,8 @@ export async function updateAllActiveSources() {
     }
 }
 
-export function bindEvents() {
+function bindEventsLoaderHandler() {
+    console.log("[BIND-EVENTS] Starting event binding...");
     const datePicker = document.getElementById("datePicker");
     if (datePicker) {
         const onDateChange = utils.debounce((e) => {
@@ -628,6 +638,7 @@ export function bindEvents() {
     document.body.addEventListener("change", (e) => {
         const cb = e.target;
         if (cb.type === "checkbox" && cb.id.startsWith("layer-")) {
+            console.log(`[CHECKBOX-CLICK] ID: ${cb.id}, Checked: ${cb.checked}`);
             const shortId = cb.id.replace("layer-", "");
             if (saveLayerFlag) saveLayerFlag(shortId, cb.checked);
 
@@ -667,13 +678,17 @@ export function bindEvents() {
     if (timePicker) {
         timePicker.addEventListener("change", utils.debounce(async () => {
             const hasTempo = document.getElementById("layer-tempo-no2")?.checked || document.getElementById("layer-tempo-hcho")?.checked;
-            if (airnowHasActiveLayers() || hasTempo) {
+            
+            // 1. AirNow fetches in the background non-blocking
+            if (airnowHasActiveLayers()) {
+                airnowLoadData(utils.currentDate()).catch(e => console.error("Detached AirNow load failed:", e));
+            }
+
+            // 2. TEMPO blocks the UI specifically
+            if (hasTempo) {
                 toggleSpinner(true);
                 try {
-                    const tasks = [];
-                    if (airnowHasActiveLayers()) tasks.push(airnowLoadData(utils.currentDate()));
-                    if (hasTempo) tasks.push(tempoLoadData(utils.currentDate()));
-                    await Promise.all(tasks);
+                    await tempoLoadData(utils.currentDate());
                 } finally {
                     toggleSpinner(false);
                 }
@@ -689,5 +704,49 @@ export function bindEvents() {
             updateAllActiveSources();
         }
     });
+
+    // Auth listener moved here from loader.js (Facade)
+    window.addEventListener("authStateChanged", (e) => {
+        if (e.detail.user) {
+            console.log("User logged in - refreshing all active sources.");
+            updateAllActiveSources();
+        } else {
+            console.log("User logged out - clearing all sources.");
+            resetLoadedSources(updateWildfireNewsList);
+            updateAllActiveSources();
+        }
+    });
+}
+
+/**
+ * Main initialization call.
+ * This should be called once from ui-init.js.
+ */
+export function initLoaderRuntime() {
+    if (!map) return;
+
+    // 1. Bind UI events immediately
+    console.log("[LOADER] Binding events immediately...");
+    try {
+        bindEventsLoaderHandler();
+    } catch (e) {
+        console.error("[LOADER] bindEventsLoaderHandler failed:", e);
+    }
+
+    const startLoader = () => {
+        console.log("[LOADER] Calling ensureLayers...");
+        ensureLayers();
+        console.log("[LOADER] Calling updateAllActiveSources...");
+        updateAllActiveSources();
+    };
+
+    // 2. Map-dependent initialization
+    if (map.loaded() || map.isStyleLoaded()) {
+        console.log("[LOADER] Map/Style already loaded. Initializing layers...");
+        startLoader();
+    } else {
+        console.log("[LOADER] Waiting for map style.load event...");
+        map.once("style.load", startLoader);
+    }
 }
 

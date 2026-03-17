@@ -8,6 +8,8 @@ import { resetViewControl } from "./ui-reset.js";
 import { initMapCapture } from "./map-capture.js";
 import { initTimeButtons, initTimePicker } from "./ui-time.js";
 import { initBtnTooltips } from "./ui-btn-tooltip.js";
+import { initHysplit } from "./aws-hysplit.js";
+import { initLoaderRuntime } from "./loader.js";
 
 const datePicker = document.getElementById("datePicker");
 
@@ -43,4 +45,6 @@ initMapCapture?.();
 initStateShadingToggle?.();
 initNaShadingToggle?.();
 initBtnTooltips?.();
+initHysplit?.();
+initLoaderRuntime?.();
 

@@ -2,7 +2,7 @@
 import { ExcludeLayerGroups, LAYER_TEMPLATES, DATASET_SOURCE_MAP } from "./layers-def.js";
 import { activeLayerStack } from "./layers-state.js";
 import { currentDate, ESML } from "./utils.js";
-import { loadedGeoJSON, loadedSources } from "./loader-state.js";
+import { loadedGeoJSON, loadedSources } from "./loader.js";
 import {
     getPlotTheme,
     renderPlotMessage,

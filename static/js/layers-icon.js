@@ -13,8 +13,7 @@ export const ICON_CONF = {
 };
 
 // --- Core Drawing Functions (Pure Logic) ---
-
-export function drawIconCoreNews(ctx, size, t) {
+function drawIconCoreNews(ctx, size, t) {
     const x = size / 2;
     const y = size / 2;
     const r = size / 2;
@@ -55,7 +54,7 @@ export function drawIconCoreNews(ctx, size, t) {
     ctx.stroke();
 }
 
-export function drawIconCoreFire(ctx, size, t) {
+function drawIconCoreFire(ctx, size, t) {
     const x = size / 2;
     const y = size / 2;
     const r = size / 2;
@@ -99,7 +98,7 @@ export function drawIconCoreFire(ctx, size, t) {
     ctx.stroke();
 }
 
-export function drawIconCoreAlert(ctx, size, t) {
+function drawIconCoreAlert(ctx, size, t) {
     const x = size / 2;
     const y = size / 2;
     const r = size / 2;

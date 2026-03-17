@@ -26,10 +26,9 @@ const state = {
 };
 
 const db = fb.db;
-const auth = fb.auth;
 
 const {
-    collection, addDoc, onSnapshot, query, orderBy, limit, limitToLast,
+    collection, addDoc, query, orderBy, limit, limitToLast,
     startAfter, endBefore, getDocs, getCountFromServer,
     serverTimestamp, doc, getDoc, updateDoc, deleteDoc
 } = fb;
@@ -259,7 +258,7 @@ async function clickOnSubmit() {
     }
 }
 
-function bindEvents() {
+function bindEventsAnnouncements() {
     const writeBtn = document.getElementById("BoardBtnWrite");
     if (writeBtn) writeBtn.addEventListener("click", () => uiShowModal());
 
@@ -418,7 +417,7 @@ fb.onAuthStateChanged(fb.auth, async (user) => {
     }
 });
 
-bindEvents();
+bindEventsAnnouncements();
 
 // Consolidated Init
 (async () => {

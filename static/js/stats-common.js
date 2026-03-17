@@ -487,7 +487,7 @@ export function triggerRefresh() {
     updateAllStats(isoDate, regionIDs, monthKey);
 }
 
-export function bindEvents() {
+function bindEventsStats() {
     // Tabs logic
     const tabs = document.querySelectorAll(".stats-tab-sub");
     const panels = document.querySelectorAll(".stats-container");
@@ -940,7 +940,7 @@ export function getDatasetInfo() {
 function init() {
     updateStickyHeaderOffsets();
     setupPlotTabs();
-    bindEvents();
+    bindEventsStats();
 }
 
 if (document.readyState === "loading") {

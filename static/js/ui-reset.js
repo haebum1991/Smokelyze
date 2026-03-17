@@ -10,11 +10,11 @@ import { resetLoadedSources } from "./loader.js";
 import { resetState as resetBarLine } from "./stats-plot-dy-barline.js";
 import { resetState as resetParCoords } from "./stats-plot-dy-parcoords.js";
 import { resetState as resetScatter } from "./stats-plot-dy-scatter.js";
-import { clearModelStats } from "./loader-state.js";
+import { clearModelStats } from "./loader.js";
 import { hideTimeControls } from "./ui-time.js";
 import { clearAllRaster } from "./raster-loader.js";
-import { updateAllActiveSources } from "./loader-handler.js";
-import { setStatsDrawer, setDescDrawer, setNewsDrawer, setMapPostDrawer, setLegendDrawer } from "./ui-toggles.js";
+import { updateAllActiveSources } from "./loader.js";
+import { setStatsDrawer, setDescDrawer, setNewsDrawer, setMapPostDrawer, setLegendDrawer, setHysplitDrawer } from "./ui-toggles.js";
 
 function numOr(x, d) { return (typeof x === "number" && isFinite(x)) ? x : d; }
 
@@ -69,6 +69,10 @@ export function resetUIAndData() {
 
   // Final single refresh for loaders/UI
   updateAllActiveSources?.();
+  
+  // 7) Clear HYSPLIT from Map (But keep in Storage)
+  // Decoupled via event: No direct import or window global needed
+  document.dispatchEvent(new CustomEvent("smokelyze-reset-hysplit", { detail: { deleteHistory: false } }));
 }
 
 /**
@@ -81,6 +85,7 @@ export function closeAllDrawersExceptAccordion() {
   setNewsDrawer?.(false);
   setMapPostDrawer?.(false);
   setLegendDrawer?.(false);
+  setHysplitDrawer?.(false);
 
   // 2) AI Chat (Uses different class structure)
   const aiDrawer = document.getElementById("AiChatDrawer");

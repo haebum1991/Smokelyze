@@ -10,7 +10,6 @@ import { map, activeLayerStack, regionStats, StateShadingEnabled, NaShadingEnabl
  */
 export function updateLegend(activeStack) {
     const container = document.getElementById("LegendDrawerList");
-    const toggleBtn = document.getElementById("LegendToggle");
     if (!container) return;
 
     if (!activeStack || activeStack.length === 0) {
@@ -206,8 +205,9 @@ export function updateLayerToggleColors() {
  * Feature: State Shading (Coloring)
  */
 export function updateStateShading() {
-    if (!map) return;
+    if (!map) { console.log("[STATE-SHADING] No map"); return; }
     if (!activeLayerStack || activeLayerStack.length === 0 || !StateShadingEnabled) {
+        console.log("[STATE-SHADING] Disabled or no active layers.", { stackLen: activeLayerStack?.length, enabled: StateShadingEnabled });
         if (map.getLayer("states-fill")) map.setPaintProperty("states-fill", "fill-opacity", 0);
         return;
     }
@@ -215,12 +215,12 @@ export function updateStateShading() {
     const EXCLUDED = ExcludeLayerGroups.stateShading;
     const stack = activeLayerStack.filter(id => {
         if (EXCLUDED.includes(id)) return false;
-        // 범례가 닫혀서 보이지 않게 처리된 레이어라면 뒤의 주(State) 색상(Shading)도 그리지 않아야 합니다.
         if (closedLegendIds.has(id)) return false;
         return true;
     });
 
     if (stack.length === 0) {
+        console.log("[STATE-SHADING] After exclusion, stack is empty. activeLayerStack:", [...activeLayerStack], "excluded:", EXCLUDED);
         if (map.getLayer("states-fill")) map.setPaintProperty("states-fill", "fill-opacity", 0);
         return;
     }
@@ -230,7 +230,10 @@ export function updateStateShading() {
     const fullKey = LAYER_DEFS[topId] ? topId : `${topId}-${dataset}`;
     const def = LAYER_DEFS[fullKey];
 
+    console.log("[STATE-SHADING] topId:", topId, "fullKey:", fullKey, "def exists:", !!def, "regionStats keys:", Object.keys(regionStats).length);
+
     if (!def?.legend?.breaks || !def?.legend?.colors) {
+        console.log("[STATE-SHADING] No legend breaks/colors for", fullKey);
         if (map.getLayer("states-fill")) map.setPaintProperty("states-fill", "fill-opacity", 0);
         return;
     }
@@ -267,6 +270,8 @@ export function updateStateShading() {
             hasData = true;
         }
     });
+
+    console.log("[STATE-SHADING] Result:", { hasData, rulesCount: rules.length / 2, topId });
 
     if (hasData) {
         const matchExpr = ["match", ["coalesce", ["get", "ID"], ["get", "name"], ["get", "NAME"], ["get", "STUSPS"], ""]];

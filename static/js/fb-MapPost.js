@@ -31,9 +31,7 @@ const auth = fb.auth;
 
 const {
     collection, addDoc, onSnapshot, query, where, orderBy, limit,
-    serverTimestamp, googleProvider, signInWithPopup, signOut,
-    onAuthStateChanged, doc, getDoc, updateDoc, deleteDoc, writeBatch,
-    arrayUnion, arrayRemove
+    serverTimestamp, onAuthStateChanged, doc, getDoc, updateDoc, deleteDoc, writeBatch
 } = fb;
 
 const MapPostCol = collection(db, "smokelyze_MapPost");
@@ -695,21 +693,21 @@ export function handleMapPostModeToggle(force) {
 }
 
 // --- 8. Listeners Binding ---
+if (map) {
+    map.on("click", (e) => {
+        if (state.isMapPostMode) {
+            state.pendingLngLat = e.lngLat;
+            uiShowModal();
+            handleMapPostModeToggle(false);
+        }
+        uiHideContextMenu();
+    });
 
-map.on("click", (e) => {
-
-    if (state.isMapPostMode) {
-        state.pendingLngLat = e.lngLat;
-        uiShowModal();
-        handleMapPostModeToggle(false);
-    }
-    uiHideContextMenu();
-});
-
-map.on("contextmenu", (e) => {
-    e.preventDefault();
-    uiShowContextMenu(e.originalEvent.clientX, e.originalEvent.clientY, e.lngLat);
-});
+    map.on("contextmenu", (e) => {
+        e.preventDefault();
+        uiShowContextMenu(e.originalEvent.clientX, e.originalEvent.clientY, e.lngLat);
+    });
+}
 
 
 // ============================================
@@ -844,6 +842,7 @@ state.currentUser = auth.currentUser;
 
 // Consolidated Listener Control [Smart Fetch]
 const initMapPostListener = utils.debounce(() => {
+    if (!map) return;
     const mappostSwitchOn = document.getElementById("layer-MapPost")?.checked;
     const mappostDrawerOpen = document.getElementById("MapPostDrawer")?.classList.contains("open");
 
@@ -885,7 +884,7 @@ onAuthStateChanged(auth, (user) => {
     renderMapPostList();
     if (state.viewingDocId) renderMapPostDetail(state.viewingDocId);
 
-    updateAuthButton("MapPostBtnWrite", user, "Write");
+    updateAuthButton("MapPostBtnWrite", user, "Add MapPost");
     updateAuthButton("MapPostBtnSubmit", user, state.editingDocId ? "Update" : "Submit");
 
     if (oldUid !== newUid) {
@@ -898,9 +897,4 @@ if (document.readyState === "loading") {
 } else {
     initMapPostListener();
 }
-
-export {
-    renderMapPostDetail as showMapPostDetail,
-    renderMapPostList as updateMapPostList
-};
 

@@ -16,14 +16,15 @@ import {
     airnowCsv2GeoJSON,
     airnowUpdateStatsMap,
     airnowClearStats,
-    airnowGetCurrentTime,
     airnowSetCurrentTime,
     airnowGetActiveCoverages
 } from "./airnow.js";
 import { updateStateShading } from "./layers-colors.js";
 import { triggerRefresh } from "./stats-common.js";
-import { showErrorToast } from "./loader-ui.js";
-import { hideTimeControls } from "./ui-time.js";
+import { showErrorToast, showTaskNotification } from "./loader-ui.js";
+
+let airnowAbortControllers = {};
+let lastAirnowSigs = {};
 
 /**
  * Load AirNow data for all active coverages
@@ -32,9 +33,25 @@ import { hideTimeControls } from "./ui-time.js";
  * @returns {Promise<void>}
  */
 export async function airnowLoadData(isoDate) {
-    // 1. [해결] 현지 날짜/시간을 정확한 UTC 날짜/시간으로 변환
+    // 1. Get local hour
     const timePicker = document.getElementById("timePicker");
     const localHour = timePicker ? parseInt(timePicker.value) : 0;
+
+    // Get active AirNow coverages
+    const activeCoverages = airnowGetActiveCoverages();
+
+    // ---- Abort fetches for UNCHECKED layers immediately ----
+    const ALL_COVERAGES = ["airnow.pm25", "airnow.ozone", "airnow.no2"];
+    ALL_COVERAGES.forEach(coverage => {
+        if (!activeCoverages.includes(coverage)) {
+            if (airnowAbortControllers[coverage]) {
+                airnowAbortControllers[coverage].abort();
+                delete airnowAbortControllers[coverage];
+            }
+            delete lastAirnowSigs[coverage];
+        }
+    });
+    // ---------------------------------------------------------
 
     // 현지 시간 기준 Date 객체 생성
     const [y, m, d] = isoDate.split("-").map(Number);
@@ -57,15 +74,14 @@ export async function airnowLoadData(isoDate) {
         if (!map.getSource(sourceId)) {
             map.addSource(sourceId, { type: "geojson", data: EMPTY_FC });
         }
-        const source = map.getSource(sourceId);
-        if (source) source.setData(EMPTY_FC);
     });
-    airnowClearStats();
-
-    // Get active AirNow coverages
-    const activeCoverages = airnowGetActiveCoverages();
 
     if (activeCoverages.length === 0) {
+        ["airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2"].forEach(sourceId => {
+            const source = map.getSource(sourceId);
+            if (source) source.setData(EMPTY_FC);
+        });
+        airnowClearStats();
         updateStateShading();
         if (typeof triggerRefresh === "function") triggerRefresh();
         return;
@@ -86,8 +102,30 @@ export async function airnowLoadData(isoDate) {
         
         // Parallel fetch for all active coverages
         const promises = activeCoverages.map(async (coverage) => {
+            const pollutantName = coverage.split(".")[1].toUpperCase();
             const sourceId = coverageToSource[coverage];
             const cacheKey = `${sourceId}_${isoDateTime}`;
+            
+            // ---- Layer-Specific Tracking & Abortion ----
+            // Create signature specifically for this one layer (includes time vs layer state)
+            const airnowSig = `${isoDate}_${localHour}_${coverage}`;
+
+            if (lastAirnowSigs[coverage] === airnowSig) {
+                return { coverage, sourceId, success: true, bypassed: true };
+            }
+            lastAirnowSigs[coverage] = airnowSig;
+            
+            // Abort ONLY this specific layer if a new request is taking over
+            if (airnowAbortControllers[coverage]) {
+                airnowAbortControllers[coverage].abort();
+            }
+            airnowAbortControllers[coverage] = new AbortController();
+            const signal = airnowAbortControllers[coverage].signal;
+            // ---------------------------------------------
+
+            const formattedTime = String(localHour).padStart(2, "0") + ":00";
+            const notificationId = `AirNow [${pollutantName}]<br><span style="font-size: 1.2rem; color: var(--text-main);">${isoDate} ${formattedTime}</span>`;
+            const notification = showTaskNotification(notificationId, "Fetching data...");
 
             // Check cache for this specific coverage+time
             if (loadedGeoJSON[cacheKey]) {
@@ -100,7 +138,8 @@ export async function airnowLoadData(isoDate) {
                 // Update state-level statistics even from cache
                 airnowUpdateStatsMap(geojson, coverage);
                 loadedSources[sourceId] = cacheKey;
-
+                
+                notification.update("Cached", "success");
                 return { coverage, sourceId, success: true, cached: true };
             }
 
@@ -108,7 +147,6 @@ export async function airnowLoadData(isoDate) {
             
             // [추가] 최근 실패한 이력이 있으면 서버에 요청하지 않고 즉시 종료
             if (isRecentlyFailed(url)) {
-                const pollutantName = coverage.split(".")[1].toUpperCase();
                 const errorMsg = `AirNow ${pollutantName} data is not available for the selected time. Please try a different time (data is usually 1-2 hours delayed).`;
                 showErrorToast(errorMsg);
 
@@ -118,13 +156,20 @@ export async function airnowLoadData(isoDate) {
 
                 const source = map.getSource(sourceId);
                 if (source) source.setData(EMPTY_FC);
+                
+                notification.update("Unavailable", "error");
                 return { coverage, sourceId, success: false };
             }
             
             try {
-                const data = await airnowFetchData(url);
+                const data = await airnowFetchData(url, signal);
                 const rows = airnowParseCSV(data);
                 const geojson = await airnowCsv2GeoJSON(rows);
+
+                if (signal.aborted) {
+                    notification.update("Cancelled", "error");
+                    return { coverage, sourceId, success: false, aborted: true };
+                }
 
                 // Update state-level statistics
                 airnowUpdateStatsMap(geojson, coverage);
@@ -138,13 +183,19 @@ export async function airnowLoadData(isoDate) {
                     source.setData(geojson);
                     console.log(`Loaded ${geojson.features.length} features for ${sourceId}`);
                 }
-
+                
+                notification.update("Complete", "success");
                 return { coverage, sourceId, geojson: geojson, success: true, cached: false };
             } catch (e) {
+                
+                if (e.name === "AbortError") {
+                    notification.update("Cancelled", "error");
+                    return { coverage, sourceId, success: false, aborted: true };
+                }
+                
                 console.warn(`Failed to load ${coverage}:`, e);
                 
                 // User-friendly error message
-                const pollutantName = coverage.split(".")[1].toUpperCase();
                 const errorMsg = `AirNow ${pollutantName} data is not available for the selected time.<br>Please try a different time (data is usually 1-2 hours delayed).`;
                 showErrorToast(errorMsg);
                 
@@ -160,20 +211,22 @@ export async function airnowLoadData(isoDate) {
                 
                 const source = map.getSource(sourceId);
                 if (source) source.setData(EMPTY_FC);
+                
+                notification.update("Failed", "error");
                 return { coverage, sourceId, success: false };
             }
         });
 
-        await Promise.all(promises);
+        const results = await Promise.all(promises);
         
         // Refresh state shading to reflect new AirNow stats
         updateStateShading();
-        
+
         // Refresh stats table and plots
         if (typeof triggerRefresh === "function") {
-            triggerRefresh();
+            triggerRefresh(); // Safely triggers ui refreshes
         }
-        
+
         // [Added] Refresh highlight/tooltip to reflect new time data
         if (refreshHighlight) {
             refreshHighlight();

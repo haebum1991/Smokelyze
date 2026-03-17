@@ -20,7 +20,7 @@ import {
 import { logUserAction } from "./fb-logging.js";
 import { setLegendDrawer } from "./ui-toggles.js";
 
-export function addSourceIfMissing(sourceId) {
+function addSourceIfMissing(sourceId) {
     if (!map.getSource(sourceId)) {
         if (ExcludeLayerGroups.pngLayers.includes(sourceId)) {
             const tempoCanvas = document.createElement("canvas");
@@ -43,7 +43,7 @@ export function addSourceIfMissing(sourceId) {
     }
 }
 
-export function addLayerIfMissing(layerSpec, sourceId) {
+function addLayerIfMissing(layerSpec, sourceId) {
     if (!map.getLayer(layerSpec.id)) {
         const def = {
             ...layerSpec,
@@ -56,7 +56,7 @@ export function addLayerIfMissing(layerSpec, sourceId) {
     }
 }
 
-export function bindHover(layerId, getHTML) {
+function bindHover(layerId, getHTML) {
     const tooltip = document.getElementById("MapTooltip");
     if (!tooltip) return;
 
@@ -94,7 +94,7 @@ export function bindHover(layerId, getHTML) {
 
 
 const layerDataMap = {}; // Tracks { layerId: dataSource } for global click detection
-export function bindClick(layerId, dataSource) {
+function bindClick(layerId, dataSource) {
     // [Refactored] Instead of per-layer listeners, we register the layer as "interactive"
     // and handle clicks globally once to ensure top-most accuracy.
     layerDataMap[layerId] = dataSource;

@@ -494,12 +494,20 @@ async function handleQuery() {
 async function loadMapLibrary() {
     if (mapLibraryLoaded) return true;
     if (mapLibraryLoading) {
-        // Wait for ongoing load
+        // Wait for ongoing load, but with a timeout safety to avoid infinite loops
         return new Promise((resolve) => {
+            let attempts = 0;
+            const maxAttempts = 100; // 10 seconds timeout (100 * 100ms)
+            
             const checkInterval = setInterval(() => {
+                attempts++;
                 if (mapLibraryLoaded) {
                     clearInterval(checkInterval);
                     resolve(true);
+                } else if (!mapLibraryLoading || attempts >= maxAttempts) {
+                    // Stop waiting if it stopped loading (failed) or timed out
+                    clearInterval(checkInterval);
+                    resolve(false);
                 }
             }, 100);
         });
