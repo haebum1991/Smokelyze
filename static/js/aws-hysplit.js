@@ -145,7 +145,7 @@ function init() {
     onAuthStateChanged(auth, (user) => {
         state.currentUser = user;
         updateAuthButton("MapPostBtnHysplit", user, "Run HYSPLIT");
-        updateAuthButton("HysplitBtnNew", user, "+HYSPLIT");
+        updateAuthButton("HysplitBtnNew", user, "+Trajectory");
 
         if (user) {
             // Restore from LocalStorage when logged in

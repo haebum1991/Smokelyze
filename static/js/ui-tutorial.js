@@ -46,15 +46,6 @@ const TUTORIAL_STEPS = [
         },
     },
     {
-        element: "#LegendToggle",
-        popover: {
-            title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-legend"/></svg></span> Map Legend',
-            description: "View the color scales and categories for all active layers. This dynamic legend updates automatically as you toggle different data on the map.",
-            side: "right",
-            align: "start",
-        },
-    },
-    {
         element: "#HysplitToggle",
         popover: {
             title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-hysplit"/></svg></span> HYSPLIT Trajectories',
@@ -77,6 +68,15 @@ const TUTORIAL_STEPS = [
         popover: {
             title: '<span class="map-tut-pop-icon-box"><canvas class="ui-pulsing-icon" data-type="alert" width="24" height="24"></canvas></span> Community MapPost',
             description: "Share your own observations or read reports from other users. MapPost allows the community to pin real-time updates directly on the map.",
+            side: "right",
+            align: "start",
+        },
+    },
+    {
+        element: "#LegendToggle",
+        popover: {
+            title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-legend"/></svg></span> Map Legend',
+            description: "View the color scales and categories for all active layers. This dynamic legend updates automatically as you toggle different data on the map.",
             side: "right",
             align: "start",
         },

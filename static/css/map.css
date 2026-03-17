@@ -1431,7 +1431,6 @@ tr.stats-state-row-ca.show {
 }
 
 #HysplitToggle {
-  display: none !important;
   bottom: calc(var(--footer-height) + 24rem);
   left: 1rem;
   transition: transform 0.3s ease-out;
