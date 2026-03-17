@@ -8,7 +8,8 @@ import { setHysplitDrawer } from "./ui-toggles.js";
 
 
 // --- Configuration & State ---
-const HYSPLIT_API_URL = "/api/hysplit/hysplit";
+// Connect directly to the AWS EC2 IP to bypass this limit.
+const HYSPLIT_API_URL = "http://13.220.91.222:8000/hysplit";
 const STORAGE_KEY = "smokelyze_hysplit_history";
 
 const state = {
@@ -355,6 +356,10 @@ async function clickOnSubmitHysplit() {
     const task = showTaskNotification("HYSPLIT Simulation", "Requesting trajectory from AWS...");
 
     try {
+    
+        // Get the ID token for the current user to secure the API call
+        const idToken = await auth.currentUser.getIdToken(true);
+        
         const params = new URLSearchParams({
             lon: lngLat.lng,
             lat: lngLat.lat,
@@ -365,9 +370,13 @@ async function clickOnSubmitHysplit() {
             height: height
         });
 
+        // Use direct IP but with Authorization header
         const response = await fetch(`${HYSPLIT_API_URL}?${params.toString()}`, {
-            method: "GET",
-            mode: "cors"
+            method: "POST", // POST is generally better for actions like starting a simulation
+            mode: "cors",
+            headers: {
+                "Authorization": `Bearer ${idToken}`
+            }
         });
 
         if (!response.ok) throw new Error("API request failed");
