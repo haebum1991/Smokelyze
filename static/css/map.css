@@ -1412,30 +1412,29 @@ tr.stats-state-row-ca.show {
 
 
 /* ================ MapPost & WFNews modules ================ */
-#MapPostToggle {
+#LegendToggle {
   bottom: calc(var(--footer-height) + 6rem);
   left: 1rem;
   transition: transform 0.3s ease-out;
 }
 
-#WFnewsToggle {
+#MapPostToggle {
   bottom: calc(var(--footer-height) + 12rem);
   left: 1rem;
   transition: transform 0.3s ease-out;
 }
 
-#HysplitToggle {
+#WFnewsToggle {
   bottom: calc(var(--footer-height) + 18rem);
   left: 1rem;
   transition: transform 0.3s ease-out;
 }
 
-#LegendToggle {
+#HysplitToggle {
   bottom: calc(var(--footer-height) + 24rem);
   left: 1rem;
   transition: transform 0.3s ease-out;
 }
-
 
 #MapPostToggle,
 #WFnewsToggle,
