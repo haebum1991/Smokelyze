@@ -55,6 +55,15 @@ const TUTORIAL_STEPS = [
         },
     },
     {
+        element: "#HysplitToggle",
+        popover: {
+            title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-hysplit"/></svg></span> HYSPLIT Trajectories',
+            description: "Run custom HYSPLIT models from any point on the map. You can view, manage, and even download your simulation history directly from this drawer.",
+            side: "right",
+            align: "start",
+        },
+    },
+    {
         element: "#WFnewsToggle",
         popover: {
             title: '<span class="map-tut-pop-icon-box"><canvas class="ui-pulsing-icon" data-type="news" width="24" height="24"></canvas></span> Wildfire News',
@@ -330,6 +339,13 @@ export class MapTutorial {
         if (mapPostDrawer) mapPostDrawer.classList.remove("open");
         if (mapPostToggle) mapPostToggle.classList.remove("active");
         document.body.classList.remove("MapPost-drawer-open");
+        
+        // 7. HYSPLIT Drawer
+        const hysplitDrawer = document.getElementById("HysplitDrawer");
+        const hysplitToggle = document.getElementById("HysplitToggle");
+        if (hysplitDrawer) hysplitDrawer.classList.remove("open");
+        if (hysplitToggle) hysplitToggle.classList.remove("active");
+        document.body.classList.remove("Hysplit-drawer-open");
 
         // Ensure no leftover drawer-width property
         document.documentElement.style.removeProperty("--FigurePage-drawer-width");

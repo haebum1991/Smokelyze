@@ -4,7 +4,6 @@
  */
  
 import * as utils from "./utils.js";
-import { initUIPulsingIcons } from "./layers-icon.js";
 import { setLoadedNewsFeatures } from "./loader-state.js";
 
 let loadingCounter = 0;
@@ -126,5 +125,55 @@ export function updateWildfireNewsList(features) {
     });
 
     listContainer.innerHTML = html;
+}
+
+export function showTaskNotification(title, initialStatus = "Initializing...") {
+    const container = document.createElement("div");
+    container.className = "task-notification";
+    
+    container.innerHTML = `
+        <div class="task-icon spinning">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+        </div>
+        <div class="task-content">
+            <div class="task-title">${title}</div>
+            <div class="task-status">${initialStatus}</div>
+        </div>
+    `;
+
+    document.body.appendChild(container);
+
+    return {
+        update: (status, type = "running") => {
+            const statusEl = container.querySelector(".task-status");
+            const iconEl = container.querySelector(".task-icon");
+            if (statusEl) statusEl.innerText = status;
+            
+            if (type === "success") {
+                container.classList.add("complete");
+                iconEl.classList.remove("spinning");
+                iconEl.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                setTimeout(() => {
+                    container.style.opacity = "0";
+                    container.style.transform = "translateX(20px)";
+                    setTimeout(() => container.remove(), 500);
+                }, 4000);
+            } else if (type === "error") {
+                container.classList.add("error");
+                iconEl.classList.remove("spinning");
+                iconEl.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+                setTimeout(() => {
+                    container.style.opacity = "0";
+                    setTimeout(() => container.remove(), 500);
+                }, 6000);
+            }
+        },
+        close: () => {
+            container.style.opacity = "0";
+            setTimeout(() => container.remove(), 500);
+        }
+    };
 }
 

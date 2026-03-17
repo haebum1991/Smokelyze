@@ -190,23 +190,7 @@ export function initExportButton() {
     btn.id = "ExportBtnDaily";
     btn.textContent = "⬇ .CSV";
     btn.type = "button";
-    btn.className = "stats-export-btn";
-
-    Object.assign(btn.style, {
-        marginLeft: "0.5rem",
-        fontSize: "1.4rem",
-        padding: "0.4rem 0.8rem",
-        borderRadius: "0.4rem",
-        cursor: "pointer",
-        fontWeight: "bold",
-        display: "inline-block",
-        verticalAlign: "middle",
-        color: "var(--text-strong)",
-        backgroundColor: "var(--color-bg)",
-        border: "0.1rem solid var(--card-shadow)",
-        transition: "transform 0.3s ease"
-    });
-
+    btn.className = "export-btn-csv";
     btn.addEventListener("click", handleDownload);
 
     const parent = select.parentNode;

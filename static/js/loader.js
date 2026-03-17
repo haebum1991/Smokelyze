@@ -5,7 +5,7 @@
 
 import { map } from "./map-init.js";
 import { ensureLayers } from "./layers-handler.js";
-import { showErrorToast, updateWildfireNewsList } from "./loader-ui.js";
+import { showErrorToast, updateWildfireNewsList, toggleSpinner, showTaskNotification } from "./loader-ui.js";
 import {
   resetLoadedSources,
   getSiteStatsForState,
@@ -48,6 +48,8 @@ export {
   loadSourceData,
   getSiteStatsForState,
   showErrorToast,
+  toggleSpinner,
+  showTaskNotification,
   loadedGeoJSON,
   loadedSources,
   modelStatsCache,

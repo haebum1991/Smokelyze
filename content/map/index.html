@@ -46,6 +46,12 @@ title: ""
       <canvas class="ui-pulsing-icon" data-type="alert" width="36" height="36" style="vertical-align:middle;"></canvas>
     </button>
     
+    <button class="accordion-toggle" id="HysplitToggle" title="HYSPLIT Trajectories">
+       <svg width="24" height="24">
+         <use xlink:href="#icon-hysplit" />
+       </svg>
+    </button>
+    
     <button class="accordion-toggle" id="LegendToggle" title="Map Legend">
       <svg width="24" height="24">
         <use xlink:href="#icon-legend" />
@@ -376,6 +382,35 @@ title: ""
   </div>
 </div>
 
+<div class="Hysplit-drawer" id="HysplitDrawer">
+  <div class="Hysplit-drawer-header">
+    <h3 id="HysplitDrawerTitle">HYSPLIT History</h3>
+    <button class="ui-btn-close" id="HysplitDrawerClose">
+      <svg width="20" height="20">
+        <use xlink:href="#icon-close" />
+      </svg>
+    </button>
+  </div>
+  <div style="padding: 1rem 1.5rem; border-bottom: 0.1rem solid var(--border-main); display: flex; gap: 1rem;">
+    <button id="HysplitBtnNew" class="reply-btn-submit" style="flex: 1; padding: 0.8rem; font-size: 1.4rem;">
+      + HYSPLIT
+    </button>
+    <button id="HysplitBtnClearAll" class="reply-btn-cancel" style="padding: 0.8rem; font-size: 1.4rem;">
+      Clear All
+    </button>
+  </div>
+  <div
+    style="padding: 0.5rem 1.5rem; font-size: 1.4rem; color: var(--text-main); border-bottom: 0.1rem solid var(--border-main);">
+    Results are saved in your local browser (max 10 items).
+  </div>
+  <div class="Hysplit-drawer-list" id="HysplitDrawerList" style="flex: 1; overflow-y: auto;">
+    <!-- Content injected via JS -->
+    <div style="padding: 2rem; text-align: center; color: var(--text-main); font-size: 1.4rem;">
+      No trajectories yet.<br>Click a point on map or use the button above.
+    </div>
+  </div>
+</div>
+
 <div class="Legend-drawer" id="LegendDrawer">
   <div class="Legend-drawer-header">
     <h3 id="LegendDrawerTitle">Legend</h3>
@@ -641,6 +676,7 @@ title: ""
 
 <script type="module" src="/js/ui-init.js"></script>
 <script type="module" src="/js/fb-MapPost.js"></script>
+<script type="module" src="/js/aws-hysplit.js"></script>
 <script type="module" src="/js/ai-chat.js"></script>
 <script type="module" src="/js/stats-daily.js"></script>
 <script type="module" src="/js/stats-yearly.js"></script>
@@ -652,10 +688,11 @@ title: ""
 <!-- Firebase & Discussion -->
 <!-- MapPost Context Menu -->
 <div class="MapPost-context-menu" id="MapPostContextMenu" style="display:none;">
-  <div class="MapPost-context-menu-header">Add MapPost or opinion to this area</div>
-  <div class="reply-btn-wrapper" style="justify-content: center;">
-    <button class="reply-btn-submit" id="MapPostBtnWrite">Write</button>
-    <button class="reply-btn-cancel" id="MapPostBtnClose">Close</button>
+  <div class="MapPost-context-menu-header">Select Action</div>
+  <div class="reply-btn-wrapper" style="justify-content: center; flex-direction: column; gap: 0.5rem; padding: 0.5rem;">
+    <button class="reply-btn-submit" id="MapPostBtnWrite" style="width: 100%;">Add MapPost</button>
+    <button class="reply-btn-submit" id="MapPostBtnHysplit" style="width: 100%;">Run HYSPLIT</button>
+    <button class="reply-btn-cancel" id="MapPostBtnClose" style="width: 100%;">Close</button>
   </div>
 </div>
 
@@ -711,6 +748,98 @@ title: ""
           <button class="reply-btn-submit" id="MapPostBtnSubmit">Submit</button>
           <button class="reply-btn-cancel" id="MapPostBtnCancel">Cancel</button>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HYSPLIT Modal -->
+<div class="MapPost-modal-overlay" id="HysplitModalOverlay" style="display:none;">
+  <div class="MapPost-modal">
+    <div class="MapPost-modal-header">
+      <h3 id="HysplitModalTitle">HYSPLIT Simulation</h3>
+      <button class="ui-btn-close" id="HysplitModalClose">
+        <svg width="20" height="20">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="MapPost-modal-body">
+      <div class="MapPost-form-group">
+        <label>Location (lon, lat)</label>
+        <div id="HysplitFormLocation"
+          style="padding: 0.8rem; background: var(--color-bg-alt); border-radius: 0.4rem; font-family: monospace;">
+        </div>
+      </div>
+
+      <div class="MapPost-form-group">
+        <label for="HysplitFormDate">Input Date</label>
+        <input type="date" id="HysplitFormDate" style="box-sizing: border-box;">
+      </div>
+
+      <div class="MapPost-form-group">
+        <label for="HysplitFormTime">Input Time (UTC)</label>
+        <select id="HysplitFormTime">
+          <option value="00">00:00</option>
+          <option value="01">01:00</option>
+          <option value="02">02:00</option>
+          <option value="03">03:00</option>
+          <option value="04">04:00</option>
+          <option value="05">05:00</option>
+          <option value="06">06:00</option>
+          <option value="07">07:00</option>
+          <option value="08">08:00</option>
+          <option value="09">09:00</option>
+          <option value="10">10:00</option>
+          <option value="11">11:00</option>
+          <option value="12">12:00</option>
+          <option value="13">13:00</option>
+          <option value="14">14:00</option>
+          <option value="15">15:00</option>
+          <option value="16">16:00</option>
+          <option value="17">17:00</option>
+          <option value="18">18:00</option>
+          <option value="19">19:00</option>
+          <option value="20">20:00</option>
+          <option value="21">21:00</option>
+          <option value="22">22:00</option>
+          <option value="23">23:00</option>
+        </select>
+      </div>
+
+      <div class="MapPost-form-group">
+        <label>Direction</label>
+        <div style="display: flex; gap: 2rem; margin-top: 0.5rem;">
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+            <input type="radio" name="HysplitDirection" value="backward" checked> Backward
+          </label>
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+            <input type="radio" name="HysplitDirection" value="forward"> Forward
+          </label>
+        </div>
+      </div>
+
+      <div class="MapPost-form-group">
+        <label for="HysplitFormDuration">Duration (hours)</label>
+        <input type="number" id="HysplitFormDuration" value="24" min="1" max="240">
+      </div>
+
+      <div class="MapPost-form-group">
+        <label for="HysplitFormHeight">Height (AGL) (m)</label>
+        <input type="number" id="HysplitFormHeight" value="500" min="10" max="10000">
+      </div>
+      
+      <div
+        style="margin-top: 1.5rem; font-size: 1.4rem; color: var(--text-main); font-style: italic; border-top: 0.1rem solid var(--border-main); padding-top: 0.8rem;">
+        * Note: Simulations are performed using NAM 12km meteorological data.
+      </div>
+    </div>
+
+    <div class="MapPost-modal-footer">
+      <div class="reply-btn-wrapper">
+        <button class="reply-btn-submit" id="HysplitBtnSubmit">Run Simulation</button>
+        <button class="reply-btn-cancel" id="HysplitBtnCancel">Cancel</button>
       </div>
     </div>
   </div>
