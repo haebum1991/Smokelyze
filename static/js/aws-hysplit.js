@@ -4,13 +4,11 @@ import { auth, onAuthStateChanged } from "./fb-init.js";
 import * as utils from "./utils.js";
 import { showErrorToast, showTaskNotification } from "./loader.js";
 import { updateAuthButton } from "./signin.js";
-import { setHysplitDrawer, appendSwitch } from "./ui-toggles.js";
+import { setHysplitDrawer } from "./ui-toggles.js";
 
 
 // --- Configuration & State ---
-// Use Netlify proxy to avoid Mixed Content (HTTPS -> HTTP) and timeouts
 const HYSPLIT_API_URL = "/api/hysplit/hysplit";
-const HYSPLIT_STATUS_URL = "/api/hysplit/hysplit_status";
 const STORAGE_KEY = "smokelyze_hysplit_history";
 
 const state = {
@@ -20,11 +18,10 @@ const state = {
     runCount: 0,
     isHysplitMode: false,
     modalBaseParams: null,
-    showFlowStream: true,
 };
 
 const RAINBOW_COLORS = ["#007cff", "#ff4d4d", "#2ecc71", "#e67e22", "#9b59b6", "#1abc9c", "#f1c40f"];
-const LAYER_SUFFIXES = ["wall", "line", "points", "vispoints", "point"];
+const LAYER_SUFFIXES = ["wall", "line", "arrow", "points", "vispoints", "point"];
 
 // --- Initialization ---
 function init() {
@@ -50,6 +47,9 @@ function init() {
             handleHysplitModeToggle(false);
         }
     });
+
+    // 2. Register Arrow Icon (Only once)
+    registerArrowIcon();
 
     // 3. Global Event Delegation
     document.body.addEventListener("click", (e) => {
@@ -107,7 +107,7 @@ function init() {
             }
             return;
         }
-
+        
         // J. Focus Map on Receptor
         const focusBtn = e.target.closest(".hysplit-item-focus");
         if (focusBtn) {
@@ -122,7 +122,7 @@ function init() {
             }
             return;
         }
-
+        
         // I. Download CSV
         const csvBtn = e.target.closest(".export-btn-csv");
 
@@ -159,132 +159,39 @@ function init() {
             clearHysplitTrajectory(false);
         }
     });
-
-    // 4. Initialize Flow Animation (Safe check for style loading)
-    if (map.isStyleLoaded()) {
-        initFlowAnimation();
-    } else {
-        map.once("styledata", initFlowAnimation);
-    }
 }
 
-function initFlowAnimation() {
+/**
+ * Creates and registers a 10x10 yellow arrow icon for the trajectory flow.
+ */
+function registerArrowIcon() {
     if (!map) return;
-    if (map.getSource("trajflow-source")) return;
 
-    map.addSource("trajflow-source", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] }
-    });
-
-    const flowContainer = document.getElementById("ToggleSwitchHysplitFlow");
-    if (flowContainer) {
-        appendSwitch(flowContainer, {
-            id: "toggle-hysplit-flow",
-            label: "Show Flow stream",
-            checked: state.showFlowStream,
-            onChange: (val) => {
-                state.showFlowStream = val;
-                const visibility = val ? "visible" : "none";
-                if (map.getLayer("trajflow-layer-glow")) map.setLayoutProperty("trajflow-layer-glow", "visibility", visibility);
-                if (map.getLayer("trajflow-layer-core")) map.setLayoutProperty("trajflow-layer-core", "visibility", visibility);
-            }
-        });
+    if (!map.isStyleLoaded()) {
+        map.once("styledata", registerArrowIcon);
+        return;
     }
 
-    // 1. Glow Layer (Outer neon glow)
-    map.addLayer({
-        id: "trajflow-layer-glow",
-        type: "circle",
-        source: "trajflow-source",
-        paint: {
-            "circle-radius": [
-                "interpolate", ["linear"], ["zoom"],
-                3, ["*", ["get", "sizeScale"], 6],
-                10, ["*", ["get", "sizeScale"], 15]
-            ],
-            "circle-color": ["get", "color"],
-            "circle-blur": 0.8,
-            "circle-opacity": ["*", ["get", "opacity"], 0.7]
-        }
-    });
+    if (map.hasImage("hysplit-arrow-blue")) return;
 
-    // 2. Core Layer (Bright inner center)
-    map.addLayer({
-        id: "trajflow-layer-core",
-        type: "circle",
-        source: "trajflow-source",
-        paint: {
-            "circle-radius": [
-                "interpolate", ["linear"], ["zoom"],
-                3, ["*", ["get", "sizeScale"], 2.5],
-                10, ["*", ["get", "sizeScale"], 5]
-            ],
-            "circle-color": "#ffffff",
-            "circle-opacity": ["get", "opacity"]
-        }
-    });
+    // Use a clean SVG (Lucide-like) arrow in Blue
+    const svgString = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007cff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"></path>
+            <path d="m12 5 7 7-7 7"></path>
+        </svg>
+    `;
 
-    const animate = () => {
-        if (!state.showFlowStream) {
-            requestAnimationFrame(animate);
-            return;
-        }
-        const now = performance.now();
-        const duration = 1800;
+    const img = new Image();
+    const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
 
-        const features = [];
-        state.history.forEach(item => {
-            if (!item.visible || !item.flowCoords || item.flowCoords.length < 2) return;
-
-            const c = item.flowCoords;
-            const streakCount = 20; // Increased for a longer, denser stream
-
-            for (let sIdx = 0; sIdx < streakCount; sIdx++) {
-                const streakOffset = (sIdx * 15); // Tightened offset for a continuous [liquid] look
-                // Fix negative modulo for early page load
-                let timePos = (now - streakOffset);
-                let progress = (timePos % duration + duration) % duration / duration;
-
-                const idx = progress * (c.length - 1);
-                const i = Math.floor(idx);
-                const next = Math.min(i + 1, c.length - 1);
-                const t = idx % 1;
-
-                const pos = [
-                    c[i][0] + (c[next][0] - c[i][0]) * t,
-                    c[i][1] + (c[next][1] - c[i][1]) * t
-                ];
-
-                const alpha = 1.0 - (sIdx / streakCount);
-                const size = 1.0 - (sIdx / (streakCount * 1.5)); // Tail shrinks less aggressively
-
-                features.push({
-                    type: "Feature",
-                    geometry: { type: "Point", coordinates: pos },
-                    properties: {
-                        color: item.color,
-                        opacity: alpha,
-                        sizeScale: size
-                    }
-                });
-            }
-        });
-
-        const source = map.getSource("trajflow-source");
-        if (source) {
-            source.setData({ type: "FeatureCollection", features });
-            // Ensure flow layers stay on top
-            if (map.getLayer("trajflow-layer-glow")) map.moveLayer("trajflow-layer-glow");
-            if (map.getLayer("trajflow-layer-core")) map.moveLayer("trajflow-layer-core");
-        }
-
-        requestAnimationFrame(animate);
+    img.onload = () => {
+        map.addImage("hysplit-arrow-blue", img, { pixelRatio: 1 });
+        URL.revokeObjectURL(url);
     };
-
-    animate();
+    img.src = url;
 }
-
 
 export function handleHysplitModeToggle(force) {
     state.isHysplitMode = (force !== undefined) ? force : !state.isHysplitMode;
@@ -448,9 +355,6 @@ async function clickOnSubmitHysplit() {
     const task = showTaskNotification("HYSPLIT Simulation", "Requesting trajectory from AWS...");
 
     try {
-        // Get the ID token for the current user to secure the API call
-        const idToken = await auth.currentUser.getIdToken(true);
-
         const params = new URLSearchParams({
             lon: lngLat.lng,
             lat: lngLat.lat,
@@ -461,56 +365,14 @@ async function clickOnSubmitHysplit() {
             height: height
         });
 
-        // Use Netlify proxy but with Authorization header
-        const response = await fetch(HYSPLIT_API_URL, {
-            method: "POST",
-            mode: "cors",
-            headers: {
-                "Authorization": `Bearer ${idToken}`,
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: params.toString()
+        const response = await fetch(`${HYSPLIT_API_URL}?${params.toString()}`, {
+            method: "GET",
+            mode: "cors"
         });
 
-        if (!response.ok) throw new Error(`API initiation failed: ${response.status}`);
-        const initData = await response.json();
-
-        if (initData.error) throw new Error(initData.error);
-        if (initData.status !== "accepted") throw new Error("Job not accepted");
-
-        const reqId = initData.req_id;
-        task.update("Simulation in progress...", "running");
-
-        // --- POLLING FOR RESULT ---
-        let finalData = null;
-        let attempts = 0;
-        const maxAttempts = 60; // Wait up to 2 minutes (60 * 2s)
-
-        while (attempts < maxAttempts) {
-            await new Promise(r => setTimeout(r, 2000)); // Wait 2 seconds
-            attempts++;
-
-            const statusResp = await fetch(`${HYSPLIT_STATUS_URL}?req_id=${reqId}`, {
-                headers: { "Authorization": `Bearer ${idToken}` }
-            });
-
-            if (!statusResp.ok) continue; // Retry if network glitch
-            const statusData = await statusResp.json();
-
-            if (statusData.status === "done") {
-                finalData = statusData.data;
-                break;
-            } else if (statusData.status === "error") {
-                throw new Error(statusData.message || "Background simulation failed");
-            }
-
-            // Still pending... continue loop
-            if (attempts % 5 === 0) {
-                task.update(`Simulation in progress (${attempts * 2}s)...`, "running");
-            }
-        }
-
-        if (!finalData) throw new Error("Simulation timed out");
+        if (!response.ok) throw new Error("API request failed");
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
 
         const currentParams = {
             lon: lngLat.lng,
@@ -521,9 +383,9 @@ async function clickOnSubmitHysplit() {
             duration: duration,
             height: height
         };
-
         task.update("Rendering trajectory...", "running");
-        renderHysplitTrajectory(finalData, direction, null, false, currentParams);
+        renderHysplitTrajectory(data, direction, null, false, currentParams);
+        
         task.update("Simulation complete!", "success");
 
         // Automatically open drawer if hidden
@@ -589,10 +451,10 @@ function updateHysplitDrawerList() {
             : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
 
         return `
-            <div class="Hysplit-item" data-run-id="${item.runId}" style="border-left-color: ${utils.ESML(item.color)}; border-left-width: 5px;">
+            <div class="Hysplit-item" data-run-id="${item.runId}" style="border-left-color: ${item.color}; border-left-width: 5px;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
                     <div style="font-size: 1.3rem; font-weight: bold; color: var(--text-heading);">
-                        ${utils.ESML(p.date)} ${utils.ESML(p.time)}:00 UTC
+                        ${p.date} UTC (${p.direction === "backward" ? "B" : "F"})
                     </div>
                     <div style="display: flex; gap: 0.5rem;">
                         <button class="hysplit-item-focus ui-btn-close" data-run-id="${item.runId}" title="Focus on map">
@@ -610,7 +472,7 @@ function updateHysplitDrawerList() {
                 </div>
                 <div style="font-size: 1.1rem; color: var(--text-main); display: flex; justify-content: space-between; align-items: flex-end;">
                     <div>
-                        Dir: ${utils.ESML(p.direction)} | Dur: ${utils.ESML(p.duration)}h | AGL: ${utils.ESML(p.height)}m <br>
+                        AGL: ${p.height}m | Dur: ${p.duration}h<br>
                         Loc: ${parseFloat(p.lon).toFixed(3)}, ${parseFloat(p.lat).toFixed(3)}
                     </div>
                     <button class="export-btn-csv" data-run-id="${item.runId}">
@@ -712,10 +574,6 @@ function renderHysplitTrajectory(data, direction, existingRunId = null, isRestor
     // Draw on Map
     drawTrajectoryLayers(runId, data, direction, color, isRestoring);
 
-    // Cache coordinates for flow animation
-    let flowCoords = data.map(pt => [pt.lon, pt.lat]);
-    if (direction === "backward") flowCoords.reverse();
-
     // Update History & Drawer
     // Update History & Drawer (Receptor is always data[0] in current API response)
     const receptorPoint = [data[0].lon, data[0].lat];
@@ -729,14 +587,14 @@ function renderHysplitTrajectory(data, direction, existingRunId = null, isRestor
         height: data[0].height?.toFixed(1) || 0
     };
 
-    state.history.unshift({ runId, color, params, data, flowCoords, visible: true });
-
+    state.history.unshift({ runId, color, params, data, visible: true });
+    
     // Enforce 10-item limit: remove oldest if exceeded
     if (state.history.length > 10) {
         const oldest = state.history[state.history.length - 1];
         removeTrajectory(oldest.runId);
     }
-
+    
     if (!isRestoring) saveToStorage();
     updateHysplitDrawerList();
 }
@@ -836,6 +694,21 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
         }
     });
 
+    // 3. Arrow Layer
+    map.addLayer({
+        id: `hysplit-layer-arrow-${runId}`,
+        type: "symbol",
+        source: `hysplit-src-traj-${runId}`,
+        layout: {
+            "symbol-placement": "line",
+            "icon-image": "hysplit-arrow-blue",
+            "icon-size": 0.7,
+            "symbol-spacing": 40,
+            "icon-allow-overlap": true,
+            "icon-rotation-alignment": "map"
+        }
+    });
+
     // 4. Hourly Points Layer (The one we hover on)
     map.addLayer({
         id: `hysplit-layer-points-${runId}`,
@@ -870,9 +743,9 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
                 16, 16
             ],
 
-            "circle-color": color,
-            "circle-stroke-width": 1,
-            "circle-stroke-color": "#ffffff"
+            "circle-color": "#ffffff",
+            "circle-stroke-width": 1.5,
+            "circle-stroke-color": color
         }
     });
 
