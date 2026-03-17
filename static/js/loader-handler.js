@@ -436,8 +436,10 @@ function handleLoadingError(sourceKey, isoDate, ds = null) {
     updateSearchVisibility();
 }
 
+let isUpdatingAll = false;
 export async function updateAllActiveSources() {
-    if (!map) return;
+    if (!map || isUpdatingAll) return;
+    isUpdatingAll = true;
     toggleSpinner(true);
     try {
         const isoDate = utils.currentDate();
@@ -583,6 +585,7 @@ export async function updateAllActiveSources() {
     } catch (e) {
         console.error("updateAllActiveSources failed", e);
     } finally {
+        isUpdatingAll = false;
         toggleSpinner(false);
     }
 }
