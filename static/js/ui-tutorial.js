@@ -46,10 +46,10 @@ const TUTORIAL_STEPS = [
         },
     },
     {
-        element: "#HysplitToggle",
+        element: "#LegendToggle",
         popover: {
-            title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-hysplit"/></svg></span> HYSPLIT Trajectories',
-            description: "Run custom HYSPLIT models from any point on the map. You can view, manage, and even download your simulation history directly from this drawer.",
+            title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-legend"/></svg></span> Map Legend',
+            description: "View the color scales and categories for all active layers. This dynamic legend updates automatically as you toggle different data on the map.",
             side: "right",
             align: "start",
         },
@@ -68,15 +68,6 @@ const TUTORIAL_STEPS = [
         popover: {
             title: '<span class="map-tut-pop-icon-box"><canvas class="ui-pulsing-icon" data-type="alert" width="24" height="24"></canvas></span> Community MapPost',
             description: "Share your own observations or read reports from other users. MapPost allows the community to pin real-time updates directly on the map.",
-            side: "right",
-            align: "start",
-        },
-    },
-    {
-        element: "#LegendToggle",
-        popover: {
-            title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-legend"/></svg></span> Map Legend',
-            description: "View the color scales and categories for all active layers. This dynamic legend updates automatically as you toggle different data on the map.",
             side: "right",
             align: "start",
         },
@@ -339,13 +330,6 @@ export class MapTutorial {
         if (mapPostDrawer) mapPostDrawer.classList.remove("open");
         if (mapPostToggle) mapPostToggle.classList.remove("active");
         document.body.classList.remove("MapPost-drawer-open");
-        
-        // 7. HYSPLIT Drawer
-        const hysplitDrawer = document.getElementById("HysplitDrawer");
-        const hysplitToggle = document.getElementById("HysplitToggle");
-        if (hysplitDrawer) hysplitDrawer.classList.remove("open");
-        if (hysplitToggle) hysplitToggle.classList.remove("active");
-        document.body.classList.remove("Hysplit-drawer-open");
 
         // Ensure no leftover drawer-width property
         document.documentElement.style.removeProperty("--FigurePage-drawer-width");

@@ -29,9 +29,6 @@ export function setOnSetDescDrawer(fn) { onSetDescDrawer = fn; }
 export let onSetMapPostDrawer = null;
 export function setOnSetMapPostDrawer(fn) { onSetMapPostDrawer = fn; }
 
-export let onSetHysplitDrawer = null;
-export function setOnSetHysplitDrawer(fn) { onSetHysplitDrawer = fn; }
-
 export let onSetAccordionCollapsed = null;
 export function setOnSetAccordionCollapsed(fn) { onSetAccordionCollapsed = fn; }
 
@@ -40,7 +37,6 @@ function triggerDrawerClose() {
   if (onSetStatsDrawer) onSetStatsDrawer(false);
   if (onSetDescDrawer) onSetDescDrawer(false);
   if (onSetMapPostDrawer) onSetMapPostDrawer(false);
-  if (onSetHysplitDrawer) onSetHysplitDrawer(false);
   if (onSetAccordionCollapsed) onSetAccordionCollapsed(true);
 }
 

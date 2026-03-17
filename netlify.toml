@@ -135,12 +135,6 @@
   to   = "https://fetch-gam-manual-service-1068523865415.us-central1.run.app/:splat"
   status = 200
   force  = true
-
-[[redirects]]
-  from = "/api/hysplit/*"
-  to   = "http://13.220.91.222:8000/:splat"
-  status = 200
-  force  = true
   
 # ---- Security & Caching rules ----
 

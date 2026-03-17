@@ -14,8 +14,7 @@ import { clearModelStats } from "./loader-state.js";
 import { hideTimeControls } from "./ui-time.js";
 import { clearAllRaster } from "./raster-loader.js";
 import { updateAllActiveSources } from "./loader-handler.js";
-import { setStatsDrawer, setDescDrawer, setNewsDrawer, setMapPostDrawer, setLegendDrawer, setHysplitDrawer } from "./ui-toggles.js";
-import { clearHysplitTrajectory } from "./aws-hysplit.js";
+import { setStatsDrawer, setDescDrawer, setNewsDrawer, setMapPostDrawer, setLegendDrawer } from "./ui-toggles.js";
 
 function numOr(x, d) { return (typeof x === "number" && isFinite(x)) ? x : d; }
 
@@ -70,9 +69,6 @@ export function resetUIAndData() {
 
   // Final single refresh for loaders/UI
   updateAllActiveSources?.();
-  
-  // 7) Clear HYSPLIT from Map (But keep in Storage)
-  clearHysplitTrajectory?.(false);
 }
 
 /**
@@ -85,7 +81,6 @@ export function closeAllDrawersExceptAccordion() {
   setNewsDrawer?.(false);
   setMapPostDrawer?.(false);
   setLegendDrawer?.(false);
-  setHysplitDrawer?.(false);
 
   // 2) AI Chat (Uses different class structure)
   const aiDrawer = document.getElementById("AiChatDrawer");
