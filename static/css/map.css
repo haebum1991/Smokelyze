@@ -1790,7 +1790,7 @@ body.FigurePage-drawer-open .Hysplit-drawer.open {
   color: var(--text-main);
 }
 
-.MapPost-form-group input,
+.MapPost-form-group input:not([type="radio"]):not([type="checkbox"]),
 .MapPost-form-group select,
 .MapPost-form-group textarea {
   width: 100%;
@@ -1802,6 +1802,15 @@ body.FigurePage-drawer-open .Hysplit-drawer.open {
   color: var(--text-main);
   font-size: 1.4rem;
   outline: none;
+}
+
+.MapPost-form-group input[type="radio"],
+.MapPost-form-group input[type="checkbox"] {
+  width: 1.8rem;
+  height: 1.8rem;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--accent-highlight);
 }
 
 .MapPost-form-group textarea {
