@@ -8,9 +8,11 @@ import { setHysplitDrawer } from "./ui-toggles.js";
 
 
 // --- Configuration & State ---
-// Connect directly to the AWS EC2 IP to bypass this limit.
-const HYSPLIT_API_URL = "http://13.220.91.222:8000/hysplit";
+// Use Netlify proxy to avoid Mixed Content (HTTPS -> HTTP) and timeouts
+const HYSPLIT_API_URL = "/api/hysplit/hysplit";
+const HYSPLIT_STATUS_URL = "/api/hysplit/hysplit_status"; 
 const STORAGE_KEY = "smokelyze_hysplit_history";
+
 
 const state = {
     pendingLngLat: null,
@@ -356,10 +358,9 @@ async function clickOnSubmitHysplit() {
     const task = showTaskNotification("HYSPLIT Simulation", "Requesting trajectory from AWS...");
 
     try {
-    
         // Get the ID token for the current user to secure the API call
         const idToken = await auth.currentUser.getIdToken(true);
-        
+
         const params = new URLSearchParams({
             lon: lngLat.lng,
             lat: lngLat.lat,
@@ -370,18 +371,56 @@ async function clickOnSubmitHysplit() {
             height: height
         });
 
-        // Use direct IP but with Authorization header
-        const response = await fetch(`${HYSPLIT_API_URL}?${params.toString()}`, {
-            method: "POST", // POST is generally better for actions like starting a simulation
+        // Use Netlify proxy but with Authorization header
+        const response = await fetch(HYSPLIT_API_URL, {
+            method: "POST",
             mode: "cors",
             headers: {
-                "Authorization": `Bearer ${idToken}`
-            }
+                "Authorization": `Bearer ${idToken}`,
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: params.toString()
         });
 
-        if (!response.ok) throw new Error("API request failed");
-        const data = await response.json();
-        if (data.error) throw new Error(data.error);
+        if (!response.ok) throw new Error(`API initiation failed: ${response.status}`);
+        const initData = await response.json();
+        
+        if (initData.error) throw new Error(initData.error);
+        if (initData.status !== "accepted") throw new Error("Job not accepted");
+
+        const reqId = initData.req_id;
+        task.update("Simulation in progress...", "running");
+
+        // --- POLLING FOR RESULT ---
+        let finalData = null;
+        let attempts = 0;
+        const maxAttempts = 60; // Wait up to 2 minutes (60 * 2s)
+
+        while (attempts < maxAttempts) {
+            await new Promise(r => setTimeout(r, 2000)); // Wait 2 seconds
+            attempts++;
+
+            const statusResp = await fetch(`${HYSPLIT_STATUS_URL}?req_id=${reqId}`, {
+                headers: { "Authorization": `Bearer ${idToken}` }
+            });
+
+            if (!statusResp.ok) continue; // Retry if network glitch
+            const statusData = await statusResp.json();
+
+            if (statusData.status === "done") {
+                finalData = statusData.data;
+                break;
+            } else if (statusData.status === "error") {
+                throw new Error(statusData.message || "Background simulation failed");
+            }
+            
+            // Still pending... continue loop
+            if (attempts % 5 === 0) {
+                task.update(`Simulation in progress (${attempts * 2}s)...`, "running");
+            }
+        }
+
+        if (!finalData) throw new Error("Simulation timed out");
 
         const currentParams = {
             lon: lngLat.lng,
@@ -392,9 +431,9 @@ async function clickOnSubmitHysplit() {
             duration: duration,
             height: height
         };
-        task.update("Rendering trajectory...", "running");
-        renderHysplitTrajectory(data, direction, null, false, currentParams);
         
+        task.update("Rendering trajectory...", "running");
+        renderHysplitTrajectory(finalData, direction, null, false, currentParams);
         task.update("Simulation complete!", "success");
 
         // Automatically open drawer if hidden
