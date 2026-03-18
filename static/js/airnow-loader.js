@@ -124,7 +124,7 @@ export async function airnowLoadData(isoDate) {
             // ---------------------------------------------
 
             const formattedTime = String(localHour).padStart(2, "0") + ":00";
-            const notificationId = `AirNow [${pollutantName}]<br><span style="font-size: 1.2rem; color: var(--text-main);">${isoDate} ${formattedTime}</span>`;
+            const notificationId = `AirNow [${pollutantName}] (hourly)<br><span style="font-size: 1.2rem; color: var(--text-main);">${isoDate} ${formattedTime}</span>`;
             const notification = showTaskNotification(notificationId, "Fetching data...");
 
             // Check cache for this specific coverage+time

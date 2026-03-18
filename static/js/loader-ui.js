@@ -41,7 +41,7 @@ export function showErrorToast(message, type = "error") {
         padding: "1rem 2rem",
         borderRadius: "0.5rem",
         boxShadow: "0 0.2rem 1rem rgba(0,0,0,0.2)",
-        zIndex: "var(--z-index-message)",
+        zIndex: "calc(var(--z-highest) + 1)",
         fontSize: "1.6rem",
         fontWeight: "bold",
         pointerEvents: "none",

@@ -14,7 +14,6 @@
 
   /* z-Index: Global */
   --z-highest: 10000;
-  --z-index-message: 9999;
   --z-header: 3000;
   --z-nav: 3001;
   --z-BackToTop: 3001;

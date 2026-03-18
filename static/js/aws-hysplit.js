@@ -21,6 +21,7 @@ const state = {
     isHysplitMode: false,
     modalBaseParams: null,
     showFlowStream: true,
+    isRunning: false,
 };
 
 const RAINBOW_COLORS = ["#007cff", "#ff4d4d", "#2ecc71", "#e67e22", "#9b59b6", "#1abc9c", "#f1c40f"];
@@ -364,36 +365,42 @@ function checkHysplitDuplicate() {
     const titleEl = document.getElementById("HysplitModalTitle");
     if (!submitBtn || !titleEl) return;
 
-    if (!state.modalBaseParams) {
-        titleEl.innerText = "HYSPLIT Simulation";
-        submitBtn.disabled = false;
-        return;
+    // 알림 토스트를 띄우려면버튼이 항상 클릭 가능해야 함
+    submitBtn.disabled = false;
+
+    let baseTitle = "HYSPLIT Simulation";
+    let isSame = false;
+
+    if (state.modalBaseParams) {
+        const time = document.getElementById("HysplitFormTime").value;
+        const directionEl = document.querySelector('input[name="HysplitDirection"]:checked');
+        const direction = directionEl ? directionEl.value : "backward";
+        const duration = parseFloat(document.getElementById("HysplitFormDuration").value);
+        const height = parseFloat(document.getElementById("HysplitFormHeight").value);
+        const date = document.getElementById("HysplitFormDate").value;
+
+        const b = state.modalBaseParams;
+        isSame = (
+            date === b.date &&
+            time === b.time &&
+            direction === b.direction &&
+            duration === b.duration &&
+            height === b.height
+        );
+
+        if (isSame) {
+            baseTitle = "HYSPLIT Simulation (Conditions are identical)";
+        }
     }
 
-    const time = document.getElementById("HysplitFormTime").value;
-    const directionEl = document.querySelector('input[name="HysplitDirection"]:checked');
-    const direction = directionEl ? directionEl.value : "backward";
-    const duration = parseFloat(document.getElementById("HysplitFormDuration").value);
-    const height = parseFloat(document.getElementById("HysplitFormHeight").value);
-    const date = document.getElementById("HysplitFormDate").value;
-
-    const b = state.modalBaseParams;
-    const isSame = (
-        date === b.date &&
-        time === b.time &&
-        direction === b.direction &&
-        duration === b.duration &&
-        height === b.height
-    );
-
-    if (isSame) {
-        titleEl.innerText = "HYSPLIT Simulation (Conditions are identical)";
-        submitBtn.disabled = true;
+    if (state.isRunning) {
+        titleEl.innerText = "HYSPLIT (Running...)";
+        submitBtn.innerText = "Running...";
         submitBtn.style.opacity = "0.5";
     } else {
-        titleEl.innerText = "HYSPLIT Simulation";
-        submitBtn.disabled = false;
-        submitBtn.style.opacity = "1";
+        titleEl.innerText = baseTitle;
+        submitBtn.innerText = "Run Simulation";
+        submitBtn.style.opacity = isSame ? "0.5" : "1";
     }
 }
 
@@ -434,6 +441,12 @@ function loadFromStorage() {
 
 // --- API & Execution ---
 async function clickOnSubmitHysplit() {
+    
+    if (state.isRunning) {
+        if (showErrorToast) showErrorToast("HYSPLIT is currently running... please wait.", "warning");
+        return;
+    }
+    
     const submitBtn = document.getElementById("HysplitBtnSubmit");
     const time = document.getElementById("HysplitFormTime").value;
     const directionEl = document.querySelector('input[name="HysplitDirection"]:checked');
@@ -443,13 +456,30 @@ async function clickOnSubmitHysplit() {
     const date = document.getElementById("HysplitFormDate").value;
     const lngLat = state.pendingLngLat;
 
+    // Check for identical duplicate submission
+    if (state.modalBaseParams) {
+        const b = state.modalBaseParams;
+        if (
+            date === b.date &&
+            time === b.time &&
+            direction === b.direction &&
+            duration === b.duration &&
+            height === b.height
+        ) {
+            if (showErrorToast) showErrorToast("Same conditions already simulated. Please alter a field to run again.", "warning");
+            return;
+        }
+    }
+    
     if (!lngLat || !date) return alert("Missing location or date.");
 
     if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.innerText = "Running...";
     }
-
+    
+    state.isRunning = true;
+    
     // Close modal immediately so user can continue
     uiHideHysplitModal();
 
@@ -538,6 +568,7 @@ async function clickOnSubmitHysplit() {
         console.error("HYSPLIT failed:", err);
         task.update(`Failed: ${err.message}`, "error");
     } finally {
+        state.isRunning = false;
         if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.innerText = "Run Simulation";
