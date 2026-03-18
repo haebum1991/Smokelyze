@@ -1637,7 +1637,9 @@ body.FigurePage-drawer-open .Hysplit-drawer.open {
   body.FigurePage-drawer-open #WFnewsToggle,
   body.FigurePage-drawer-open .WFnews-drawer.open,
   body.FigurePage-drawer-open #MapPostToggle,
-  body.FigurePage-drawer-open .MapPost-drawer.open {
+  body.FigurePage-drawer-open .MapPost-drawer.open,
+  body.FigurePage-drawer-open #HysplitToggle,
+  body.FigurePage-drawer-open .Hysplit-drawer.open {
     transform: none;
   }
 
