@@ -8,6 +8,7 @@ import { map } from "./map-init.js";
 import { BREAKS_TEMPO, PALETTE_TEMPO } from "./layers-constants.js";
 import * as utils from "./utils.js";
 import { showErrorToast } from "./loader-ui.js";
+import { logUserAction } from "./fb-logging.js";
 
 const TEMPO_CONFIG = {
     "no2": {
@@ -352,6 +353,13 @@ export async function tempoLoadData(isoDate) {
                 tempoDataStore[cfg.sourceId].coordinates = coordinates;
                 await colorizeTempoImage(pngUrl, metadata, source, cfg.sourceId);
                 source.setCoordinates(coordinates);
+                
+                logUserAction("view", {
+                    dataset: cfg.sourceId,
+                    layer: cfg.sourceId,
+                    date: isoDate,
+                    filename: pngUrl
+                });
 
                 initTempoHover();
             } else {
@@ -408,6 +416,13 @@ export async function tropomiLoadData(isoDate) {
                 tempoDataStore[cfg.sourceId].coordinates = coordinates;
                 await colorizeTempoImage(pngUrl, metadata, source, cfg.sourceId);
                 source.setCoordinates(coordinates);
+                
+                logUserAction("view", {
+                    dataset: cfg.sourceId,
+                    layer: cfg.sourceId,
+                    date: isoDate,
+                    filename: pngUrl
+                });
 
                 initTempoHover();
             } else {

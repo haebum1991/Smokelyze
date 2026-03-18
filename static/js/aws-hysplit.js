@@ -5,7 +5,7 @@ import * as utils from "./utils.js";
 import { showErrorToast, showTaskNotification } from "./loader-ui.js"; // CRITICAL: Use loader-ui to break circular loop
 import { updateAuthButton } from "./signin.js";
 import { setHysplitDrawer, appendSwitch } from "./ui-toggles.js";
-
+import { logUserAction } from "./fb-logging.js";
 
 // --- Configuration & State ---
 // Use Netlify proxy to avoid Mixed Content (HTTPS -> HTTP) and timeouts
@@ -482,7 +482,14 @@ async function clickOnSubmitHysplit() {
     
     // Close modal immediately so user can continue
     uiHideHysplitModal();
-
+    
+    logUserAction("view", {
+        dataset: "hysplit_run",
+        layer: direction,
+        date: date,
+        filename: `lon:${lngLat.lng.toFixed(3)}_lat:${lngLat.lat.toFixed(3)}_h:${height}m_d:${duration}h`
+    });
+    
     const task = showTaskNotification("HYSPLIT Simulation", "Requesting trajectory from AWS...");
 
     try {
