@@ -236,8 +236,11 @@ function initFlowAnimation() {
     });
     
     let flowAnimRunning = false;
+    let lastFrameTime = 0;
+    const TARGET_FPS = 20; // Drastically reduce from 60fps to 20fps
+    const FRAME_INTERVAL = 1000 / TARGET_FPS;
 
-    const animate = () => {
+    const animate = (timestamp) => {
         // Check if animation should keep running
         const hasVisible = state.showFlowStream && state.history.some(
             item => item.visible && item.flowCoords && item.flowCoords.length >= 2
@@ -251,18 +254,27 @@ function initFlowAnimation() {
             return; // Fully stop the loop — CPU rests
         }
         
+        // Throttling: Skip frames to enforce 20 FPS limit
+        if (!timestamp) timestamp = performance.now();
+        const elapsed = timestamp - lastFrameTime;
+        if (elapsed < FRAME_INTERVAL) {
+            requestAnimationFrame(animate);
+            return;
+        }
+        lastFrameTime = timestamp - (elapsed % FRAME_INTERVAL);
+        
         const now = performance.now();
-        const duration = 1800;
+        const duration = 2000;
 
         const features = [];
         state.history.forEach(item => {
             if (!item.visible || !item.flowCoords || item.flowCoords.length < 2) return;
 
             const c = item.flowCoords;
-            const streakCount = 20; // Increased for a longer, denser stream
+            const streakCount = 8; // Increased for a longer, denser stream
 
             for (let sIdx = 0; sIdx < streakCount; sIdx++) {
-                const streakOffset = (sIdx * 15); // Tightened offset for a continuous [liquid] look
+                const streakOffset = (sIdx * 25); // Tightened offset for a continuous [liquid] look
                 // Fix negative modulo for early page load
                 let timePos = (now - streakOffset);
                 let progress = (timePos % duration + duration) % duration / duration;
@@ -844,22 +856,42 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
 
     // 3D Wall Features
     const wallFeatures = [];
+    const NUM_SEGMENTS = 10; // Splitting each hourly block into 10 smooth steps
+
     for (let i = 0; i < coords3D.length - 1; i++) {
         const p1 = coords3D[i];
         const p2 = coords3D[i + 1];
-        const h = ((p1[2] + p2[2]) / 2) * exaggeration;
-        wallFeatures.push({
-            type: "Feature",
-            properties: { height: h },
-            geometry: {
-                type: "Polygon",
-                coordinates: [[
-                    [p1[0], p1[1]], [p2[0], p2[1]],
-                    [p2[0] + 0.005, p2[1] + 0.005], [p1[0] + 0.005, p1[1] + 0.005],
-                    [p1[0], p1[1]]
-                ]]
-            }
-        });
+        
+        for (let j = 0; j < NUM_SEGMENTS; j++) {
+            const t1 = j / NUM_SEGMENTS;
+            const t2 = (j + 1) / NUM_SEGMENTS;
+            
+            // Interpolate point A (start of sub-segment)
+            const lonA = p1[0] + (p2[0] - p1[0]) * t1;
+            const latA = p1[1] + (p2[1] - p1[1]) * t1;
+            const hA = p1[2] + (p2[2] - p1[2]) * t1;
+            
+            // Interpolate point B (end of sub-segment)
+            const lonB = p1[0] + (p2[0] - p1[0]) * t2;
+            const latB = p1[1] + (p2[1] - p1[1]) * t2;
+            const hB = p1[2] + (p2[2] - p1[2]) * t2;
+            
+            // Average height of this tiny step
+            const h = ((hA + hB) / 2) * exaggeration;
+            
+            wallFeatures.push({
+                type: "Feature",
+                properties: { height: h },
+                geometry: {
+                    type: "Polygon",
+                    coordinates: [[
+                        [lonA, latA], [lonB, latB],
+                        [lonB + 0.005, latB + 0.005], [lonA + 0.005, latA + 0.005],
+                        [lonA, latA]
+                    ]]
+                }
+            });
+        }
     }
 
     if (!map.getSource(`hysplit-src-wall-${runId}`)) {
