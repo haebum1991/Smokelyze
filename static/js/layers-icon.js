@@ -153,11 +153,10 @@ export function iconPulsingFire(map, size) {
             this.context = canvas.getContext("2d");
         },
         render() {
-            const duration = 1500;
-            const t = (performance.now() % duration) / duration;
-            drawIconCoreFire(this.context, this.width, t);
+            if (this._rendered) return false;
+            drawIconCoreFire(this.context, this.width, 0);
             this.data = this.context.getImageData(0, 0, this.width, this.height).data;
-            map.triggerRepaint();
+            this._rendered = true;
             return true;
         }
     };
@@ -175,11 +174,10 @@ export function iconPulsingNews(map, size) {
             this.context = canvas.getContext("2d");
         },
         render() {
-            const duration = 2000;
-            const t = (performance.now() % duration) / duration;
-            drawIconCoreNews(this.context, this.width, t);
+            if (this._rendered) return false;
+            drawIconCoreNews(this.context, this.width, 0);
             this.data = this.context.getImageData(0, 0, this.width, this.height).data;
-            map.triggerRepaint();
+            this._rendered = true;
             return true;
         }
     };
@@ -197,11 +195,10 @@ export function iconPulsingAlert(map, size) {
             this.context = canvas.getContext("2d");
         },
         render() {
-            const duration = 1200;
-            const t = (performance.now() % duration) / duration;
-            drawIconCoreAlert(this.context, this.width, t);
+            if (this._rendered) return false;
+            drawIconCoreAlert(this.context, this.width, 0);
             this.data = this.context.getImageData(0, 0, this.width, this.height).data;
-            map.triggerRepaint();
+            this._rendered = true;
             return true;
         }
     };

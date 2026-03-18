@@ -197,6 +197,7 @@ function initFlowAnimation() {
                 const visibility = val ? "visible" : "none";
                 if (map.getLayer("trajflow-layer-glow")) map.setLayoutProperty("trajflow-layer-glow", "visibility", visibility);
                 if (map.getLayer("trajflow-layer-core")) map.setLayoutProperty("trajflow-layer-core", "visibility", visibility);
+                if (val && state._startFlowAnim) state._startFlowAnim();
             }
         });
     }
@@ -233,12 +234,23 @@ function initFlowAnimation() {
             "circle-opacity": ["get", "opacity"]
         }
     });
+    
+    let flowAnimRunning = false;
 
     const animate = () => {
-        if (!state.showFlowStream) {
-            requestAnimationFrame(animate);
-            return;
+        // Check if animation should keep running
+        const hasVisible = state.showFlowStream && state.history.some(
+            item => item.visible && item.flowCoords && item.flowCoords.length >= 2
+        );
+
+        if (!hasVisible) {
+            flowAnimRunning = false;
+            // Clear any leftover particles from the map
+            const source = map.getSource("trajflow-source");
+            if (source) source.setData({ type: "FeatureCollection", features: [] });
+            return; // Fully stop the loop — CPU rests
         }
+        
         const now = performance.now();
         const duration = 1800;
 
@@ -283,15 +295,17 @@ function initFlowAnimation() {
         const source = map.getSource("trajflow-source");
         if (source) {
             source.setData({ type: "FeatureCollection", features });
-            // Ensure flow layers stay on top
-            if (map.getLayer("trajflow-layer-glow")) map.moveLayer("trajflow-layer-glow");
-            if (map.getLayer("trajflow-layer-core")) map.moveLayer("trajflow-layer-core");
         }
 
         requestAnimationFrame(animate);
     };
 
-    animate();
+    // Helper: restarts the animation loop only if not already running
+    state._startFlowAnim = () => {
+        if (flowAnimRunning) return;
+        flowAnimRunning = true;
+        requestAnimationFrame(animate);
+    };
 }
 
 
@@ -688,6 +702,7 @@ function toggleTrajectoryVisibility(runId) {
     });
 
     updateHysplitDrawerList();
+    if (item.visible && state._startFlowAnim) state._startFlowAnim();
 }
 
 function removeTrajectory(runId) {
@@ -781,6 +796,7 @@ function renderHysplitTrajectory(data, direction, existingRunId = null, isRestor
 
     if (!isRestoring) saveToStorage();
     updateHysplitDrawerList();
+    if (state._startFlowAnim) state._startFlowAnim();
 }
 
 /**
@@ -993,6 +1009,10 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
         if (tooltip) tooltip.style.display = "none";
     });
 
+    // Ensure flow animation stays on top of newly added static layers
+    if (map.getLayer("trajflow-layer-glow")) map.moveLayer("trajflow-layer-glow");
+    if (map.getLayer("trajflow-layer-core")) map.moveLayer("trajflow-layer-core");
+    
     if (!isRestoring) {
         const bounds = coords3D.reduce((acc, c) => acc.extend([c[0], c[1]]), new maplibregl.LngLatBounds(coords3D[0], coords3D[0]));
         map.fitBounds(bounds, { padding: 80, pitch: 65, duration: 1500 });
