@@ -383,7 +383,8 @@ function handleLoadingError(sourceKey, isoDate, ds = null) {
         const currentDataset = document.getElementById("MapDataSelect")?.value;
         const config = DATA_IMPORT_METHOD[`${shortId}-${currentDataset}`] || DATA_IMPORT_METHOD[shortId];
         if (config && config.source === sourceKey) {
-            cb.checked = false;
+            // [User UX Disabled part]: 실패시 체크박스 해제 로직
+            // cb.checked = false;
         }
     });
 

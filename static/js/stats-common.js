@@ -476,7 +476,9 @@ export function setupDrawerResizer() {
 
 export function updateAllStats(isoDate, regionIDs, monthKey) {
     if (onUpdateDailyStats) onUpdateDailyStats(isoDate, regionIDs);
-    if (onUpdateYearStats) onUpdateYearStats(isoDate, regionIDs, monthKey);
+    
+    // [User UX Disabled part]: Annual Stats 로직 (개발중)
+    // if (onUpdateYearStats) onUpdateYearStats(isoDate, regionIDs, monthKey);
 }
 
 // [추가] 외부에서 테이블 갱신을 트리거하기 위한 함수
@@ -510,7 +512,9 @@ function bindEventsStats() {
             if (!monthKey) return;
             monthTabs.forEach(b => { b.classList.toggle("active", b === btn); });
             if (monthKey !== "all" && onCurrentPlotHide) onCurrentPlotHide();
-            if (onUpdateYearStats) onUpdateYearStats(val, regionIDs, monthKey);
+            
+            // [User UX Disabled part]: Annual Stats 로직 (개발중)
+            // if (onUpdateYearStats) onUpdateYearStats(val, regionIDs, monthKey);
         });
     });
 

@@ -152,7 +152,9 @@ export async function airnowLoadData(isoDate) {
 
                 const cbId = "layer-" + sourceId;
                 const cb = document.getElementById(cbId);
-                if (cb) cb.checked = false;
+                
+                // [User UX Disabled part]: 실패시 체크박스 해제 로직
+                // if (cb) cb.checked = false;
 
                 const source = map.getSource(sourceId);
                 if (source) source.setData(EMPTY_FC);
@@ -207,7 +209,9 @@ export async function airnowLoadData(isoDate) {
                 // Auto-uncheck failed AirNow layer
                 const cbId = "layer-" + sourceId;
                 const cb = document.getElementById(cbId);
-                if (cb) cb.checked = false;
+                
+                // [User UX Disabled part]: 실패시 체크박스 해제 로직
+                // if (cb) cb.checked = false;
                 
                 const source = map.getSource(sourceId);
                 if (source) source.setData(EMPTY_FC);
