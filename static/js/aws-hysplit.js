@@ -20,7 +20,7 @@ const state = {
     runCount: 0,
     isHysplitMode: false,
     modalBaseParams: null,
-    showFlowStream: true,
+    showFlowStream: false,
     isRunning: false,
 };
 

@@ -207,24 +207,18 @@ export function iconPulsingAlert(map, size) {
 // --- UI Interface (For Menu/Accordion) ---
 
 export function initUIPulsingIcons() {
-    const canvases = document.querySelectorAll(".ui-pulsing-icon");
-    if (canvases.length === 0) return;
-
-    const animate = () => {
-        const items = document.querySelectorAll(".ui-pulsing-icon");
-        items.forEach(canv => {
+    // Delay to ensure sidebar layout is ready and canvas elements have proper dimensions
+    setTimeout(() => {
+        const canvases = document.querySelectorAll(".ui-pulsing-icon");
+        canvases.forEach(canv => {
             const type = canv.getAttribute("data-type");
             const size = canv.width;
             const ctx = canv.getContext("2d");
-            const duration = type === "fire" ? 1500 : (type === "news" ? 2000 : 1200);
-            const t = (performance.now() % duration) / duration;
 
-            if (type === "fire") drawIconCoreFire(ctx, size, t);
-            else if (type === "news") drawIconCoreNews(ctx, size, t);
-            else if (type === "alert") drawIconCoreAlert(ctx, size, t);
+            if (type === "fire") drawIconCoreFire(ctx, size, 0);
+            else if (type === "news") drawIconCoreNews(ctx, size, 0);
+            else if (type === "alert") drawIconCoreAlert(ctx, size, 0);
         });
-        requestAnimationFrame(animate);
-    };
-    requestAnimationFrame(animate);
+    }, 500);
 }
 

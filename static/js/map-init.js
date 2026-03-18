@@ -25,28 +25,48 @@ function createMap() {
         preserveDrawingBuffer: false
     });
 
-    // Handle WebGL context loss (black screen + broken icons on low-end GPUs)
+    // Handle WebGL context loss (black screen on low-end GPUs)
     const canvas = m.getCanvas();
     let contextLostCount = 0;
-    const MAX_RESTORE_ATTEMPTS = 2;
+
+    // Track auto-reloads across page loads to prevent infinite loop
+    const reloadKey = "webgl_reload_count";
+    const reloadTimeKey = "webgl_reload_time";
+    const pastReloads = parseInt(sessionStorage.getItem(reloadKey) || "0");
+    const lastReloadTime = parseInt(sessionStorage.getItem(reloadTimeKey) || "0");
+
+    // Reset counter if last reload was more than 60s ago
+    if (Date.now() - lastReloadTime > 60000) {
+        sessionStorage.setItem(reloadKey, "0");
+    }
 
     canvas.addEventListener("webglcontextlost", (e) => {
         e.preventDefault();
         contextLostCount++;
-        console.warn(`WebGL context lost (${contextLostCount}/${MAX_RESTORE_ATTEMPTS})`);
+        console.warn(`WebGL context lost (attempt ${contextLostCount})`);
     });
 
     canvas.addEventListener("webglcontextrestored", () => {
-        if (contextLostCount <= MAX_RESTORE_ATTEMPTS) {
+        if (contextLostCount <= 1) {
+            // First time: silently restore
             console.log("WebGL context restored — reloading map style.");
             m.setStyle(mapConfig.style);
+        } else if (pastReloads < 2) {
+            // Auto-reload (max 2 times within 60s)
+            sessionStorage.setItem(reloadKey, String(pastReloads + 1));
+            sessionStorage.setItem(reloadTimeKey, String(Date.now()));
+            console.error("WebGL context lost repeatedly. Auto-reloading page.");
+            window.location.reload();
         } else {
-            console.error("WebGL context lost too many times. Please reload the page.");
-            const toast = document.getElementById("ErrorToast");
-            if (toast) {
-                toast.innerHTML = "Map rendering failed due to limited GPU resources. Please reload the page.";
-                toast.style.display = "block";
-            }
+            // Give up: show message instead of infinite reload
+            console.error("WebGL context lost too many times. Stopping auto-reload.");
+            document.getElementById("map").innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:center;height:100%;
+                    color:white;font-size:1.6rem;text-align:center;padding:2rem;
+                    background:rgba(0,0,0,0.85);">
+                    Map rendering failed due to limited GPU resources.<br>
+                    Please close other tabs and reload the page.
+                </div>`;
         }
     });
 
