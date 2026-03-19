@@ -9,6 +9,7 @@ import { BREAKS_TEMPO, PALETTE_TEMPO } from "./layers-constants.js";
 import * as utils from "./utils.js";
 import { showErrorToast } from "./loader-ui.js";
 import { logUserAction } from "./fb-logging.js";
+import { state } from "./ui-state.js";
 
 const TEMPO_CONFIG = {
     "no2": {
@@ -200,6 +201,25 @@ function initTempoHover() {
     if (!tooltip) return;
 
     map.on("mousemove", (e) => {
+        
+        // [UX Fix]: Dont interfere if the tooltip is locked by a click
+        if (state?.tooltipLocked) return;
+
+        // [UX Fix]: Yield tooltip to specifically OUR vector layers (AirNow, Smoke, Fire, etc.) on top
+        const topFeatures = map.queryRenderedFeatures(e.point);
+        const isVectorOnTop = topFeatures.some(f => {
+            const s = f.source || "";
+            return s === "smoke" || s === "fire" || s === "burn" || 
+                   s.includes("wildfire") || s === "MapPost" || 
+                   s.includes("airnow") || s.includes("gam_") || 
+                   s.includes("pm_cbsa") || s === "epa_ember";
+        });
+
+        if (isVectorOnTop) {
+            tempoHoverBound.isShowing = false;
+            return;
+        }
+        
         // Find visible TEMPO or TROPOMI layers
         const activeTempoLayer = [...Object.values(TEMPO_CONFIG), ...Object.values(TROPOMI_CONFIG)].find(cfg => {
             if (!map.getLayer(cfg.mapLayerId)) return false;

@@ -571,7 +571,7 @@ const injectKeyTipCSS = () => {
             font-size: 2.2rem;
             font-weight: bold;
             font-family: "Outfit", sans-serif;
-            z-index: 10000;
+            z-index: var(--z-highest);
             pointer-events: none;
             text-transform: uppercase;
             animation: keyTipOverlayIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -592,7 +592,7 @@ const injectKeyTipCSS = () => {
             border: 0.1rem solid var(--card-shadow);
             border-radius: calc(var(--border-radius-0p8rem) * 2);
             padding: 3rem;
-            z-index: 10001;
+            z-index: calc(var(--z-highest) + 1);
             box-shadow: 0 2.5rem 5rem -1.2rem var(--card-shadow);
             color: var(--text-main);
             width: 45rem;

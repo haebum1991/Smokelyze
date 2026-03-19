@@ -2536,7 +2536,7 @@ body.map-tut-active .maplibregl-ctrl-bottom-left {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
+  z-index: var(--z-highest);
   backdrop-filter: blur(0.2rem);
   opacity: 1;
   transition: opacity 0.2s ease;

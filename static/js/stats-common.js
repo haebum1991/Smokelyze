@@ -647,10 +647,9 @@ export function getPlotTheme() {
                     
                     <br> 
                     [Note] <br>
-                    In the [Annual] tab, 
-                    when layers such as [HMS-smoke], [HMS-fire], or [MODIS area burned] are active, 
-                    a data table will be displayed. 
-                    Clicking on a specific row in the table will generate a monthly line plot for that selected year.
+                    In the case of values measured through monitoring,
+                    the values in the table are determined entirely 
+                    by the number of AQS sites within each state for the corresponding data.
                 `.trim(),
             barline: `
                     If you see this message, it could be due to the following reasons: <br>
@@ -684,13 +683,13 @@ export function getPlotTheme() {
                 `.trim(),
             scatter: `
                     If you see this message, it could be due to the following reasons: <br>
-                    - Please select at least two data layers of [Published] data to display the Scatter plot. (1st = Y-axis, 2nd+ = X-axis). <br> 
+                    - Please select at least two data layers of [AirNow] or [Published & Latest] data to display the Scatter plot. (1st = Y-axis, 2nd+ = X-axis). <br> 
                     - No data available for the selected date, layers, and/or regions. <br>
                     - No compatible data points found to create a plot. <br>
                     
                     <br> 
                     [Note] <br>
-                    This plot tab does not work for [NIFC], [AirNow], [Satellite], and [Satellite] data.
+                    This plot tab does not work for [NIFC] and [Satellite].
                 `.trim(),
             heatmap: `
                     If you see this message, it could be due to the following reasons: <br>
@@ -700,7 +699,7 @@ export function getPlotTheme() {
                     
                     <br> 
                     [Note] <br>
-                    This plot tab has not yet been built for the [Published] data layers. 
+                    This plot tab has not been built for [NIFC], [TEMPO], [TROPOMI], [AirNow], and [Published & Latest] data layers. 
                     More updates will be coming soon, so please look forward to them.
                 `.trim()
         }

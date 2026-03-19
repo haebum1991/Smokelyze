@@ -28,7 +28,7 @@ export const ExcludeLayerGroups = {
   searchSite: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2", "airnow-daily-pm25", "airnow-daily-mda8", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
 
   // [stats-plot-dy-scatter.js] > [getActiveModelLayers] > [EXCLUDED]
-  plotScatter: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost"],
+  plotScatter: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
 
 
   // ========= Find by [source] =========
