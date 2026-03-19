@@ -87,10 +87,10 @@ export function initMapCapture() {
                     // Flush with the edges as requested (no margin)
                     const brandTitle = "Smokelyze";
                     const brandSub = "Advanced Spatiotemporal Analytics for Wildfire Smoke & Air Quality";
-                    
+
                     ctx.textAlign = "left";
                     ctx.textBaseline = "bottom";
-                    
+
                     // Box dimensions calculation
                     ctx.font = "bold 20px sans-serif";
                     const titleW = ctx.measureText(brandTitle).width;
@@ -109,7 +109,7 @@ export function initMapCapture() {
                     ctx.clip();
                     // 3. Draw the map again but blurred inside the clip
                     ctx.filter = "blur(10px)";
-                    ctx.drawImage(combinedCanvas, 0, 0); 
+                    ctx.drawImage(combinedCanvas, 0, 0);
                     // 4. Add a very subtle light tint (glass look)
                     ctx.filter = "none";
                     ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
@@ -117,16 +117,17 @@ export function initMapCapture() {
                     // 5. Restore
                     ctx.restore();
 
-                    // --- Draw White Text for Contrast ---
+                    // --- Draw White Text for Contrast (Sharp & Tight Shadow) ---
                     // Draw Subtitle
                     ctx.font = "12px sans-serif";
-                    ctx.fillStyle = "white"; // White looks better on blur/glass
-                    ctx.shadowColor = "rgba(0,0,0,0.5)";
-                    ctx.shadowBlur = 4;
+                    ctx.fillStyle = "white"; 
+                    ctx.shadowColor = "rgba(0,0,0,1)";
+                    ctx.shadowBlur = 2; // Sharp and defined
                     ctx.fillText(brandSub, 10, combinedCanvas.height - 8);
                     
                     // Draw Title (Smokelyze)
                     ctx.font = "bold 22px sans-serif";
+                    ctx.shadowBlur = 3; 
                     ctx.fillText(brandTitle, 10, combinedCanvas.height - 25);
                     ctx.shadowBlur = 0; // Reset shadow
 
@@ -147,12 +148,12 @@ export function initMapCapture() {
                     ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
                     ctx.fillRect(combinedCanvas.width - licBoxW, combinedCanvas.height - licBoxH, licBoxW, licBoxH);
                     ctx.restore();
-                    
+
                     ctx.fillStyle = "white";
                     ctx.textAlign = "right";
                     ctx.textBaseline = "middle";
-                    ctx.shadowColor = "rgba(0,0,0,0.5)";
-                    ctx.shadowBlur = 4;
+                    ctx.shadowColor = "rgba(0,0,0,0.8)";
+                    ctx.shadowBlur = 6;
                     ctx.fillText(licenseText, combinedCanvas.width - 8, combinedCanvas.height - 12);
                     ctx.shadowBlur = 0;
 
@@ -162,7 +163,7 @@ export function initMapCapture() {
                     link.download = `map_capture_${currentDate()}.png`;
                     link.href = dataUrl;
                     link.click();
-                    
+
                     if (captureBackdrop) captureBackdrop.style.display = "none";
                     toggleSpinner(false);
 

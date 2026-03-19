@@ -479,8 +479,8 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "smoke", field: "smokeLight", category: "light", title: "Smoke area (light) (km²)", breaks: BREAKS_SMOKE, colors: PALETTE_SMOKE, labelParams: LABEL_SMOKE, decimals: 0, manualLayer: true },
     { duration: "daily", id: "smoke", field: "smokeMedium", category: "medium", title: "Smoke area (medium) (km²)", breaks: BREAKS_SMOKE, colors: PALETTE_SMOKE, labelParams: LABEL_SMOKE, decimals: 0, manualLayer: true },
     { duration: "daily", id: "smoke", field: "smokeHeavy", category: "heavy", title: "Smoke area (heavy) (km²)", breaks: BREAKS_SMOKE, colors: PALETTE_SMOKE, labelParams: LABEL_SMOKE, decimals: 0, manualLayer: true },
-    { duration: "daily", id: "fire", field: "fireCount", title: "Fire points", breaks: BREAKS_FIRE, colors: PALETTE_JET, decimals: 0, manualLayer: true },
-    { duration: "daily", id: "fire", field: "fireFrp", title: "FRP (MW)", breaks: BREAKS_FRP, colors: "#fd8d3c", decimals: 1, manualLayer: true },
+    { duration: "daily", id: "fire", field: "fireCount", title: "Fire points (Shading)", breaks: BREAKS_FIRE, colors: PALETTE_JET, decimals: 0, manualLayer: true },
+    { duration: "daily", id: "fire", field: "fireFrp", title: "FRP (MW) (Point)", breaks: BREAKS_FRP, colors: "#fd8d3c", decimals: 1, manualLayer: true },
 
     { duration: "hourly", id: "tempo-no2", field: "tempo", title: "TEMPO NO2 VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true, hourly: true },
     { duration: "hourly", id: "tempo-hcho", field: "tempo", title: "TEMPO HCHO VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true, hourly: true },
