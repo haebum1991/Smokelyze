@@ -37,6 +37,13 @@ const mainView = document.getElementById("AuthViewMain");
 const benefitsView = document.getElementById("AuthViewBenefits");
 const cardHeaderTitle = document.querySelector("#AuthOverlay .auth-card-header h3");
 
+// Role Selection Modal
+const roleOverlay = document.getElementById("RoleSelectionOverlay");
+const roleGrid = document.getElementById("RoleGrid");
+const roleSaveBtn = document.getElementById("RoleBtnSave");
+const roleSkipBtn = document.getElementById("RoleBtnSkip");
+const roleAffInput = document.getElementById("RoleAffiliation");
+
 onAuthStateChanged(auth, async (user) => {
 
     if (user) {
@@ -78,6 +85,7 @@ onAuthStateChanged(auth, async (user) => {
         }
 
         await recordUserHistory(user);
+        await checkAndShowRoleSelection(user);
     } else {
         // UI Switch
         if (unauthContainer) unauthContainer.style.display = "block";
@@ -203,6 +211,8 @@ if (profileLogoutBtn) {
         if (confirm("Are you sure you want to logout?")) {
             await signOut(auth);
             sessionStorage.removeItem("auth-guest-dismissed");
+            sessionStorage.removeItem("role-checked");
+            sessionStorage.removeItem("userRole");
         }
     });
 }
@@ -228,8 +238,10 @@ if (profileProfileBtn) {
                 const data = snap.data();
                 const nickEl = document.getElementById("ProfileNickname");
                 const affilEl = document.getElementById("ProfileAffiliation");
+                const roleEl = document.getElementById("ProfileRole");
                 if (nickEl) nickEl.value = data.nickname || "";
                 if (affilEl) affilEl.value = data.affiliation || "";
+                if (roleEl) roleEl.value = data.userRole || "";
             }
         } catch (e) { console.error("Fetch Profiles Err:", e); }
     });
@@ -437,18 +449,24 @@ if (profileSaveBtn) {
 
         const nickEl = document.getElementById("ProfileNickname");
         const affilEl = document.getElementById("ProfileAffiliation");
+        const roleEl = document.getElementById("ProfileRole");
         const nick = nickEl ? nickEl.value.trim() : "";
         const affil = affilEl ? affilEl.value.trim() : "";
+        const userRole = roleEl ? roleEl.value : "";
 
         profileSaveBtn.disabled = true;
         profileSaveBtn.innerText = "Saving...";
 
         try {
-            await updateDoc(doc(db, "smokelyze_users", user.uid), {
+            const updateData = {
                 nickname: nick,
                 affiliation: affil,
+                userRole: userRole,
                 updatedAt: serverTimestamp()
-            });
+            };
+
+            await updateDoc(doc(db, "smokelyze_users", user.uid), updateData);
+            sessionStorage.setItem("userRole", userRole || "");
 
             if (profileMsg) {
                 profileMsg.innerText = "Successfully updated!";
@@ -489,6 +507,120 @@ if (backToLoginBtn && mainView && benefitsView) {
     });
 }
 
+// --- Role Selection Logic ---
+let selectedRole = null;
+
+async function checkAndShowRoleSelection(user) {
+    if (!user || !roleOverlay) return;
+
+    // Only show once per session to avoid showing on every page navigation
+    if (sessionStorage.getItem("role-checked")) return;
+    sessionStorage.setItem("role-checked", "true");
+
+    try {
+        const userRef = doc(db, "smokelyze_users", user.uid);
+        const snap = await getDoc(userRef);
+
+        let hasAffiliation = false;
+        if (snap.exists()) {
+            const data = snap.data();
+            if (data.userRole) {
+                sessionStorage.setItem("userRole", data.userRole);
+                return; // Already has role → skip
+            }
+            if (data.affiliation) {
+                hasAffiliation = true;
+            }
+        }
+
+        // Hide affiliation field if already provided
+        if (roleAffInput) {
+            const group = roleAffInput.closest(".profile-group");
+            if (group) {
+                group.style.display = hasAffiliation ? "none" : "";
+            }
+        }
+
+        // Show modal
+        roleOverlay.style.display = "flex";
+    } catch (e) {
+        console.error("Role check error:", e);
+    }
+}
+
+// Role option click handlers
+if (roleGrid) {
+    roleGrid.addEventListener("click", (e) => {
+        const btn = e.target.closest(".role-option");
+        if (!btn) return;
+
+        // Deselect all
+        roleGrid.querySelectorAll(".role-option").forEach(el => el.classList.remove("selected"));
+
+        // Select clicked
+        btn.classList.add("selected");
+        selectedRole = btn.dataset.role;
+
+        // Enable save button
+        if (roleSaveBtn) roleSaveBtn.disabled = false;
+    });
+}
+
+// Save role
+if (roleSaveBtn) {
+    roleSaveBtn.addEventListener("click", async () => {
+        if (!selectedRole) return;
+
+        const user = auth.currentUser;
+        if (!user) return;
+        
+        let affGroupVisible = true;
+        if (roleAffInput) {
+            const group = roleAffInput.closest(".profile-group");
+            if (group && group.style.display === "none") {
+                affGroupVisible = false;
+            }
+        }
+
+        const aff = roleAffInput ? roleAffInput.value.trim() : "";
+        
+        roleSaveBtn.disabled = true;
+        roleSaveBtn.innerText = "Saving...";
+
+        try {
+            const updatePayload = {
+                userRole: selectedRole,
+                roleSelectedAt: serverTimestamp()
+            };
+            
+            // Only update affiliation if the input was visible and user typed something OR if no affiliation was stored yet. 
+            if (affGroupVisible && aff) {
+                 updatePayload.affiliation = aff;
+            }
+
+            await updateDoc(doc(db, "smokelyze_users", user.uid), updatePayload);
+            sessionStorage.setItem("userRole", selectedRole);
+
+            roleOverlay.style.display = "none";
+            selectedRole = null;
+        } catch (e) {
+            console.error("Save role error:", e);
+            alert("Failed to save. Please try again.");
+        } finally {
+            roleSaveBtn.disabled = false;
+            roleSaveBtn.innerText = "Continue";
+        }
+    });
+}
+
+// Skip role selection
+if (roleSkipBtn) {
+    roleSkipBtn.addEventListener("click", () => {
+        if (roleOverlay) roleOverlay.style.display = "none";
+        selectedRole = null;
+    });
+}
+
 // Idle Timeout
 let idleTimer;
 const IDLE_TIMEOUT = 24 * 60 * 60 * 1000;
@@ -498,6 +630,8 @@ function resetIdleTimer() {
         idleTimer = setTimeout(async () => {
             await signOut(auth);
             sessionStorage.removeItem("auth-guest-dismissed");
+            sessionStorage.removeItem("role-checked");
+            sessionStorage.removeItem("userRole");
             alert("Logged out due to inactivity.");
         }, IDLE_TIMEOUT);
     }

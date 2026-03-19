@@ -61,7 +61,7 @@
     align-items: flex-start;
     touch-action: pan-y;
   }
-  
+
   @media (max-width: 1024px) {
     .nav-links {
       width: 40%;
@@ -75,7 +75,7 @@
     visibility: visible;
     pointer-events: auto;
   }
-  
+
   .nav-links li#NavAuthItem {
     align-self: stretch;
     width: 100%;
@@ -201,7 +201,7 @@
     border-radius: calc(var(--border-radius-0p8rem) * 3);
     background: var(--sidebar-widget-bg);
   }
-  
+
   .splash-hero-info {
     font-size: 1.6rem !important;
     display: flex !important;
@@ -236,7 +236,7 @@
     scroll-snap-align: center;
     scroll-snap-stop: always;
     transition: opacity 1.0s cubic-bezier(0.4, 0, 0.2, 1),
-    all 0.8s cubic-bezier(0.23, 1, 0.32, 1); 
+      all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
     opacity: 0;
     transform: scale(0.9);
   }
@@ -339,6 +339,24 @@
     background: var(--card-shadow);
   }
 
+  .splash-workflow-item.has-icon::before {
+    display: none;
+  }
+
+  .splash-workflow-item.has-icon {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    padding-left: 0;
+    margin-bottom: 2rem;
+  }
+
+  .splash-workflow-icon {
+    color: var(--card-shadow);
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+  }
+
   @keyframes SplashBounce {
 
     0%,
@@ -409,14 +427,85 @@
     color: var(--text-strong);
     font-weight: bold;
   }
+
+  /* Side Dots Navigation */
+  .splash-dots {
+    position: fixed;
+    right: 4rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    z-index: 1000;
+  }
+
+  .splash-dot {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: var(--text-soft);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    opacity: 0.5;
+  }
+
+  .splash-dot.active {
+    background: var(--card-shadow);
+    transform: scale(1.6);
+    opacity: 1;
+    box-shadow: 0 0 1.5rem var(--card-shadow);
+  }
+
+  .splash-dot-label {
+    position: absolute;
+    right: 2.5rem;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--card-shadow);
+    pointer-events: none;
+  }
+
+  .splash-dot:hover .splash-dot-label {
+    opacity: 1;
+  }
+
+  /* Hide Dots on Mobile */
+  @media (max-width: 1024px) {
+    .splash-dots {
+      display: none;
+    }
+  }
 </style>
 
 <div class="standalone-wrapper">
   <canvas id="SplashBackgroundCanvas"></canvas>
 
   <div class="content-layer">
+    <div class="splash-dots">
+      <button class="splash-dot" data-target="SectionHero"><span class="splash-dot-label">Start</span></button>
+      <button class="splash-dot" data-target="SectionLeadership"><span
+          class="splash-dot-label">Leadership</span></button>
+      <button class="splash-dot" data-target="SectionMission"><span class="splash-dot-label">Mission</span></button>
+      <button class="splash-dot" data-target="SectionEcosystem"><span class="splash-dot-label">Framework</span></button>
+      <button class="splash-dot" data-target="SectionDashboards"><span
+          class="splash-dot-label">Dashboards</span></button>
+      <button class="splash-dot" data-target="SectionFeatures"><span class="splash-dot-label">Features</span></button>
+      <button class="splash-dot" data-target="SectionGuide"><span class="splash-dot-label">Exploration</span></button>
+      <button class="splash-dot" data-target="SectionDevices"><span
+          class="splash-dot-label">Accessibility</span></button>
+      <button class="splash-dot" data-target="SectionPipeline"><span class="splash-dot-label">Pipeline</span></button>
+      <button class="splash-dot" data-target="SectionSustainability"><span
+          class="splash-dot-label">Commitment</span></button>
+      <button class="splash-dot" data-target="SectionCTA"><span class="splash-dot-label">End</span></button>
+    </div>
+
     <!-- Hero -->
-    <header class="splash-hero">
+    <header id="SectionHero" class="splash-hero splash-section">
       <a href="/map" class="splash-hero-link">
         <h1>Smokelyze</h1>
       </a>
@@ -435,7 +524,7 @@
     </header>
 
     <div class="splash-container">
-    
+
       <!-- 00. Project Leadership -->
       <section id="SectionLeadership" class="splash-section">
         <h2 class="splash-section-title">Project Leadership</h2>
@@ -444,8 +533,9 @@
             <span class="splash-tech-pill" style="margin-bottom: 1rem;">Principal Investigator</span>
             <h3>Dan Jaffe, Ph.D.</h3>
             <p>
-              Professor at the University of Washington Bothell's School of STEM and the Department of Atmospheric Sciences at the University of Washington Seattle. 
-              A leading expert in atmospheric chemistry, 
+              Professor at the University of Washington Bothell's School of STEM and the Department of Atmospheric
+              Sciences at the University of Washington Seattle.
+              A leading expert in atmospheric chemistry,
               his research focuses on the long-range transport of air pollution and the impact of wildfires
               on urban air quality and public health.
             </p>
@@ -454,31 +544,92 @@
             <span class="splash-tech-pill" style="margin-bottom: 1rem;">Lead Developer & Researcher</span>
             <h3>Haebum Lee, Ph.D.</h3>
             <p>
-              Postdoctoral position at the Jaffe Research Group, the University of Washington. Specializing in environmental data science and
+              Postdoctoral position at the Jaffe Research Group, the University of Washington. Specializing in
+              environmental data science and
               spatiotemporal analytics, he is the lead architect of the Smokelyze platform, dedicated to translating
               complex wildfire data into actionable insights.
             </p>
           </div>
         </div>
       </section>
-    
+
       <!-- 01. Mission & Purpose -->
       <section id="SectionMission" class="splash-section">
         <h2 class="splash-section-title">Mission & Purpose</h2>
         <div class="splash-card">
           <p>
             <span style="color: var(--card-shadow); font-weight: bold;">Smokelyze</span> (formerly PMO3smokeTool) was
-            created to precisely analyze the impact of wildfire smoke on air quality across the United States,
-            specifically focusing on health-hazardous concentrations of Ozone (O3) and Fine Particulate Matter (PM2.5)
+            created to precisely analyze <strong style="color: var(--card-shadow);">the impact of wildfire smoke on air
+              quality</strong> across the United States.
+            We specifically focus on health-hazardous concentrations of <strong style="color: var(--card-shadow);">Ozone
+              (O<sub>3</sub>)</strong> and <strong style="color: var(--card-shadow);">Fine Particulate
+              Matter (PM<sub>2.5</sub>)</strong>
             using data-driven insights.
           </p>
-          <p>To disentangle the complex interplay between meteorological factors and wildfire impact, we implemented the
-            <strong style="color: var(--card-shadow)">Generalized Additive Model (GAM)</strong> algorithm.
+          <p>
+            Leveraging the <strong style="color: var(--card-shadow);">Generalized Additive Model (GAM)</strong>
+            framework
+            established in our previous studies,
+            Smokelyze enables the precise disentanglement of complex interplays between meteorological factors and
+            wildfire impacts.
           </p>
           <p>
-            We hope this tool will be useful for state agencies and others in understanding the factors that control O3
-            production.
+            Our objective is to provide state agencies and researchers with actionable insights into the diverse factors
+            that drive wildfire smoke’s impact on regional air quality.
           </p>
+        </div>
+      </section>
+
+      <!-- 02. Integrated Research Framework (One-stop shop) -->
+      <section id="SectionEcosystem" class="splash-section">
+        <h2 class="splash-section-title">Integrated Framework</h2>
+        <div class="splash-card">
+          <div style="margin-bottom: 2rem;">
+            <h3>Multi-Source Data Synthesis (One-stop shop)</h3>
+            <p>
+              Traditionally, <strong style="color: var(--card-shadow);">Exceptional Event Demonstration (EED)</strong>
+              analysis has been a fragmented and
+              time-consuming process, requiring researchers to navigate across disparate platforms to synthesize smoke,
+              AQI, and meteorological datasets.
+            </p>
+            <p>
+              <strong>Smokelyze</strong> eliminates this analytical friction by unifying critical data streams—from
+              ground-level
+              observations to satellite detections and advanced statistical modeling—into a <strong>single, seamless
+                analytical
+                environment.</strong>
+            </p>
+          </div>
+
+          <div class="splash-workflow">
+            <div class="splash-workflow-item has-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                class="splash-workflow-icon">
+                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+              </svg>
+              <div>
+                <strong style="color: var(--card-shadow);">Unified Data Access</strong>: Seamless integration of
+                multi-source research data within a single dashboard.
+              </div>
+            </div>
+
+            <div class="splash-workflow-item has-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                class="splash-workflow-icon">
+                <path d="M21 2v6h-6" />
+                <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+                <path d="M3 22v-6h6" />
+                <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+              </svg>
+              <div>
+                <strong style="color: var(--card-shadow);">Spatiotemporal Synchronization</strong>: Automated alignment
+                of
+                diverse datasets across time and space.
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -506,22 +657,60 @@
         <h2 class="splash-section-title">Core Features</h2>
         <div class="splash-grid">
           <div class="splash-card">
-            <h3>Visual & Mapping Tools</h3>
+            <div
+              style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; color: var(--card-shadow);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"></path>
+                <line x1="8" y1="2" x2="8" y2="18"></line>
+                <line x1="16" y1="6" x2="16" y2="22"></line>
+              </svg>
+              <h3 style="margin: 0;">Visual & Mapping Tools</h3>
+            </div>
             <p>Visualize published research models (GAM) via interactive mapping, revealing the invisible impacts of
               smoke on air quality.</p>
           </div>
+
           <div class="splash-card">
-            <h3>Integrated Data Pipeline</h3>
-            <p>Consolidate multifaceted data streams—from AirNow ground stations to satellite detection—into a single,
+            <div
+              style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; color: var(--card-shadow);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              <h3 style="margin: 0;">Integrated Data Pipeline</h3>
+            </div>
+            <p>Consolidate multifaceted data streams—from AQS ground stations to satellite detection—into a single,
               unified analytical framework.</p>
           </div>
+
           <div class="splash-card">
-            <h3>Statistical Tools</h3>
-            <p>Uncover patterns using interactive data drawers, featuring synchronized tables, ParCoords, and scatter
-              plots for multi-dimensional analysis.</p>
+            <div
+              style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; color: var(--card-shadow);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              <h3 style="margin: 0;">Statistical Tools</h3>
+            </div>
+            <p>Uncover patterns using interactive data drawers, featuring synchronized tables and useful plots for
+              multi-dimensional analysis.</p>
           </div>
+
           <div class="splash-card">
-            <h3>Collaborative Tools</h3>
+            <div
+              style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; color: var(--card-shadow);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <h3 style="margin: 0;">Collaborative Tools</h3>
+            </div>
             <p>Utilize MapPost to pinpoint observations and share insights or feedback via geospatial markers and
               real-time commentary directly on the map.</p>
           </div>
@@ -539,24 +728,24 @@
           </p>
           <div class="splash-workflow">
             <div class="splash-workflow-item">
-              <strong style="color: var(--card-shadow)">Instant Visualization</strong>: Activate layers with a single
+              <strong style="color: var(--card-shadow);">Instant Visualization</strong>: Activate layers with a single
               click to see smoke impacts on air
               quality.
             </div>
             <div class="splash-workflow-item">
-              <strong style="color: var(--card-shadow)">Frictionless Timeline</strong>: Rapidly navigate years of
+              <strong style="color: var(--card-shadow);">Seamless Timeline</strong>: Rapidly navigate years of
               historical data through an intuitive
               temporal toolbar.
             </div>
             <div class="splash-workflow-item">
-              <strong style="color: var(--card-shadow)">One-Click Insights</strong>: Access deep statistical tables and
+              <strong style="color: var(--card-shadow);">One-Click Insights</strong>: Access deep statistical tables and
               charts instantly from the
               integrated data drawer.
             </div>
           </div>
         </div>
       </section>
-      
+
       <!-- 04-B. Cross-Device Optimization -->
       <section id="SectionDevices" class="splash-section">
         <h2 class="splash-section-title">Seamless Accessibility</h2>
@@ -599,7 +788,7 @@
           </div>
         </div>
       </section>
-      
+
       <!-- 05. Data Pipeline -->
       <section id="SectionPipeline" class="splash-section">
         <h2 class="splash-section-title">Data Pipeline</h2>
@@ -617,17 +806,18 @@
           </p>
           <div class="splash-workflow">
             <div class="splash-workflow-item">
-              <strong style="color: var(--card-shadow)">Multi-Source Acquisition</strong>: Automated tasks fetch
+              <strong style="color: var(--card-shadow);">Multi-Source Acquisition</strong>: Automated tasks fetch
               real-time data from AirNow stations, satellite-detected HMS smoke polygons, and integrated wildfire
               incident news.
             </div>
             <div class="splash-workflow-item">
-              <strong style="color: var(--card-shadow)">Modeling & Prediction</strong>: Periodic R scripts automatically
-              collect MERRA-2, TROPOMI, and HYSPLIT data via Docker to run trained GAM models for future smoke impact
+              <strong style="color: var(--card-shadow);">Modeling & Prediction</strong>: Periodic R scripts
+              automatically
+              collect meteological and satellite data via Docker to run trained GAM models for future smoke impact
               analysis.
             </div>
             <div class="splash-workflow-item">
-              <strong style="color: var(--card-shadow)">Automated Delivery</strong>: Processed datasets are compressed
+              <strong style="color: var(--card-shadow);">Automated Delivery</strong>: Processed datasets are compressed
               and deployed to Google Cloud Storage (GCS) buckets, ready for instant retrieval by the Map rendering
               engine.
             </div>
@@ -635,7 +825,25 @@
         </div>
       </section>
 
-      <!-- 06. Final CTA -->
+      <!-- 06. Sustainability & Public Benefit -->
+      <section id="SectionSustainability" class="splash-section">
+        <h2 class="splash-section-title">Our Commitment</h2>
+        <div class="splash-card">
+          <p>
+            Smokelyze is a <strong style="color: var(--card-shadow);">community-driven project</strong> dedicated to
+            keeping research-grade analytics free and accessible.
+            We are committed to the long-term sustainability of this platform for the <strong
+              style="color: var(--card-shadow);">public benefit</strong>.
+          </p>
+          <p>
+            While we prioritize data integrity, we recommend that users cross-reference findings with primary sources
+            for <strong style="color: var(--card-shadow);">formal academic publications or official research
+              reports</strong>, and exercise appropriate caution in their analytical interpretations.
+          </p>
+        </div>
+      </section>
+
+      <!-- 07. Final CTA -->
       <section id="SectionCTA" class="splash-section splash-cta">
         <div class="splash-cta-container">
           <h2>Ready?</h2>
@@ -725,22 +933,44 @@
     init();
     draw();
 
-    // --- Focus Scroll Reveal ---
+    // --- Focus Scroll Reveal & Dot Update ---
+    const observerOptions = {
+      threshold: 0.3,
+      rootMargin: "-20% 0% -20% 0%"
+    };
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add("active");
+          // Update Dots
+          const id = entry.target.id;
+          document.querySelectorAll(".splash-dot").forEach(dot => {
+            if (dot.getAttribute("data-target") === id) {
+              dot.classList.add("active");
+            } else {
+              dot.classList.remove("active");
+            }
+          });
         } else {
           entry.target.classList.remove("active");
         }
       });
-    }, {
-      threshold: 0.2, // Highlight when 40% of the section is visible
-      rootMargin: "-10% 0% -10% 0%"
-    });
+    }, observerOptions);
 
     document.querySelectorAll(".splash-section").forEach(s => {
       observer.observe(s);
+    });
+
+    // Dot Click Navigation
+    document.querySelectorAll(".splash-dot").forEach(dot => {
+      dot.addEventListener("click", () => {
+        const targetId = dot.getAttribute("data-target");
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: "smooth" });
+        }
+      });
     });
 
     // Close menu when clicking backdrop

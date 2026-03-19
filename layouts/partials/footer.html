@@ -173,6 +173,82 @@
   </div>
 </div>
 
+<!-- Role Selection Modal (First-time login) -->
+<div class="auth-overlay" id="RoleSelectionOverlay" style="display: none;">
+  <div class="auth-card profile-card">
+    <div class="auth-card-header">
+      <h3>Tell Us About You</h3>
+    </div>
+    <div class="auth-card-body" style="text-align: left;">
+      <p style="text-align: center; font-weight: normal; font-size: 1.4rem; margin-bottom: 2rem;">
+        Help us improve Smokelyze by selecting the category that best describes you.
+      </p>
+
+      <div class="role-grid" id="RoleGrid">
+        <button class="role-option" data-role="scientist">
+          <span class="role-icon">
+            <svg>
+              <use xlink:href="#icon-role-scientist" />
+            </svg>
+          </span>
+          <span class="role-label">Scientist / Researcher</span>
+          <span class="role-desc">Academic or research institution</span>
+        </button>
+
+        <button class="role-option" data-role="government">
+          <span class="role-icon">
+            <svg>
+              <use xlink:href="#icon-role-government" />
+            </svg>
+          </span>
+          <span class="role-label">Government / Agency</span>
+          <span class="role-desc">Federal, state, or local agency</span>
+        </button>
+
+        <button class="role-option" data-role="consulting">
+          <span class="role-icon">
+            <svg>
+              <use xlink:href="#icon-role-consulting" />
+            </svg>
+          </span>
+          <span class="role-label">Consulting / Industry</span>
+          <span class="role-desc">Private sector or consulting firm</span>
+        </button>
+
+        <button class="role-option" data-role="student">
+          <span class="role-icon">
+            <svg>
+              <use xlink:href="#icon-role-student" />
+            </svg>
+          </span>
+          <span class="role-label">Student</span>
+          <span class="role-desc">Undergraduate or graduate</span>
+        </button>
+
+        <button class="role-option" data-role="general">
+          <span class="role-icon">
+            <svg>
+              <use xlink:href="#icon-role-general" />
+            </svg>
+          </span>
+          <span class="role-label">General Public</span>
+          <span class="role-desc">Independent / unaffiliated</span>
+        </button>
+      </div>
+
+      <div class="profile-group" style="margin-top: 1.5rem;">
+        <label for="RoleAffiliation">Affiliation <small style="color:var(--text-soft);">(optional)</small></label>
+        <input type="text" id="RoleAffiliation" maxlength="80"
+          placeholder="e.g. University of Washington, EPA, NOAA..." class="profile-input">
+      </div>
+    </div>
+    <div class="auth-card-footer" style="display: flex; gap: 1rem; flex-direction: column;">
+      <button class="profile-btn-save" id="RoleBtnSave" disabled>Continue</button>
+      <button class="auth-btn-guest" id="RoleBtnSkip" style="font-size: 1.3rem; opacity: 0.6;">Skip for now</button>
+    </div>
+  </div>
+</div>
+
 <!-- User Profiles Modal -->
 <div class="auth-overlay ProfilePage" id="ProfilePage" style="display: none;">
   <div class="auth-card profile-card">
@@ -215,6 +291,17 @@
         <label for="ProfileAffiliation">Affiliation</label>
         <input type="text" id="ProfileAffiliation" maxlength="50" placeholder="e.g. University, Company"
           class="profile-input">
+      </div>
+      <div class="profile-group">
+        <label for="ProfileRole">Role</label>
+        <select id="ProfileRole" class="profile-input">
+          <option value="">-- Select --</option>
+          <option value="scientist">Scientist / Researcher</option>
+          <option value="government">Government / Agency</option>
+          <option value="consulting">Consulting / Industry</option>
+          <option value="student">Student</option>
+          <option value="general">General Public</option>
+        </select>
       </div>
 
       <div class="profile-message" id="ProfileMessage"></div>

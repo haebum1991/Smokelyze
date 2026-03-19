@@ -36,6 +36,7 @@ export async function logUserAction(type, payload = {}) {
         id_page: String(page || ""),
 
         // Background Context & Specific Details (Normalized to Strings)
+        key_userRole: String(sessionStorage.getItem("userRole") || "unknown"),
         key_dataset: String(payload.dataset || ""),
         key_layer: String(payload.layer || ""),
         key_aqs: payload.aqs ? "aqs_" + String(payload.aqs) : "none",
