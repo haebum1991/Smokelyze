@@ -74,7 +74,8 @@ function colorizeTempoImage(imgUrl, metadata, source, sourceId) {
                     canvas.width = img.width;
                     canvas.height = img.height;
                 }
-                const ctx = canvas.getContext("2d", { willReadFrequently: true });
+                
+                const ctx = canvas.getContext("2d");
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0);
 
@@ -175,7 +176,7 @@ function clearTempoSource(source, sourceId) {
 
     try {
         const canvas = source.getCanvas();
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         source.setCoordinates([[-1, 1], [-0.9, 1], [-0.9, 0.9], [-1, 0.9]]);
         if (source.play) source.play();

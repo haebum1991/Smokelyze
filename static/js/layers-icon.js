@@ -150,7 +150,7 @@ export function iconPulsingFire(map, size) {
             const canvas = document.createElement("canvas");
             canvas.width = this.width;
             canvas.height = this.height;
-            this.context = canvas.getContext("2d", { willReadFrequently: true });
+            this.context = canvas.getContext("2d");
         },
         render() {
             if (this._rendered) return false;
@@ -171,7 +171,7 @@ export function iconPulsingNews(map, size) {
             const canvas = document.createElement("canvas");
             canvas.width = this.width;
             canvas.height = this.height;
-            this.context = canvas.getContext("2d", { willReadFrequently: true });
+            this.context = canvas.getContext("2d");
         },
         render() {
             if (this._rendered) return false;
@@ -192,7 +192,7 @@ export function iconPulsingAlert(map, size) {
             const canvas = document.createElement("canvas");
             canvas.width = this.width;
             canvas.height = this.height;
-            this.context = canvas.getContext("2d", { willReadFrequently: true });
+            this.context = canvas.getContext("2d");
         },
         render() {
             if (this._rendered) return false;
@@ -205,47 +205,20 @@ export function iconPulsingAlert(map, size) {
 }
 
 // --- UI Interface (For Menu/Accordion) ---
-/**
- * Renders a specific pulsing icon canvas
- */
-function renderUIPulsingIcon(canv) {
-    const type = canv.getAttribute("data-type");
-    const size = canv.width;
-    const ctx = canv.getContext("2d", { willReadFrequently: true });
 
-    if (type === "fire") drawIconCoreFire(ctx, size, 0);
-    else if (type === "news") drawIconCoreNews(ctx, size, 0);
-    else if (type === "alert") drawIconCoreAlert(ctx, size, 0);
-}
-
-/**
- * Initializes all pulsing icons currently in the DOM
- */
 export function initUIPulsingIcons() {
+    // Delay to ensure sidebar layout is ready and canvas elements have proper dimensions
     setTimeout(() => {
         const canvases = document.querySelectorAll(".ui-pulsing-icon");
-        canvases.forEach(renderUIPulsingIcon);
+        canvases.forEach(canv => {
+            const type = canv.getAttribute("data-type");
+            const size = canv.width;
+            const ctx = canv.getContext("2d");
+
+            if (type === "fire") drawIconCoreFire(ctx, size, 0);
+            else if (type === "news") drawIconCoreNews(ctx, size, 0);
+            else if (type === "alert") drawIconCoreAlert(ctx, size, 0);
+        });
     }, 500);
 }
-
-/**
- * Automatic Observer: Detects whenever a new icon canvas is added to the DOM (like in a tutorial popover)
- */
-const uiIconObserver = new MutationObserver((mutations) => {
-    mutations.forEach(mutation => {
-        mutation.addedNodes.forEach(node => {
-            if (node.nodeType !== 1) return; // Only elements
-            
-            // Check the node itself or its children
-            const canvases = node.classList?.contains("ui-pulsing-icon") 
-                ? [node] 
-                : node.querySelectorAll?.(".ui-pulsing-icon") || [];
-            
-            canvases.forEach(renderUIPulsingIcon);
-        });
-    });
-});
-
-// Start observing the whole document for added icons
-uiIconObserver.observe(document.body, { childList: true, subtree: true });
 
