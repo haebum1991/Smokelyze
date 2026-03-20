@@ -62,6 +62,9 @@ export function resetLoadedSources(updateWildfireNewsList) {
     Object.keys(loadedSources).forEach(key => {
         delete loadedSources[key];
     });
+    Object.keys(loadedGeoJSON).forEach(key => {
+        delete loadedGeoJSON[key];
+    });
     loadedNewsFeatures.length = 0;
     Object.keys(modelStatsCache).forEach(key => delete modelStatsCache[key]);
     if (updateWildfireNewsList) updateWildfireNewsList([]); // Clear UI immediately

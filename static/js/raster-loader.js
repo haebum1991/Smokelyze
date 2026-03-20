@@ -165,8 +165,14 @@ function colorizeTempoImage(imgUrl, metadata, source, sourceId) {
     });
 }
 
-function clearTempoSource(source) {
+function clearTempoSource(source, sourceId) {
     if (!source) return;
+    
+    // Skip if already cleared to prevent WebGL memory leak
+    if (tempoDataStore[sourceId] && tempoDataStore[sourceId].cleared === true) {
+        return;
+    }
+
     try {
         const canvas = source.getCanvas();
         const ctx = canvas.getContext("2d");
@@ -174,6 +180,10 @@ function clearTempoSource(source) {
         source.setCoordinates([[-1, 1], [-0.9, 1], [-0.9, 0.9], [-1, 0.9]]);
         if (source.play) source.play();
         if (source.pause) source.pause();
+        
+        if (tempoDataStore[sourceId]) {
+            tempoDataStore[sourceId].cleared = true;
+        }
     } catch (e) {
         console.warn("TEMPO clear failed:", e);
     }
@@ -185,8 +195,8 @@ function clearTempoSource(source) {
 export function clearAllRaster() {
     for (const cfg of [...Object.values(TEMPO_CONFIG), ...Object.values(TROPOMI_CONFIG)]) {
         const source = map?.getSource(cfg.sourceId);
-        if (source) clearTempoSource(source);
-        tempoDataStore[cfg.sourceId] = { grayscale: null, metadata: null, coordinates: null };
+        if (source) clearTempoSource(source, cfg.sourceId);
+        tempoDataStore[cfg.sourceId] = { grayscale: null, metadata: null, coordinates: null, cleared: true };
     }
 }
 
@@ -342,7 +352,7 @@ export async function tempoLoadData(isoDate) {
 
         const cb = document.getElementById(cfg.layerId);
         // Always clear first to prevent old data from sticking around while loading
-        clearTempoSource(source);
+        clearTempoSource(source, cfg.sourceId);
 
         if (!cb || !cb.checked) {
             continue;
@@ -371,6 +381,7 @@ export async function tempoLoadData(isoDate) {
                 }
                 
                 tempoDataStore[cfg.sourceId].coordinates = coordinates;
+                tempoDataStore[cfg.sourceId].cleared = false;
                 await colorizeTempoImage(pngUrl, metadata, source, cfg.sourceId);
                 source.setCoordinates(coordinates);
                 
@@ -387,7 +398,9 @@ export async function tempoLoadData(isoDate) {
             }
         } catch (e) {
             console.error(`TEMPO ${key} load error:`, e);
-            clearTempoSource(source);
+            
+            if (tempoDataStore[cfg.sourceId]) tempoDataStore[cfg.sourceId].cleared = false;
+            clearTempoSource(source, cfg.sourceId);
             
             // 데이터가 없는 경우 (404 등) 사용자에게 알림
             if (cb && cb.checked) {
@@ -405,7 +418,7 @@ export async function tropomiLoadData(isoDate) {
 
         const cb = document.getElementById(cfg.layerId);
         // Always clear first to prevent old data from sticking around while loading
-        clearTempoSource(source);
+        clearTempoSource(source, cfg.sourceId);
 
         if (!cb || !cb.checked) {
             continue;
@@ -434,6 +447,7 @@ export async function tropomiLoadData(isoDate) {
                 }
                 
                 tempoDataStore[cfg.sourceId].coordinates = coordinates;
+                tempoDataStore[cfg.sourceId].cleared = false;
                 await colorizeTempoImage(pngUrl, metadata, source, cfg.sourceId);
                 source.setCoordinates(coordinates);
                 
@@ -450,7 +464,8 @@ export async function tropomiLoadData(isoDate) {
             }
         } catch (e) {
             console.error(`TROPOMI ${key} load error:`, e);
-            clearTempoSource(source);
+            if (tempoDataStore[cfg.sourceId]) tempoDataStore[cfg.sourceId].cleared = false;
+            clearTempoSource(source, cfg.sourceId);
             
             // Alert user if no data
             if (cb && cb.checked) {
