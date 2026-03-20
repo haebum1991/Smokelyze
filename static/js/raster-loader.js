@@ -181,9 +181,11 @@ function clearTempoSource(source, sourceId) {
         if (source.play) source.play();
         if (source.pause) source.pause();
         
-        if (tempoDataStore[sourceId]) {
-            tempoDataStore[sourceId].cleared = true;
+        if (!tempoDataStore[sourceId]) {
+            tempoDataStore[sourceId] = {};
         }
+        tempoDataStore[sourceId].cleared = true;
+        
     } catch (e) {
         console.warn("TEMPO clear failed:", e);
     }

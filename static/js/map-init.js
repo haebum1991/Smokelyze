@@ -69,6 +69,17 @@ function createMap() {
                 </div>`;
         }
     });
+    
+    // Handle background tile loading errors (Grey screen / Network failure)
+    m.on("error", (e) => {
+        const err = e.error || {};
+        // 429: Too Many Requests (Rate limited by free tile server)
+        if (err.status === 429) {
+            console.warn("Map tile server rate limit hit (429). Background may not appear.");
+        } else if (err.status === 401 || err.status === 403) {
+            console.error("Map style/tile access denied:", err);
+        }
+    });
 
     return m;
 }

@@ -293,12 +293,34 @@ title: ""
             <div class="faq-answer-inner">
                 Smokelyze works best on modern browsers:
                 <ul>
-                    <li><strong>Chrome</strong> (recommended), Firefox, Edge, Safari</li>
+                    <li><strong>Chrome</strong> (recommended), Edge, Firefox, Safari</li>
                     <li>Mobile browsers (Chrome for Android, Safari for iOS)</li>
                     <li>Internet Explorer is not supported</li>
                 </ul>
                 For the best experience, use a <strong>desktop browser</strong> with a screen width of 1024px or wider.
                 The map and statistical plots are fully responsive but designed for larger screens.
+            </div>
+        </div>
+    </div>
+    
+    <div class="faq-item" data-category="general">
+        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+            <h3><span class="faq-tag">General</span> 
+            The map screen is "black" or "grey". How can I fix this?
+            </h3>
+            <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+            <div class="faq-answer-inner">
+                This usually indicates a <strong>WebGL (graphics engine)</strong> or <strong>network connectivity</strong> issue:
+                <ul>
+                    <li><strong>Black Screen:</strong> Often caused by GPU memory exhaustion. Perform a <strong>"Hard Refresh"</strong> (<code>Ctrl</code>+<code>Shift</code>+<code>R</code>) and ensure <strong>"Hardware Acceleration"</strong> is enabled in your browser settings.</li>
+                    <li><strong>Grey Screen:</strong> This typically means the app is working, but the <strong>background map server</strong> is slow or temporarily unreachable. Wait a few moments or try zooming in/out.</li>
+                    <li><strong>Browser Recommendation:</strong> While we support Chrome, <strong>MS Edge</strong> often handles heavy map rendering more robustly on certain hardware. If you experience persistent crashes in Chrome, we highly recommend trying <strong>MS Edge</strong>.</li>
+                    <li><strong>Keep Updated:</strong> Older browser versions may contain bugs in their graphics engine.
+                        Please ensure your browser is updated to the <strong>latest version</strong> for optimal
+                        performance and stability.</li>
+                </ul>
             </div>
         </div>
     </div>
