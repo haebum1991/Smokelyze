@@ -175,7 +175,7 @@ function clearTempoSource(source, sourceId) {
 
     try {
         const canvas = source.getCanvas();
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         source.setCoordinates([[-1, 1], [-0.9, 1], [-0.9, 0.9], [-1, 0.9]]);
         if (source.play) source.play();
