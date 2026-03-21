@@ -5,7 +5,9 @@
  
 import { regionStats } from "./layers-state.js";
 import { updateStateShading } from "./layers-colors.js";
-import { LAYER_TEMPLATES, DATASET_SOURCE_MAP } from "./layers-def.js";
+import { LAYER_TEMPLATES, DATASET_SOURCE_MAP, DATA_IMPORT_METHOD } from "./layers-def.js";
+import { map } from "./map-init.js";
+import { EMPTY_FC } from "./layers-constants.js";
 
 // Internal state
 let loadedNewsFeatures = [];  // 내부 전용
@@ -59,6 +61,21 @@ export function clearModelStats() {
 }
 
 export function resetLoadedSources(updateWildfireNewsList) {
+    
+    // 1. [Fix] Force WebGL context to clear textures by feeding empty data 
+    // before destroying the JS variables. This prevents Mapbox black screen crashes.
+    if (map && map.isStyleLoaded()) {
+        Object.keys(loadedSources).forEach(sourceKey => {
+            const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
+            const targetSourceId = (ds && ds.source) ? ds.source : sourceKey;
+            
+            const mapSource = map.getSource(targetSourceId);
+            if (mapSource && typeof mapSource.setData === "function") {
+                mapSource.setData(EMPTY_FC);
+            }
+        });
+    }
+    
     Object.keys(loadedSources).forEach(key => {
         delete loadedSources[key];
     });
