@@ -252,7 +252,8 @@ export function applyLayerToggles() {
                     if (shouldShow) {
                         if (l.type === "raster") {
                             const anchorId = map.getStyle().layers.find(ly => 
-                                ly.type === "symbol" || ly.id.includes("road") || ly.id.includes("bridge") || ly.id.includes("highway")
+                                ly.type === "symbol" || ly.id.includes("road") || ly.id.includes("bridge") || ly.id.includes("highway") || 
+                                ly.id === "states-line" || ly.id === "states-fill" || ly.id === "states-hover"
                             )?.id;
                             map.moveLayer(l.id, anchorId);
                         } else {

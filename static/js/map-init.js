@@ -1,8 +1,36 @@
 
 const isMobile = window.innerWidth <= 1024;
 
+// Standard Vector style
+// export const mapConfig = {
+//     style: "https://tiles.openfreemap.org/styles/liberty",
+//     center: [-98.5, 39.8],
+//     zoom: isMobile ? 2.5 : 3.5
+// };
+
+
+// Standard OSM Raster style for maximum stability across all devices (Integrated & Dedicated)
 export const mapConfig = {
-    style: "https://tiles.openfreemap.org/styles/liberty",
+    style: {
+        version: 8,
+        sources: {
+            "raster-tiles": {
+                type: "raster",
+                tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+                tileSize: 256,
+                attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+            }
+        },
+        layers: [
+            {
+                id: "background-tiles",
+                type: "raster",
+                source: "raster-tiles",
+                minzoom: 0,
+                maxzoom: 20
+            }
+        ]
+    },
     center: [-98.5, 39.8],
     zoom: isMobile ? 2.5 : 3.5
 };
