@@ -22,7 +22,11 @@ function createMap() {
         center: mapConfig.center,
         zoom: mapConfig.zoom,
         attributionControl: false,
-        preserveDrawingBuffer: false
+        
+        // Performance optimizations for low-end/integrated GPUs
+        preserveDrawingBuffer: false,
+        crossSourceCollisions: false, // Disables label collisions between sources
+        fadeDuration: 0           // Disable cross-fading between zoom levels
     });
 
     // Handle WebGL context loss (black screen on low-end GPUs)

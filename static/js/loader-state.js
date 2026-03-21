@@ -77,13 +77,19 @@ export function resetLoadedSources(updateWildfireNewsList) {
     }
     
     Object.keys(loadedSources).forEach(key => {
+        loadedSources[key] = null;
         delete loadedSources[key];
     });
     Object.keys(loadedGeoJSON).forEach(key => {
+        loadedGeoJSON[key] = null;
         delete loadedGeoJSON[key];
     });
     loadedNewsFeatures.length = 0;
-    Object.keys(modelStatsCache).forEach(key => delete modelStatsCache[key]);
+    Object.keys(modelStatsCache).forEach(key => {
+        modelStatsCache[key] = null;
+        delete modelStatsCache[key];
+    });
+    
     if (updateWildfireNewsList) updateWildfireNewsList([]); // Clear UI immediately
     console.log("Loader cache cleared.");
 }
