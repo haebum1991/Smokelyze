@@ -11,7 +11,10 @@ title: ""
   Announcements & Updates
 </h1>
 
-<button class="reply-btn-submit" id="BoardBtnWrite" style="display: none;">+ Write Announcement</button>
+<div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+  <button class="reply-btn-submit" id="BoardBtnWrite" style="display: none;">+ Write Announcement</button>
+  <button class="reply-btn-submit" id="BoardBtnEmail" style="display: none;">+ Write Bulk Email</button>
+</div>
 <hr>
 
 <div id="BoardPagination" class="datadb-pagination">
@@ -49,6 +52,7 @@ title: ""
             </div>
             <div class="MapPost-modal-footer">
                 <div class="reply-btn-wrapper">
+                    <button class="reply-btn-submit" id="BoardBtnTest" style="display: none;">Send Test to Self</button>
                     <button class="reply-btn-submit" id="BoardBtnSubmit">Submit</button>
                     <button class="reply-btn-cancel" id="BoardBtnCancel">Cancel</button>
                 </div>
