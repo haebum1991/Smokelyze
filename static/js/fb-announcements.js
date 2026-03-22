@@ -293,12 +293,12 @@ function wrapEmailTemplate(subject, bodyText) {
                     ${formattedBody}
                 </div>
                 <div style="text-align: center;">
-                    <a href="https://smokelyze.netlify.app" class="btn">Launch Platform</a>
+                    <a href="https://smokelyze.netlify.app" class="btn">Visit Smokelyze</a>
                 </div>
             </div>
             <div class="footer">
                 <p>© 2026 Smokelyze Project. All rights reserved.</p>
-                <p>This is an automated official announcement from the Smokelyze Intelligence Team.</p>
+                <p>This is an official announcement from the Smokelyze Team.</p>
                 <p><a href="https://smokelyze.netlify.app" style="color: #3498db; text-decoration: none;">smokelyze.netlify.app</a></p>
             </div>
         </div>
