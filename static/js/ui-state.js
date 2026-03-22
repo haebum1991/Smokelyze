@@ -15,7 +15,17 @@ const S = sessionStorage;
 try {
   const nav = performance.getEntriesByType("navigation")[0];
   const isReload = (nav?.type === "reload") || (performance.navigation?.type === 1);
-  if (isReload) S.removeItem(KEY);
+  const isMapStyleSwitch = S.getItem("mapStyleChanged") === "true";
+
+  // Only reset the state if its a normal browser reload, NOT our intentional map style switch reload
+  if (isReload && !isMapStyleSwitch) {
+    S.removeItem(KEY);
+  }
+
+  // Clear the flag after handling it
+  if (isMapStyleSwitch) {
+    S.removeItem("mapStyleChanged");
+  }
 } catch (e) {
   // Ignore
 }
@@ -152,6 +162,15 @@ export function saveGlobalPointLayers(enabled) {
 export function saveGlobalNaShading(enabled) {
   setNaShadingEnabled(enabled);
   savePatch({ NaShadingEnabled: !!enabled });
+}
+
+export function saveGlobalMapStyle(styleId) {
+  savePatch({ mapStyle: styleId });
+}
+
+export function readGlobalMapStyle() {
+  const s = read();
+  return s.mapStyle;
 }
 
 export function bindAccordionAutosave() {

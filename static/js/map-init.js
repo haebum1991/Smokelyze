@@ -8,29 +8,72 @@ const isMobile = window.innerWidth <= 1024;
 //     zoom: isMobile ? 2.5 : 3.5
 // };
 
-
-// Standard OSM Raster style for maximum stability across all devices (Integrated & Dedicated)
-export const mapConfig = {
-    style: {
-        version: 8,
-        sources: {
-            "raster-tiles": {
-                type: "raster",
-                tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-                tileSize: 256,
-                attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-            }
-        },
-        layers: [
-            {
-                id: "background-tiles",
-                type: "raster",
-                source: "raster-tiles",
-                minzoom: 0,
-                maxzoom: 20
-            }
-        ]
+export const MAP_STYLES = {
+    osm: {
+        id: "osm",
+        name: "Default",
+        type: "raster",
+        style: {
+            version: 8,
+            sources: {
+                "raster-tiles": {
+                    type: "raster",
+                    tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+                    tileSize: 256,
+                    attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+                }
+            },
+            layers: [{ id: "background-tiles", type: "raster", source: "raster-tiles", minzoom: 0, maxzoom: 20 }]
+        }
     },
+    topo: {
+        id: "topo",
+        name: "Topo",
+        type: "raster",
+        style: {
+            version: 8,
+            sources: {
+                "raster-tiles": {
+                    type: "raster",
+                    tiles: ["https://tile.opentopomap.org/{z}/{x}/{y}.png"],
+                    tileSize: 256,
+                    attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a>, SRTM | Map style: &copy; <a href='https://opentopomap.org'>OpenTopoMap</a>"
+                }
+            },
+            layers: [{ id: "background-tiles", type: "raster", source: "raster-tiles", minzoom: 0, maxzoom: 20 }]
+        }
+    },
+    light: {
+        id: "light",
+        name: "White",
+        type: "raster",
+        style: {
+            version: 8,
+            sources: {
+                "raster-tiles": {
+                    type: "raster",
+                    tiles: ["https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png"],
+                    tileSize: 256,
+                    attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a>, <a href='https://carto.com/attributions'>CARTO</a>"
+                }
+            },
+            layers: [{ id: "background-tiles", type: "raster", source: "raster-tiles", minzoom: 0, maxzoom: 20 }]
+        }
+    },
+    vector: {
+        id: "vector",
+        name: "Vector",
+        type: "vector",
+        style: "https://tiles.openfreemap.org/styles/liberty"
+    }
+};
+
+// Initial Style Selection
+const savedStyleId = sessionStorage.getItem("mapStyle") || "osm";
+const initialStyle = MAP_STYLES[savedStyleId]?.style || MAP_STYLES.osm.style;
+
+export const mapConfig = {
+    style: initialStyle,
     center: [-98.5, 39.8],
     zoom: isMobile ? 2.5 : 3.5
 };

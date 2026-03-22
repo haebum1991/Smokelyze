@@ -1,6 +1,7 @@
 
-import { savePatch, read, initStateShadingToggle, initPointLayersToggle, initNaShadingToggle } from "./ui-state.js";
-import { onDescDrawerOpen, appendDrawerHelpIcon, appendAllLayerHelpIcons } from "./ui-param-desc.js";
+import { savePatch, read, initStateShadingToggle, initPointLayersToggle, initNaShadingToggle, saveGlobalMapStyle, readGlobalMapStyle } from "./ui-state.js";
+import { onDescDrawerOpen, appendDrawerHelpIcon, appendAllLayerHelpIcons, appendGenericHelpIcon } from "./ui-param-desc.js";
+import { MAP_STYLES } from "./map-init.js";
 import {
     clearHighlight,
     setOnSetNewsDrawer,
@@ -308,6 +309,50 @@ export function initAccordion() {
         });
         initNaShadingToggle();
         appendDrawerHelpIcon("ToggleSwitchNaShading", "show-na-values");
+    }
+    
+    const mapTypeHeader = document.getElementById("MapTypeHeader");
+    if (mapTypeHeader) {
+        appendGenericHelpIcon("MapTypeHeader", "map-type");
+    }
+    
+    // --- Base Map Selection ---
+    const grid = document.getElementById("BaseMapGrid");
+    if (grid) {
+        const currentStyleId = sessionStorage.getItem("mapStyle") || "osm";
+
+        Object.values(MAP_STYLES).forEach(itemCfg => {
+            const item = document.createElement("div");
+            item.className = `base-map-item ${itemCfg.id === currentStyleId ? "active" : ""}`;
+            item.dataset.id = itemCfg.id;
+            let imgName = "standard_webp";
+            if (itemCfg.id === "osm") imgName = "standard_webp";
+            else if (itemCfg.id === "topo") imgName = "topo_webp";
+            else if (itemCfg.id === "light") imgName = "minimal_webp";
+            else if (itemCfg.id === "vector") imgName = "vector_webp";
+
+            item.innerHTML = `
+                <img src="/images/map_thumbs/${imgName}.webp" alt="${itemCfg.name}">
+                <div class="base-map-label">${itemCfg.name}</div>
+            `;
+
+            item.addEventListener("click", () => {
+                if (item.classList.contains("active")) return;
+
+                // 1. Update UI
+                grid.querySelectorAll(".base-map-item").forEach(el => el.classList.remove("active"));
+                item.classList.add("active");
+
+                // 2. Persist
+                saveGlobalMapStyle(itemCfg.id);
+                sessionStorage.setItem("mapStyle", itemCfg.id);
+
+                // 3. Full Redraw via Reload
+                sessionStorage.setItem("mapStyleChanged", "true");
+                window.location.reload();
+            });
+            grid.appendChild(item);
+        });
     }
 
     const s = read?.();

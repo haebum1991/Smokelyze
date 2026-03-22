@@ -2674,3 +2674,61 @@ body.map-tut-active .maplibregl-ctrl-bottom-left {
   }
 }
 
+/* ================ Base Map Selection Grid ================ */
+.base-map-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.8rem;
+  margin-top: 0.5rem;
+  padding: 0 0.4rem;
+}
+
+.base-map-item {
+  position: relative;
+  cursor: pointer;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  border: 0.2rem solid transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  aspect-ratio: 1 / 1;
+  background: var(--color-bg);
+  box-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.15);
+}
+
+@media (hover: hover) {
+  .base-map-item:hover {
+    transform: scale(1.05);
+    border-color: var(--card-shadow);
+  }
+}
+
+.base-map-item.active {
+  border-color: var(--card-shadow);
+  box-shadow: 0 0 1rem var(--card-shadow);
+}
+
+.base-map-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.base-map-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--color-bg);
+  color: var(--text-main);
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 0.2rem 0.2rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  letter-spacing: 0.02rem;
+}
+
