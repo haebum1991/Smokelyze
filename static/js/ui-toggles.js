@@ -328,7 +328,7 @@ export function initAccordion() {
             let imgName = "standard_webp";
             if (itemCfg.id === "osm") imgName = "standard_webp";
             else if (itemCfg.id === "topo") imgName = "topo_webp";
-            else if (itemCfg.id === "light") imgName = "minimal_webp";
+            else if (itemCfg.id === "light") imgName = "light_webp";
             else if (itemCfg.id === "vector") imgName = "vector_webp";
 
             item.innerHTML = `

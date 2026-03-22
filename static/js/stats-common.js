@@ -896,7 +896,7 @@ export function attachResizeObserver(container, observerProp) {
                 Plotly.Plots.resize(container);
             }
         }
-    }, 200));
+    }, 300));
     ro.observe(container);
     if (observerProp) container[observerProp] = ro;
 }

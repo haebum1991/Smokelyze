@@ -9,7 +9,7 @@ import { loadedGeoJSON, activeSources, loadedSources } from "./loader.js";
  */
 function waitForMapIdle(timeout = 10000) {
     return new Promise((resolve) => {
-        // 프론트엔드의 Debounce(200ms) 이벤트가 스피너를 켤 시간을 주기 위해 250ms 먼저 대기
+        // 프론트엔드의 Debounce(300ms) 이벤트가 스피너를 켤 시간을 주기 위해 300ms 먼저 대기
         setTimeout(() => {
             const spinner = document.getElementById("MapLoadingSpinner");
 
@@ -51,7 +51,7 @@ function waitForMapIdle(timeout = 10000) {
                 finalize();
             }, timeout);
 
-        }, 250);
+        }, 300);
     });
 }
 

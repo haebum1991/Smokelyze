@@ -97,7 +97,7 @@ function handleLocationClick(element) {
     const targetProps = { ...state.MapPostData[id], docId: id };
 
     if (toggleWasOff) {
-        // Wait for the debounced update (200ms) to finish map refresh
+        // Wait for the debounced update (300ms) to finish map refresh
         setTimeout(() => {
             utils.highlightLocation(targetCoords, targetProps, "MapPost");
         }, 300);

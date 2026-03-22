@@ -26,6 +26,23 @@ export const MAP_STYLES = {
             layers: [{ id: "background-tiles", type: "raster", source: "raster-tiles", minzoom: 0, maxzoom: 20 }]
         }
     },
+    light: {
+        id: "light",
+        name: "Light",
+        type: "raster",
+        style: {
+            version: 8,
+            sources: {
+                "raster-tiles": {
+                    type: "raster",
+                    tiles: ["https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png"],
+                    tileSize: 256,
+                    attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a>, <a href='https://carto.com/attributions'>CARTO</a>"
+                }
+            },
+            layers: [{ id: "background-tiles", type: "raster", source: "raster-tiles", minzoom: 0, maxzoom: 20 }]
+        }
+    },
     topo: {
         id: "topo",
         name: "Topo",
@@ -38,23 +55,6 @@ export const MAP_STYLES = {
                     tiles: ["https://tile.opentopomap.org/{z}/{x}/{y}.png"],
                     tileSize: 256,
                     attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a>, SRTM | Map style: &copy; <a href='https://opentopomap.org'>OpenTopoMap</a>"
-                }
-            },
-            layers: [{ id: "background-tiles", type: "raster", source: "raster-tiles", minzoom: 0, maxzoom: 20 }]
-        }
-    },
-    light: {
-        id: "light",
-        name: "White",
-        type: "raster",
-        style: {
-            version: 8,
-            sources: {
-                "raster-tiles": {
-                    type: "raster",
-                    tiles: ["https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png"],
-                    tileSize: 256,
-                    attribution: "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a>, <a href='https://carto.com/attributions'>CARTO</a>"
                 }
             },
             layers: [{ id: "background-tiles", type: "raster", source: "raster-tiles", minzoom: 0, maxzoom: 20 }]

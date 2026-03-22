@@ -611,7 +611,7 @@ function bindEventsLoaderHandler() {
             });
             
             updateAllActiveSources();
-        }, 200);
+        }, 500);
         datePicker.addEventListener("change", onDateChange);
         datePicker.addEventListener("input", onDateChange);
     }
@@ -633,7 +633,7 @@ function bindEventsLoaderHandler() {
 
     const onLayerChange = utils.debounce(() => {
         updateAllActiveSources();
-    }, 200);
+    }, 300);
 
     // Event Delegation for all layer checkboxes (handles dynamic switches)
     document.body.addEventListener("change", (e) => {
@@ -694,7 +694,7 @@ function bindEventsLoaderHandler() {
                     toggleSpinner(false);
                 }
             }
-        }, 200));
+        }, 500));
     }
     // ---- [External data] AirNow ----
     

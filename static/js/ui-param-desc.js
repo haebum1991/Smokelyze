@@ -23,14 +23,14 @@ export const DescData = {
             id: "map-type",
             title: "Map Type",
             desc: "Select the background map style for overlaying data. <br><ul>" +
-                  "<li><b style='color: var(--card-shadow);'>Default, Topo, White</b>: These maps use lightweight <b>Raster (PNG)</b> images. They have very low memory usage, consume minimal GPU resources, and ensure high stability on older devices.</li>" +
+                  "<li><b style='color: var(--card-shadow);'>Default, Light, Topo</b>: These maps use lightweight <b>Raster (PNG)</b> images. They have very low memory usage, consume minimal GPU resources, and ensure high stability on older devices.</li>" +
                   "<li><b style='color: var(--card-shadow);'>Vector</b>: This map relies on high-resolution <b>Vector Tiles</b>. It provides extremely crisp details and smooth zooming, but requires significantly higher GPU/VRAM resources to render.</li></ul>" +
                   "<br><b>Data Sources:</b><ul>" +
                   "<li><b>Default</b>: <a href='https://www.openstreetmap.org' target='_blank'>OpenStreetMap</a></li>" +
+                  "<li><b>Light</b>: <a href='https://carto.com/basemaps/' target='_blank'>CARTO Light</a></li>" +
                   "<li><b>Topo</b>: <a href='https://opentopomap.org' target='_blank'>OpenTopoMap</a></li>" +
-                  "<li><b>White</b>: <a href='https://carto.com/basemaps/' target='_blank'>CARTO Light</a></li>" +
                   "<li><b>Vector</b>: 'Liberty' vector maps by <a href='https://openfreemap.org/' target='_blank'>OpenFreeMap</a></li></ul>" +
-                  "<br><i>* Note</i>: If the map suddenly turns into a <b>Grey Screen</b> or fails to load, your device may have exhausted its graphics memory limit. In this case, please immediately switch the map type to <b>Default, Topo, or White</b> to restore stability."
+                  "<br><i>* Note</i>: If the map suddenly turns into a <b>Grey Screen</b> or fails to load, your device may have exhausted its graphics memory limit. In this case, please immediately switch the map type to <b>Default or Light</b> to restore stability."
         }
     ],
     "desc-drawer-only": [

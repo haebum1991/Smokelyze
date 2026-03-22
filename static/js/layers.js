@@ -204,12 +204,12 @@ if (map) {
       const feats = getLoadedNewsFeatures();
 
       if (toggleWasOff) {
-        // Wait for the debounced updateAllActiveSources (200ms) to finish clearing the map
+        // Wait for the debounced updateAllActiveSources (300ms) to finish clearing the map
         setTimeout(() => {
           if (highlightLocation && feats) {
             highlightLocation([lon, lat], feats[idx].properties, "wildfire_news");
           }
-        }, 300); // 300ms is safe for 200ms debounce
+        }, 300); // 300ms is safe for 300ms debounce
       } else {
         if (highlightLocation && feats) {
           highlightLocation([lon, lat], feats[idx].properties, "wildfire_news");
