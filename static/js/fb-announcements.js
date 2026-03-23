@@ -318,32 +318,32 @@ async function sendBulkEmail() {
     submitBtn.innerText = "Sending via Go Engine...";
 
     try {
-        const userCol = collection(db, "smokelyze_users");
-        const userSnap = await getDocs(userCol);
-        const recipients = userSnap.docs.map(doc => doc.data().email).filter(email => email);
-        if (recipients.length === 0) throw new Error("No recipients found.");
-
         const idToken = await auth.currentUser.getIdToken();
         const finalSubject = "[Smokelyze] " + subject;
         const htmlBody = wrapEmailTemplate(finalSubject, bodyText);
 
+        // 4. Call Go API - backend will now fetch recipients itself for bulk mode
         const response = await fetch("/api/email/send_bulk_email", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${idToken}`
             },
-            body: JSON.stringify({ subject: finalSubject, body: htmlBody, recipients })
+            body: JSON.stringify({
+                subject: finalSubject,
+                body: htmlBody,
+                isBulk: true // Signal the backend to fetch all users
+            })
         });
 
         const result = await response.json();
         if (result.status === "success") {
-            alert(`✅ Bulk email sent successfully to ${recipients.length} users via Go Engine!`);
+            alert(`Bulk email sent successfully to ${recipients.length} users via Go Engine!`);
             uiHideModal();
         } else throw new Error(result.message || "Go Engine Error.");
     } catch (err) {
         console.error("Bulk email failed:", err);
-        alert("❌ Failed to send bulk email: " + err.message);
+        alert("Failed to send bulk email: " + err.message);
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = "Send Email";
