@@ -713,7 +713,7 @@ body.page-about .sidebar {
 .auth-card {
   background: var(--color-bg);
   padding: 3rem 3rem 3rem 3rem;
-  border-radius: calc(var(--border-radius-0p8rem) * 4);
+  border-radius: calc(var(--border-radius-0p8rem) * 2);
   box-shadow: 0 2rem 6rem rgba(0, 0, 0, 0.5);
   max-width: 45rem;
   width: 90%;

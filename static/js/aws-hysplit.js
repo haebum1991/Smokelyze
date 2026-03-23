@@ -223,10 +223,22 @@ function isHysplitVisible() {
     return state.history.some(item => item.visible);
 }
 
-// Expose to window for layers-handler.js integration
+function getHysplitHistoryCount() {
+    return state.history.length;
+}
+
+function getHysplitContext() {
+    return state.history
+        .filter(item => item.visible)
+        .map(item => `Date: ${item.params.date}, Start: ${item.params.lon}, ${item.params.lat}, Dir: ${item.params.direction}`);
+}
+
+// Expose to window for layers-handler.js and AI context integration
 if (typeof window !== "undefined") {
     window.moveHysplitToTop = moveHysplitToTop;
     window.isHysplitVisible = isHysplitVisible;
+    window.getHysplitContext = getHysplitContext;
+    window.getHysplitHistoryCount = getHysplitHistoryCount;
 }
 
 function initFlowAnimation() {

@@ -6,6 +6,7 @@
  */
 
 import { handleAiToolCall } from "./ai-tools.js";
+import { getMapCaptureDataUrl } from "./map-capture.js";
 
 // 사용할 AI 백엔드 주소 (배포 후 Cloud Run URL로 교체 필요)
 const API_URL_AI = "/api/chat";
@@ -22,11 +23,31 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
     const apiKey = localStorage.getItem("smokelyze_gemini_key");
 
     // 2. 초기 대화 기록 구성 + 이전 대화 기억(컨텍스트 유지)
+    let userParts = [{ text: userMessage }];
+
+    // [Vision Feature] Check if visual context is needed
+    const visualKeywords = ["지도", "이미지", "모양", "분계", "보여", "분석", "보고", "look", "map", "image", "visual", "패턴"];
+    const needsVision = visualKeywords.some(kw => userMessage.toLowerCase().includes(kw));
+
+    if (needsVision) {
+        console.log("[AI Vision] Capturing map for visual context...");
+        const imageDataUrl = await getMapCaptureDataUrl();
+        if (imageDataUrl) {
+            const base64Data = imageDataUrl.split(",")[1];
+            userParts.push({
+                inlineData: {
+                    mimeType: "image/png",
+                    data: base64Data
+                }
+            });
+        }
+    }
+    
     let contents = [
         ...sessionHistory,
         {
             role: "user",
-            parts: [{ text: userMessage }]
+            parts: userParts
         }
     ];
 
@@ -52,11 +73,35 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`[Gemini API Error] ${errorData.error?.message || response.statusText}`);
+                let errorData = null;
+                try {
+                    const textBody = await response.text();
+                    if (textBody) {
+                        errorData = JSON.parse(textBody);
+                    }
+                } catch (e) {
+                    console.error("[Gemini API] Failed to parse error response JSON:", e);
+                }
+                
+                const errMsg = errorData?.error?.message || response.statusText || "Unknown Error";
+                throw new Error(`[Gemini API Error] ${errMsg}`);
             }
 
-            const data = await response.json();
+            // Safe JSON parsing to avoid "Unexpected end of JSON input"
+            const responseText = await response.text();
+            if (!responseText) {
+                console.error("[Gemini API] Empty response from server. Turn:", turn);
+                throw new Error("Empty response from AI backend. The request might have timed out. Please try again with a simpler question.");
+            }
+
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (e) {
+                console.error("[Gemini API] Invalid JSON response:", responseText.substring(0, 100));
+                throw new Error("Received an invalid response format from the AI backend.");
+            }
+
             if (!data.candidates || data.candidates.length === 0) {
                 if (data.promptFeedback && data.promptFeedback.blockReason) {
                     throw new Error(`AI response blocked (Reason: ${data.promptFeedback.blockReason})`);

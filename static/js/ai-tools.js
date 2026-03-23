@@ -109,10 +109,19 @@ export async function handleAiToolCall(functionName, args) {
                     map.getSource(rawSourceId.replace(/-/g, "_")) ||
                     map.getSource(rawSourceId.replace(/_/g, "-"));
 
-                // Fallback check: if still not found, check dataset list
+                // Fallback check for Dataset list
                 if (!source) {
                     const possibleSources = ["gam_v2", "gam_v1", "pm_cbsa", "epa_ember"];
                     source = possibleSources.map(s => map.getSource(s)).find(s => s);
+                }
+
+                // [New] Special Handling for HYSPLIT (Trajectory Data)
+                if ((!source || rawSourceId.toLowerCase().includes("hysplit")) && map.getStyle().sources) {
+                    const hysplitSources = Object.keys(map.getStyle().sources).filter(id => id.startsWith("hysplit-src-traj-"));
+                    if (hysplitSources.length > 0) {
+                        // Use the most recent/relevant HYSPLIT source
+                        source = map.getSource(hysplitSources[hysplitSources.length - 1]);
+                    }
                 }
 
                 if (!source || !source._data || !source._data.features || source._data.features.length === 0) {
@@ -132,6 +141,7 @@ export async function handleAiToolCall(functionName, args) {
                         const keys = Object.keys(f.properties);
                         const match = keys.find(k => k.toLowerCase() === field.toLowerCase());
                         if (match) actualField = match;
+                        else if (field.toLowerCase() === "altitude") actualField = "height"; // Map altitude to height for HYSPLIT
                     }
 
                     const val = f.properties[actualField];
@@ -143,7 +153,11 @@ export async function handleAiToolCall(functionName, args) {
                     const firstFeat = validFeatures[0].properties;
                     if (!(field in firstFeat)) {
                         const match = Object.keys(firstFeat).find(k => k.toLowerCase() === field.toLowerCase());
-                        if (match) finalField = match;
+                        if (match) {
+                            finalField = match;
+                        } else if (field.toLowerCase() === "altitude" && "height" in firstFeat) {
+                            finalField = "height";
+                        }
                     }
                 }
 

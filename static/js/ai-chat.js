@@ -326,7 +326,16 @@ function generateContext() {
     } else {
         contextLines.push(`Active Layers: None`);
     }
-
+    
+    // 4. HYSPLIT Trajectories (From specific drawer/state)
+    const hysplitCount = (typeof window.getHysplitHistoryCount === "function") ? window.getHysplitHistoryCount() : 0;
+    if (hysplitCount > 0) {
+        const hysplitInfo = window.getHysplitContext ? window.getHysplitContext().join(" | ") : "ACTIVE";
+        contextLines.push(`HYSPLIT Trajectories: Total=${hysplitCount}, Visible=[${hysplitInfo || "None"}]`);
+    } else {
+        contextLines.push(`HYSPLIT Trajectories: None`);
+    }
+    
     // AI Mapping Hint: Helps AI correlate display IDs to internal source names
     contextLines.push(`[System Note] Model ID "gam-v2" maps to source "gam_v2". If a layer like "layer-smo-gam-v2" is active, it means "gam-v2" data is present.`);
 
