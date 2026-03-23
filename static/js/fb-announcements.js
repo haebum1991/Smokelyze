@@ -338,7 +338,7 @@ async function sendBulkEmail() {
 
         const result = await response.json();
         if (result.status === "success") {
-            alert(`Bulk email sent successfully to ${recipients.length} users via Go Engine!`);
+            alert(`Bulk email sent successfully to ${result.sent} users via Go Engine!`);
             uiHideModal();
         } else throw new Error(result.message || "Go Engine Error.");
     } catch (err) {
