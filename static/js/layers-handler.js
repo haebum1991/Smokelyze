@@ -191,6 +191,9 @@ export function applyLayerToggles() {
         .filter(cb => !cb.parentElement || cb.parentElement.style.display !== "none")
         .map(cb => cb.id.replace("layer-", ""));
 
+    // [New] Participatory pseudo-layers (managed externally)
+    if (window.isHysplitVisible?.()) currentCheckedIds.push("hysplit");
+    
     setCachedActiveLayerIds(currentCheckedIds.map(id => `layer-${id}`));
 
     // 3. Handle Special Background Layers
@@ -226,6 +229,12 @@ export function applyLayerToggles() {
     let legendWillShow = false;
 
     newStack.forEach(shortId => {
+        
+        if (shortId === "hysplit") {
+            window.moveHysplitToTop?.();
+            return;
+        }
+        
         const targetKey = LAYER_DEFS[shortId] ? shortId : `${shortId}-${currentDataset}`;
         const def = LAYER_DEFS[targetKey];
         if (def) {

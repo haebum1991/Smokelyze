@@ -1,5 +1,6 @@
 
 import { map } from "./map-init.js";
+import { moveLayerToTop } from "./layers-handler.js";
 import { auth, onAuthStateChanged } from "./fb-init.js";
 import * as utils from "./utils.js";
 import { showErrorToast, showTaskNotification } from "./loader-ui.js"; // CRITICAL: Use loader-ui to break circular loop
@@ -175,6 +176,34 @@ export function initHysplit() {
         map.once("styledata", initFlowAnimation);
     }
     console.log("[HYSPLIT] Full Init Complete!");
+}
+
+/**
+ * Ensures HYSPLIT layers are moved to the top of the map.
+ * This is called by the global layers-handler.
+ */
+function moveHysplitToTop() {
+    if (!map) return;
+    state.history.forEach(item => {
+        if (!item.visible) return;
+        LAYER_SUFFIXES.forEach(suffix => {
+            const layerId = `hysplit-layer-${suffix}-${item.runId}`;
+            if (map.getLayer(layerId)) map.moveLayer(layerId);
+        });
+    });
+    // Finally move flow animation to absolute top
+    if (map.getLayer("trajflow-layer-glow")) map.moveLayer("trajflow-layer-glow");
+    if (map.getLayer("trajflow-layer-core")) map.moveLayer("trajflow-layer-core");
+}
+
+function isHysplitVisible() {
+    return state.history.some(item => item.visible);
+}
+
+// Expose to window for layers-handler.js integration
+if (typeof window !== "undefined") {
+    window.moveHysplitToTop = moveHysplitToTop;
+    window.isHysplitVisible = isHysplitVisible;
 }
 
 function initFlowAnimation() {
@@ -714,7 +743,11 @@ function toggleTrajectoryVisibility(runId) {
     });
 
     updateHysplitDrawerList();
-    if (item.visible && state._startFlowAnim) state._startFlowAnim();
+    if (item.visible) {
+        if (state._startFlowAnim) state._startFlowAnim();
+        // Participate in global stacking order
+        moveLayerToTop("hysplit");
+    }
 }
 
 function removeTrajectory(runId) {
@@ -809,6 +842,9 @@ function renderHysplitTrajectory(data, direction, existingRunId = null, isRestor
     if (!isRestoring) saveToStorage();
     updateHysplitDrawerList();
     if (state._startFlowAnim) state._startFlowAnim();
+    
+    // Participate in global stacking order
+    moveLayerToTop("hysplit");
 }
 
 /**
