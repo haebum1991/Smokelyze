@@ -1513,6 +1513,7 @@ tr.stats-state-row-ca.show {
   color: var(--color-bg);
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .Legend-drawer-header h3,

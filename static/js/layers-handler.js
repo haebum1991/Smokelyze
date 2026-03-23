@@ -11,6 +11,7 @@ import { updateLegend, updateStateShading } from "./layers-colors.js";
 import {
     map,
     activeLayerStack,
+    _cachedActiveLayerIds,
     setCachedActiveLayerIds,
     setActiveLayerStack,
     PointLayersEnabled,
@@ -190,7 +191,14 @@ export function applyLayerToggles() {
     const currentCheckedIds = Array.from(document.querySelectorAll("input[type=checkbox][id^='layer-']:checked"))
         .filter(cb => !cb.parentElement || cb.parentElement.style.display !== "none")
         .map(cb => cb.id.replace("layer-", ""));
-
+    
+    // Check if ANY NEW actual layer (excluding hysplit) was added since last time
+    // This allows us to auto-open the legend ONLY when a new checkbox is clicked,
+    // and NOT when hysplit trajectories are toggled from the drawer.
+    const newLayerAdded = currentCheckedIds.some(id => 
+        id !== "hysplit" && !_cachedActiveLayerIds.includes(`layer-${id}`)
+    );
+    
     // [New] Participatory pseudo-layers (managed externally)
     if (window.isHysplitVisible?.()) currentCheckedIds.push("hysplit");
     
@@ -300,13 +308,21 @@ export function applyLayerToggles() {
         const drawer = document.getElementById("LegendDrawer");
         const newsDrawer = document.getElementById("WFnewsDrawer");
         const mapPostDrawer = document.getElementById("MapPostDrawer");
+        const hysplitDrawer = document.getElementById("HysplitDrawer");
+        const statsDrawer = document.getElementById("FigurePageDrawer");
 
-        // Only auto-open if the legend drawer is closed AND no other related drawer (News, MapPost) is open.
-        // This prevents the conflict where opening News/MapPost triggers a data update that forces the legend to reopen.
-        const isOthersOpen = newsDrawer?.classList.contains("open") || mapPostDrawer?.classList.contains("open");
+        const isOthersOpen = newsDrawer?.classList.contains("open") || 
+                             mapPostDrawer?.classList.contains("open") || 
+                             hysplitDrawer?.classList.contains("open") ||
+                             statsDrawer?.classList.contains("open");
 
-        if (drawer && !drawer.classList.contains("open") && !isOthersOpen) {
-            setLegendDrawer(true);
+        // UI Refinement:
+        // 1. If a NEW layer checkbox was just selected, ALWAYS open the legend (per user request).
+        // 2. Otherwise, only auto-open if no other drawer (that overlaps) is blocking it.
+        if (drawer && !drawer.classList.contains("open")) {
+            if (newLayerAdded || !isOthersOpen) {
+                setLegendDrawer(true);
+            }
         }
     }
 

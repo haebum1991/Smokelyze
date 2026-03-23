@@ -4,9 +4,11 @@ import { moveLayerToTop } from "./layers-handler.js";
 import { auth, onAuthStateChanged } from "./fb-init.js";
 import * as utils from "./utils.js";
 import { showErrorToast, showTaskNotification } from "./loader-ui.js"; // CRITICAL: Use loader-ui to break circular loop
+import { generatePopupHTML } from "./layers-tooltip.js";
 import { updateAuthButton } from "./signin.js";
 import { setHysplitDrawer, appendSwitch } from "./ui-toggles.js";
 import { logUserAction } from "./fb-logging.js";
+import { state as globalState } from "./ui-state.js";
 
 // --- Configuration & State ---
 // Use Netlify proxy to avoid Mixed Content (HTTPS -> HTTP) and timeouts
@@ -123,11 +125,32 @@ export function initHysplit() {
             const runId = parseInt(focusBtn.dataset.runId);
             const item = state.history.find(h => h.runId === runId);
             if (item && map) {
-                map.flyTo({
-                    center: [item.params.lon, item.params.lat],
-                    zoom: 10,
-                    essential: true
-                });
+            
+                // E.1. Activate visibility if it is currently hidden
+                if (!item.visible) {
+                    toggleTrajectoryVisibility(runId);
+                }
+
+                const pt = item.data[0]; // Receptor is always index 0
+                const props = {
+                    date: pt.date,
+                    date2: pt.date2,
+                    lon: pt.lon,
+                    lat: pt.lat,
+                    height: pt.height?.toFixed(1) || 0,
+                    pressure: pt.pressure?.toFixed(1) || "N/A",
+                    color: item.color
+                };
+
+                if (utils.highlightLocation) {
+                    utils.highlightLocation([pt.lon, pt.lat], props, "hysplit", 10);
+                } else {
+                    map.flyTo({
+                        center: [item.params.lon, item.params.lat],
+                        zoom: 10,
+                        essential: true
+                    });
+                }
             }
             return;
         }
@@ -352,6 +375,14 @@ function initFlowAnimation() {
 
 export function handleHysplitModeToggle(force) {
     state.isHysplitMode = (force !== undefined) ? force : !state.isHysplitMode;
+    
+    // Security: Immediate login check when entering mode
+    if (state.isHysplitMode && !state.currentUser) {
+        utils.showAuthOverlay();
+        state.isHysplitMode = false;
+        return;
+    }
+    
     const mapEl = document.getElementById("map");
     if (state.isHysplitMode) {
         mapEl.classList.add("Hysplit-mode-cursor");
@@ -364,10 +395,6 @@ export function handleHysplitModeToggle(force) {
 
 // --- UI Logic ---
 function uiShowHysplitModal(params = null) {
-    if (!state.currentUser) {
-        utils.showAuthOverlay();
-        return;
-    }
 
     // Hide original MapPost context menu
     const ctxMenu = document.getElementById("MapPostContextMenu");
@@ -692,7 +719,7 @@ function updateHysplitDrawerList() {
                         ${utils.ESML(p.date)} ${utils.ESML(p.time)}:00 UTC
                     </div>
                     <div style="display: flex; gap: 0.5rem;">
-                        <button class="hysplit-item-focus ui-btn-close" data-run-id="${item.runId}" title="Focus on map">
+                        <button class="hysplit-item-focus ui-btn-close" data-run-id="${item.runId}" title="Receptor Location">
                             <svg width="20" height="20">
                                 <use xlink:href="#icon-location" />
                             </svg>
@@ -1025,7 +1052,7 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
     // Precise Hover Events (Pick closest feature among overlaps)
     const hoverLayer = `hysplit-layer-points-${runId}`;
     map.on("mousemove", hoverLayer, (e) => {
-        if (state?.tooltipLocked) return;
+        if (globalState?.tooltipLocked) return;
         map.getCanvas().style.cursor = "pointer";
         const tooltip = document.getElementById("MapTooltip");
         if (!tooltip) return;
@@ -1048,18 +1075,13 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
 
         const props = f.properties;
         const [fLon, fLat] = f.geometry.coordinates;
+        
+        // Pass coordinates and color into props for unified formatting
+        props.lon = fLon;
+        props.lat = fLat;
+        props.color = color;
 
-        tooltip.innerHTML = `
-            <div style="font-family: inherit; font-size: 1.4rem; line-height: 1.4;">
-                <div style="font-weight: bold; color: ${color}; border-bottom: 0.1rem solid #eee; margin-bottom: 0.5rem; padding-bottom: 0.2rem;">HYSPLIT Point Info</div>
-                <b>Date:</b> ${props.date} UTC<br/>
-                <b>Date2:</b> ${props.date2} UTC<br/>
-                <b>Lon:</b> ${fLon.toFixed(3)}<br/>
-                <b>Lat:</b> ${fLat.toFixed(3)}<br/>
-                <b>AGL:</b> ${props.height}m<br/>   
-                <b>Pressure:</b> ${props.pressure} hPa
-            </div>
-        `;
+        tooltip.innerHTML = generatePopupHTML(props, "hysplit", false);
         tooltip.style.display = "block";
 
         let x = e.originalEvent.clientX + 15;
@@ -1071,10 +1093,41 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
     });
 
     map.on("mouseleave", hoverLayer, () => {
-        if (state?.tooltipLocked) return;
+        if (globalState?.tooltipLocked) return;
         map.getCanvas().style.cursor = "";
         const tooltip = document.getElementById("MapTooltip");
         if (tooltip) tooltip.style.display = "none";
+    });
+    
+    // Exact Click Event (highlightLocation)
+    map.on("click", hoverLayer, (e) => {
+        let f = e.features?.[0];
+        if (e.features && e.features.length > 1) {
+            let minSqDist = Infinity;
+            for (const feat of e.features) {
+                if (feat.geometry?.type === "Point") {
+                    const [lon, lat] = feat.geometry.coordinates;
+                    const d2 = Math.pow(lon - e.lngLat.lng, 2) + Math.pow(lat - e.lngLat.lat, 2);
+                    if (d2 < minSqDist) {
+                        minSqDist = d2;
+                        f = feat;
+                    }
+                }
+            }
+        }
+        if (!f) return;
+
+        const props = f.properties;
+        const [fLon, fLat] = f.geometry.coordinates;
+        
+        props.lon = fLon;
+        props.lat = fLat;
+        props.color = color;
+
+        if (utils.highlightLocation) {
+            e.preventDefault(); // Stop click from bubbling up and triggering clearHighlight
+            utils.highlightLocation([fLon, fLat], props, "hysplit", 10);
+        }
     });
 
     // Ensure flow animation stays on top of newly added static layers

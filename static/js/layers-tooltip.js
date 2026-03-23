@@ -33,40 +33,7 @@ export function initGlobalTooltip() {
         color: var(--text-main);
         background: var(--color-bg);
         border: 0.1rem solid var(--card-shadow);
-        border-radius: 0 0 var(--border-radius-0p8rem) var(--border-radius-0p8rem);
-      }
-      
-      .MapTooltip-close-btn {
-        z-index: var(--z-MapTooltip);
-        
-        position: absolute;
-        bottom: var(--border-radius-0p8rem);
-        right: -2.8rem;
-        
-        cursor: pointer;
-        line-height: 1;
-        font-size: 1.6rem;
-        font-weight: bold;
-        width: 2.8rem;
-        height: max-content;
-        
-        color: var(--color-bg);
-        background: var(--card-shadow);
-        border-top: 0.1rem solid var(--color-bg);
-        border-bottom: 0.1rem solid var(--color-bg);
-        border-right: 0.1rem solid var(--color-bg);
-        border-left: 0;
-        border-radius: 0 var(--border-radius-0p8rem) var(--border-radius-0p8rem) 0;
-        padding: 0.8rem 0.4rem;
-        
-        writing-mode: vertical-rl;
-        transition: all 0.3s ease;
-      }
-      
-      @media (hover: hover) {
-        .MapTooltip-close-btn:hover {
-          filter: brightness(1.2);
-        }
+        border-radius: var(--border-radius-0p8rem);
       }
       
       @media (max-width: 1024px) {
@@ -125,11 +92,14 @@ export function smartFmt(val, field, dataSource, defaultDecimals = 1) {
  * Generates HTML content for map popups/tooltips based on data source.
  */
 export function generatePopupHTML(p, dataSource, isLocked) {
-    const rowStyleHead = "margin: 0; font-weight: bold; color: var(--card-shadow);";
+    const rowStyleHead = "margin: 0; font-weight: bold; color: var(--card-shadow); padding-right: 2.8rem;";
     const rowStyle = "margin: 0;";
     const hrStyle = "border: 0.1rem solid black; margin-top: 0.3rem; margin-bottom: 0.3rem;";
-    const closeBtn = isLocked ? `<button class="MapTooltip-close-btn action-close-popup">Close</button>` : "";
-
+    const closeBtn = isLocked ? `
+    <button class="action-close-popup ui-btn-close" style="position: absolute; top: 0.8rem; right: 0.8rem;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>` : "";
+    
     const createMetaHeader = () => `
       ${closeBtn}
       <div style="${rowStyle}">[Meta data]</div>
@@ -142,7 +112,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
           <button class="WFnews-item-link action-read-news" data-link="${ESML(p.link)}">Read</button>
         </div>` : "";
         return `
-        <div style="max-width: 30rem; padding: 0.5rem;">
+        <div style="max-width: 30rem; padding: 0.5rem; padding-right: 2.8rem;">
           ${closeBtn}
           <div class="WFnews-item-title" style="font-size: 1.5rem;">${ESML(p.title)}</div>
           <div class="WFnews-item-meta" style="font-size: 1.4rem;">State: ${ESML(p.location)}<br>${ESML(p.published)} UTC</div>
@@ -180,7 +150,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
         </div>` : "";
 
         return `
-        <div style="padding: 0.5rem; font-size: 1.6rem; max-width: 300px;">
+        <div style="padding: 0.5rem; font-size: 1.6rem; max-width: 300px; padding-right: 2.8rem;">
           ${isLocked ? closeBtn : ""}
           ${(isLocked && isAuthor) ? `
               <div class="reply-btn-wrapper">
@@ -207,7 +177,20 @@ export function generatePopupHTML(p, dataSource, isLocked) {
       `;
     }
     
-    // ---- [External data] AirNow ----
+    // ---- [External data] ----
+    if (dataSource === "hysplit") {
+        return `
+        ${closeBtn}
+        <div style="margin: 0; font-weight: bold; color: ${p.color || "var(--card-shadow)"}; padding-right: 2.8rem;">HYSPLIT Point Info</div>
+        <hr style="${hrStyle}">
+        <div style="${rowStyle}"><b>Date:</b> ${ESML(p.date)} UTC</div>
+        <div style="${rowStyle}"><b>Date2:</b> ${ESML(p.date2)} UTC</div>
+        <div style="${rowStyle}"><b>Lon:</b> ${smartFmt(p.lon, "lon", dataSource, 3)}</div>
+        <div style="${rowStyle}"><b>Lat:</b> ${smartFmt(p.lat, "lat", dataSource, 3)}</div>
+        <div style="${rowStyle}"><b>AGL:</b> ${ESML(p.height)}m</div>
+        <div style="${rowStyle}"><b>Pressure:</b> ${ESML(p.pressure)} hPa</div>`;
+    }
+    
     if (dataSource.startsWith("airnow-")) {
 
       let AirnowHtml = `
@@ -312,7 +295,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
             `;
     }
     
-    // ---- [External data] AirNow ----
+    // ---- [External data] ----
   
     if (dataSource === "smoke") {
         return `

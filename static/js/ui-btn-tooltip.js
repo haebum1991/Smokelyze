@@ -28,6 +28,12 @@ export function initBtnTooltips() {
       target.setAttribute("btn-tooltip-backup", text);
       target.removeAttribute("title");
     }
+    
+    // Ensure only one tooltip exists at a time (cleanup any orphaned tooltips)
+    if (tooltip) {
+      tooltip.remove();
+      tooltip = null;
+    }
 
     // Create tooltip element
     tooltip = document.createElement("div");
@@ -75,7 +81,7 @@ export function initBtnTooltips() {
 
     updatePosition();
 
-    // Mouse leave cleanup
+    // Mouse leave/click cleanup
     const removeTooltip = () => {
       if (tooltip) {
         tooltip.classList.remove("visible");
@@ -89,9 +95,11 @@ export function initBtnTooltips() {
         target.removeAttribute("btn-tooltip-backup");
       }
       target.removeEventListener("mouseleave", removeTooltip);
+      target.removeEventListener("click", removeTooltip);
     };
 
     target.addEventListener("mouseleave", removeTooltip);
+    target.addEventListener("click", removeTooltip);
   }, true);
 }
 

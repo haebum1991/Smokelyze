@@ -309,7 +309,7 @@ export function refreshHighlight() {
   }
 }
 
-export function highlightLocation(coords, p, dataSource) {
+export function highlightLocation(coords, p, dataSource, targetZoom = 8) {
   const mapLocal = map;
   if (!mapLocal) return;
 
@@ -345,7 +345,7 @@ export function highlightLocation(coords, p, dataSource) {
 
   const flyOptions = {
     center: coords,
-    zoom: 8,
+    zoom: targetZoom,
     essential: true,
     speed: 2.4,
     curve: 1.0
