@@ -2,19 +2,23 @@
 import { map } from "./layers-state.js";
 import { highlightLocation } from "./utils.js";
 import { loadedGeoJSON, activeSources, loadedSources } from "./loader.js";
+import { 
+    setStatsDrawer, setDescDrawer, setNewsDrawer, setMapPostDrawer, 
+    setLegendDrawer, setHysplitDrawer, setAccordionCollapsed 
+} from "./ui-toggles.js";
 
 /**
  * 지도의 데이터 로딩이나 렌더링이 완료될 때까지 대기하는 헬퍼 함수
- * 땜질식 타이머가 아니라 실제 화면의 로딩 스피너(MapLoadingSpinner)를 완벽하게 감시합니다.
+ * 땜질식 타이머가 아니라 실제 화면의 로딩 스피너(MapLoadingOverlay)를 완벽하게 감시합니다.
  */
 function waitForMapIdle(timeout = 10000) {
     return new Promise((resolve) => {
         // 프론트엔드의 Debounce(300ms) 이벤트가 스피너를 켤 시간을 주기 위해 300ms 먼저 대기
         setTimeout(() => {
-            const spinner = document.getElementById("MapLoadingSpinner");
+            const spinner = document.getElementById("MapLoadingOverlay");
 
             // 데바운스가 끝났는데도 스피너가 안 켜졌거나 이미 꺼졌다면 (데이터가 필요 없는 로컬 조작 등) 즉시 완료
-            if (!spinner || spinner.style.display === "none" || spinner.style.display === "") {
+            if (!overlay || overlay.style.display === "none" || overlay.style.display === "") {
                 resolve();
                 return;
             }
@@ -30,11 +34,11 @@ function waitForMapIdle(timeout = 10000) {
                 resolve();
             };
 
-            // 스피너의 스타일 변경을 실시간 감지
+            // 오버레이의 스타일 변경을 실시간 감지
             const observer = new MutationObserver((mutations) => {
                 for (let mutation of mutations) {
                     if (mutation.attributeName === "style") {
-                        if (spinner.style.display === "none") {
+                        if (overlay.style.display === "none") {
                             finalize();
                             return;
                         }
@@ -43,7 +47,7 @@ function waitForMapIdle(timeout = 10000) {
             });
 
             // 감시 시작
-            observer.observe(spinner, { attributes: true, attributeFilter: ["style"] });
+            observer.observe(overlay, { attributes: true, attributeFilter: ["style"] });
 
             // 최후의 안전 방어막 (10초 이상 스피너가 안 꺼지는 무한 로딩 대비)
             timeoutId = setTimeout(() => {
@@ -236,7 +240,7 @@ export async function handleAiToolCall(functionName, args) {
                     await waitForMapIdle(1500);
 
                     // Agnostic source ID lookup
-                    const actualSrcId = (map && map.getSource(rawSrcId)) ? rawSrcId :
+                    let actualSrcId = (map && map.getSource(rawSrcId)) ? rawSrcId :
                         (map.getSource(rawSrcId.replace(/-/g, "_")) ? rawSrcId.replace(/-/g, "_") :
                             (map.getSource(rawSrcId.replace(/_/g, "-")) ? rawSrcId.replace(/_/g, "-") : rawSrcId));
 
@@ -248,8 +252,8 @@ export async function handleAiToolCall(functionName, args) {
                         const currentDate = document.getElementById("datePicker")?.value;
 
                         const findMatch = (sourceList) => {
-                            for (const src of sourceList) {
-                                const data = loadedGeoJSON[src] || (loadedSources && loadedSources[src] ? loadedGeoJSON[loadedSources[src]] : null);
+                            for (const srcId of sourceList) {
+                                const data = loadedGeoJSON[srcId] || (loadedSources && loadedSources[srcId] ? loadedGeoJSON[loadedSources[srcId]] : null);
                                 if (!data || !data.features) continue;
 
                                 // 1. ID/Name match (Best & most accurate)
@@ -257,7 +261,7 @@ export async function handleAiToolCall(functionName, args) {
                                 for (const key of idKeys) {
                                     if (props[key]) {
                                         const match = data.features.find(f => f.properties[key] === props[key]);
-                                        if (match) return match.properties;
+                                        if (match) return { props: match.properties, srcId: srcId };
                                     }
                                 }
 
@@ -271,22 +275,28 @@ export async function handleAiToolCall(functionName, args) {
                                     // Validate: skip if this data is from a different date
                                     const matchDate = match.properties?.date;
                                     if (currentDate && matchDate && String(matchDate) !== currentDate) continue;
-                                    return match.properties;
+                                    return { props: match.properties, srcId: srcId };
                                 }
                             }
                             return null;
                         };
 
                         // 1st priority: active sources (current model)
-                        foundMetadata = findMatch(activeSources || []);
-                        // 2nd priority: all loaded sources (fallback)
-                        if (!foundMetadata) {
-                            foundMetadata = findMatch(Object.keys(loadedGeoJSON));
+                        const matchResult = findMatch(activeSources || []) || findMatch(Object.keys(loadedGeoJSON));
+                        if (matchResult) {
+                            foundMetadata = matchResult.props;
+                            console.log("[AI-API Sync] Found Map Highlight Metadata:", foundMetadata);
+                            
+                            // [Added] If we found a HYSPLIT match, ensure tooltip engine uses HYSPLIT layout
+                            if (matchResult.srcId && matchResult.srcId.startsWith("hysplit")) {
+                                actualSrcId = "hysplit";
+                            }
                         }
                     }
 
                     // Merge: Map-found data (base) + AI-provided data (overrides)
                     const finalProps = { ...foundMetadata, ...props };
+                    console.log("[AI-API Sync] Final Properties for Tooltip:", { finalProps, actualSrcId });
 
                     highlightLocation([targetLon, targetLat], finalProps, actualSrcId);
                     resultMessage = `[System] Moved map to [lat: ${targetLat}, lon: ${targetLon}] and highlighted using ${foundMetadata ? "full GeoJSON metadata" : "AI-provided metadata"}.`;
@@ -363,15 +373,34 @@ export async function handleAiToolCall(functionName, args) {
                 }
                 break;
                 
-            case "open_description":
-                const descBtn = document.getElementById("DescToggle");
-                if (descBtn) {
-                    descBtn.click();
-                    resultMessage = "[System] Opened the Description Drawer. The user can now see detailed scientific parameters and research background.";
+            case "set_drawer_visibility": {
+                const drawerId = args?.drawer_id;
+                const visible = args?.visible !== false;
+
+                if (drawerId === "layers") {
+                    setAccordionCollapsed(!visible);
+                    resultMessage = `[System] Layer Control Panel (Accordion) is now ${visible ? "OPEN" : "CLOSED"}.`;
+                    break;
+                }
+
+                const drawerFns = {
+                    "stats": setStatsDrawer,
+                    "news": setNewsDrawer,
+                    "desc": setDescDrawer,
+                    "mappost": setMapPostDrawer,
+                    "hysplit": setHysplitDrawer,
+                    "legend": setLegendDrawer
+                };
+
+                const fn = drawerFns[drawerId];
+                if (typeof fn === "function") {
+                    fn(visible);
+                    resultMessage = `[System] Drawer "${drawerId}" is now ${visible ? "OPEN" : "CLOSED"}. Inform the user.`;
                 } else {
-                    resultMessage = "[System Error] Could not find the Description button on the screen.";
+                    resultMessage = `[System Error] Could not find controller for drawer "${drawerId}".`;
                 }
                 break;
+            }
             
             case "set_hysplit_visibility":
                 const runId = args?.run_id || "all";

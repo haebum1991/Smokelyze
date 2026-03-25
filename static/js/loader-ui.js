@@ -8,17 +8,23 @@ import { setLoadedNewsFeatures } from "./loader-state.js";
 
 let loadingCounter = 0;
 
-export function toggleSpinner(show) {
-    const spinner = document.getElementById("MapLoadingSpinner");
-    if (!spinner) return;
+export function toggleSpinner(show, text = "", dim = false) {
+    const overlay = document.getElementById("MapLoadingOverlay");
+    const textEl = document.getElementById("MapLoadingText");
+    if (!overlay) return;
+
     if (show) {
         loadingCounter++;
-        spinner.style.display = "block";
+        overlay.style.display = "flex";
+        if (textEl) textEl.innerText = text;
+        if (dim) overlay.classList.add("is-dimmed");
     } else {
         loadingCounter--;
         if (loadingCounter <= 0) {
             loadingCounter = 0;
-            spinner.style.display = "none";
+            overlay.style.display = "none";
+            if (textEl) textEl.innerText = "";
+            overlay.classList.remove("is-dimmed");
         }
     }
 }

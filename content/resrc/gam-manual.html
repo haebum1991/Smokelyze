@@ -321,10 +321,9 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
     </div>
 
     <!-- LOADING & RESULTS -->
-    <div id="GamSpinner" class="gm-hidden"
-      style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index: calc(var(--z-highest) - 1);; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-      <div class="gm-loader"></div>
-      <p style="color:var(--card-shadow); font-size:2rem; margin-top:2rem;">R Engine: Fitting GAM Model...</p>
+    <div id="MapLoadingOverlay">
+      <div id="MapLoadingSpinner"></div>
+      <div id="MapLoadingText"></div>
     </div>
   </div>
 </div>
@@ -670,27 +669,12 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
     overflow-x: auto;
   }
 
-  .gm-loader {
-    width: 6rem;
-    height: 6rem;
-    border: 0.6rem solid var(--sidebar-widget-bg);
-    border-top-color: var(--card-shadow);
-    border-radius: 50%;
-    animation: spin 1.2s ease-in-out infinite;
-  }
-
   .gm-input-group-sm {
     display: contents;
   }
 
   .gm-mobile-label {
     display: none;
-  }
-
-  @keyframes spin {
-    100% {
-      transform: rotate(360deg);
-    }
   }
 
   /* RESPONSIVE */
@@ -876,6 +860,7 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
   import { auth } from "/js/fb-init.js";
   import { ESML, showAuthOverlay } from "/js/utils.js";
   import { updateAuthButton } from "/js/signin.js";
+  import { toggleSpinner } from "/js/loader-ui.js";
 
   (function () {
     const API_URL_GAM = "/api/gam";
@@ -912,7 +897,6 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
       splitCol: document.getElementById("gamSplitCol"),
       splitLvl: document.getElementById("gamSplitLevel"),
       runBtn: document.getElementById("BtnRunGam"),
-      spinner: document.getElementById("GamSpinner"),
       results: document.getElementById("GamResults"),
       predContainer: document.getElementById("PredictionPreviewContainer"),
       predHead: document.getElementById("PredictionPreviewHead"),
@@ -1349,7 +1333,7 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
       }
       refs.results.classList.remove("gm-hidden");
       refs.results.style.display = "none"; // Temporarily hide to fade in later
-      document.getElementById("GamSpinner").classList.remove("gm-hidden");
+      toggleSpinner(true, "R Engine: Fitting GAM Model...", true);
       refs.runBtn.disabled = true;
 
       try {
@@ -1400,7 +1384,7 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
       } catch (e) {
         alert("Connectivity Error: " + e.message);
       } finally {
-        document.getElementById("GamSpinner").classList.add("gm-hidden");
+        toggleSpinner(false);
         refs.runBtn.disabled = false;
       }
     };

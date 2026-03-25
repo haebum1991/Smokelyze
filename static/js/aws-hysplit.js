@@ -239,11 +239,12 @@ function getHysplitHistoryData() {
         visible: item.visible,
         params: item.params,
         points: item.data.map(pt => ({
+            date: pt.date,
+            date2: pt.date2,
             lat: pt.lat,
             lon: pt.lon,
             height: pt.height,
-            pressure: pt.pressure,
-            time: pt.date2
+            pressure: pt.pressure
         }))
     }));
 }

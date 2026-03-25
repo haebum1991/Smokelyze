@@ -178,17 +178,24 @@ export function generatePopupHTML(p, dataSource, isLocked) {
     }
     
     // ---- [External data] ----
-    if (dataSource === "hysplit") {
+    if (dataSource === "hysplit" || dataSource.startsWith("hysplit-")) {
+        
+        // [Safety] Handle alternate property names used in different HYSPLIT iterations
+        const dateVal1 = p.date;
+        const dateVal2 = p.date2;
+        const heightVal = p.height;
+        const pressVal = p.pressure;
+        
         return `
         ${closeBtn}
         <div style="margin: 0; font-weight: bold; color: ${p.color || "var(--card-shadow)"}; padding-right: 2.8rem;">HYSPLIT Point Info</div>
         <hr style="${hrStyle}">
-        <div style="${rowStyle}"><b>Date:</b> ${ESML(p.date)} UTC</div>
-        <div style="${rowStyle}"><b>Date2:</b> ${ESML(p.date2)} UTC</div>
-        <div style="${rowStyle}"><b>Lon:</b> ${smartFmt(p.lon, "lon", dataSource, 3)}</div>
-        <div style="${rowStyle}"><b>Lat:</b> ${smartFmt(p.lat, "lat", dataSource, 3)}</div>
-        <div style="${rowStyle}"><b>AGL:</b> ${ESML(p.height)}m</div>
-        <div style="${rowStyle}"><b>Pressure:</b> ${ESML(p.pressure)} hPa</div>`;
+        <div style="${rowStyle}"><b>Date:</b> ${ESML(dateVal1)} UTC</div>
+        <div style="${rowStyle}"><b>Date2:</b> ${ESML(dateVal2)} UTC</div>
+        <div style="${rowStyle}"><b>Latitude:</b> ${smartFmt(p.lat, "lat", dataSource, 3)}</div>
+        <div style="${rowStyle}"><b>Longitude:</b> ${smartFmt(p.lon, "lon", dataSource, 3)}</div>
+        <div style="${rowStyle}"><b>AGL:</b> ${ESML(heightVal)}m</div>
+        <div style="${rowStyle}"><b>Pressure:</b> ${ESML(pressVal)} hPa</div>`;
     }
     
     if (dataSource.startsWith("airnow-")) {

@@ -7,6 +7,7 @@
 
 import { handleAiToolCall } from "./ai-tools.js";
 import { getMapCaptureDataUrl } from "./map-capture.js";
+import { toggleSpinner } from "./loader-ui.js";
 
 // 사용할 AI 백엔드 주소 (배포 후 Cloud Run URL로 교체 필요)
 const API_URL_AI = "/api/chat";
@@ -31,15 +32,24 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
 
     if (needsVision) {
         console.log("[AI Vision] Capturing map for visual context...");
-        const imageDataUrl = await getMapCaptureDataUrl();
-        if (imageDataUrl) {
-            const base64Data = imageDataUrl.split(",")[1];
-            userParts.push({
-                inlineData: {
-                    mimeType: "image/png",
-                    data: base64Data
-                }
-            });
+        
+        // Show existing spinner with message during Map Capture
+        if (typeof toggleSpinner === "function") toggleSpinner(true, "Capturing current map...", true);
+
+        try {
+            const imageDataUrl = await getMapCaptureDataUrl();
+            if (imageDataUrl) {
+                const base64Data = imageDataUrl.split(",")[1];
+                userParts.push({
+                    inlineData: {
+                        mimeType: "image/png",
+                        data: base64Data
+                    }
+                });
+            }
+        } finally {
+            // Hide spinner after Capture is complete (or if it fails)
+            if (typeof toggleSpinner === "function") toggleSpinner(false);
         }
     }
     
