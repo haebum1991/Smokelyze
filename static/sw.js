@@ -1,4 +1,4 @@
-const CACHE_NAME = "v-20260325-1308"; // R에서 자동으로 생성된 버전
+const CACHE_NAME = "v-20260325-1421"; // R에서 자동으로 생성된 버전
 const OFFLINE_URL = "/offline/";
 
 const requiredFiles = [

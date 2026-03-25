@@ -441,6 +441,50 @@ export async function handleAiToolCall(functionName, args) {
 
                 resultMessage = summaryText + " [System Info] This data represents state-level aggregates. Use this for broad geographic analysis.";
                 break;
+            
+            case "get_enhanced_region_context": {
+                // [Global Multi-Source Data Extraction - MiroFish Framework]
+                // 지도에 로드된 모든 과학적 데이터 소스(GAM, HYSPLIT, AirNow, Smoke 등)를 종합 수집하여 AI 전문가 그룹에 넘깁니다.
+                const sourceIds = ["gam_v2", "gam_v1", "pm_cbsa", "airnow_daily", "airnow_hourly_ozone", "airnow_hourly_pm25", "hysplit", "smoke", "fire"];
+                let summaryParts = [];
+
+                sourceIds.forEach(id => {
+                    const s = map.getSource(id);
+                    if (s && s._data && s._data.features && s._data.features.length > 0) {
+                        const features = s._data.features;
+                        
+                        // HYSPLIT Trajectory context: Provides height/time/receptor information
+                        if (id === "hysplit") {
+                            summaryParts.push(`HYSPLIT: ${features.length} trajectory points active.`);
+                        } 
+                        // HMS Smoke/Fire context: Provides spatial plume visualization
+                        else if (id === "smoke" || id === "fire") {
+                            summaryParts.push(`${id.toUpperCase()}: Active spatial layers detected.`);
+                        }
+                        // Numeric point data (GAM, PM2.5, AirNow) for field analysis
+                        else {
+                            const vals = features.map(f => {
+                                const p = f.properties;
+                                // Multiple field mapping to handle different source schemas (GAM PM, AirNow, MDA8O3)
+                                return p.GAM_PM || p.PM2_5 || p.O3 || p.MDA8O3 || p.PM25 || p.SMO || 0;
+                            }).filter(v => typeof v === "number" && v > 0);
+
+                            if (vals.length > 0) {
+                                const avg = (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1);
+                                const max = Math.max(...vals).toFixed(1);
+                                summaryParts.push(`${id}(avg:${avg}, max:${max}, n:${vals.length})`);
+                            }
+                        }
+                    }
+                });
+
+                let dataSummary = summaryParts.length > 0 ? summaryParts.join(" | ") : "No active scientific data sources in current viewport.";
+
+                // AI에게는 수치적 맥락만 전달하며, 해석은 백엔드에 감춰진 비밀 전략 그룹이 수행합니다.
+                resultMessage = `[Unified Region Context Data: ${dataSummary}] 
+Please apply the specialized Strategic Inter-Sectoral Committee protocols to interpret this multi-source data for the user. Cross-validate between models (GAM) and real-time sensors (AirNow/HYSPLIT) if both are provided.`;
+                break;
+            }
 
             default:
                 resultMessage = `[System Error] The requested function (${functionName}) is not yet supported.`;
