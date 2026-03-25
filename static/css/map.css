@@ -2076,7 +2076,7 @@ body.FigurePage-drawer-open .Hysplit-drawer.open {
   height: 60rem;
   min-width: 30rem;
   min-height: 30rem;
-  max-height: calc(100vh - var(--header-height-total) - var(--footer-height) - 10rem);
+  max-height: calc(100vh - var(--header-height-total) - var(--footer-height));
 }
 
 #AiChatDrawer .accordion::after {

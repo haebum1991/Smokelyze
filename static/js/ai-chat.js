@@ -188,7 +188,8 @@ async function handleChatSubmit() {
     scrollToBottom();
 
     // Context Generation
-    const dashboardContext = generateContext();
+    const dashboardContext = generateContext(text);
+    console.log("AI Chat Input with context:", text, dashboardContext);
 
     try {
         const aiResponse = await fetchGeminiChat(dashboardContext, text);
@@ -288,7 +289,7 @@ function scrollToBottom() {
 // ----------------------------------------------------
 // UI State Context Generator
 // ----------------------------------------------------
-function generateContext() {
+function generateContext(userInput = "") {
     const contextLines = [];
 
     // 0. Current Real-world Time (Local)
@@ -329,11 +330,30 @@ function generateContext() {
         contextLines.push(`Active Layers: None`);
     }
     
-    // 4. HYSPLIT History (Full list of all manual runs)
+    // 4. HYSPLIT History (Staged injection to balance tokens & intelligence)
     const hysplitCount = (typeof window.getHysplitHistoryCount === "function") ? window.getHysplitHistoryCount() : 0;
+    const isHysplitQuery = /hysplit|trajectory|run|path|history|궤적|트라젝토리/i.test(userInput);
+
     if (hysplitCount > 0) {
-        const histData = (typeof window.getHysplitHistoryData === "function") ? window.getHysplitHistoryData() : [];
-        contextLines.push(`HYSPLIT History: Count=${hysplitCount}, Data=${JSON.stringify(histData)}`);
+        const fullHistory = (typeof window.getHysplitHistoryData === "function") ? window.getHysplitHistoryData() : [];
+        const summarizedHistory = fullHistory.map(run => {
+            // Always include basic metadata
+            const entry = {
+                id: run.id,
+                visible: run.visible,
+                params: run.params,
+                pointsCount: run.points?.length || 0
+            };
+
+            // Only add detailed points if the run is visible on map OR user is asking about it
+            if (run.visible || isHysplitQuery) {
+                entry.start = run.points?.[0];
+                entry.end = run.points?.[run.points.length - 1];
+            }
+            return entry;
+        });
+
+        contextLines.push(`HYSPLIT Summary (Visible/Requested detailed): Count=${hysplitCount}, Data=${JSON.stringify(summarizedHistory)}`);
     } else {
         contextLines.push(`HYSPLIT History: None`);
     }
