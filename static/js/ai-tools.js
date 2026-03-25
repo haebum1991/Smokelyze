@@ -15,9 +15,9 @@ function waitForMapIdle(timeout = 10000) {
     return new Promise((resolve) => {
         // 프론트엔드의 Debounce(300ms) 이벤트가 스피너를 켤 시간을 주기 위해 300ms 먼저 대기
         setTimeout(() => {
-            const spinner = document.getElementById("MapLoadingOverlay");
+            const overlay = document.getElementById("MapLoadingOverlay");
 
-            // 데바운스가 끝났는데도 스피너가 안 켜졌거나 이미 꺼졌다면 (데이터가 필요 없는 로컬 조작 등) 즉시 완료
+            // 데바운스가 끝났는데도 오버레이가 안 켜졌거나 이미 꺼졌다면 (데이터가 필요 없는 로컬 조작 등) 즉시 완료
             if (!overlay || overlay.style.display === "none" || overlay.style.display === "") {
                 resolve();
                 return;
