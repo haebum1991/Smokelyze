@@ -7,8 +7,10 @@ import { showAuthOverlay } from "./utils.js";
 import { addSwipeClose } from "./ui-toggles.js";
 import { regionStats } from "./layers-state.js";
 
-// Expose regionStats for AI tools to access summary data
+// Expose regionStats and generateContext for AI tools/API to access summary/UI data
 window.getRegionStats = () => regionStats;
+window.generateContext = generateContext;
+
 
 // DOM Elements
 const aiToggleBtn = document.getElementById("AiChatToggle");
@@ -327,13 +329,13 @@ function generateContext() {
         contextLines.push(`Active Layers: None`);
     }
     
-    // 4. HYSPLIT Trajectories (From specific drawer/state)
+    // 4. HYSPLIT History (Full list of all manual runs)
     const hysplitCount = (typeof window.getHysplitHistoryCount === "function") ? window.getHysplitHistoryCount() : 0;
     if (hysplitCount > 0) {
-        const hysplitInfo = window.getHysplitContext ? window.getHysplitContext().join(" | ") : "ACTIVE";
-        contextLines.push(`HYSPLIT Trajectories: Total=${hysplitCount}, Visible=[${hysplitInfo || "None"}]`);
+        const histData = (typeof window.getHysplitHistoryData === "function") ? window.getHysplitHistoryData() : [];
+        contextLines.push(`HYSPLIT History: Count=${hysplitCount}, Data=${JSON.stringify(histData)}`);
     } else {
-        contextLines.push(`HYSPLIT Trajectories: None`);
+        contextLines.push(`HYSPLIT History: None`);
     }
     
     // AI Mapping Hint: Helps AI correlate display IDs to internal source names

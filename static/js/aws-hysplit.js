@@ -233,12 +233,29 @@ function getHysplitContext() {
         .map(item => `Date: ${item.params.date}, Start: ${item.params.lon}, ${item.params.lat}, Dir: ${item.params.direction}`);
 }
 
+function getHysplitHistoryData() {
+    return state.history.map(item => ({
+        id: item.runId,
+        visible: item.visible,
+        params: item.params,
+        points: item.data.map(pt => ({
+            lat: pt.lat,
+            lon: pt.lon,
+            height: pt.height,
+            pressure: pt.pressure,
+            time: pt.date2
+        }))
+    }));
+}
+
 // Expose to window for layers-handler.js and AI context integration
 if (typeof window !== "undefined") {
     window.moveHysplitToTop = moveHysplitToTop;
     window.isHysplitVisible = isHysplitVisible;
     window.getHysplitContext = getHysplitContext;
     window.getHysplitHistoryCount = getHysplitHistoryCount;
+    window.getHysplitHistoryData = getHysplitHistoryData;
+    window.setHysplitVisibility = setHysplitVisibility;
 }
 
 function initFlowAnimation() {
@@ -756,6 +773,33 @@ function updateHysplitDrawerList() {
             </div>
         `;
     }).join("");
+}
+
+function setHysplitVisibility(runId, visible) {
+    const items = (runId === "all") ? state.history : state.history.filter(h => String(h.runId) === String(runId));
+    if (items.length === 0) return;
+
+    items.forEach(item => {
+        if (item.visible === visible) return;
+        item.visible = visible;
+
+        const visibility = visible ? "visible" : "none";
+        const testLayer = `hysplit-layer-point-${item.runId}`;
+
+        if (visible && !map.getLayer(testLayer)) {
+            drawTrajectoryLayers(item.runId, item.data, item.params.direction, item.color, true);
+        } else {
+            LAYER_SUFFIXES.forEach(suffix => {
+                const layerId = `hysplit-layer-${suffix}-${item.runId}`;
+                if (map.getLayer(layerId)) {
+                    map.setLayoutProperty(layerId, "visibility", visibility);
+                }
+            });
+        }
+    });
+
+    updateHysplitDrawerList();
+    if (visible && state._startFlowAnim) state._startFlowAnim();
 }
 
 function toggleTrajectoryVisibility(runId) {

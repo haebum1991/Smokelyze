@@ -212,8 +212,24 @@ export async function handleAiToolCall(functionName, args) {
             case "move_to_location":
                 const targetLat = args?.lat;
                 const targetLon = args?.lon;
-                const rawSrcId = args?.sourceId || "gam_v2";
+                let rawSrcId = args?.sourceId || "gam_v2";
                 let props = args?.properties || {};
+
+                // [Remapping] Normalize common AI-used names to internal source IDs
+                if (rawSrcId.includes("fire") || rawSrcId.includes("hms-fire")) rawSrcId = "fire";
+                if (rawSrcId.includes("smoke")) rawSrcId = "smoke";
+                if (rawSrcId.includes("burn")) rawSrcId = "burn";
+
+                // [Heuristic] If properties look like HYSPLIT, prioritize it
+                if (props.height !== undefined || props.pressure !== undefined || props.date2 !== undefined) {
+                    rawSrcId = "hysplit";
+                } else if (props.link || props.published) {
+                    rawSrcId = "wildfire_news";
+                } else if (props.IncidentName || props.UniqueFireIdentifier) {
+                    rawSrcId = "wildfire_nifc";
+                } else if (props.fireCount || props.FRP) {
+                    rawSrcId = "fire";
+                }
 
                 if (targetLat && targetLon) {
                     // [Sync] Wait for map to be idle
@@ -354,6 +370,17 @@ export async function handleAiToolCall(functionName, args) {
                     resultMessage = "[System] Opened the Description Drawer. The user can now see detailed scientific parameters and research background.";
                 } else {
                     resultMessage = "[System Error] Could not find the Description button on the screen.";
+                }
+                break;
+            
+            case "set_hysplit_visibility":
+                const runId = args?.run_id || "all";
+                const visible = args?.visible !== false; // default true
+                if (typeof window.setHysplitVisibility === "function") {
+                    window.setHysplitVisibility(runId, visible);
+                    resultMessage = `[System] Successfully set HYSPLIT visibility (${runId}) to ${visible ? "ON" : "OFF"}.`;
+                } else {
+                    resultMessage = "[System Error] HYSPLIT visibility controller is not loaded.";
                 }
                 break;
                 
