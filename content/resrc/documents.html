@@ -625,7 +625,13 @@ title: ""
         // Pre-load all documents in the background
         Object.keys(docSources).forEach(id => loadDoc(id));
 
-        showDoc("doc-arch", null);
+        // URL deep linking support (e.g., /resrc/documents?doc=doc-gam)
+        const params = new URLSearchParams(window.location.search);
+        let initialDoc = params.get("doc") || "doc-arch";
+        if (!docSources[initialDoc]) initialDoc = "doc-arch";
+        const initialSection = params.get("section") || null;
+
+        showDoc(initialDoc, initialSection);
     })();
 </script>
 

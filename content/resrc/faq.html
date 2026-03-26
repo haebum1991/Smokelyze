@@ -42,15 +42,23 @@ title: ""
         </div>
         <div class="faq-answer">
             <div class="faq-answer-inner">
-                <strong>SMO (Smoke contribution to Ozone or Smoke O3)</strong> represents the estimated ozone concentration increase
-                caused by wildfire smoke.
-                It is calculated as:
+                <strong>SMO (Smoke contribution to Ozone or Smoke O3)</strong> represents the estimated increase
+                in the MDA8 O3 concentration caused by wildfire smoke. It is calculated from the GAM residual as:
                 <br><br>
-                <code>SMO = MDA8O3 (observed) − MDA8O3_pred (predicted)</code>
+                <code>Residual = MDA8 O3 (observed) - MDA8 O3_pred (predicted)</code>
+                <br><br>
+                If it is a <strong>smoke day</strong>: <code>SMO = Residual</code>
+                <br><br>
+                While the residual is calculated for every day, the <strong>SMO is only reported on smoke
+                    days</strong>.
                 <br><br>
                 A positive SMO value means wildfire smoke likely <strong>increased ozone</strong> at that monitoring
-                site on that day. SMO is only valid on <strong>smoke days</strong> (when HMS detects overhead smoke
-                plumes and PM2.5 exceeds the critical threshold).
+                site on that day. Because any model analysis will have random variations, it is important to examine how
+                the SMO on an individual day compares to the distribution of all non-smoke days. This is expressed as
+                the
+                <strong>quantile</strong>, which indicates where on the distribution the individual day falls. For
+                example, an SMO value of 12 ppb with a 98th percentile quantile indicates the value is highly
+                significant. See more discussion of statistics in the <a href="/resrc/documents?doc=doc-smoke-impacts">statistics doc</a>.
             </div>
         </div>
     </div>
@@ -64,9 +72,9 @@ title: ""
             <div class="faq-answer-inner">
                 <strong>Published data</strong> refers to peer-reviewed scientific model outputs (GAM-v2, GAM-v1, EPA
                 EMBER, Smoke PM2.5) that estimate smoke-attributed ozone and PM2.5 concentrations.
-                These datasets require <strong>free account login</strong> because they are research-grade data products
+                These datasets require <strong>login with a free account</strong> because they are research-grade data products
                 that we want to track usage for academic attribution purposes. Simply sign in with your Google account
-                to access all Published layers — no fee required.
+                to access all Published layers.
             </div>
         </div>
     </div>
@@ -131,14 +139,16 @@ title: ""
                     </li>
                 </ul>
                 Finalized reports are typically released in <strong>September of the following year</strong> (e.g., the
-                2024 finalized dataset is expected in Sep 2025). Like all Published data, you must be logged in to
-                download these files.
+                2025 finalized dataset is expected in Sep 2026). These reports use the **final QC** data reported to the
+                EPA's Air Quality System (AQS). Like all Published data, you must be logged in to download these files.
                 <br><br>
-                <strong>Caveat:</strong> Preliminary data combines the most recent EPA pre-generated data with AirNow
-                observations, as EPA pre-generated data is updated only twice a year. Users should exercise caution when
-                using preliminary outputs. Finalized data is established based on the EPA's official "as of" timestamp
-                at the time of publication. Due to these staggered reporting cycles, it is difficult to provide
-                "perfect" data; please use these datasets with awareness of these limitations.
+                <strong>Note on Preliminary data:</strong> Preliminary data combines the most recent EPA pre-generated
+                data with AirNow observations, which are not considered final data. Users should exercise some caution
+                when using preliminary outputs, although in practice, the preliminary data usually does not change
+                significantly in the final dataset. Due to staggered reporting cycles and our goal to generate rapid analyses, we start our analysis with
+                the preliminary dataset and switch to the final AQS dataset as soon as possible. Finalized data is
+                established based on the EPA's official "as of" timestamp at the time of publication. Please use our
+                analyses with awareness of these limitations.
             </div>
         </div>
     </div>
@@ -299,6 +309,11 @@ title: ""
                 </ul>
                 For the best experience, use a <strong>desktop browser</strong> with a screen width of 1024px or wider.
                 The map and statistical plots are fully responsive but designed for larger screens.
+                
+                <br><br>
+                On some computers with integrated graphics (on Windows), we have found that Chrome has a problem in
+                rendering the high resolution graphics from our app. If you see a problem while using Chrome, we
+                recommend switching to one of the other browsers. We need to test out Firefox and Safari.
             </div>
         </div>
     </div>
@@ -333,14 +348,17 @@ title: ""
                 Each dataset has its own specific research paper for citation. Please cite the relevant paper based on
                 the data you used:
                 <ul>
-                    <li><strong>GAM-v2:</strong> <a href="https://doi.org/10.1029/2025JD044088" target="_blank">Lee and
-                            Jaffe, 2025 (JGR-Atmos)</a></li>
-                    <li><strong>GAM-v1:</strong> <a href="https://doi.org/10.1021/acs.est.4c05870" target="_blank">Lee
-                            and Jaffe, 2024 (ES&T)</a></li>
+                    <li><strong>GAM-v2 (Smoke O3):</strong> <a href="https://doi.org/10.1029/2025JD044088"
+                            target="_blank">Lee and Jaffe, 2025 (JGR-Atmos)</a></li>
+                    <li><strong>GAM-v1 (Smoke O3):</strong> <a href="https://doi.org/10.1021/acs.est.4c05870"
+                            target="_blank">Lee and Jaffe, 2024 (ES&T)</a></li>
+                    <li><strong>Smoke PM2.5:</strong> Jaffe et al., 2026 (GeoHealth) (Forthcoming; currently in minor revisions)
+                    </li>
                 </ul>
-                If you wish to cite the <strong>Smokelyze app itself</strong>, please cite the <strong>Lee and Jaffe,
-                    2025 (GAM-v2)</strong> paper, as the current platform's development is fundamentally linked to this
-                research.
+                If you wish to cite the <strong>Smokelyze app itself</strong>, please cite the
+                <strong>Lee and Jaffe (2025) (GAM-v2)</strong> paper for results relating to <strong>Smoke O3</strong>,
+                or the <strong>Jaffe et al. (2026)</strong> paper for results relating to <strong>Smoke PM2.5</strong>,
+                as the current platform's development is fundamentally linked to this research.
                 <br><br>
                 For full citation strings and DOI links, please visit the <strong><a href="/resrc/data">Data
                         Archive</a></strong> page.

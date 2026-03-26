@@ -1,5 +1,6 @@
 
 import { map } from "./layers-state.js";
+import { ExcludeLayerGroups } from "./layers-def.js";
 import { highlightLocation } from "./utils.js";
 import { loadedGeoJSON, activeSources, loadedSources } from "./loader.js";
 import { 
@@ -113,10 +114,17 @@ export async function handleAiToolCall(functionName, args) {
                     map.getSource(rawSourceId.replace(/-/g, "_")) ||
                     map.getSource(rawSourceId.replace(/_/g, "-"));
 
+                // If source was found but has NO data, discard it and try fallbacks
+                const hasData = source && source._data && source._data.features && source._data.features.length > 0;
+                if (!hasData) {
+                    source = null; // Reset so fallback kicks in
+                }
+
                 // Fallback check for Dataset list
                 if (!source) {
-                    const possibleSources = ["gam_v2", "gam_v1", "pm_cbsa", "epa_ember"];
-                    source = possibleSources.map(s => map.getSource(s)).find(s => s);
+                    const possibleSources = ExcludeLayerGroups.restrictedSources || [];
+                    source = possibleSources.map(s => map.getSource(s))
+                        .find(s => s && s._data && s._data.features && s._data.features.length > 0);
                 }
 
                 // [New] Special Handling for HYSPLIT (Trajectory Data)
@@ -306,8 +314,22 @@ export async function handleAiToolCall(functionName, args) {
                 break;
 
             case "change_dataset":
-                const targetDataset = args?.dataset_value;
+                let targetDataset = args?.dataset_value;
                 const dataSelect = document.getElementById("MapDataSelect");
+
+                // [Date-Based Auto-Correction] AI가 2025+ 날짜에 구버전 모델을 선택하면 자동으로 pred 버전으로 교체
+                if (targetDataset && dataSelect) {
+                    const dateInput = document.getElementById("datePicker");
+                    const currentYear = dateInput ? parseInt(dateInput.value?.substring(0, 4)) : null;
+                    if (currentYear && currentYear >= 2025) {
+                        const predMap = { "gam-v2": "gam-v2-pred", "pm-cbsa": "pm-cbsa-pred" };
+                        if (predMap[targetDataset]) {
+                            console.log(`[AI Logic] Auto-corrected dataset from "${targetDataset}" to "${predMap[targetDataset]}" for ${currentYear}`);
+                            targetDataset = predMap[targetDataset];
+                        }
+                    }
+                }
+
                 if (dataSelect && targetDataset) {
                     const optionExists = Array.from(dataSelect.options).some(opt => opt.value === targetDataset);
                     if (optionExists) {
