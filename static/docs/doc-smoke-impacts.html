@@ -1,33 +1,255 @@
 
-<h2>Technical Note: Smoke PM2.5 and O3 Concentrations</h2>
+<h2>Note on Statistics: Here we focus on the impacts of smoke on PM2.5 and O3 concentrations</h2>
 <hr>
 
-<p>
-    This technical note provides a comprehensive summary that integrates the previously discussed core
-    methodologies—<strong>[PM2.5-criteria]</strong>, <strong>[Smoke Day]</strong>, and <strong>[GAM]</strong>
-    analysis—to provide a unified framework for quantifying wildfire smoke impacts on surface PM2.5 and O3
-    concentrations.
-</p>
-<p>
-    It details the integration of satellite-derived HMS products with ground-level data, utilizing Median
-    Absolute Deviation (MAD) to establish robust thresholds for smoke
-    influence in non-normal distributions. The document further explains the application of Generalized
-    Additive Models (GAMs) to isolate the wildfire contribution to
-    ambient ozone levels by predicting concentrations in the absence of smoke based on meteorological
-    drivers.
-</p>
-<p>
-    A critical highlight is the implementation of
-    Empirical Distribution Matching (EDM) to correct inherent model biases, which significantly enhances the
-    reliability of the analysis and improves the identification
-    of smoke-driven exceedance events by approximately 18% compared to standard models.
-</p>
+<section id="smoke-pm25">
+    <h3>PM<sub>2.5</sub> due to smoke</h3>
+    <p>
+        To identify the presence of smoke in a region, we use the NOAA Hazard Mapping System (HMS) fire and smoke
+        product (Ruminski et al., 2011; Kaulfus et al., 2017; Buysse et al., 2019). It is based on multiple
+        geostationary satellites and gives a smoke density as high, medium or low. However, as the HMS product is
+        derived from satellite data, it does not provide any vertical information on smoke plumes. Our previous
+        analysis (Buysse et al., 2019) indicates that enhanced PM<sub>2.5</sub> at the surface is found on 30-80% of
+        days with an overhead smoke plume, depending on the location. Nevertheless, the HMS smoke product is critical
+        to identify days when regional PM<sub>2.5</sub> concentrations are possibly influenced by smoke (Kaulfus et
+        al., 2017). We define any location that is within the boundaries of an HMS smoke plume as HMS=1 and a site
+        with no overhead smoke as HMS=0.
+    </p>
+    <p>
+        We combine the HMS product with surface PM<sub>2.5</sub> to identify the presence of smoke at the surface.
+        But this leaves the question of what PM<sub>2.5</sub> value or criteria should we use to define smoke
+        influence? Figure 1 shows the distribution of PM<sub>2.5</sub> on HMS=0 and HMS=1 days.
+    </p>
 
-<div class="doc-callout" style="display: flex; justify-content: space-between; align-items: center;">
-    <span>Technical Note (v6)</span>
-    <a href="/docs/Impacts_of_smoke_on_PM2.5_and_O3_concentrations_v6.pdf" target="_blank" rel="noopener noreferrer"
-        style="text-decoration: none; font-weight: bold;">
-        Download PDF →
-    </a>
-</div>
+    <figure style="margin: 2rem 0; text-align: center;">
+        <img src="/images/doc-smoke-impacts/fig_1.webp"
+            alt="Distributions of daily PM2.5 concentrations for HMS=0 and HMS=1 days"
+            style="max-width: 100%; border-radius: 0.6rem; border: 0.1rem solid var(--border-main);">
+        <figcaption style="margin-top: 0.8rem; font-size: 1.4rem; color: var(--text-muted); line-height: 1.6;">
+            <strong>Figure 1.</strong> Distributions of daily PM<sub>2.5</sub> concentrations for HMS=0 (left) and
+            HMS=1 (right) days. For the HMS=0 distribution the median + 1 and 0.5 median absolute deviations (MAD)
+            are also shown. This plot shows the full year data for all PM<sub>2.5</sub> sites. If we use only the
+            April–October data instead, the means are similar (6.6 and 10.9 μg m<sup>-3</sup>, respectively).
+        </figcaption>
+    </figure>
+
+    <p>
+        While the means of these two distributions are significantly different and the HMS=1 data show a greater
+        occurrence of high PM<sub>2.5</sub> days, the distributions have substantial overlap. Our goal is to choose a
+        PM<sub>2.5</sub>-criteria that is <em>most likely</em> associated with smoke and is <em>unlikely</em> to be
+        due to local pollution alone. We note that this is different from "outlier" detection in statistics. Since our
+        goal is to identify <em>any</em> significant contribution to the PM<sub>2.5</sub> concentrations, down to a
+        few μg m<sup>-3</sup>, using an outlier method would mean that most moderate smoke days would not be
+        classified as having a smoke influence.
+    </p>
+    <p>
+        Previously, we used the mean plus one standard deviation (Mean + 1 SD) of a sites' HMS=0 PM<sub>2.5</sub>
+        concentrations as a criteria to define smoke influence for the GAM v1 dataset (Lee and Jaffe, 2023; 2024).
+        But the figure above shows that the PM<sub>2.5</sub> distributions are not normally distributed and so the
+        standard deviation is not a good metric to use for these distributions. Instead, we use a method that is more
+        suited for non-normal distributions called the median absolute deviation (MAD, Leys et al., 2013). The MAD is
+        defined as:
+    </p>
+
+    <div class="doc-formula">
+        MAD = M<sub>2</sub> |X(i) – M<sub>1</sub>|
+    </div>
+
+    <p>
+        Where X(i) is the distribution of PM<sub>2.5</sub> observations, M<sub>1</sub> is the median of the
+        PM<sub>2.5</sub> data and M<sub>2</sub> is the median of the absolute deviations from M<sub>1</sub>. Since
+        PM<sub>2.5</sub> data have a strong seasonality (highest in winter in the absence of wildfire smoke), the MAD
+        values are calculated for each site and each month separately. This is why it's necessary to have multiple
+        years of data to identify enough HMS=0 days. Typically, we use a minimum of 4-6 years of data.
+    </p>
+    <p>
+        We define the PM<sub>2.5</sub>-criteria as the Median + ½ MAD and Median + 1 MAD, which is approximately the
+        67<sup>th</sup> and 80<sup>th</sup> percentiles of the HMS=0 distribution at each site. Each dataset we
+        generate includes both PM<sub>2.5</sub> criteria used at each site (e.g., median+1 MAD and median + ½ MAD).
+        The average PM<sub>2.5</sub>-criteria (Median + 1 MAD), averaged for all months range from 2.6 μg
+        m<sup>-3</sup>, at very clean sites along the west coast, to 17.9 μg m<sup>-3</sup> at more polluted urban
+        locations. So, this points out the greater challenge of identifying moderate smoke levels at more polluted
+        urban locations. At the same time, we note that the mean and median PM<sub>2.5</sub>-criteria are 8.51 and
+        8.46 μg m<sup>-3</sup>, respectively, so this is not an issue at the vast majority of sites and more than 93%
+        of the 803 O<sub>3</sub> sites (i.e., GAM v3) we consider have PM<sub>2.5</sub>-criteria less than 12 μg
+        m<sup>-3</sup>.
+    </p>
+    <p>
+        Note that the PM<sub>2.5</sub> criteria can change very slightly for each dataset due to different averaging
+        periods. For example, the GAM v1 dataset for 2018-2023 has a national mean median + ½ MAD across all sites of
+        xx μg m<sup>-3</sup>, whereas the GAM V2 dataset has a national mean median + ½ MAD across all sites of xx μg
+        m<sup>-3</sup>. The difference is small at nearly all sites and will only be relevant for days that are very
+        close to the criteria (e.g., low smoke days).
+    </p>
+    <p>
+        Finally, one variable to pay attention to in our datasets is the "Quant_PM2.5". This gives the percentile of
+        each PM<sub>2.5</sub> value, in comparison to the HMS=0 data. The greater is this value, the greater is the
+        confidence that smoke has influenced the PM<sub>2.5</sub> data. During smoke events, we can see that many
+        adjacent sites have high values (>95<sup>th</sup> percentile) for Quant_PM2.5.
+    </p>
+</section>
+
+<section id="smoke-o3">
+    <h3>O<sub>3</sub> due to smoke</h3>
+    <p>
+        The contribution of smoke to surface O<sub>3</sub> is complex. On average, smoke increases surface
+        O<sub>3</sub> concentrations, but there is a large degree of variability due to varying emissions, meteorology
+        during transport, smoke impacts on chemistry and photolysis and the local photochemical environment at the
+        receptor site. Smoke can contribute to urban O<sub>3</sub> concentrations either directly (e.g., O<sub>3</sub>
+        in the smoke plume mixes into an urban area) or in-directly, by enhancing photochemical production. For the
+        in-direct enhancement, it is possible that VOCs in smoke plumes combine with existing urban NO<sub>x</sub> to
+        enhance O<sub>3</sub> production. It is also possible that PAN (peroxyacetyl nitrate) present in the smoke
+        plume decomposes at the surface (due to warmer temperatures) and this will also contribute to O<sub>3</sub>
+        production. For all of these reasons, the contribution of smoke to surface O<sub>3</sub> is highly variable
+        and challenging to estimate (Jaffe et al., 2020).
+    </p>
+    <p>
+        To estimate the smoke contribution to surface O<sub>3</sub> we use a statistical/machine learning approach to
+        predict O<sub>3</sub> in the absence of smoke. This is done using a "Generalized Additive Model" or GAM. For
+        each site, the GAM estimates the MDA8 concentration in the absence of smoke using a variety of predictors.
+        Importantly, the GAMs can include linear, non-linear and categorical relationships, so this means we can
+        include typical met variables (such as daily max temperature, RH, etc.), plus variables such as the trajectory
+        wind vector and speed, day of week, etc. as predictors for the MDA8. The GAMs must be calculated
+        independently at each location since the relationship with the meteorological variables is different at each
+        site. A variety of quality control measures are evaluated, as described in our various papers and
+        publications.
+    </p>
+    <p>
+        Figure 2, below, shows performance of the GAM v3 for 803 sites nationally for data from April–October
+        2019–2024. This plot includes all observed and predicted MDA8 values and has a mean R<sup>2</sup> of 0.83.
+        The mean R<sup>2</sup> for the individual GAMs at these 803 sites is 0.75. We define the model residuals as
+        observed MDA8 – GAM predicted MDA8. On smoke days, we define the smoke O<sub>3</sub> (SMO) to be equal to
+        the residual.
+    </p>
+
+    <figure style="margin: 2rem 0; text-align: center;">
+        <img src="/images/doc-smoke-impacts/fig_2.webp"
+            alt="Observed vs predicted MDA8 for 803 sites, April–October 2019–2024"
+            style="max-width: 100%; border-radius: 0.6rem; border: 0.1rem solid var(--border-main);">
+        <figcaption style="margin-top: 0.8rem; font-size: 1.4rem; color: var(--text-muted); line-height: 1.6;">
+            <strong>Figure 2.</strong> Observed vs predicted MDA8 for 803 sites, April–October 2019–2024. The
+            residuals are defined by observed MDA8 – GAM predicted MDA8.
+        </figcaption>
+    </figure>
+
+    <p>
+        Figure 3 shows the distribution of GAM residuals for no smoke and smoke days. The mean residual is 0 (SD of
+        4.9 ppb) on non-smoke days and 3.8 ppb (SD of 7.8 ppb) on smoke days, which is indicative of the mean smoke
+        contribution to the MDA8. We use the 97.5<sup>th</sup> percentile of the non-smoke residuals to evaluate
+        whether smoke has made a significant contribution to the MDA8, based on published guidance from the US EPA (US
+        EPA, 2016). In this case, the residual for an individual smoke day must be greater than the 97.5<sup>th</sup>
+        percentile of the non-smoke residuals. If it is, then we can consider the MDA8 to have been significantly
+        enhanced by smoke. The 97.5<sup>th</sup> percentile of the non-smoke residuals is calculated individually at
+        each site. The overall mean 97.5<sup>th</sup> percentile at all sites is 9.8 ppb, with a range of 5.4–16.0
+        ppb. This procedure is shown in Figure 3.
+    </p>
+    <p>
+        Similar to the PM<sub>2.5</sub> discussion above, one variable to pay attention to in our datasets is the
+        "Quant_MDA8O3_resids". This gives the percentile of each MDA8 residual, in comparison to the training (no
+        smoke) data. The greater is this value, the greater is the confidence that smoke has influenced the
+        O<sub>3</sub> MDA8.
+    </p>
+
+    <figure style="margin: 2rem 0; text-align: center;">
+        <img src="/images/doc-smoke-impacts/fig_3.webp" alt="GAM residuals for no smoke and smoke days"
+            style="max-width: 100%; border-radius: 0.6rem; border: 0.1rem solid var(--border-main);">
+        <figcaption style="margin-top: 0.8rem; font-size: 1.4rem; color: var(--text-muted); line-height: 1.6;">
+            <strong>Figure 3.</strong> GAM residuals for no smoke and smoke days. The 97.5<sup>th</sup> percentile of
+            the non-smoke day residual is used as a metric to evaluate smoke influence. We assume that any smoke
+            residual that is greater than this 97.5<sup>th</sup> percentile is a day with a significant smoke
+            contribution to the MDA8.
+        </figcaption>
+    </figure>
+</section>
+
+<section id="smoke-edm">
+    <h3>Empirical Distribution Matching (EDM) for bias correction in GAM</h3>
+    <p>
+        Statistical and/or machine learning regression models are inherently biased because the model is fitted closer
+        to the center of the response variable. This problem is usually not rigorously considered in model
+        evaluations. However, bias correction can be <em>very important</em> when considering how well any model fits
+        observational data.
+    </p>
+    <p>
+        Belitz and Stackelberg (2021) proposed an Empirical Distribution Matching (EDM) method to correct the bias of
+        regression models. EDM corrects the bias by aligning the empirical cumulative distribution functions (ECDFs)
+        of observed and predicted values as follows:
+    </p>
+
+    <div class="doc-formula">
+        Y<sub>EDM</sub> = Q<sup>Tr</sup><sub>Obs</sub> ( F<sup>Tr</sup><sub>pred</sub> ( Y<sub>pred</sub> ) )
+    </div>
+
+    <p>
+        Where "F" is the ECDF, "Q" is the inverse ECDF, and "Tr" represents the training data (i.e., non-smoke days
+        data in this study). For each site, Q<sup>Tr</sup><sub>obs</sub> is obtained using observed MDA8, while
+        F<sup>Tr</sup><sub>pred</sub> is calculated using GAM predicted MDA8. Then, GAM predicted MDA8
+        (Y<sub>pred</sub>) for both non-smoke and smoke days is input into these functions, Q and F, to finally
+        obtain Y<sub>EDM</sub>. Hereafter, this method will be referred to as GAM-EDM.
+    </p>
+    <p>
+        Figure 4 shows performance of the GAM v3-EDM for 803 sites nationally for data from April–October 2019–2024.
+        The slope was slightly lower compared to Figure 2, and this is a natural phenomenon when applying bias
+        correction. However, what is important is when we investigate true positives (TP) that exceed 70 ppb for both
+        observed and predicted MDA8. The TP of GAM-EDM for training data (63%) improved by 18% compared to GAM (45%).
+        As GAM-EDM adjusts predicted MDA8, the number of exceedance days with significant smoke contribution to MDA8
+        is slightly reduced. Being more conservative, GAM-EDM provides a more cautious estimate of exceedance days
+        with significant smoke contribution to MDA8.
+    </p>
+
+    <figure style="margin: 2rem 0; text-align: center;">
+        <img src="/images/doc-smoke-impacts/fig_4.webp"
+            alt="Observed vs predicted MDA8 for 803 sites with GAM-EDM, April–October 2019–2024"
+            style="max-width: 100%; border-radius: 0.6rem; border: 0.1rem solid var(--border-main);">
+        <figcaption style="margin-top: 0.8rem; font-size: 1.4rem; color: var(--text-muted); line-height: 1.6;">
+            <strong>Figure 4.</strong> Observed vs predicted MDA8 for 803 sites, April–October 2019–2024. The figure
+            also shows how we derive the residuals (observed MDA8 – GAM-EDM predicted MDA8).
+        </figcaption>
+    </figure>
+</section>
+
+<br>
+<hr>
+<p class="doc-footer-text">
+    Belitz, K., & Stackelberg, P. E. (2021), Evaluation of six methods for correcting bias in estimates from ensemble
+    tree machine learning regression models. <em>Environmental Modelling and Software</em>, 139, 105006.
+    <a href="https://doi.org/10.1016/j.envsoft.2021.105006" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1016/j.envsoft.2021.105006</a>
+    <br><br>
+    Buysse C.E., Kaulfus A., Nair U. and Jaffe D.A. (2019). Relationships between particulate matter, ozone, and
+    nitrogen oxides during urban smoke events in the western US. <em>Environ. Sci. Technol.</em>,
+    <a href="https://doi.org/10.1021/acs.est.9b05241" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1021/acs.est.9b05241</a>
+    <br><br>
+    Jaffe D.A., O'Neill S.M., Larkin N.K., Holder A.L., Peterson D.L., Halofsky J.E. and Rappold A.G. Wildfire and
+    prescribed burning impacts on air quality in the United States, <em>J. Air and Waste Mgt. Assn.</em>,
+    <a href="https://doi.org/10.1080/10962247.2020.1749731" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1080/10962247.2020.1749731</a>, 2020.
+    <br><br>
+    Kaulfus, A.S., Nair, U., Jaffe, D.A., Christopher, S.A., and Goodrick, S. (2017). Biomass burning smoke
+    climatology of the United States: Implications for particulate matter air quality, <em>Environmental Science &
+        Technology</em> 50, 11731-11741,
+    <a href="https://doi.org/10.1021/acs.est.7b03292" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1021/acs.est.7b03292</a>
+    <br><br>
+    Leys et al. (2013): Detecting outliers: Do not use standard deviation around the mean, use absolute deviation
+    around the median. <em>Journal of Experimental Social Psychology</em> 49, 764–766.
+    <a href="https://doi.org/10.1016/j.jesp.2013.03.013" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1016/j.jesp.2013.03.013</a>
+    <br><br>
+    Lee H. and Jaffe D.A. Impact of wildfire smoke on ozone concentrations using a Generalized Additive model in Salt
+    Lake City, Utah, USA, 2006–2022, <em>Journal of the Air & Waste Management Association</em>,
+    <a href="https://doi.org/10.1080/10962247.2023.2291197" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1080/10962247.2023.2291197</a>, 2023.
+    <br><br>
+    Lee, H., and Jaffe, D. A. (2024). Wildfire Impacts on O<sub>3</sub> and PM<sub>2.5</sub> in the Continental
+    United States using a Generalized Additive Model (2018–2023). <em>Environmental Science and Technology</em>,
+    <a href="https://doi.org/10.1021/acs.est.4c05870" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1021/acs.est.4c05870</a>
+    <br><br>
+    Ruminski, M.; Kondragunta, S.; Draxler, R.; Zeng, J. Recent Changes to the Hazard Mapping System, 2011.
+    <a href="https://www3.epa.gov/ttnchie1/conference/ei15/session10/ruminiski.pdf" target="_blank"
+        rel="noopener noreferrer">https://www3.epa.gov/ttnchie1/conference/ei15/session10/ruminiski.pdf</a>
+</p>
+<br>
 

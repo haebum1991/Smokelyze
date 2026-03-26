@@ -49,7 +49,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
   parent = "resrc"
 
 [[menu.main]]
-  name = "GAM Manual"
+  name = "Run your own GAMs"
   url = "/resrc/gam-manual/"
   weight = 6
   parent = "resrc"
