@@ -222,28 +222,36 @@ function pivotData(data, timeKey, valueKey) {
 }
 
 /**
- * Fetch and Cache State Data
+ * Fetch and Cache State Data (year-split structure)
+ * Path: /data_by_state/{dataset}/{year}/data_by_state_{State}.geojson.gz
  */
-async function loadStateData(datasetId, state, config) {
-    const cacheKey = `${datasetId}_${state}`;
+async function loadStateData(datasetId, state, config, years) {
+    const cacheKey = `${datasetId}_${state}_${years.join(",")}`;
     if (stateDataCache[cacheKey]) return stateDataCache[cacheKey];
 
-    // Sanitize state name for URL: replace spaces with underscores
     const safeState = state.replace(/ /g, "_");
     const { main } = config.sources;
-    const stateUrl = `/data_by_state/${main}/data_by_state_${safeState}.geojson.gz`;
-    const geoData = await fetchGeoJSON(stateUrl);
 
-    if (!geoData || !geoData.features) return null;
+    const fetches = years.map(yr =>
+        fetchGeoJSON(`/data_by_state/${main}/${yr}/data_by_state_${safeState}.geojson.gz`)
+            .catch(() => null)
+    );
+    const results = await Promise.all(fetches);
 
-    let flatData = geoData.features.map(f => {
-        const p = { ...f.properties };
-        if (f.geometry && f.geometry.coordinates) {
-            p.lon = f.geometry.coordinates[0];
-            p.lat = f.geometry.coordinates[1];
+    let flatData = [];
+    for (const geoData of results) {
+        if (!geoData || !geoData.features) continue;
+        for (const f of geoData.features) {
+            const p = { ...f.properties };
+            if (f.geometry && f.geometry.coordinates) {
+                p.lon = f.geometry.coordinates[0];
+                p.lat = f.geometry.coordinates[1];
+            }
+            flatData.push(p);
         }
-        return p;
-    });
+    }
+
+    if (flatData.length === 0) return null;
 
     stateDataCache[cacheKey] = flatData;
     return flatData;
@@ -276,7 +284,25 @@ async function generateReport() {
 
     try {
         const config = REPORT_CONFIG[datasetId];
-        let flatData = await loadStateData(datasetId, state, config);
+
+        // Determine which years to fetch based on period selection
+        let selectedYears;
+        if (period === "by_year") {
+            selectedYears = Array.from(document.querySelectorAll('input[name="ReportYear"]:checked')).map(cb => parseInt(cb.value));
+        } else {
+            const start = document.getElementById("DatadbReportTableDateStart").value;
+            const end = document.getElementById("DatadbReportTableDateEnd").value;
+            const startYr = start ? parseInt(start.substring(0, 4)) : Math.min(...config.years);
+            const endYr = end ? parseInt(end.substring(0, 4)) : Math.max(...config.years);
+            selectedYears = config.years.filter(yr => yr >= startYr && yr <= endYr);
+        }
+
+        if (selectedYears.length === 0) {
+            alert("Please select at least one year.");
+            return;
+        }
+
+        let flatData = await loadStateData(datasetId, state, config, selectedYears);
 
         if (!flatData) {
             alert("No data found for the selected state.");
@@ -285,11 +311,8 @@ async function generateReport() {
 
         let filteredData = [...flatData];
 
-        // 3. Filter by Time
-        if (period === "by_year") {
-            const selectedYears = Array.from(document.querySelectorAll('input[name="ReportYear"]:checked')).map(cb => parseInt(cb.value));
-            filteredData = filteredData.filter(d => selectedYears.includes(d.YEAR));
-        } else {
+        // Filter by date range (by_date mode only — year filtering already handled by fetch)
+        if (period === "by_date") {
             const start = document.getElementById("DatadbReportTableDateStart").value;
             const end = document.getElementById("DatadbReportTableDateEnd").value;
             if (start) filteredData = filteredData.filter(d => d.date >= start);
