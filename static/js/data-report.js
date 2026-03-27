@@ -9,90 +9,117 @@ import { auth, onAuthStateChanged } from "./fb-init.js";
 import { ESML, showAuthOverlay } from "./utils.js";
 import { updateAuthButton } from "./signin.js";
 import { logUserAction } from "./fb-logging.js";
+import { toggleSpinner } from "./loader-ui.js";
 
 // --- Configuration ---
+// --- Report Type Definitions (Shared) ---
+const GAM_V2_TYPES = {
+    "by_year": [
+        { name: "No. of smoke days", method: "count" },
+        { name: "No. of smoke days with MDA8 residual > 97.5th quantile", method: "count" },
+        { name: "No. of smoke days with MDA8 residual > 97.5th quantile (EDM)", method: "count" },
+        { name: "No. of smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb", method: "count" },
+        { name: "No. of smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (EDM)", method: "count" },
+        { name: "Mean residual (ppb) on smoke days", method: "mean" },
+        { name: "Mean residual (ppb) on smoke days (EDM)", method: "mean" },
+        { name: "Mean residual (ppb) on non-smoke days", method: "mean" },
+        { name: "Mean residual (ppb) on non-smoke days (EDM)", method: "mean" },
+        { name: "Mean residual quantile on smoke days", method: "mean" },
+        { name: "Mean residual quantile on smoke days (EDM)", method: "mean" },
+        { name: "Mean residual quantile on non-smoke days", method: "mean" },
+        { name: "Mean residual quantile on non-smoke days (EDM)", method: "mean" }
+    ],
+    "by_date": [
+        { name: "Smoke days (1: Yes, 0: No)", method: "count" },
+        { name: "Smoke days with MDA8 residual > 97.5th quantile (1: Yes, 0: No)", method: "count" },
+        { name: "Smoke days with MDA8 residual > 97.5th quantile (1: Yes, 0: No) (EDM)", method: "count" },
+        { name: "Smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)", method: "count" },
+        { name: "Smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No) (EDM)", method: "count" },
+        { name: "Residual (ppb) on smoke days", method: "mean" },
+        { name: "Residual (ppb) on smoke days (EDM)", method: "mean" },
+        { name: "Residual quantile on smoke days", method: "mean" },
+        { name: "Residual quantile on smoke days (EDM)", method: "mean" },
+        { name: "Ob PM2.5 (ug m-3)", method: "mean" }
+    ]
+};
+
+const GAM_V1_TYPES = {
+    "by_year": [
+        { name: "No. of smoke days", method: "count" },
+        { name: "No. of smoke days with MDA8 residual > 97.5th quantile", method: "count" },
+        { name: "No. of smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb", method: "count" },
+        { name: "Mean residual (ppb) on smoke days", method: "mean" },
+        { name: "Mean residual (ppb) on non-smoke days", method: "mean" },
+        { name: "Mean residual quantile on smoke days", method: "mean" },
+        { name: "Mean residual quantile on non-smoke days", method: "mean" }
+    ],
+    "by_date": [
+        { name: "Smoke days (1: Yes, 0: No)", method: "count" },
+        { name: "Smoke days with MDA8 residual > 97.5th quantile (1: Yes, 0: No)", method: "count" },
+        { name: "Smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)", method: "count" },
+        { name: "Residual (ppb) on smoke days", method: "mean" },
+        { name: "Residual quantile on smoke days", method: "mean" },
+        { name: "Ob PM2.5 (ug m-3)", method: "mean" }
+    ]
+};
+
+const PM_CBSA_TYPES = {
+    "by_year": [
+        { name: "No. of days with overhead HMS", method: "count" },
+        { name: "No. of probable smoke days (HMS + PM2.5 > Criteria 1)", method: "count" },
+        { name: "No. of highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "count" },
+        { name: "Mean smoke PM2.5 (ug m-3) on probable smoke days (HMS + PM2.5 > Criteria 1)", method: "mean" },
+        { name: "Mean smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "mean" }
+    ],
+    "by_date": [
+        { name: "Days with overhead HMS (1: Yes, 0: No)", method: "count" },
+        { name: "Probable smoke days (HMS + PM2.5 > Criteria 1) (1: Yes, 0: No)", method: "count" },
+        { name: "Highly probable smoke days (HMS + PM2.5 > Criteria 2) (1: Yes, 0: No)", method: "count" },
+        { name: "Smoke PM2.5 (ug m-3) on probable smoke days (HMS + PM2.5 > Criteria 1)", method: "mean" },
+        { name: "Smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "mean" }
+    ]
+};
+
+// --- Configuration ---
+const currentYear = new Date().getFullYear();
+
+/**
+ * Creates an array of years from start to (currentYear - 1)
+ * Useful for 1-year lagged datasets (e.g. 2025 data becomes available in 2026)
+ */
+function getLaggedYearRange(startYear) {
+    const endYear = currentYear - 1;
+    const years = [];
+    if (endYear < startYear) return [startYear]; // Minimum fallback
+    for (let y = startYear; y <= endYear; y++) years.push(y);
+    return years;
+}
+
 const REPORT_CONFIG = {
     "gam-v2": {
         years: [2019, 2020, 2021, 2022, 2023, 2024],
-        sources: {
-            main: "gam_v2"
-        },
-        types: {
-            "by_year": [
-                { name: "No. of smoke days", method: "count" },
-                { name: "No. of smoke days with MDA8 residual > 97.5th quantile", method: "count" },
-                { name: "No. of smoke days with MDA8 residual > 97.5th quantile (EDM)", method: "count" },
-                { name: "No. of smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb", method: "count" },
-                { name: "No. of smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (EDM)", method: "count" },
-                { name: "Mean residual (ppb) on smoke days", method: "mean" },
-                { name: "Mean residual (ppb) on smoke days (EDM)", method: "mean" },
-                { name: "Mean residual (ppb) on non-smoke days", method: "mean" },
-                { name: "Mean residual (ppb) on non-smoke days (EDM)", method: "mean" },
-                { name: "Mean residual quantile on smoke days", method: "mean" },
-                { name: "Mean residual quantile on smoke days (EDM)", method: "mean" },
-                { name: "Mean residual quantile on non-smoke days", method: "mean" },
-                { name: "Mean residual quantile on non-smoke days (EDM)", method: "mean" }
-            ],
-            "by_date": [
-                { name: "Smoke days (1: Yes, 0: No)", method: "count" },
-                { name: "Smoke days with MDA8 residual > 97.5th quantile (1: Yes, 0: No)", method: "count" },
-                { name: "Smoke days with MDA8 residual > 97.5th quantile (1: Yes, 0: No) (EDM)", method: "count" },
-                { name: "Smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)", method: "count" },
-                { name: "Smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No) (EDM)", method: "count" },
-                { name: "Residual (ppb) on smoke days", method: "mean" },
-                { name: "Residual (ppb) on smoke days (EDM)", method: "mean" },
-                { name: "Residual quantile on smoke days", method: "mean" },
-                { name: "Residual quantile on smoke days (EDM)", method: "mean" },
-                { name: "Ob PM2.5 (ug m-3)", method: "mean" }
-            ]
-        }
+        sources: { main: "gam_v2" },
+        types: GAM_V2_TYPES
     },
     "gam-v1": {
         years: [2018, 2019, 2020, 2021, 2022, 2023],
-        sources: {
-            main: "gam_v1"
-        },
-        types: {
-            "by_year": [
-                { name: "No. of smoke days", method: "count" },
-                { name: "No. of smoke days with MDA8 residual > 97.5th quantile", method: "count" },
-                { name: "No. of smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb", method: "count" },
-                { name: "Mean residual (ppb) on smoke days", method: "mean" },
-                { name: "Mean residual (ppb) on non-smoke days", method: "mean" },
-                { name: "Mean residual quantile on smoke days", method: "mean" },
-                { name: "Mean residual quantile on non-smoke days", method: "mean" }
-            ],
-            "by_date": [
-                { name: "Smoke days (1: Yes, 0: No)", method: "count" },
-                { name: "Smoke days with MDA8 residual > 97.5th quantile (1: Yes, 0: No)", method: "count" },
-                { name: "Smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)", method: "count" },
-                { name: "Residual (ppb) on smoke days", method: "mean" },
-                { name: "Residual quantile on smoke days", method: "mean" },
-                { name: "Ob PM2.5 (ug m-3)", method: "mean" }
-            ]
-        }
+        sources: { main: "gam_v1" },
+        types: GAM_V1_TYPES
     },
     "pm-cbsa": {
         years: [2019, 2020, 2021, 2022, 2023, 2024],
-        sources: {
-            main: "pm_cbsa"
-        },
-        types: {
-            "by_year": [
-                { name: "No. of days with overhead HMS", method: "count" },
-                { name: "No. of probable smoke days (HMS + PM2.5 > Criteria 1)", method: "count" },
-                { name: "No. of highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "count" },
-                { name: "Mean smoke PM2.5 (ug m-3) on probable smoke days (HMS + PM2.5 > Criteria 1)", method: "mean" },
-                { name: "Mean smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "mean" }
-            ],
-            "by_date": [
-                { name: "Days with overhead HMS (1: Yes, 0: No)", method: "count" },
-                { name: "Probable smoke days (HMS + PM2.5 > Criteria 1) (1: Yes, 0: No)", method: "count" },
-                { name: "Highly probable smoke days (HMS + PM2.5 > Criteria 2) (1: Yes, 0: No)", method: "count" },
-                { name: "Smoke PM2.5 (ug m-3) on probable smoke days (HMS + PM2.5 > Criteria 1)", method: "mean" },
-                { name: "Smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "mean" }
-            ]
-        }
+        sources: { main: "pm_cbsa" },
+        types: PM_CBSA_TYPES
+    },
+    "gam-v2-pred": {
+        years: getLaggedYearRange(2025),
+        sources: { main: "gam_v2_pred" },
+        types: GAM_V2_TYPES
+    },
+    "pm-cbsa-pred": {
+        years: getLaggedYearRange(2025),
+        sources: { main: "pm_cbsa_pred" },
+        types: PM_CBSA_TYPES
     }
 };
 
@@ -148,10 +175,16 @@ function updateYears() {
 /**
  * Cascading dropdown for States (reuse logic from query builder)
  */
+// Prediction datasets reuse the same AQS list as their published counterparts
+const AQS_LIST_MAP = {
+    "gam-v2-pred": "gam_v2",
+    "pm-cbsa-pred": "pm_cbsa"
+};
+
 async function updateStates() {
     const datasetId = document.getElementById("DatadbReportTableDataset").value;
     const stateSelect = document.getElementById("DatadbReportTableState");
-    const fileSuffix = datasetId.replace(/-/g, "_");
+    const fileSuffix = AQS_LIST_MAP[datasetId] || datasetId.replace(/-/g, "_");
     const url = `/aqs_list_${fileSuffix}.geojson.gz`;
     const data = await fetchGeoJSON(url, null);
     if (!data) return;
@@ -281,6 +314,7 @@ async function generateReport() {
     const originalText = btn.textContent;
     btn.textContent = "Processing...";
     btn.disabled = true;
+    toggleSpinner(true, "Loading state report data...", true);
 
     try {
         const config = REPORT_CONFIG[datasetId];
@@ -349,6 +383,7 @@ async function generateReport() {
         console.error("Report generation failed:", err);
         alert("An error occurred while generating the report.");
     } finally {
+        toggleSpinner(false);
         btn.textContent = originalText;
         btn.disabled = false;
     }
@@ -358,7 +393,7 @@ async function generateReport() {
  * Logic to calculate metrics (Mirrors R switch case)
  */
 function calculateReportValues(data, datasetId, reportType, timeKey, method) {
-    const siteKey = datasetId === "pm-cbsa" ? "AQS_PM" : "AQS_O3";
+    const siteKey = datasetId.startsWith("pm-cbsa") ? "AQS_PM" : "AQS_O3";
     const isEdmReport = reportType.endsWith("(EDM)");
     const baseReportType = isEdmReport ? reportType.replace(" (EDM)", "") : reportType;
 
@@ -436,7 +471,7 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
                     val = d["PM2.5"];
                     break;
             }
-        } else if (datasetId === "pm-cbsa") {
+        } else if (datasetId.startsWith("pm-cbsa")) {
             const del_0p5 = d.smoke_m0p5m === 1 ? d["PM2.5"] - d["PM2.5_Crit_m0p5m"] : 0;
             const del_1p0 = d.smoke_m1p0m === 1 ? d["PM2.5"] - d["PM2.5_Crit_m1p0m"] : 0;
 

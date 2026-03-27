@@ -4,6 +4,13 @@ title: ""
 ---
 
 <link rel="stylesheet" href="/css/data.css">
+<link rel="stylesheet" href="/css/map.css">
+
+<!-- Loading Spinner (shared with loader-ui.js toggleSpinner) -->
+<div id="MapLoadingOverlay">
+  <div id="MapLoadingSpinner"></div>
+  <div id="MapLoadingText"></div>
+</div>
 
 <h1 style="text-align: center;">
   Data Archive
@@ -237,9 +244,15 @@ title: ""
             <div class="datadb-form-group">
               <label for="DatadbReportTableDataset">Dataset</label>
               <select id="DatadbReportTableDataset">
-                <option value="gam-v2">UW GAM-v2 (Lee and Jaffe, 2025)</option>
-                <option value="gam-v1">UW GAM-v1 (Lee and Jaffe, 2024)</option>
-                <option value="pm-cbsa">UW Smoke PM2.5 (Under review)</option>
+                <optgroup label="Published">
+                  <option value="gam-v2">UW GAM-v2 (Lee and Jaffe, 2025)</option>
+                  <option value="gam-v1">UW GAM-v1 (Lee and Jaffe, 2024)</option>
+                  <option value="pm-cbsa">UW Smoke PM2.5 (Under review)</option>
+                </optgroup>
+                <optgroup label="Latest Analysis &amp; Prediction">
+                  <option value="gam-v2-pred">UW GAM-v2 (2025+)</option>
+                  <option value="pm-cbsa-pred">UW Smoke PM2.5 (2025+)</option>
+                </optgroup>
               </select>
             </div>
 

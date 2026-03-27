@@ -9,6 +9,7 @@ import { showAuthOverlay, fetchJson, ESML } from "./utils.js";
 import { updateAuthButton } from "./signin.js";
 import { renderAQSPlots as drawAQSPlots } from "./data-query-plots.js";
 import { logUserAction } from "./fb-logging.js";
+import { toggleSpinner } from "./loader-ui.js";
 
 /**
  * Local utility: Same as ESML but specifically allows <br> tags for line breaks
@@ -420,6 +421,7 @@ async function handleQuery() {
     const originalText = btn.textContent;
     btn.textContent = "Loading...";
     btn.disabled = true;
+    toggleSpinner(true, "Loading AQS site data...", true);
 
     const url = `${config.baseUrl}/${config.source}/${config.prefix}${aqsSite}${config.extension}`;
     const metaUrl = `${config.metaBaseUrl}/${config.source}/${config.metaPrefix}${aqsSite}${config.metaExtension}`;
@@ -482,6 +484,7 @@ async function handleQuery() {
         console.error("Query failed:", err);
         alert("Failed to fetch data. Please try again later.");
     } finally {
+        toggleSpinner(false);
         btn.textContent = originalText;
         btn.disabled = false;
     }
