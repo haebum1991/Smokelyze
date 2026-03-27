@@ -164,6 +164,16 @@ function updateYears() {
     if (!REPORT_CONFIG[dataset]) return;
 
     const years = REPORT_CONFIG[dataset].years;
+
+    // --- Dynamic Date Update for "By Date" Section ---
+    const maxYear = Math.max(...years);
+    const dateStartInput = document.getElementById("DatadbReportTableDateStart");
+    const dateEndInput = document.getElementById("DatadbReportTableDateEnd");
+    if (dateStartInput && dateEndInput && maxYear > 0) {
+        dateStartInput.value = `${maxYear}-05-01`;
+        dateEndInput.value = `${maxYear}-09-30`;
+    }
+
     container.innerHTML = "";
     years.forEach(yr => {
         const label = document.createElement("label");

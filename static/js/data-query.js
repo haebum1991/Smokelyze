@@ -40,6 +40,17 @@ let currentPage = 1;
 let totalPages = 1;
 let currentFeatures = [];
 
+/**
+ * Creates an array of years from start to (currentYear - 1)
+ */
+function getLaggedYearRange(startYear) {
+    const endYear = new Date().getFullYear() - 1;
+    const years = [];
+    if (endYear < startYear) return [startYear];
+    for (let y = startYear; y <= endYear; y++) years.push(y);
+    return years;
+}
+
 const QUERY_IMPORT_CONFIG = {
     "gam-v2": {
         source: "gam_v2",
@@ -48,7 +59,9 @@ const QUERY_IMPORT_CONFIG = {
         extension: ".geojson.gz",
         metaBaseUrl: "/data_by_aqs_meta",
         metaPrefix: "data_by_aqs_meta_",
-        metaExtension: ".json"
+        metaExtension: ".json",
+        predYearSource: "gam_v2_pred",
+        predYears: getLaggedYearRange(2025)
     },
     "gam-v1": {
         source: "gam_v1",
@@ -66,7 +79,9 @@ const QUERY_IMPORT_CONFIG = {
         extension: ".geojson.gz",
         metaBaseUrl: "/data_by_aqs_meta",
         metaPrefix: "data_by_aqs_meta_",
-        metaExtension: ".json"
+        metaExtension: ".json",
+        predYearSource: "pm_cbsa_pred",
+        predYears: getLaggedYearRange(2025)
     },
     "epa-ember": {
         source: "epa_ember",
@@ -331,6 +346,19 @@ function renderDataTable() {
 
     title.textContent = `[${currentDatasetId}] [${currentQueryState}] [${currentAqs}]`;
 
+    const notice = document.getElementById("DatadbDataTableNotice");
+    if (notice) {
+        if (currentDatasetId === "gam-v2") {
+            notice.style.display = "block";
+            notice.textContent = "Note: 2025 and beyond represent new data added to this platform following the original research publication (Lee and Jaffe, 2025). This dataset is derived from the [Smoke O3 prediction (GAM-v2)] module in the [Annual Report] tab.";
+        } else if (currentDatasetId === "pm-cbsa") {
+            notice.style.display = "block";
+            notice.textContent = "Note: 2025 and beyond represent new data added to this platform following the original research publication (Jaffe et al., 2026). This dataset is derived from the [Smoke PM2.5] module in the [Annual Report] tab.";
+        } else {
+            notice.style.display = "none";
+        }
+    }
+    
     if (currentFeatures.length === 0) {
         head.innerHTML = "";
         body.innerHTML = "<tr><td>No data available</td></tr>";
@@ -436,12 +464,47 @@ async function handleQuery() {
             currentDatasetId = datasetId;
             currentQueryState = stateVal;
             currentAqs = aqsSite;
-            currentFeatures = data.features;
-            currentPage = 1;
             
+            // 1. Gather Historical Data
+            let combinedFeatures = [...data.features];
+
+            // 2. Simple Merge: Load Future Predictions if configured in QUERY_IMPORT_CONFIG
+            if (config.predYearSource && config.predYears) {
+                const targetAqs = aqsSite.toString().padStart(9, "0");
+                
+                // Fetch configured years in parallel
+                const predPromises = config.predYears.map(yr => {
+                    const pUrl = `/data_by_aqs/${config.predYearSource}/${yr}/data_by_aqs_${aqsSite}.geojson.gz`;
+                    return fetchGeoJSON(pUrl).catch(() => null);
+                });
+
+                const predResults = await Promise.all(predPromises);
+                predResults.forEach(res => {
+                    if (res && res.features) {
+                        const filtered = res.features.filter(f => {
+                            const p = f.properties;
+                            // Pad AQS from data and compare against target
+                            const site = (p.AQS || p.AQS_O3 || p.AQS_PM || p.site_id || "").toString().padStart(9, "0");
+                            return site === targetAqs;
+                        });
+                        combinedFeatures = combinedFeatures.concat(filtered);
+                    }
+                });
+            }
+
+            // 3. Sort by Date to ensure 2023 -> 2026 flow is correct
+            combinedFeatures.sort((a, b) => {
+                const dA = new Date(a.properties.date);
+                const dB = new Date(b.properties.date);
+                return dA - dB;
+            });
+
+            currentFeatures = combinedFeatures;
+            currentPage = 1;
+
             // Extract location data from first feature
-            if (data.features.length > 0) {
-                const firstFeature = data.features[0];
+            if (currentFeatures.length > 0) {
+                const firstFeature = currentFeatures[0];
                 currentLocationData = {
                     site_name: firstFeature.properties?.site_name || "NA",
                     AQS: firstFeature.properties?.AQS || aqsSite,
@@ -450,23 +513,23 @@ async function handleQuery() {
                 };
                 renderLocationInfo();
             }
-            
-            // Set date range to data min/max
-            setDateRangeFromData(data.features);
-            
+
+            // Set date range using the FULL combined dataset
+            setDateRangeFromData(currentFeatures);
+
             if (metaData) {
                 renderDataMeta(metaData);
             }
 
             renderDataTable();
-            
+
             // [Report to Brain]
             logUserAction("view", {
                 dataset: datasetId,
                 aqs: aqsSite,
                 state: stateVal
             });
-            
+
             if (drawAQSPlots) drawAQSPlots(currentTableData, currentDatasetId, currentAqs);
 
             pendingFlyTo = true;
@@ -475,7 +538,7 @@ async function handleQuery() {
             // Default to Metadata tab on new query
             const initTabBtn = document.getElementById("datadbBtnLocationTab");
             if (initTabBtn) initTabBtn.click();
-            
+
         } else {
             alert("No detailed data found for this AQS site in the selected dataset.");
             document.getElementById("DatadbDataTableWrapper").style.display = "none";
