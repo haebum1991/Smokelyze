@@ -42,7 +42,7 @@ async function loadAnnualReports() {
 
         const files = await res.json();
         if (!files || files.length === 0) {
-            const noDataMsg = "No annual reports found.";
+            const noDataMsg = "No data found.";
             if (tablePM) tablePM.innerHTML = `<tr><td colspan='3' style='text-align:center; padding: 3rem;'>${noDataMsg}</td></tr>`;
             if (tableO3_gam_v2) tableO3_gam_v2.innerHTML = `<tr><td colspan='3' style='text-align:center; padding: 3rem;'>${noDataMsg}</td></tr>`;
             return;
@@ -82,7 +82,7 @@ async function loadAnnualReports() {
         });
         
     } catch (err) {
-        console.error("Error loading annual reports:", err);
+        console.error("Error loading data:", err);
         const errHtml = `<tr><td colspan='3' style='text-align:center; color: var(--color-red); padding: 2rem;'>Error: ${err.message}</td></tr>`;
         if (tablePM) tablePM.innerHTML = errHtml;
         if (tableO3_gam_v2) tableO3_gam_v2.innerHTML = errHtml;

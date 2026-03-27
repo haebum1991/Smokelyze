@@ -350,10 +350,10 @@ function renderDataTable() {
     if (notice) {
         if (currentDatasetId === "gam-v2") {
             notice.style.display = "block";
-            notice.textContent = "Note: 2025 and beyond represent new data added to this platform following the original research publication (Lee and Jaffe, 2025). This dataset is derived from the [Smoke O3 prediction (GAM-v2)] module in the [Annual Report] tab.";
+            notice.textContent = "Caveat: 2025 and beyond represent new data added to here following the original research publication, UW GAM-v2 (Lee and Jaffe, 2025). This dataset is derived from the [UW GAM-v2 (+2025)] data in the [Latest Analysis & Prediction] tab. Note that [Metadata] is based on the Published data.";
         } else if (currentDatasetId === "pm-cbsa") {
             notice.style.display = "block";
-            notice.textContent = "Note: 2025 and beyond represent new data added to this platform following the original research publication (Jaffe et al., 2026). This dataset is derived from the [Smoke PM2.5] module in the [Annual Report] tab.";
+            notice.textContent = "Caveat: 2025 and beyond represent new data added to here following the original research publication, UW Smoke PM2.5 (Jaffe et al., 2026). This dataset is derived from the [UW Smoke PM2.5 (+2025)] data in the [Latest Analysis & Prediction] tab. Note that [Metadata] is based on the Published data.";
         } else {
             notice.style.display = "none";
         }

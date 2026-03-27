@@ -18,12 +18,12 @@ title: ""
 
 <div class="datadb-tabs">
   <button class="datadb-tab-btn active" onclick="openTab(event, 'published')">Published data</button>
-  <button class="datadb-tab-btn" onclick="openTab(event, 'annual')">Annual report</button>
+  <button class="datadb-tab-btn" onclick="openTab(event, 'annual')">Latest Analysis & Prediction</button>
 </div>
 
 <div id="published" class="datadb-tab-content active">
 
-  <h3>UW GAM-v2</h3>
+  <h3>UW GAM-v2 (Lee and Jaffe, 2025)</h3>
   <ul>
     <li>
       <b style="font-weight: bold; color: var(--card-shadow);">[Full dataset]</b>:
@@ -41,7 +41,7 @@ title: ""
         rel="noopener noreferrer">https://doi.org/10.1029/2025JD044088</a>
     </li>
   </ul>
-  <h3>UW GAM-v1</h3>
+  <h3>UW GAM-v1 (Lee and Jaffe, 2024)</h3>
   <ul>
     <li>
       <b style="font-weight: bold; color: var(--card-shadow);">[Full dataset]</b>:
@@ -58,7 +58,7 @@ title: ""
         rel="noopener noreferrer">https://doi.org/10.1021/acs.est.4c05870</a>
     </li>
   </ul>
-  <h3>UW Smoke PM2.5</h3>
+  <h3>UW Smoke PM2.5 (Jaffe et al., 2026)</h3>
   <ul>
     <li>
       <b style="font-weight: bold; color: var(--card-shadow);">[Full dataset]</b>:
@@ -73,7 +73,7 @@ title: ""
       <em>GeoHealth</em>, Under review, 2026.
     </li>
   </ul>
-  <h3>EPA EMBER</h3>
+  <h3>EPA EMBER (Simon et al., 2024)</h3>
   <ul>
     <li>
       <b style="font-weight: bold; color: var(--card-shadow);">[Full dataset]</b>:
@@ -110,7 +110,7 @@ title: ""
             <select id="DatadbDataSource">
               <option value="gam-v2">UW GAM-v2 (Lee and Jaffe, 2025) </option>
               <option value="gam-v1">UW GAM-v1 (Lee and Jaffe, 2024) </option>
-              <option value="pm-cbsa">UW Smoke PM2.5 (Under review) </option>
+              <option value="pm-cbsa">UW Smoke PM2.5 (Jaffe et al., 2026) </option>
               <option value="epa-ember">EPA EMBER (Simon, et al., 2024) </option>
             </select>
           </div>
@@ -250,9 +250,9 @@ title: ""
                 <optgroup label="Published">
                   <option value="gam-v2">UW GAM-v2 (Lee and Jaffe, 2025)</option>
                   <option value="gam-v1">UW GAM-v1 (Lee and Jaffe, 2024)</option>
-                  <option value="pm-cbsa">UW Smoke PM2.5 (Under review)</option>
+                  <option value="pm-cbsa">UW Smoke PM2.5 (Jaffe et al., 2026)</option>
                 </optgroup>
-                <optgroup label="Latest Analysis &amp; Prediction">
+                <optgroup label="Latest Analysis & Prediction">
                   <option value="gam-v2-pred">UW GAM-v2 (2025+)</option>
                   <option value="pm-cbsa-pred">UW Smoke PM2.5 (2025+)</option>
                 </optgroup>
@@ -356,8 +356,11 @@ title: ""
     <!-- PM2.5 Section -->
     <div class="datadb-annual-section">
       <h3 style="color: var(--card-shadow);"> 
-        Smoke PM2.5
+        UW Smoke PM2.5 (+2025)
       </h3>
+      <p>
+        Smoke PM2.5 for 2025 and onwards is calculated based on the methodology of UW Smoke PM2.5 (Jaffe et al., 2026).
+      </p>
       <div class="datadb-table-container">
         <table class="datadb-annual-table">
           <thead>
@@ -379,12 +382,11 @@ title: ""
     <!-- Ozone Section -->
     <div class="datadb-annual-section">
       <h3 style="color: var(--card-shadow);">
-        Smoke O3 prediction (GAM-v2)
+        UW GAM-v2 (+2025)
       </h3>
       <p>
-        Using the GAM trained by the 2019–2024 data 
-        (<a href='https://doi.org/10.1029/2025JD044088' target='_blank'>Lee and Jaffe, 2025</a>),
-        we perform predictions for 2025 and onwards, treating them as independent new datasets.
+        Using the GAM trained by the 2019–2024 data, UW GAM-v2 (Lee and Jaffe, 2025),
+        we perform Smoke O3 predictions for 2025 and onwards, treating them as independent new datasets.
       </p>
       <div class="datadb-table-container">
         <table class="datadb-annual-table">
