@@ -11,9 +11,7 @@ import { logUserAction } from "./fb-logging.js";
 import { state as globalState } from "./ui-state.js";
 
 // --- Configuration & State ---
-// Use Netlify proxy to avoid Mixed Content (HTTPS -> HTTP) and timeouts
 const HYSPLIT_API_URL = "/api/hysplit/hysplit";
-const HYSPLIT_STATUS_URL = "/api/hysplit/hysplit_status";
 const STORAGE_KEY = "smokelyze_hysplit_history";
 
 const state = {
@@ -618,51 +616,31 @@ async function clickOnSubmitHysplit() {
             height: height
         });
 
-        // Use Netlify proxy but with Authorization header
+        // Inject token directly into payload to bypass Netlify header stripping
+        params.append("token", `Bearer ${idToken}`);
+
+        // Modern JSON-based Lambda Request via Netlify Proxy
         const response = await fetch(HYSPLIT_API_URL, {
             method: "POST",
-            mode: "cors",
             headers: {
-                "Authorization": `Bearer ${idToken}`,
-                "Content-Type": "application/x-www-form-urlencoded"
+                "Content-Type": "application/json"
             },
-            body: params.toString()
+            body: JSON.stringify(Object.fromEntries(params))
         });
 
         if (!response.ok) throw new Error(`API initiation failed: ${response.status}`);
-        const initData = await response.json();
+        let resultData = await response.json();
 
-        if (initData.error) throw new Error(initData.error);
-        if (initData.status !== "accepted") throw new Error("Job not accepted");
+        if (resultData.status === "error") throw new Error(resultData.message || "Simulation failed");
 
-        const reqId = initData.req_id;
-        task.update("Simulation in progress...", "running");
-
-        // --- POLLING FOR RESULT ---
+        // --- Modern Lambda Result Support ---
+        // Lambda returns result immediately ("done") through Netlify Proxy
         let finalData = null;
-        let attempts = 0;
-        const maxAttempts = 60; // Wait up to 2 minutes (60 * 2s)
-
-        while (attempts < maxAttempts) {
-            await new Promise(r => setTimeout(r, 2000)); // Wait 2 seconds
-            attempts++;
-
-            const statusResp = await fetch(`${HYSPLIT_STATUS_URL}?req_id=${reqId}`, {
-                headers: { "Authorization": `Bearer ${idToken}` }
-            });
-
-            if (!statusResp.ok) continue; // Retry if network glitch
-            const statusData = await statusResp.json();
-
-            if (statusData.status === "done") {
-                finalData = statusData.data;
-                break;
-            } else if (statusData.status === "error") {
-                throw new Error(statusData.message || "Background simulation failed");
-            }
+        if (resultData.status === "done") {
+            finalData = resultData.data;
+        } else {
+            throw new Error(`Unexpected result from serverless backend: ${resultData.status}`);
         }
-
-        if (!finalData) throw new Error("Simulation timed out");
 
         const currentParams = {
             lon: lngLat.lng,
