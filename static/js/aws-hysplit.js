@@ -11,7 +11,7 @@ import { logUserAction } from "./fb-logging.js";
 import { state as globalState } from "./ui-state.js";
 
 // --- Configuration & State ---
-const HYSPLIT_API_URL = "/api/hysplit/hysplit";
+const HYSPLIT_API_URL = "https://tiwczmnrwbmsonuap4r2fzpnsm0fqnyp.lambda-url.us-east-1.on.aws/hysplit";
 const STORAGE_KEY = "smokelyze_hysplit_history";
 
 const state = {

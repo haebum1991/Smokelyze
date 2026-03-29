@@ -142,12 +142,6 @@
   status = 200
   force  = true
 
-[[redirects]]
-  from = "/api/hysplit/*"
-  to   = "https://tiwczmnrwbmsonuap4r2fzpnsm0fqnyp.lambda-url.us-east-1.on.aws/:splat"
-  status = 200
-  force  = true
-  
 # ---- Security & Caching rules ----
 
 # Apply Security Headers to ALL content
