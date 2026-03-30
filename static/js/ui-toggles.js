@@ -594,7 +594,8 @@ const KEY_TIPS_MAP = {
     "r": { id: "MapBtnReset", label: "R" },      // Reset All
     "t": { id: "MapBtnTutorial", label: "T" },   // Tutorial
     "l": { id: "LegendToggle", label: "L" },     // Legend
-    "h": { id: "HysplitToggle", label: "H" }      // Hysplit
+    "h": { id: "HysplitToggle", label: "H" },     // Hysplit
+    "v": { id: "MapBtnAnimate", label: "V" }      // Timelapse/Video
 };
 
 let isKeyTipMode = false;
@@ -759,7 +760,8 @@ const showKeyTips = () => {
         "r": "Reset All",
         "t": "Quick Start",
         "l": "Map Legend",
-        "h": "HYSPLIT"
+        "h": "HYSPLIT",
+        "v": "Timelapse (Video)"
     };
 
     Object.entries(KEY_TIPS_MAP).forEach(([key, cfg]) => {
@@ -844,6 +846,9 @@ const handleCommonShortcut = (key) => {
             break;
         case "h":
             setHysplitDrawer();
+            break;
+        case "v":
+            document.getElementById("MapBtnAnimate")?.click();
             break;
     }
     clearKeyTips();

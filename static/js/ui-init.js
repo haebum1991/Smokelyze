@@ -10,6 +10,7 @@ import { initTimeButtons, initTimePicker } from "./ui-time.js";
 import { initBtnTooltips } from "./ui-btn-tooltip.js";
 import { initHysplit } from "./aws-hysplit.js";
 import { initLoaderRuntime } from "./loader.js";
+import { initMapAnimate } from "./map-animate.js";
 
 const datePicker = document.getElementById("datePicker");
 
@@ -47,4 +48,5 @@ initNaShadingToggle?.();
 initBtnTooltips?.();
 initHysplit?.();
 initLoaderRuntime?.();
+initMapAnimate?.();
 

@@ -65,5 +65,8 @@
   --color-success:    #2ecc71;   /* 성공 메시지 */
   --color-error:      #e74c3c;   /* 에러 메시지 */
   --color-danger:     #ff4d4d;   /* 삭제 / 위험 표시 */
+  
+  /* Component specific */
+  --calendar-icon-filter: none;
 }
 

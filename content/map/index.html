@@ -71,25 +71,31 @@ title: ""
     </button>
 
     <div class="map-btn-wrapper" id="MapBtnWrapper">
-      <button class="map-btn-capture" id="MapBtnCapture" title="Snapshot">
+      <button class="map-btn-control" id="MapBtnCapture" title="Snapshot">
         <svg width="28" height="28">
           <use xlink:href="#icon-camera" />
         </svg>
       </button>
 
-      <button class="map-btn-reset" id="MapBtnReset" title="Reset All">
+      <button class="map-btn-control" id="MapBtnAnimate" title="Create Time-lapse GIF">
+        <svg width="28" height="28">
+          <use xlink:href="#icon-video" />
+        </svg>
+      </button>
+
+      <button class="map-btn-control" id="MapBtnReset" title="Reset All">
         <svg width="28" height="28">
           <use xlink:href="#icon-refresh" />
         </svg>
       </button>
 
-      <button class="map-btn-shortcuts" id="MapBtnShortcuts" title="Keyboard Shortcuts">
+      <button class="map-btn-control" id="MapBtnShortcuts" title="Keyboard Shortcuts">
         <svg width="28" height="28">
           <use xlink:href="#icon-keyboard" />
         </svg>
       </button>
-      
-      <button class="map-btn-tutorial" id="MapBtnTutorial" title="Quick Start">
+
+      <button class="map-btn-control" id="MapBtnTutorial" title="Quick Start">
         <svg width="28" height="28">
           <use xlink:href="#icon-help" />
         </svg>
@@ -680,9 +686,11 @@ title: ""
 <script type="module" src="/js/stats-daily.js"></script>
 <script type="module" src="/js/stats-yearly.js"></script>
 <script type="module" src="/js/ui-tutorial.js"></script>
+<script type="module" src="/js/map-animate.js"></script>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/driver.js@1.4.0/dist/driver.js.iife.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
 
 <!-- Firebase & Discussion -->
 <!-- MapPost Context Menu -->
@@ -839,6 +847,130 @@ title: ""
       <div class="reply-btn-wrapper">
         <button class="reply-btn-submit" id="HysplitBtnSubmit">Run Simulation</button>
         <button class="reply-btn-cancel" id="HysplitBtnCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Timelapse Modal -->
+<div class="MapPost-modal-overlay" id="TimelapseModalOverlay" style="display:none;">
+  <div class="MapPost-modal">
+    <div class="MapPost-modal-header">
+      <h3 id="TimelapseModalTitle">Export Time-lapse</h3>
+      <button class="ui-btn-close" id="TimelapseModalClose">
+        <svg width="20" height="20">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="MapPost-modal-body">
+      <div class="MapPost-form-group">
+        <label>Time Scale (Step by)</label>
+        <div style="display: flex; gap: 2rem; margin-top: 0.5rem;">
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+            <input type="radio" name="TimelapseScale" value="d" checked> Daily (1D)
+          </label>
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+            <input type="radio" name="TimelapseScale" value="h"> Hourly (1H)
+          </label>
+        </div>
+      </div>
+
+      <div class="MapPost-form-group">
+        <label>Start Date & Time</label>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="date" id="TimelapseStartDate" style="flex: 2; box-sizing: border-box;">
+          <select id="TimelapseStartTime" style="flex: 1; box-sizing: border-box;">
+            <option value="00">00:00</option>
+            <option value="01">01:00</option>
+            <option value="02">02:00</option>
+            <option value="03">03:00</option>
+            <option value="04">04:00</option>
+            <option value="05">05:00</option>
+            <option value="06">06:00</option>
+            <option value="07">07:00</option>
+            <option value="08">08:00</option>
+            <option value="09">09:00</option>
+            <option value="10">10:00</option>
+            <option value="11">11:00</option>
+            <option value="12">12:00</option>
+            <option value="13">13:00</option>
+            <option value="14">14:00</option>
+            <option value="15">15:00</option>
+            <option value="16">16:00</option>
+            <option value="17">17:00</option>
+            <option value="18">18:00</option>
+            <option value="19">19:00</option>
+            <option value="20">20:00</option>
+            <option value="21">21:00</option>
+            <option value="22">22:00</option>
+            <option value="23">23:00</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="MapPost-form-group">
+        <label>End Date & Time</label>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="date" id="TimelapseEndDate" style="flex: 2; box-sizing: border-box;">
+          <select id="TimelapseEndTime" style="flex: 1; box-sizing: border-box;">
+            <option value="00">00:00</option>
+            <option value="01">01:00</option>
+            <option value="02">02:00</option>
+            <option value="03">03:00</option>
+            <option value="04">04:00</option>
+            <option value="05">05:00</option>
+            <option value="06">06:00</option>
+            <option value="07">07:00</option>
+            <option value="08">08:00</option>
+            <option value="09">09:00</option>
+            <option value="10">10:00</option>
+            <option value="11">11:00</option>
+            <option value="12">12:00</option>
+            <option value="13">13:00</option>
+            <option value="14">14:00</option>
+            <option value="15">15:00</option>
+            <option value="16">16:00</option>
+            <option value="17">17:00</option>
+            <option value="18">18:00</option>
+            <option value="19">19:00</option>
+            <option value="20">20:00</option>
+            <option value="21">21:00</option>
+            <option value="22">22:00</option>
+            <option value="23">23:00</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="MapPost-form-group">
+        <label for="TimelapseFormSpeed">Playback Speed</label>
+        <select id="TimelapseFormSpeed"
+          style="width: 100%; padding: 0.8rem; border-radius: 0.4rem; border: 0.1rem solid var(--card-shadow); font-size: 1.4rem;">
+          <option value="1000">Slow (1 sec / frame)</option>
+          <option value="500" selected>Normal (0.5 sec / frame)</option>
+          <option value="200">Fast (0.2 sec / frame)</option>
+        </select>
+      </div>
+
+      <hr style="margin-top: 0; margin-bottom: 0;">
+      <b style="color: var(--card-shadow);">How to use:</b>
+      <ul style="margin-top: 0;">
+        <li>Select at least one data <b>layer</b> on the map before generating.</li>
+        <li>Choose <b style="color: var(--card-shadow);">Hourly</b> (max 24 frames) or <b
+            style="color: var(--card-shadow);">Daily</b> (max 31 frames).</li>
+        <li>Set the start/end date range and playback speed, then click <b>Generate GIF</b>.</li>
+        <li>Do not interact with the map while capturing. Use the <b>Cancel</b> button to abort.</li>
+        <li>This is not supported on mobile devices.</li>
+      </ul>
+    </div>
+
+    <div class="MapPost-modal-footer">
+      <div class="reply-btn-wrapper">
+        <button class="reply-btn-submit" id="TimelapseBtnSubmit"
+          style="background-color: var(--map-accordion-gradient-start); color: var(--color-white); border: none;">Generate
+          GIF</button>
+        <button class="reply-btn-cancel" id="TimelapseBtnCancel">Cancel</button>
       </div>
     </div>
   </div>

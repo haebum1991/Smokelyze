@@ -431,15 +431,9 @@
     cursor: pointer;
 }
 
-/* Change calendar icon color using filter */
+/* Specific Calendar Picker Icon Color Fix (Dark Mode support) */
 .datadb-date-range input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(37%) sepia(93%) saturate(2578%) hue-rotate(246deg) brightness(98%) contrast(101%);
-    cursor: pointer;
-}
-
-/* Firefox */
-.datadb-date-range input[type="date"]::-moz-calendar-picker-indicator {
-    filter: invert(37%) sepia(93%) saturate(2578%) hue-rotate(246deg) brightness(98%) contrast(101%);
+    filter: var(--calendar-icon-filter, none);
     cursor: pointer;
 }
 

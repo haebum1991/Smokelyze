@@ -110,6 +110,15 @@ const TUTORIAL_STEPS = [
         },
     },
     {
+        element: "#MapBtnAnimate",
+        popover: {
+            title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-video"/></svg></span> Timelapse GIF',
+            description: "Create a customized timelapse animation by selecting a date range. You can choose between Hourly or Daily steps to visualize smoke patterns over time.",
+            side: "top",
+            align: "start",
+        },
+    },
+    {
         element: "#MapBtnReset",
         popover: {
             title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-refresh"/></svg></span> Reset All',
@@ -208,7 +217,7 @@ export class MapTutorial {
         const self = this;
         const isMobile = window.innerWidth <= 1024;
         const filteredSteps = TUTORIAL_STEPS.filter(step => {
-            if (isMobile && step.element === "#MapBtnCapture") return false;
+            if (isMobile && (step.element === "#MapBtnCapture" || step.element === "#MapBtnAnimate")) return false;
             return true;
         });
 

@@ -209,56 +209,40 @@ body.FigurePage-drawer-open .maplibregl-ctrl-bottom-left {
   }
 }
 
-.map-btn-reset,
-.map-btn-capture,
-.map-btn-tutorial,
-.map-btn-shortcuts {
+.map-btn-control {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-}
-
-.map-btn-reset,
-.map-btn-capture,
-.map-btn-tutorial,
-.map-btn-shortcuts {
   font-size: 2rem;
   font-weight: bold;
-
   display: flex;
   align-items: center;
   justify-content: center;
   max-width: max-content;
-
   border-radius: var(--border-radius-0p8rem);
   border: none;
   background-color: var(--map-accordion-gradient-start);
   color: var(--text-strong);
   cursor: pointer;
   padding: 0.6rem 0.8rem;
-
   transition: transform 0.3s ease-out, background 0.3s ease;
 }
 
-.map-btn-reset:active {
+.map-btn-control:active {
   background-color: var(--accent-highlight);
   color: var(--text-main);
   border-color: var(--accent-highlight);
 }
 
 @media (hover: hover) {
-
-  .map-btn-reset:hover,
-  .map-btn-capture:hover,
-  .map-btn-tutorial:hover,
-  .map-btn-shortcuts:hover {
+  .map-btn-control:hover {
     transform: scale(1.05);
   }
 }
 
 @media (max-width: 1024px) {
-
-  .map-btn-capture,
-  .map-btn-shortcuts {
+  #MapBtnCapture,
+  #MapBtnAnimate,
+  #MapBtnShortcuts {
     display: none;
   }
 }
@@ -2521,7 +2505,8 @@ body.map-tut-active #FigurePageToggle,
 body.map-tut-active #DescToggle,
 body.map-tut-active #MapBtnReset,
 body.map-tut-active #MapBtnCapture,
-body.map-tut-active .map-btn-tutorial,
+body.map-tut-active #MapBtnAnimate,
+body.map-tut-active #MapBtnTutorial,
 body.map-tut-active .maplibregl-ctrl-top-right,
 body.map-tut-active .maplibregl-ctrl-bottom-left {
   z-index: var(--z-highest) !important;
@@ -2533,7 +2518,6 @@ body.map-tut-active .maplibregl-ctrl-bottom-left {
     font-size: 2.8rem;
   }
 }
-
 
 
 /* ================ Drawer Help Modal (Decoupled from ui-toggles.js) ================ */
@@ -2756,5 +2740,11 @@ body.map-tut-active .maplibregl-ctrl-bottom-left {
   text-overflow: ellipsis;
   text-transform: uppercase;
   letter-spacing: 0.02rem;
+}
+
+/* Fix for date picker calendar icon visibility on dark backgrounds */
+.MapPost-form-group input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: var(--calendar-icon-filter, none);
+  cursor: pointer;
 }
 
