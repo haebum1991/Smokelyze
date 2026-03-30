@@ -485,8 +485,13 @@ title: ""
   </button>
 
   <div class="FigurePage-drawer-header">
+    <h3>Statistical Tools</h3>
+    
+    <!-- [User UX Disabled part]: Annual Stats 로직 (개발중) -->
+    <!-- 
     <button class="stats-tab-sub active" stats-tab-sub-data="date">Daily</button>
     <button class="stats-tab-sub" stats-tab-sub-data="year" style="display: none;">Annual</button>
+    -->
   </div>
 
   <div class="stats-container stats-container-date active" stats-data-panel="date">
@@ -516,23 +521,15 @@ title: ""
 
         <div class="FigurePage-drawer-content">
           <div id="stats-plot-for-table-date" class="stats-plot-tab-sub-container active">
+          
+            <div style="display: flex; justify-content: flex-end; padding-right: 1.5rem;">
+              <button class="export-btn-csv" id="BtnExportCsvDate" title="Export as CSV" style="display: none;">⬇ .CSV</button>
+            </div>
+            
             <div class="stats-table-responsive-date">
               <table class="stats-region-table-date">
                 <thead>
-                  <tr>
-                    <th rowspan="2">Region</th>
-                    <th rowspan="2" class="col-burn">Area burned (km²)</th>
-                    <th colspan="3" class="col-smoke">Smoke area (km²)</th>
-                    <th rowspan="2" class="col-fire">Fire points</th>
-                    <th rowspan="2" class="col-fire">FRP (MW)</th>
-                  </tr>
-                  <tr>
-                    <th class="col-smoke">L</th>
-                    <th class="col-smoke">M</th>
-                    <th class="col-smoke">H</th>
-                  </tr>
                 </thead>
-
                 <tbody id="StatsRegionBodyDate">
                 </tbody>
               </table>
@@ -585,20 +582,7 @@ title: ""
             <div class="stats-table-responsive-year">
               <table class="stats-region-table-year">
                 <thead>
-                  <tr>
-                    <th rowspan="2">Region</th>
-                    <th rowspan="2" class="col-burn">Area burned (km²)</th>
-                    <th colspan="3" class="col-smoke">Smoke area (km²)</th>
-                    <th rowspan="2" class="col-fire">Fire points</th>
-                    <th rowspan="2" class="col-fire">FRP (MW)</th>
-                  </tr>
-                  <tr>
-                    <th class="col-smoke">L</th>
-                    <th class="col-smoke">M</th>
-                    <th class="col-smoke">H</th>
-                  </tr>
                 </thead>
-
                 <tbody id="StatsRegionBodyYear">
                 </tbody>
               </table>

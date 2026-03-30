@@ -2,6 +2,8 @@
 import { ExcludeLayerGroups, LAYER_TEMPLATES, DATASET_SOURCE_MAP } from "./layers-def.js";
 import { resetUIAndData, resetAccordionDetails, resetMapViewToDefault } from "./ui-reset.js";
 import * as utils from "./utils.js";
+import { auth } from "./fb-init.js";
+import { updateAuthButton } from "./signin.js";
 
 export let onCurrentPlotHide = null;
 export function setOnCurrentPlotHide(fn) { onCurrentPlotHide = fn; }
@@ -215,9 +217,6 @@ export function rebuildStatsHeader(thead, activeModelLayers) {
     ];
 
     satConfigs.forEach(cfg => {
-        const cb = document.getElementById(`layer-${cfg.id}`);
-        if (!cb || !cb.checked) return;
-
         const th1 = document.createElement("th");
         th1.textContent = cfg.label;
         th1.className = "col-" + cfg.group;
@@ -297,8 +296,8 @@ export function renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, ta
 
     if (isDailyTable) {
         activeModelLayers = getActiveModelLayers();
-        if (thead) rebuildStatsHeader(thead, activeModelLayers);
     }
+    if (thead) rebuildStatsHeader(thead, activeModelLayers);
 
     const ChkBoxBurn = document.getElementById("layer-burn");
     const ChkBoxSmoke = document.getElementById("layer-smoke");
@@ -313,9 +312,10 @@ export function renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, ta
     if (!container) return;
 
     let msgBox = container.querySelector(".stats-empty-msg-table");
-
+    const csvBtn = document.getElementById(isDailyTable ? "BtnExportCsvDate" : "BtnExportCsvYear");
     const hasContent = showBurn || showSmoke || showFire || showModel;
-    if (!hasContent) {
+    if (!hasContent || !regionIDs || regionIDs.length === 0) {
+        if (csvBtn) csvBtn.style.display = "none";
         if (tableWrapper) tableWrapper.style.display = "none";
         if (!msgBox) {
             msgBox = document.createElement("div");
@@ -326,6 +326,8 @@ export function renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, ta
         renderPlotMessage(msgBox, theme.messages.table);
         return;
     }
+    
+    if (csvBtn) csvBtn.style.display = "inline-block";
     if (tableWrapper) tableWrapper.style.display = "block";
     if (msgBox) {
         msgBox.style.display = "none";
@@ -518,6 +520,18 @@ function bindEventsStats() {
         });
     });
 
+    const csvBtnDate = document.getElementById("BtnExportCsvDate");
+    if (csvBtnDate) {
+        csvBtnDate.addEventListener("click", () => {
+            if (!auth || !auth.currentUser) {
+                utils.showAuthOverlay();
+                return;
+            }
+            const dateStr = utils.currentDate();
+            exportTableToCSV(".stats-region-table-date", "smokelyze_daily_stats_" + dateStr + ".csv");
+        });
+    }
+    
     const resetBtn = document.getElementById("MapBtnReset");
     if (resetBtn) {
         resetBtn.addEventListener("click", () => {
@@ -944,11 +958,77 @@ function init() {
     updateStickyHeaderOffsets();
     setupPlotTabs();
     bindEventsStats();
+
+    window.addEventListener("authStateChanged", (e) => {
+        const user = e.detail?.user || null;
+        updateAuthButton("BtnExportCsvDate", user, "⬇ .CSV");
+    });
 }
 
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
 } else {
     init();
+}
+
+export function exportTableToCSV(tableSelector, filename) {
+  const table = document.querySelector(tableSelector);
+  if (!table) return;
+
+  const matrix = [];
+  let logicalRow = 0;
+
+  Array.from(table.rows).forEach((row) => {
+    if (row.style.display === "none" || row.classList.contains("hide")) return;
+    
+    if (!matrix[logicalRow]) matrix[logicalRow] = [];
+    let colIndex = 0;
+
+    Array.from(row.cells).forEach(cell => {
+      const style = window.getComputedStyle(cell);
+      if (style.display === "none") return;
+
+      while (matrix[logicalRow][colIndex] !== undefined) {
+        colIndex++;
+      }
+
+      let data = cell.innerText.replace(/\r?\n|\r/g, " ").trim();
+      data = data.replace(/↓|↑/g, "").trim();
+      data = `"${data.replace(/"/g, '""')}"`;
+
+      const rowSpan = cell.rowSpan || 1;
+      const colSpan = cell.colSpan || 1;
+
+      for (let r = 0; r < rowSpan; r++) {
+        for (let c = 0; c < colSpan; c++) {
+          const targetRow = logicalRow + r;
+          if (!matrix[targetRow]) matrix[targetRow] = [];
+          
+          if (r === 0 && c === 0) {
+            matrix[targetRow][colIndex + c] = data;
+          } else {
+            // For merged cells padding, use an empty string
+            matrix[targetRow][colIndex + c] = '""';
+          }
+        }
+      }
+    });
+    logicalRow++;
+  });
+
+  const csv = matrix
+    .filter(row => row && row.length > 0)
+    .map(row => row.join(","))
+    .join("\n");
+
+  const BOM = "\uFEFF";
+  const csvFile = new Blob([BOM + csv], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(csvFile);
+  a.download = filename || "export.csv";
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
