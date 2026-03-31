@@ -10,25 +10,26 @@ export const ExcludeLayerGroups = {
   // [layers-handler.js] > [addSourceIfMissing]
   pngLayers: ["tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
     
+  
   // ========= Find by [key] =========
   // [layers-handler.js] > [applyLayerToggles] > [EXCLUDED]
   liveUpdateLayers: ["wildfire-news", "wildfire-nifc", "MapPost"],
 
   // [layers-colors.js] > [updateStateShading] > [EXCLUDED]
-  stateShading: ["smoke", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
+  stateShading: ["smoke", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit"],
 
   // [layers-tooltip.js] > [stateHoverHTML] > [EXCLUDED]
-  stateHover: ["wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
+  stateHover: ["wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit"],
 
   // [stats-common.js] > [getActiveModelLayers] > [EXCLUDED]
-  modelTable: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
+  modelTable: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit"],
 
   // [stats-data-search.js] > [updateVisibility] > [EXCLUDED]
   // [loader.js] > [updateAllActiveSources] > [EXCLUDED]
-  searchSite: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2", "airnow-daily-pm25", "airnow-daily-mda8", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
+  searchSite: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2", "airnow-daily-pm25", "airnow-daily-mda8", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit"],
 
   // [stats-plot-dy-scatter.js] > [getActiveModelLayers] > [EXCLUDED]
-  plotScatter: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
+  plotScatter: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit"],
 
 
   // ========= Find by [source] =========
