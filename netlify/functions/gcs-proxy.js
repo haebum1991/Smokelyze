@@ -67,7 +67,9 @@ function getCacheControl(path) {
 }
 
 function checkOrigin(event) {
-  const allow = (process.env.ALLOWED_ORIGIN || "").trim();
+  const allowStr = (process.env.ALLOWED_ORIGIN || "").trim();
+  const allowedOrigins = allowStr ? allowStr.split(",").map(s => s.trim()).filter(Boolean) : [];
+  
   const h = event.headers || {};
   const origin = h.origin || h.Origin || "";
   const referer = h.referer || h.Referer || "";
@@ -76,21 +78,26 @@ function checkOrigin(event) {
   const currentHost = originHost || refererHost;
 
   if ((event.httpMethod || "").toUpperCase() === "OPTIONS") {
-    return { ok: true, preflight: true, allow: allow || "*" };
+    // For preflight, if any origins are allowed, use the requesting origin if it matches, else *
+    const isOriginAllowed = allowedOrigins.some(ao => hostOf(ao) === originHost);
+    return { ok: true, preflight: true, allow: isOriginAllowed ? origin : (allowedOrigins[0] || "*") };
   }
 
   if (!currentHost) {
     return { ok: false, error: "ACCESS_DENIED_HOTLINK" };
   }
 
-  if (allow) {
-    const allowHost = hostOf(allow);
-    if (currentHost === allowHost) return { ok: true, allow };
+  if (allowedOrigins.length > 0) {
+    const isAllowed = allowedOrigins.some(ao => hostOf(ao) === currentHost);
+    if (isAllowed) {
+      return { ok: true, allow: origin || (allowedOrigins.find(ao => hostOf(ao) === currentHost) || allowedOrigins[0]) };
+    }
     return { ok: false, error: "ACCESS_DENIED_ORIGIN_MISMATCH" };
   }
 
   return { ok: true, allow: "*" };
 }
+
 
 function safeNormalize(p) {
   try { p = decodeURIComponent(String(p)); } catch { }
