@@ -221,6 +221,9 @@ export function initStateShadingToggle() {
 
     saveGlobalStateShading(nextEnabled);
     updateStateShading?.();
+    
+    const evt = new CustomEvent("legendUpdate");
+    document.dispatchEvent(evt);
   };
 
   btn.addEventListener(btn.type === "checkbox" ? "change" : "click", handler);

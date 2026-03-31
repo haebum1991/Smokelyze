@@ -3,12 +3,12 @@
   * 색상 및 범례 관리: 데이터 값에 따른 지도 레이어의 색상 스타일(Shading)과 범례(Legend) 생성
   */
 import { ExcludeLayerGroups, LAYER_TEMPLATES, LAYER_DEFS } from "./layers-def.js";
-import { map, activeLayerStack, regionStats, StateShadingEnabled, NaShadingEnabled, closedLegendIds } from "./layers-state.js";
+import { map, activeLayerStack, regionStats, StateShadingEnabled, NaShadingEnabled, PointLayersEnabled, closedLegendIds } from "./layers-state.js";
 
 /**
  * 범례(Legend) 렌더링 함수 (최종 수정됨)
  */
-export function updateLegend(activeStack) {
+export function updateLegend(activeStack = activeLayerStack) {
     const container = document.getElementById("LegendDrawerList");
     if (!container) return;
 
@@ -50,13 +50,34 @@ export function updateLegend(activeStack) {
         const layerDef = LAYER_DEFS[fullKey];
         const conf = layerDef?.legend;
         if (!conf) return;
+        
+        // Dynamic rendering flags
+        let renderShading = true;
+        let renderPoints = true;
+        let headerTitle = conf.title;
+
+        // If a layer has BOTH Shading (colors) and Point (sizeLegend) components,
+        // we can automatically sync its legend display with the global toggles!
+        if (conf.sizeLegend && conf.colors && conf.colors.length > 0) {
+            if (!StateShadingEnabled) renderShading = false;
+            if (!PointLayersEnabled) renderPoints = false;
+
+            // Adjust main header title if only one is showing
+            if (!renderShading && renderPoints) {
+                headerTitle = conf.sizeLegend.title || headerTitle;
+            } else if (renderShading && !renderPoints) {
+                headerTitle = conf.title;
+            } else if (!renderShading && !renderPoints) {
+                headerTitle = `${conf.title.split(' ')[0]} (Disabled)`;
+            }
+        }
 
         // Is this legend manually opened? (By default, checked layers are open, unless explicitly closed)
         const isOpen = !closedLegendIds.has(id);
 
         let sectionHtml = `<div class="legend-section ${isOpen ? 'is-top' : ''}" data-layer-id="${id}">`;
         sectionHtml += `<div class="legend-header" onclick="window.toggleLegendState('${id}')">
-                           <span class="legend-title">${conf.title}</span>
+                           <span class="legend-title">${headerTitle}</span>
                            <span class="legend-badge"></span>
                         </div>`;
 
@@ -113,33 +134,45 @@ export function updateLegend(activeStack) {
                 }
             });
         } else {
+        
             const { breaks, colors } = conf;
-            if (!breaks || breaks.length === 0) {
-                sectionHtml += `<div class="legend-item">
-                                    <span class="${swatchClass}" style="background:${colors[0]}"></span>
-                                    <span>${conf.title}</span>
-                                </div>`;
-            } else {
-                sectionHtml += `<div class="legend-item">
-                                    <span class="${swatchClass}" style="background:${colors[0]}"></span>
-                                    <span>&lt; ${breaks[0]}</span>
-                                </div>`;
-                for (let i = 0; i < breaks.length - 1; i++) {
+            
+            if (renderShading) {
+                if (!breaks || breaks.length === 0) {
                     sectionHtml += `<div class="legend-item">
-                                        <span class="${swatchClass}" style="background:${colors[i + 1]}"></span>
-                                        <span>${breaks[i]} to ${breaks[i + 1]}</span>
+                                        <span class="${swatchClass}" style="background:${colors[0]}"></span>
+                                        <span>${conf.title}</span>
+                                    </div>`;
+                } else {
+                    sectionHtml += `<div class="legend-item">
+                                        <span class="${swatchClass}" style="background:${colors[0]}"></span>
+                                        <span>&lt; ${breaks[0]}</span>
+                                    </div>`;
+                    for (let i = 0; i < breaks.length - 1; i++) {
+                        sectionHtml += `<div class="legend-item">
+                                            <span class="${swatchClass}" style="background:${colors[i + 1]}"></span>
+                                            <span>${breaks[i]} to ${breaks[i + 1]}</span>
+                                        </div>`;
+                    }
+                    sectionHtml += `<div class="legend-item">
+                                        <span class="${swatchClass}" style="background:${colors[colors.length - 1]}"></span>
+                                        <span>&ge; ${breaks[breaks.length - 1]}</span>
                                     </div>`;
                 }
-                sectionHtml += `<div class="legend-item">
-                                    <span class="${swatchClass}" style="background:${colors[colors.length - 1]}"></span>
-                                    <span>&ge; ${breaks[breaks.length - 1]}</span>
-                                </div>`;
             }
         }
 
         // Add Size Legend Section if exists
-        if (conf.sizeLegend) {
-            sectionHtml += `<div class="legend-header-sub">${conf.sizeLegend.title}</div>`;
+        if (conf.sizeLegend && renderPoints) {
+            
+            if (conf.colors && conf.colors.length > 0 && renderShading) {
+                sectionHtml += `<hr class="legend-divider">`;
+            }
+            
+            if (renderShading) {
+                sectionHtml += `<div class="legend-header-sub">${conf.sizeLegend.title}</div>`;
+            }
+            
             conf.sizeLegend.items.forEach(item => {
                 const sizeRem = (item.radius * 2 / 10) + "rem";
                 sectionHtml += `<div class="legend-item" style="align-items: center;">
@@ -286,4 +319,8 @@ export function updateStateShading() {
         if (map.getLayer("states-fill")) map.setPaintProperty("states-fill", "fill-opacity", 0);
     }
 }
+
+document.addEventListener("legendUpdate", () => {
+    updateLegend();
+});
 

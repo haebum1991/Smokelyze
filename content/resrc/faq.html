@@ -277,7 +277,7 @@ title: ""
         </div>
         <div class="faq-answer">
             <div class="faq-answer-inner">
-                Sometimes browsers store an old version of the site in their <strong>cache</strong> 
+                Sometimes browsers store an old version of the site in their <strong>Cache</strong> 
                 to save loading time. 
                 If you encounter display issues or don't see the latest updates, 
                 you should perform a <strong>"Hard Refresh"</strong>:
@@ -287,8 +287,7 @@ title: ""
                     <li><strong>Mac:</strong> Press <code>Cmd</code> + <code>Shift</code> + <code>R</code></li>
                 </ul>
                 This forces the browser to discard the cached files and download the most recent version of the
-                platform. If issues persist, you may need to clear your browser's (Chrome)
-                <strong>cache and cookies</strong>
+                platform. If issues persist, you may need to clear your browser's <strong>Cache and Cookies</strong>
                 (Shortcut: <code>Ctrl</code> + <code>Shift</code> + <code>Del</code> on Windows/Linux,
                 <code>Cmd</code> + <code>Shift</code> + <code>Del</code> on Mac).
             </div>
@@ -304,17 +303,18 @@ title: ""
             <div class="faq-answer-inner">
                 Smokelyze works best on modern browsers:
                 <ul>
-                    <li><strong>Chrome</strong> (recommended), Edge, Firefox, Safari</li>
-                    <li>Mobile browsers (Chrome for Android, Safari for iOS)</li>
+                    <li>Edge, Chrome, Firefox, Safari, etc.</li>
+                    <li>Mobile browsers (e.g., Chrome for Android, Safari for iOS)</li>
                     <li>Internet Explorer is not supported</li>
                 </ul>
                 For the best experience, use a <strong>desktop browser</strong> with a screen width of 1024px or wider.
                 The map and statistical plots are fully responsive but designed for larger screens.
                 
                 <br><br>
-                On some computers with integrated graphics (on Windows), we have found that Chrome has a problem in
-                rendering the high resolution graphics from our app. If you see a problem while using Chrome, we
-                recommend switching to one of the other browsers. We need to test out Firefox and Safari.
+                On some computers with integrated graphics (on Windows), we have found that [Chrome] has a problem in
+                rendering the high resolution graphics from our app. If you see a problem while using [Chrome], we
+                recommend switching to one of the other browsers. If issues persist, please contact us via the <a
+                    href="/about/contact/">Contact</a> page.
             </div>
         </div>
     </div>
@@ -330,10 +330,10 @@ title: ""
             <div class="faq-answer-inner">
                 These display issues are almost universally caused by <strong>Graphics Memory (GPU VRAM) Exhaustion</strong>. Our application renders massive amounts of geometric data directly in your browser. Here is how to prevent and fix memory crashes:
                 <ul>
-                    <li><strong>The Ultimate Fix (Switch to 'Default' or 'Light' Map):</strong> Dense background maps (like Vector or Topo) consume the majority of your graphics memory. If you experience crashes, immediately switch your <strong>Map Type</strong> (bottom left menu) to the <strong>Light</strong> map. The Light map is highly optimized and practically eliminates VRAM overflows.</li>
+                    <li><strong>Browser Limits:</strong> On certain Windows systems (especially with integrated graphics), Chrome may throttle GPU memory usage around 1GB to prevent system instability. If you encounter black screens, ensure Chrome is updated, or try <strong>Edge</strong>, which often handles hardware-specific rendering more efficiently on Windows.</li>
+                    <li><strong>Change Map Type (Switch to [Default] or [Light] Map):</strong> Dense background maps (like Vector or Topo) consume the majority of your graphics memory. If you experience crashes, immediately switch your <strong>Map Type</strong> (bottom left menu) to the <strong>Light</strong> map. The Light map is highly optimized and practically eliminates VRAM overflows.</li>
                     <li><strong>Avoid Rapid Clicking:</strong> Clicking through multiple dates or layers extremely fast without waiting for the map to finish drawing can forcefully overload the Javascript Garbage Collector, triggering a Black Screen. Wait for the loading spinner to resolve before clicking the next day.</li>
                     <li><strong>Hard Refresh:</strong> If your browser tab has already crashed into a Black or Grey screen, simply refreshing normally might not clear the GPU buffer. Perform a <strong>Hard Refresh</strong> (<code>Ctrl</code> + <code>Shift</code> + <code>R</code>) to completely reset the application memory.</li>
-                    <li><strong>Browser Limits:</strong> Some older versions of Chrome enforce strict 1GB VRAM limits per tab. Keeping your browser fully updated, or trying MS Edge, can sometimes mitigate hardware-specific rendering bottlenecks.</li>
                 </ul>
             </div>
         </div>
