@@ -37,6 +37,10 @@ Data analyzed within Smokelyze is curated from authoritative federal and academi
 - **NOAA**: HMS smoke density polygons and HYSPLIT meteorological datasets.
 - **NASA (TEMPO/TROPOMI)**: High-resolution NO2 and Formaldehyde (HCHO) VCD retrievals.
 
+## License
+
+This software is released under the **GNU Affero General Public License v3.0 (AGPL-3.0)**. See the `LICENSE` file for full legal text.
+
 ## Citation
 
 If you utilize this platform or its associated methodologies in your research, please cite the following primary paper:
