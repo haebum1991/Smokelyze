@@ -1,63 +1,41 @@
+
 # Smokelyze: Advanced Spatiotemporal Analytics for Wildfire Smoke and Air Quality
 
-Smokelyze is a cloud-native analytics platform designed to operationalize established Generalized Additive Model (GAM) frameworks for quantifying wildfire smoke impacts on regional air quality. Developed at the Jaffe Research Group (University of Washington), this tool integrates ground-based observations with satellite-derived products to identify and isolate smoke-driven pollutant enhancements.
+Smokelyze is a cloud-native analytics platform designed to operationalize established Generalized Additive Model (GAM) frameworks for quantifying wildfire smoke impacts on regional air quality. Developed by Haebum Lee (PhD) at the Jaffe Research Group (University of Washington), this tool integrates ground-based observations with satellite-derived products to identify the smoke day and quantify the smoke contribution to air quality (O3 and PM2.5).
 
 This project is documented as part of the "In Box: Innovations" section of the Bulletin of the American Meteorological Society (BAMS).
 
 ## Core Capabilities
 
-- **GAM-based SMO Isolation**: Operationalizes the Generalized Additive Model (GAM) to calculate a robust **"non-smoke" counterfactual baseline** based on meteorology. The difference between the observed concentration and this modeled baseline represents the **Smoke-driven enhancement (SMO)**, providing a rapid quantification for MDA8 O3 and PM2.5.
-- **Integrated Air Quality Monitoring**: Real-time fusion of EPA AQS/AirNow observations with NOAA HMS smoke density polygons to provide a primary scientific basis for identifying smoke-influenced monitoring sites.
-- **Transport Verification**: On-demand HYSPLIT backward trajectory simulation to verify air mass transport pathways and establish a "Clear Causal Relationship" for EPA Exceptional Event Demonstrations (EED).
-- **Satellite Column Density Analysis**: Natively integrated access to TEMPO and TROPOMI retrievals (NO2, HCHO VCD) for independent, space-borne verification of concentrated wildfire emissions.
-- **Collaborative Intelligence**: Geospatial site-specific commentary and empirical crowd-sourced observations via the **MapPost** system to bridge the gap between remote sensing and localized reality.
+- **GAM-based smoke O3 (SMO) Calculation**: Operationalizes the GAM framework **trained on non-smoke days** to quantify the smoke contribution to maximum daily 8-hour average (MDA8) O3 (Smoke O3 or SMO), proposed by Lee and Jaffe (2024a; 2024b; 2025).
+- **Integrated Air Quality Monitoring**: Near Real-time fusion of **EPA AQS/AirNow PM2.5 and O3 monitoring stations** with **NOAA-HMS smoke plume polygons** to identify smoke days and calculate smoke PM2.5 and O3.
+- **Transport Provenance**: Interactive **HYSPLIT backward/forward air mass trajectory simulation** to establish a reasonable relationship between wildfire sources and high observed concentrations for **Exceptional Event Demonstrations (EED)**.
+- **Independent Space-borne Verification**: Direct integration of satellite-retrieved **TEMPO and TROPOMI NO2/HCHO Vertical Column Densities (VCD)** to verify volatile organic compound (VOC) wildfire emissions.
+- **Collaborative Intelligence**: Geospatial site-specific commentary and empirical observations via the **MapPost** system to bridge the gap between remote sensing and localized reality.
 
 ## Technical Architecture
 
-The platform utilizes a modern, serverless stack optimized for high-speed statistical inference and interactive geospatial rendering:
+The platform utilizes a serverless cloud architecture optimized for high-speed statistical inference and responsive geospatial interaction:
 
-- **Frontend**: Hugo (Static Site Generator) and MapLibre GL JS for hardware-accelerated WebGL rendering.
-- **Backend Infrastructure**: Netlify Functions acting as a secure proxy to Google Cloud Storage (GCS) and external air quality APIs.
-- **Scalable Computing**: Google Cloud Run orchestrated Docker containers for handling complex statistical calculations and data pre-processing.
-- **Real-time Metadata**: Firebase Auth and Firestore for managed user sessions and collaborative geospatial markers.
+- **Frontend**: Static site generated via **Hugo**, coupled with Vanilla JavaScript and **MapLibre GL JS** for **hardware-accelerated WebGL rendering**.
+- **Backend Infrastructure**: **Google Cloud Run** orchestrated Docker containers running automated R-scripts for complex statistical calculations and data pre-processing.
+- **Data Pipeline**: Serverless functions acting as a secure proxy to **Google Cloud Storage (GCS)** and real-time environmental APIs.
+- **Authentication**: **Firebase Auth** for managed user sessions and collaborative metadata handling.
 
 ## Directory Structure
 
 - `/content/map/`: Core application logic and HTML structure for the interactive map.
 - `/static/js/`: Modular JavaScript engine including data loaders and map initialization.
 - `/static/css/`: Design tokens and responsive layout definitions.
-- `/netlify/functions/`: Serverless functions for GCS data proxying.
+- `/netlify/functions/`: Node.js serverless functions for GCS data proxying.
 - `/layouts/`: Hugo templates for the site architecture.
-
-## Development and Reproducibility
-
-For general usage, no installation is required as the Smokelyze platform is fully accessible via its web URL (smokelyze.org). However, for researchers who wish to reproduce the environment or verify the application's logic locally, the following setup is provided:
-
-1. **Requirements**:
-   - Hugo (Extended Version, >= 0.143.1)
-   - Node.js (with npm)
-   - Netlify CLI
-
-2. **Setup**:
-   ```bash
-   git clone [repository-url]
-   npm install
-   ```
-
-3. **Running the Site**:
-   ```bash
-   netlify dev
-   ```
 
 ## Data Provenance and Licensing
 
 Data analyzed within Smokelyze is curated from authoritative federal and academic sources:
-- **U.S. EPA**: AQS regulatory data and AirNow real-time observations.
-- **NOAA**: HMS smoke density polygons and satellite-derived plume tracking.
+- **U.S. EPA**: AQS regulatory data and AirNow observations.
+- **NOAA**: HMS smoke density polygons and HYSPLIT meteorological datasets.
 - **NASA (TEMPO/TROPOMI)**: High-resolution NO2 and Formaldehyde (HCHO) VCD retrievals.
-
-### License
-This software is released under the **MIT License**. See the `LICENSE` file for full legal text.
 
 ## Citation
 
@@ -72,3 +50,4 @@ The underlying statistical methodologies and baseline calculations are based on 
 - **Lee, H., & Jaffe, D. A. (2025)**. Impact of wildfires on O3 and air quality across the United States for 2019–2024 using Generalized Additive Models. *Journal of Geophysical Research: Atmospheres*, 130, e2025JD044088.
 - **Lee, H., & Jaffe, D. A. (2024b)**. Wildfire impacts on O3 in the continental United States using PM2.5 and a Generalized Additive Model (2018–2023). *Environmental Science & Technology*, 58, 14764–14774.
 - **Lee, H., & Jaffe, D. A. (2024a)**. Impact of wildfire smoke on ozone concentrations using a Generalized Additive model in Salt Lake City, Utah, USA, 2006–2022. *Journal of the Air & Waste Management Association*, 74, 116-130.
+
