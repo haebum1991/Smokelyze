@@ -26,7 +26,7 @@ const state = {
 };
 
 const RAINBOW_COLORS = ["#007cff", "#ff4d4d", "#2ecc71", "#e67e22", "#9b59b6", "#1abc9c", "#f1c40f"];
-const LAYER_SUFFIXES = ["wall", "line", "points", "vispoints", "point"];
+const LAYER_SUFFIXES = ["wall", "line", "points", "vispoints", "point", "heatmap"];
 
 // --- Initialization ---
 export function initHysplit() {
@@ -44,11 +44,25 @@ export function initHysplit() {
         state.pendingLngLat = e.lngLat;
     });
 
-    // 4. Modal validation listeners
+    // 4. Modal validation & UI listeners
     const modalBody = document.querySelector("#HysplitModalOverlay .MapPost-modal-body");
     if (modalBody) {
         modalBody.addEventListener("input", checkHysplitDuplicate);
-        modalBody.addEventListener("change", checkHysplitDuplicate);
+        modalBody.addEventListener("change", (e) => {
+            checkHysplitDuplicate();
+            
+            // Toggle dispersion settings / Sync defaults
+            if (e.target.id === "HysplitFormType") {
+                const val = e.target.value;
+                const group = document.getElementById("HysplitDispersionGroup");
+                if (group) group.style.display = (val === "dispersion") ? "block" : "none";
+
+                // Sync Direction default
+                const dir = (val === "dispersion") ? "forward" : "backward";
+                const radio = document.querySelector(`input[name="HysplitDirection"][value="${dir}"]`);
+                if (radio) radio.checked = true;
+            }
+        });
     }
 
     // 1b. Map click for Hysplit Mode
@@ -463,6 +477,21 @@ function uiShowHysplitModal(params = null) {
 
         const dirRadio = document.querySelector(`input[name="HysplitDirection"][value="${params.direction}"]`);
         if (dirRadio) dirRadio.checked = true;
+        
+        const typeEl = document.getElementById("HysplitFormType");
+        if (typeEl) {
+            typeEl.value = params.run_type || "trajectory";
+            const group = document.getElementById("HysplitDispersionGroup");
+            if (group) group.style.display = (typeEl.value === "dispersion") ? "block" : "none";
+        }
+
+        if (params.run_type === "dispersion") {
+            if (document.getElementById("HysplitFormRate")) document.getElementById("HysplitFormRate").value = params.species_rate || 5;
+            if (document.getElementById("HysplitFormPdiam")) document.getElementById("HysplitFormPdiam").value = params.species_pdiam || 2.5;
+            if (document.getElementById("HysplitFormDensity")) document.getElementById("HysplitFormDensity").value = params.species_density || 1.2;
+            if (document.getElementById("HysplitFormShape")) document.getElementById("HysplitFormShape").value = params.species_shape_factor || 1.0;
+            if (document.getElementById("HysplitFormSpecDuration")) document.getElementById("HysplitFormSpecDuration").value = params.species_duration || 1;
+        }
     }
 
     // Set base params for change detection
@@ -488,6 +517,7 @@ function checkHysplitDuplicate() {
         const duration = parseFloat(document.getElementById("HysplitFormDuration").value);
         const height = parseFloat(document.getElementById("HysplitFormHeight").value);
         const date = document.getElementById("HysplitFormDate").value;
+        const run_type = document.getElementById("HysplitFormType").value;
 
         const b = state.modalBaseParams;
         isSame = (
@@ -495,8 +525,20 @@ function checkHysplitDuplicate() {
             time === b.time &&
             direction === b.direction &&
             duration === b.duration &&
-            height === b.height
+            height === b.height &&
+            run_type === (b.run_type || "trajectory")
         );
+
+        // If dispersion, check extra params
+        if (isSame && run_type === "dispersion") {
+            isSame = (
+                parseFloat(document.getElementById("HysplitFormRate").value) === (b.species_rate || 5) &&
+                parseFloat(document.getElementById("HysplitFormPdiam").value) === (b.species_pdiam || 2.5) &&
+                parseFloat(document.getElementById("HysplitFormDensity").value) === (b.species_density || 1.2) &&
+                parseFloat(document.getElementById("HysplitFormShape").value) === (b.species_shape_factor || 1.0) &&
+                parseInt(document.getElementById("HysplitFormSpecDuration").value) === (b.species_duration || 1)
+            );
+        }
 
         if (isSame) {
             baseTitle = "HYSPLIT Simulation (Conditions are identical)";
@@ -567,15 +609,29 @@ async function clickOnSubmitHysplit() {
     const lngLat = state.pendingLngLat;
 
     // Check for identical duplicate submission
+    const runType = document.getElementById("HysplitFormType").value;
     if (state.modalBaseParams) {
         const b = state.modalBaseParams;
-        if (
+        let isSame = (
             date === b.date &&
             time === b.time &&
             direction === b.direction &&
             duration === b.duration &&
-            height === b.height
-        ) {
+            height === b.height &&
+            runType === (b.run_type || "trajectory")
+        );
+
+        if (isSame && runType === "dispersion") {
+            isSame = (
+                parseFloat(document.getElementById("HysplitFormRate").value) === (b.species_rate || 5) &&
+                parseFloat(document.getElementById("HysplitFormPdiam").value) === (b.species_pdiam || 2.5) &&
+                parseFloat(document.getElementById("HysplitFormDensity").value) === (b.species_density || 1.2) &&
+                parseFloat(document.getElementById("HysplitFormShape").value) === (b.species_shape_factor || 1.0) &&
+                parseInt(document.getElementById("HysplitFormSpecDuration").value) === (b.species_duration || 1)
+            );
+        }
+
+        if (isSame) {
             if (showErrorToast) showErrorToast("Same conditions already simulated. Please alter a field to run again.", "warning");
             return;
         }
@@ -606,15 +662,30 @@ async function clickOnSubmitHysplit() {
         // Get the ID token for the current user to secure the API call
         const idToken = await auth.currentUser.getIdToken(true);
 
-        const params = new URLSearchParams({
+        const runType = document.getElementById("HysplitFormType").value;
+
+        const baseParams = {
             lon: lngLat.lng,
             lat: lngLat.lat,
             date: date,
             time: time,
             direction: direction,
             duration: duration,
-            height: height
-        });
+            height: height,
+            run_type: runType
+        };
+
+        // Add dispersion params if needed
+        if (runType === "dispersion") {
+            baseParams.particle_num = 500; // Fixed for server capacity
+            baseParams.species_rate = parseFloat(document.getElementById("HysplitFormRate").value);
+            baseParams.species_pdiam = parseFloat(document.getElementById("HysplitFormPdiam").value);
+            baseParams.species_density = parseFloat(document.getElementById("HysplitFormDensity").value);
+            baseParams.species_shape_factor = parseFloat(document.getElementById("HysplitFormShape").value);
+            baseParams.species_duration = parseInt(document.getElementById("HysplitFormSpecDuration").value);
+        }
+
+        const params = new URLSearchParams(baseParams);
 
         // Inject token directly into payload to bypass Netlify header stripping
         params.append("token", `Bearer ${idToken}`);
@@ -642,15 +713,7 @@ async function clickOnSubmitHysplit() {
             throw new Error(`Unexpected result from serverless backend: ${resultData.status}`);
         }
 
-        const currentParams = {
-            lon: lngLat.lng,
-            lat: lngLat.lat,
-            date: date,
-            time: time,
-            direction: direction,
-            duration: duration,
-            height: height
-        };
+        const currentParams = baseParams;
 
         task.update("Rendering trajectory...", "running");
         renderHysplitTrajectory(finalData, direction, null, false, currentParams);
@@ -742,6 +805,7 @@ function updateHysplitDrawerList() {
                 </div>
                 <div style="font-size: 1.1rem; color: var(--text-main); display: flex; justify-content: space-between; align-items: flex-end;">
                     <div>
+                        <b>Mode: ${utils.ESML(p.run_type || "trajectory")}</b><br>
                         Dir: ${utils.ESML(p.direction)} | Dur: ${utils.ESML(p.duration)}h | AGL: ${utils.ESML(p.height)}m <br>
                         Loc: ${parseFloat(p.lon).toFixed(3)}, ${parseFloat(p.lat).toFixed(3)}
                     </div>
@@ -873,8 +937,14 @@ function renderHysplitTrajectory(data, direction, existingRunId = null, isRestor
     const color = RAINBOW_COLORS[state.runCount % RAINBOW_COLORS.length];
     state.runCount++;
 
+    const isDispersion = (forcedParams && forcedParams.run_type === "dispersion");
+
     // Draw on Map
-    drawTrajectoryLayers(runId, data, direction, color, isRestoring);
+    if (isDispersion) {
+        drawDispersionLayers(runId, data, color, isRestoring);
+    } else {
+        drawTrajectoryLayers(runId, data, direction, color, isRestoring);
+    }
 
     // Cache coordinates for flow animation
     let flowCoords = data.map(pt => [pt.lon, pt.lat]);
@@ -1172,6 +1242,85 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
     if (!isRestoring) {
         const bounds = coords3D.reduce((acc, c) => acc.extend([c[0], c[1]]), new maplibregl.LngLatBounds(coords3D[0], coords3D[0]));
         map.fitBounds(bounds, { padding: 80, pitch: 65, duration: 1500 });
+    }
+}
+
+/**
+ * Renders dispersion particle cloud.
+ */
+function drawDispersionLayers(runId, data, color, isRestoring = false) {
+    if (!map || !data || data.length === 0) return;
+
+    const features = data.map(pt => ({
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [pt.lon, pt.lat] },
+        properties: { height: pt.height }
+    }));
+
+    if (!map.getSource(`hysplit-src-traj-${runId}`)) {
+        map.addSource(`hysplit-src-traj-${runId}`, {
+            type: "geojson",
+            data: { type: "FeatureCollection", features }
+        });
+    }
+
+    // 1. NOAA-style Heatmap Plume layer
+    map.addLayer({
+        id: `hysplit-layer-heatmap-${runId}`,
+        type: "heatmap",
+        source: `hysplit-src-traj-${runId}`,
+        maxzoom: 15,
+        paint: {
+            "heatmap-weight": 0.5,
+            "heatmap-intensity": [
+                "interpolate", ["linear"], ["zoom"],
+                1, 0.5,
+                12, 1.5
+            ],
+            "heatmap-color": [
+                "interpolate", ["linear"], ["heatmap-density"],
+                0, "rgba(0, 0, 255, 0)",
+                0.1, "rgba(0, 255, 255, 0.4)",
+                0.2, "rgba(0, 255, 0, 0.6)",
+                0.4, "rgba(255, 255, 0, 0.7)",
+                0.7, "rgba(255, 120, 0, 0.9)",
+                0.95, "rgba(255, 0, 0, 1)" 
+            ],
+            "heatmap-radius": [
+                "interpolate", ["linear"], ["zoom"],
+                2, 5,
+                10, 18
+            ],
+            "heatmap-opacity": 0.8
+        }
+    });
+
+    // 2. Individual Particles (Circle Layer) - for detailed view when zoomed in
+    map.addLayer({
+        id: `hysplit-layer-point-${runId}`,
+        type: "circle",
+        source: `hysplit-src-traj-${runId}`,
+        minzoom: 8,
+        paint: {
+            "circle-radius": [
+                "interpolate", ["linear"], ["zoom"],
+                9, 1.5,
+                16, 6
+            ],
+            "circle-color": color,
+            "circle-opacity": [
+                "interpolate", ["linear"], ["zoom"],
+                8, 0,
+                11, 0.7
+            ],
+            "circle-stroke-width": 0.5,
+            "circle-stroke-color": "#ffffff"
+        }
+    });
+
+    if (!isRestoring) {
+        const bounds = data.reduce((acc, pt) => acc.extend([pt.lon, pt.lat]), new maplibregl.LngLatBounds([data[0].lon, data[0].lat], [data[0].lon, data[0].lat]));
+        map.fitBounds(bounds, { padding: 100, duration: 2000 });
     }
 }
 
