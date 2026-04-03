@@ -195,7 +195,9 @@ export function generatePopupHTML(p, dataSource, isLocked) {
         <div style="${rowStyle}"><b>Latitude:</b> ${smartFmt(p.lat, "lat", dataSource, 3)}</div>
         <div style="${rowStyle}"><b>Longitude:</b> ${smartFmt(p.lon, "lon", dataSource, 3)}</div>
         <div style="${rowStyle}"><b>AGL:</b> ${ESML(heightVal)}m</div>
-        <div style="${rowStyle}"><b>Pressure:</b> ${ESML(pressVal)} hPa</div>`;
+        <div style="${rowStyle}"><b>Pressure:</b> ${ESML(pressVal)} hPa</div>
+        ${p.q_ug_m3 !== undefined ? `<div style="${rowStyle}"><b>Conc:</b> <b style="color: var(--card-shadow);">${smartFmt(p.q_ug_m3, "q_ug_m3", dataSource, 3)}</b> µg m⁻³</div>` : ""}
+        ${p.q_kg !== undefined ? `<div style="${rowStyle}"><b>Mass:</b> ${smartFmt(p.q_kg, "q_kg", dataSource, 3)} kg</div>` : ""}`;
     }
     
     if (dataSource.startsWith("airnow-")) {

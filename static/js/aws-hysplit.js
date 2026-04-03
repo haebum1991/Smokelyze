@@ -250,14 +250,7 @@ function getHysplitHistoryData() {
         id: item.runId,
         visible: item.visible,
         params: item.params,
-        points: item.data.map(pt => ({
-            date: pt.date,
-            date2: pt.date2,
-            lat: pt.lat,
-            lon: pt.lon,
-            height: pt.height,
-            pressure: pt.pressure
-        }))
+        points: item.data.map(pt => ({ ...pt }))
     }));
 }
 
@@ -899,7 +892,7 @@ function downloadTrajectoryAsCSV(runId) {
     if (!item || !item.data) return;
 
     const data = item.data;
-    const keys = Object.keys(data[0]);
+    const keys = [...new Set(data.flatMap(pt => Object.keys(pt)))];
     const csvRows = [keys.join(",")];
 
     data.forEach(pt => {
@@ -1254,7 +1247,7 @@ function drawDispersionLayers(runId, data, color, isRestoring = false) {
     const features = data.map(pt => ({
         type: "Feature",
         geometry: { type: "Point", coordinates: [pt.lon, pt.lat] },
-        properties: { height: pt.height }
+        properties: { ...pt } // Preserve ALL fields including q_ug_m3, q_kg, etc.
     }));
 
     if (!map.getSource(`hysplit-src-traj-${runId}`)) {
@@ -1271,7 +1264,16 @@ function drawDispersionLayers(runId, data, color, isRestoring = false) {
         source: `hysplit-src-traj-${runId}`,
         maxzoom: 15,
         paint: {
-            "heatmap-weight": 0.5,
+            // Dynamically scale weight based on concentration (q_ug_m3)
+            "heatmap-weight": [
+                "interpolate",
+                ["linear"],
+                ["get", "q_ug_m3"],
+                0, 0,
+                0.5, 0.3,
+                2, 0.6,
+                10, 1.0
+            ],
             "heatmap-intensity": [
                 "interpolate", ["linear"], ["zoom"],
                 1, 0.5,
@@ -1317,7 +1319,57 @@ function drawDispersionLayers(runId, data, color, isRestoring = false) {
             "circle-stroke-color": "#ffffff"
         }
     });
+    
+    // --- Tooltip & Interaction ---
+    const hoverLayer = `hysplit-layer-point-${runId}`;
+    map.on("mousemove", hoverLayer, (e) => {
+        if (globalState?.tooltipLocked) return;
+        map.getCanvas().style.cursor = "pointer";
+        const tooltip = document.getElementById("MapTooltip");
+        if (!tooltip) return;
 
+        const f = e.features?.[0];
+        if (!f) return;
+
+        const props = f.properties;
+        const [fLon, fLat] = f.geometry.coordinates;
+
+        // Ensure these are treated as numbers and formatted
+        props.lon = fLon;
+        props.lat = fLat;
+        props.color = color;
+        props.run_type = "dispersion";
+
+        tooltip.innerHTML = generatePopupHTML(props, "hysplit", false);
+        tooltip.style.display = "block";
+
+        let x = e.originalEvent.clientX + 15;
+        let y = e.originalEvent.clientY + 15;
+        if (x + 320 > window.innerWidth) x = e.originalEvent.clientX - 330;
+        if (y + 400 > window.innerHeight) y = e.originalEvent.clientY - 410;
+        tooltip.style.left = `${x / 10}rem`;
+        tooltip.style.top = `${y / 10}rem`;
+    });
+
+    map.on("mouseleave", hoverLayer, () => {
+        if (globalState?.tooltipLocked) return;
+        map.getCanvas().style.cursor = "";
+        const tooltip = document.getElementById("MapTooltip");
+        if (tooltip) tooltip.style.display = "none";
+    });
+
+    map.on("click", hoverLayer, (e) => {
+        const f = e.features?.[0];
+        if (!f) return;
+        const [fLon, fLat] = f.geometry.coordinates;
+        const props = { ...f.properties, lon: fLon, lat: fLat, color, run_type: "dispersion" };
+
+        if (utils.highlightLocation) {
+            e.preventDefault();
+            utils.highlightLocation([fLon, fLat], props, "hysplit", 10);
+        }
+    });
+    
     if (!isRestoring) {
         const bounds = data.reduce((acc, pt) => acc.extend([pt.lon, pt.lat]), new maplibregl.LngLatBounds([data[0].lon, data[0].lat], [data[0].lon, data[0].lat]));
         map.fitBounds(bounds, { padding: 100, duration: 2000 });
