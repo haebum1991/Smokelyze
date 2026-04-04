@@ -437,8 +437,33 @@ function handleLoadingError(sourceKey, isoDate, ds = null) {
     updateSearchVisibility();
 }
 
+/**
+ * Utility: Wait for Firebase Auth to initialize before proceeding with permission-sensitive tasks.
+ */
+async function waitForAuth() {
+    if (window.fbAuthReady) return auth.currentUser;
+    return new Promise(resolve => {
+        const check = () => {
+            if (window.fbAuthReady) {
+                window.removeEventListener("authStateChanged", check);
+                resolve(auth.currentUser);
+            }
+        };
+        window.addEventListener("authStateChanged", check);
+        // Timeout as a fallback to prevent hanging the page (e.g. 5s)
+        setTimeout(() => {
+            window.removeEventListener("authStateChanged", check);
+            resolve(auth.currentUser);
+        }, 3000);
+    });
+}
+
 export async function updateAllActiveSources() {
     console.log("[DATA-LOAD] updateAllActiveSources started...");
+    
+    // Ensure auth status is verified before assessing restrictions
+    await waitForAuth();
+    
     if (!map) return;
     toggleSpinner(true);
     try {
@@ -488,8 +513,8 @@ export async function updateAllActiveSources() {
         const restrictedSources = ExcludeLayerGroups.restrictedSources;
         const tryingToLoadRestricted = Array.from(sourcesToLoad).some(s => restrictedSources.includes(s));
 
-        // 로그인 안 되어 있고 제한된 데이터 로드 시도 시 데이터 클리어 및 체크박스 해제
-        if (!auth.currentUser && tryingToLoadRestricted) {
+        // Use the global fbAuthReady flag to avoid race conditions on page reload (i.e. before Firebase initializes)
+        if (tryingToLoadRestricted && window.fbAuthReady && !auth.currentUser) {
             
             // Uncheck restricted checkboxes
             checkboxes.forEach(cb => {

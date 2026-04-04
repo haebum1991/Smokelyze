@@ -101,6 +101,8 @@ onAuthStateChanged(auth, async (user) => {
         authOverlay.style.display = "none";
     }
 
+    // Set flag for other modules to know auth is initialized
+    window.fbAuthReady = true;
     window.dispatchEvent(new CustomEvent("authStateChanged", { detail: { user } }));
 });
 

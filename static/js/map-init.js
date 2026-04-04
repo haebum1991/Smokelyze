@@ -94,10 +94,13 @@ function createMap() {
         zoom: mapConfig.zoom,
         attributionControl: false,
         
-        // Performance optimizations for low-end/integrated GPUs
+        // Performance optimizations for low-end/integrated GPUs (iGPU / Chrome stability)
+        pixelRatio: 1,                // Avoid 4x overdraw on high-DPI screens
+        maxTileCacheSize: 50,         // Reduce GPU memory consumption (default ~100-200)
         preserveDrawingBuffer: false,
         crossSourceCollisions: false, // Disables label collisions between sources
-        fadeDuration: 0           // Disable cross-fading between zoom levels
+        fadeDuration: 0,              // Disable cross-fading between zoom levels
+        failIfMajorPerformanceCaveat: true // Signal if GPU is too weak to handle standard WebGL
     });
 
     // Handle WebGL context loss (black screen on low-end GPUs)
@@ -123,9 +126,18 @@ function createMap() {
 
     canvas.addEventListener("webglcontextrestored", () => {
         if (contextLostCount <= 1) {
+        
             // First time: silently restore
             console.log("WebGL context restored — reloading map style.");
             m.setStyle(mapConfig.style);
+            
+            // Re-import the loader to trigger full refresh
+            m.once("style.load", () => {
+                import("./loader-handler.js").then(module => {
+                    module.updateAllActiveSources();
+                });
+            });
+            
         } else if (pastReloads < 2) {
             // Auto-reload (max 2 times within 60s)
             sessionStorage.setItem(reloadKey, String(pastReloads + 1));
