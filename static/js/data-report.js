@@ -728,8 +728,7 @@ async function downloadAllReportsCSV() {
                 const displayVal = (val !== undefined && val !== null) ? val : "NA";
                 return `"${displayVal}"`;
             }).join(","))
-        ].join("
-");
+        ].join("\n");
 
         const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
         const link = document.createElement("a");
