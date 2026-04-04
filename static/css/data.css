@@ -534,7 +534,8 @@
     }
     
     #DatadbDataTableBtnDownload,
-    #DatadbReportTableBtnDownload {
+    #DatadbReportTableBtnDownload,
+    #DatadbReportTableBtnDownloadAll {
         display: none;
     }
 }
