@@ -192,12 +192,12 @@ export function generatePopupHTML(p, dataSource, isLocked) {
         <hr style="${hrStyle}">
         <div style="${rowStyle}"><b>Date:</b> ${ESML(dateVal1)} UTC</div>
         <div style="${rowStyle}"><b>Date2:</b> ${ESML(dateVal2)} UTC</div>
-        <div style="${rowStyle}"><b>Latitude:</b> ${smartFmt(p.lat, "lat", dataSource, 3)}</div>
-        <div style="${rowStyle}"><b>Longitude:</b> ${smartFmt(p.lon, "lon", dataSource, 3)}</div>
+        <div style="${rowStyle}"><b>Latitude:</b> ${ESML(smartFmt(p.lat, "lat", dataSource, 3))}</div>
+        <div style="${rowStyle}"><b>Longitude:</b> ${ESML(smartFmt(p.lon, "lon", dataSource, 3))}</div>
         <div style="${rowStyle}"><b>AGL:</b> ${ESML(heightVal)}m</div>
         <div style="${rowStyle}"><b>Pressure:</b> ${ESML(pressVal)} hPa</div>
-        ${p.q_ug_m3 !== undefined ? `<div style="${rowStyle}"><b>Conc:</b> <b style="color: var(--card-shadow);">${smartFmt(p.q_ug_m3, "q_ug_m3", dataSource, 3)}</b> µg m⁻³</div>` : ""}
-        ${p.q_kg !== undefined ? `<div style="${rowStyle}"><b>Mass:</b> ${smartFmt(p.q_kg, "q_kg", dataSource, 3)} kg</div>` : ""}`;
+        ${p.q_ug_m3 !== undefined ? `<div style="${rowStyle}"><b>Conc:</b> <b style="color: var(--card-shadow);">${ESML(smartFmt(p.q_ug_m3, "q_ug_m3", dataSource, 3))}</b> µg m⁻³</div>` : ""}
+        ${p.q_kg !== undefined ? `<div style="${rowStyle}"><b>Mass:</b> ${ESML(smartFmt(p.q_kg, "q_kg", dataSource, 3))} kg</div>` : ""}`;
     }
     
     if (dataSource.startsWith("airnow-")) {
@@ -472,19 +472,19 @@ export function stateHoverHTML(p, _cachedActiveLayerIds) {
   const bgRows = [];
   if (checkedIds.includes("layer-burn") && !closedLegendIds.has("burn")) {
     const b = stats.burn || 0;
-    bgRows.push(`Area burned (km²): ${b > 0 ? b.toFixed(1) : "NA"}`);
+    bgRows.push(`Area burned (km²): ${ESML(b > 0 ? b.toFixed(1) : "NA")}`);
   }
   if (checkedIds.includes("layer-smoke") && !closedLegendIds.has("smoke")) {
     const sl = stats.smokeLight || 0, sm = stats.smokeMedium || 0, sh = stats.smokeHeavy || 0;
-    bgRows.push(`Smoke area-L (km²): ${sl > 0 ? sl.toLocaleString() : "NA"}`);
-    bgRows.push(`Smoke area-M (km²): ${sm > 0 ? sm.toLocaleString() : "NA"}`);
-    bgRows.push(`Smoke area-H (km²): ${sh > 0 ? sh.toLocaleString() : "NA"}`);
+    bgRows.push(`Smoke area-L (km²): ${ESML(sl > 0 ? sl.toLocaleString() : "NA")}`);
+    bgRows.push(`Smoke area-M (km²): ${ESML(sm > 0 ? sm.toLocaleString() : "NA")}`);
+    bgRows.push(`Smoke area-H (km²): ${ESML(sh > 0 ? sh.toLocaleString() : "NA")}`);
   }
   if (checkedIds.includes("layer-fire") && !closedLegendIds.has("fire")) {
     const fc = stats.fireCount || 0;
     const ff = stats.fireFrp || 0;
-    bgRows.push(`Fire points: ${fc > 0 ? fc.toLocaleString() : "NA"}`);
-    bgRows.push(`FRP (MW): ${ff > 0 ? ff.toFixed(0) : "NA"}`);
+    bgRows.push(`Fire points: ${ESML(fc > 0 ? fc.toLocaleString() : "NA")}`);
+    bgRows.push(`FRP (MW): ${ESML(ff > 0 ? ff.toFixed(0) : "NA")}`);
   }
 
   if (bgRows.length > 0) {

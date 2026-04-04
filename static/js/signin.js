@@ -213,6 +213,9 @@ if (profileLogoutBtn) {
             sessionStorage.removeItem("auth-guest-dismissed");
             sessionStorage.removeItem("role-checked");
             sessionStorage.removeItem("userRole");
+            
+            // Clear local AI key (Protection for shared devices)
+            localStorage.removeItem("smokelyze_gemini_key");
         }
     });
 }
