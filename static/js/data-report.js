@@ -39,7 +39,7 @@ const GAM_V2_TYPES = {
         { name: "Residual (ppb) on smoke days (EDM)", method: "mean" },
         { name: "Residual quantile on smoke days", method: "mean" },
         { name: "Residual quantile on smoke days (EDM)", method: "mean" },
-        { name: "Ob PM2.5 (ug m-3)", method: "mean" }
+        { name: "Obs PM2.5 (ug m-3)", method: "mean" }
     ]
 };
 
@@ -59,7 +59,7 @@ const GAM_V1_TYPES = {
         { name: "Smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)", method: "count" },
         { name: "Residual (ppb) on smoke days", method: "mean" },
         { name: "Residual quantile on smoke days", method: "mean" },
-        { name: "Ob PM2.5 (ug m-3)", method: "mean" }
+        { name: "Obs PM2.5 (ug m-3)", method: "mean" }
     ]
 };
 
@@ -476,7 +476,7 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
                         val = isEdmReport ? d.edm_Quant_MDA8O3_resids : d.Quant_MDA8O3_resids;
                     }
                     break;
-                case "Ob PM2.5 (ug m-3)":
+                case "Obs PM2.5 (ug m-3)":
                     isMatch = true;
                     val = d["PM2.5"];
                     break;
@@ -636,6 +636,132 @@ function downloadReportCSV() {
     });
 }
 
+/**
+ * Export All Report Types in a single CSV (Stacked)
+ */
+async function downloadAllReportsCSV() {
+    
+    if (!auth.currentUser) {
+        showAuthOverlay();
+        return;
+    }
+
+    const datasetId = document.getElementById("DatadbReportTableDataset").value;
+    const state = document.getElementById("DatadbReportTableState").value;
+    const period = document.querySelector('input[name="DatadbReportTablePeriod"]:checked').value;
+
+    if (!state) {
+        alert("Please select a State.");
+        return;
+    }
+
+    const config = REPORT_CONFIG[datasetId];
+    if (!config) return;
+
+    const btn = document.getElementById("DatadbReportTableBtnDownloadAll");
+    const originalText = btn.textContent;
+    btn.textContent = "Preparing...";
+    btn.disabled = true;
+    toggleSpinner(true, "Preparing all types of reports...", true);
+
+    try {
+        // Determine which years to fetch
+        let selectedYears;
+        if (period === "by_year") {
+            selectedYears = Array.from(document.querySelectorAll('input[name="ReportYear"]:checked')).map(cb => parseInt(cb.value));
+        } else {
+            const start = document.getElementById("DatadbReportTableDateStart").value;
+            const end = document.getElementById("DatadbReportTableDateEnd").value;
+            const startYr = start ? parseInt(start.substring(0, 4)) : Math.min(...config.years);
+            const endYr = end ? parseInt(end.substring(0, 4)) : Math.max(...config.years);
+            selectedYears = config.years.filter(yr => yr >= startYr && yr <= endYr);
+        }
+
+        if (selectedYears.length === 0) {
+            alert("Please select at least one year.");
+            return;
+        }
+
+        let flatData = await loadStateData(datasetId, state, config, selectedYears);
+        if (!flatData) {
+            alert("No data found for the selected state.");
+            return;
+        }
+
+        let filteredData = [...flatData];
+        if (period === "by_date") {
+            const start = document.getElementById("DatadbReportTableDateStart").value;
+            const end = document.getElementById("DatadbReportTableDateEnd").value;
+            if (start) filteredData = filteredData.filter(d => d.date >= start);
+            if (end) filteredData = filteredData.filter(d => d.date <= end);
+        }
+
+        const timeKey = period === "by_year" ? "YEAR" : "date";
+        const allTypes = config.types[period];
+        let allResultRows = [];
+        let allTimeColumns = new Set();
+
+        // Generate each report type and stack them
+        for (const type of allTypes) {
+            const result = calculateReportValues(filteredData, datasetId, type.name, timeKey, type.method);
+            
+            result.columns.forEach(c => allTimeColumns.add(c));
+            
+            const rows = result.data.map(row => {
+                return {
+                    report_type: type.name,
+                    ...row
+                };
+            });
+            allResultRows = allResultRows.concat(rows);
+        }
+
+        const sortedTimes = Array.from(allTimeColumns).sort();
+        const baseCols = ["report_type", "AQS", "site_name", "lon", "lat"];
+        const allCols = baseCols.concat(sortedTimes);
+
+        // CSV Construction
+        const csvContent = [
+            allCols.join(","),
+            ...allResultRows.map(row => allCols.map(c => {
+                const val = row[c];
+                const displayVal = (val !== undefined && val !== null) ? val : "NA";
+                return `"${displayVal}"`;
+            }).join(","))
+        ].join("
+");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        const sourceMain = REPORT_CONFIG[datasetId]?.sources.main || datasetId;
+        const safeState = state.replace(/ /g, "_");
+        const safeSource = sourceMain.replace(/ /g, "_");
+        const fileName = `state_report_all_${safeSource}_${safeState}_${period}.csv`;
+
+        link.setAttribute("href", url);
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        logUserAction("download_all", {
+            dataset: datasetId,
+            state: state,
+            period: period,
+            filename: fileName
+        });
+
+    } catch (err) {
+        console.error("Batch report generation failed:", err);
+        alert("An error occurred while generating all reports.");
+    } finally {
+        toggleSpinner(false);
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+}
+
 // --- Initialization ---
 function initReport() {
     const dsSelect = document.getElementById("DatadbReportTableDataset");
@@ -660,7 +786,10 @@ function initReport() {
 
     const btnDownload = document.getElementById("DatadbReportTableBtnDownload");
     if (btnDownload) btnDownload.addEventListener("click", downloadReportCSV);
-
+    
+    const btnDownloadAll = document.getElementById("DatadbReportTableBtnDownloadAll");
+    if (btnDownloadAll) btnDownloadAll.addEventListener("click", downloadAllReportsCSV);
+    
     const btnPrev = document.getElementById("DatadbReportTableBtnPrev");
     if (btnPrev) btnPrev.addEventListener("click", () => changeReportPage(-1));
 
@@ -670,6 +799,7 @@ function initReport() {
     onAuthStateChanged(auth, (user) => {
         updateAuthButton("DatadbReportTableBtnGenerate", user, "Generate Report");
         updateAuthButton("DatadbReportTableBtnDownload", user, "Download CSV");
+        updateAuthButton("DatadbReportTableBtnDownloadAll", user, "Download all types of reports");
     });
 }
 
