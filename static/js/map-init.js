@@ -99,8 +99,7 @@ function createMap() {
         maxTileCacheSize: 50,         // Reduce GPU memory consumption (default ~100-200)
         preserveDrawingBuffer: false,
         crossSourceCollisions: false, // Disables label collisions between sources
-        fadeDuration: 0,              // Disable cross-fading between zoom levels
-        failIfMajorPerformanceCaveat: true // Signal if GPU is too weak to handle standard WebGL
+        fadeDuration: 0              // Disable cross-fading between zoom levels
     });
 
     // Handle WebGL context loss (black screen on low-end GPUs)
