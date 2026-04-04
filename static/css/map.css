@@ -1785,6 +1785,14 @@ body.FigurePage-drawer-open .Hysplit-drawer.open {
   word-wrap: break-word;
 }
 
+/* Row wrapper for side-by-side inputs (Mobile-first grid) */
+.MapPost-form-group-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  width: 100%;
+}
+
 .MapPost-form-group {
   display: flex;
   flex-direction: column;

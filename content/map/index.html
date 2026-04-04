@@ -780,15 +780,15 @@ title: ""
         </div>
       </div>
 
-      <div style="display: flex; gap: 1rem; width: 100%;">
-        <div class="MapPost-form-group" style="flex: 1; min-width: 0;">
+      <div class="MapPost-form-group-row">
+        <div class="MapPost-form-group">
           <label for="HysplitFormDate">Input Date:</label>
-          <input type="date" id="HysplitFormDate" style="width: 100%; box-sizing: border-box;">
+          <input type="date" id="HysplitFormDate">
         </div>
 
-        <div class="MapPost-form-group" style="flex: 1; min-width: 0;">
+        <div class="MapPost-form-group">
           <label for="HysplitFormTime">Input Time (UTC):</label>
-          <select id="HysplitFormTime" style="width: 100%; box-sizing: border-box;">
+          <select id="HysplitFormTime">
             <option value="00">00:00</option>
             <option value="01">01:00</option>
             <option value="02">02:00</option>
@@ -817,20 +817,20 @@ title: ""
         </div>
       </div>
 
-      <div style="display: flex; gap: 1rem;">
-        <div class="MapPost-form-group" style="flex: 1;">
+      <div class="MapPost-form-group-row">
+        <div class="MapPost-form-group">
           <label for="HysplitFormDuration">Duration (hours):</label>
           <input type="number" id="HysplitFormDuration" value="24" min="1" max="240">
         </div>
 
-        <div class="MapPost-form-group" style="flex: 1;">
+        <div class="MapPost-form-group">
           <label for="HysplitFormHeight">Height (AGL) (m):</label>
           <input type="number" id="HysplitFormHeight" value="500" min="10" max="10000">
         </div>
       </div>
 
-      <div style="display: flex; gap: 1rem;">
-        <div class="MapPost-form-group" style="flex: 1;">
+      <div class="MapPost-form-group-row">
+        <div class="MapPost-form-group">
           <label for="HysplitFormType">Run Type:</label>
           <select id="HysplitFormType" class="MapPost-select">
             <option value="trajectory" selected>Trajectory</option>
@@ -838,7 +838,7 @@ title: ""
           </select>
         </div>
 
-        <div class="MapPost-form-group" style="flex: 1;">
+        <div class="MapPost-form-group">
           <label>Direction:</label>
           <div style="display: flex; gap: 2rem; padding: 1rem 0; justify-content: center;">
             <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
@@ -863,23 +863,23 @@ title: ""
           </div>
         </div>
 
-        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-          <div class="MapPost-form-group" style="flex: 1;">
+        <div class="MapPost-form-group-row" style="margin-bottom: 1rem;">
+          <div class="MapPost-form-group">
             <label for="HysplitFormPdiam">Ptcl Dia. (μm):</label>
             <input type="number" id="HysplitFormPdiam" value="2.5" min="0.1" step="0.1">
           </div>
-          <div class="MapPost-form-group" style="flex: 1;">
+          <div class="MapPost-form-group">
             <label for="HysplitFormDensity">Ptcl Density (g cm-3):</label>
             <input type="number" id="HysplitFormDensity" value="1.2" min="0.1" step="0.1">
           </div>
         </div>
 
-        <div style="display: flex; gap: 1rem;">
-          <div class="MapPost-form-group" style="flex: 1;">
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
             <label for="HysplitFormShape">Shape (0-1):</label>
             <input type="number" id="HysplitFormShape" value="1.0" min="0.1" max="1.0" step="0.1">
           </div>
-          <div class="MapPost-form-group" style="flex: 1;">
+          <div class="MapPost-form-group">
             <label for="HysplitFormSpecDuration">Release Duration (hr):</label>
             <input type="number" id="HysplitFormSpecDuration" value="1" min="1">
           </div>
@@ -934,9 +934,9 @@ title: ""
 
       <div class="MapPost-form-group">
         <label>Start Date & Time</label>
-        <div style="display: flex; gap: 0.5rem;">
-          <input type="date" id="TimelapseStartDate" style="flex: 2; box-sizing: border-box;">
-          <select id="TimelapseStartTime" style="flex: 1; box-sizing: border-box;">
+        <div class="MapPost-form-group-row">
+          <input type="date" id="TimelapseStartDate">
+          <select id="TimelapseStartTime">
             <option value="00">00:00</option>
             <option value="01">01:00</option>
             <option value="02">02:00</option>
@@ -967,9 +967,9 @@ title: ""
 
       <div class="MapPost-form-group">
         <label>End Date & Time</label>
-        <div style="display: flex; gap: 0.5rem;">
-          <input type="date" id="TimelapseEndDate" style="flex: 2; box-sizing: border-box;">
-          <select id="TimelapseEndTime" style="flex: 1; box-sizing: border-box;">
+        <div class="MapPost-form-group-row">
+          <input type="date" id="TimelapseEndDate">
+          <select id="TimelapseEndTime">
             <option value="00">00:00</option>
             <option value="01">01:00</option>
             <option value="02">02:00</option>
