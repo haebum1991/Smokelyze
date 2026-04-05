@@ -7,3 +7,16 @@ themes/
 .hugo_build.lock
 Smokelyze.Rproj
 
+# Local Netlify folder
+.netlify
+
+# Security: Essential protection for keys and secrets
+.env
+.env.*
+node_modules/
+*.json
+!package.json
+!composer.json
+!plugin.json
+!manifest.json
+
