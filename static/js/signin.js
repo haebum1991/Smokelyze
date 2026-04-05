@@ -405,8 +405,13 @@ async function addGroupMember() {
 
         const myRef = doc(db, "smokelyze_users", user.uid);
         await updateDoc(myRef, { mygroup: arrayUnion(targetUser) });
-
-        await syncGroupAccess(targetUser.uid, "add");
+        
+        // 동기화는 부가 작업이므로 실패해도 멤버 추가 자체는 성공으로 처리합니다.
+        try {
+            await syncGroupAccess(targetUser.uid, "add");
+        } catch (syncErr) {
+            console.warn("Group access sync partial failure (non-critical):", syncErr.message);
+        }
 
         groupInputEl.value = "";
         const snap = await getDoc(myRef);
@@ -431,7 +436,12 @@ async function removeGroupMember(member) {
         const myRef = doc(db, "smokelyze_users", user.uid);
         await updateDoc(myRef, { mygroup: arrayRemove(member) });
 
-        await syncGroupAccess(member.uid, "remove");
+        // 동기화는 부가 작업이므로 실패해도 멤버 제거 자체는 성공으로 처리합니다.
+        try {
+            await syncGroupAccess(member.uid, "remove");
+        } catch (syncErr) {
+            console.warn("Group access sync partial failure (non-critical):", syncErr.message);
+        }
 
         const snap = await getDoc(myRef);
         if (snap.exists()) renderGroupList(snap.data().mygroup || []);

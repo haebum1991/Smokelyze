@@ -233,11 +233,15 @@ function uiShowModal(editData = null) {
         document.getElementById("MapPostFormTitle").value = editData.title;
         document.getElementById("MapPostFormContent").value = editData.text;
 
-        // Set Visibility Radio
-        const viewers = editData.viewers || ["public"];
+        // Set Visibility Radio (visibility 필드가 있으면 우선 사용, 없으면 기존 방식으로 추론)
         let visValue = "public";
-        if (!viewers.includes("public")) {
-            visValue = viewers.length > 1 ? "group" : "private";
+        if (editData.visibility) {
+            visValue = editData.visibility;
+        } else {
+            const viewers = editData.viewers || ["public"];
+            if (!viewers.includes("public")) {
+                visValue = viewers.length > 1 ? "group" : "private";
+            }
         }
         const radio = document.querySelector(`input[name="MapPostVisibility"][value="${visValue}"]`);
         if (radio) radio.checked = true;
@@ -598,7 +602,7 @@ async function clickOnSubmitMain() {
                     // BATCH UPDATE: Update post and ALL its replies
                     const batch = writeBatch(db);
                     const docRef = doc(MapPostCol, state.editingDocId);
-                    batch.update(docRef, { ...updateData, viewers: newViewers, timestamp: serverTimestamp() });
+                    batch.update(docRef, { ...updateData, viewers: newViewers, visibility, timestamp: serverTimestamp() });
 
                     // Find and update all associated replies in the global cache
                     Object.entries(state.MapPostData).forEach(([rid, rd]) => {
@@ -637,7 +641,8 @@ async function clickOnSubmitMain() {
                 uid: state.currentUser.uid, userName: userName || "Anonymous",
                 mapState: currentMapState,
                 dataSource: dataSource,
-                viewers: viewers
+                viewers: viewers,
+                visibility: visibility
             };
 
             const docRef = await dbSaveMapPost(null, docData);
