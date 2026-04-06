@@ -819,12 +819,16 @@ title: ""
 
       <div class="MapPost-form-group-row">
         <div class="MapPost-form-group">
-          <label for="HysplitFormDuration">Duration (hours):</label>
+          <div id="HysplitDurationMainGroup" style="display: flex; align-items: center; justify-content: space-between;">
+            <label for="HysplitFormDuration">Duration (hr):</label>
+          </div>
           <input type="number" id="HysplitFormDuration" value="24" min="1" max="240">
         </div>
 
         <div class="MapPost-form-group">
-          <label for="HysplitFormHeight">Height (AGL) (m):</label>
+          <div id="HysplitHeightGroup" style="display: flex; align-items: center; justify-content: space-between;">
+            <label for="HysplitFormHeight">Height (AGL) (m):</label>
+          </div>
           <input type="number" id="HysplitFormHeight" value="500" min="10" max="10000">
         </div>
       </div>
@@ -856,32 +860,33 @@ title: ""
         style="display: none; padding: 1rem; background: var(--color-bg-alt); border-radius: 0.8rem; margin-top: 1rem; border: 0.1rem solid var(--border-main);">
         <h4 style="margin: 0 0 1rem 0; font-size: 1.4rem;">Dispersion Parameters</h4>
 
-        <div style="margin-bottom: 1rem;">
+        <div class="MapPost-form-group-row">
           <div class="MapPost-form-group">
-            <label for="HysplitFormRate">Emission Rate (kg hr-1):</label>
+            <div id="HysplitRateGroup" style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="HysplitFormRate">Release Rate (kg hr-1):</label>
+            </div>
             <input type="number" id="HysplitFormRate" value="5" min="0.1" step="0.1">
           </div>
-        </div>
-
-        <div class="MapPost-form-group-row" style="margin-bottom: 1rem;">
           <div class="MapPost-form-group">
-            <label for="HysplitFormPdiam">Ptcl Dia. (μm):</label>
-            <input type="number" id="HysplitFormPdiam" value="2.5" min="0.1" step="0.1">
-          </div>
-          <div class="MapPost-form-group">
-            <label for="HysplitFormDensity">Ptcl Density (g cm-3):</label>
-            <input type="number" id="HysplitFormDensity" value="1.2" min="0.1" step="0.1">
+            <div id="HysplitDurationGroup" style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="HysplitFormSpecDuration">Release Duration (hr):</label>
+            </div>
+            <input type="number" id="HysplitFormSpecDuration" value="1" min="1">
           </div>
         </div>
 
         <div class="MapPost-form-group-row">
           <div class="MapPost-form-group">
-            <label for="HysplitFormShape">Shape (0-1):</label>
-            <input type="number" id="HysplitFormShape" value="1.0" min="0.1" max="1.0" step="0.1">
+            <div id="HysplitPdiamGroup" style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="HysplitFormPdiam">Ptcl Dia. (μm):</label>
+            </div>
+            <input type="number" id="HysplitFormPdiam" value="2.5" min="0.1" step="0.1">
           </div>
           <div class="MapPost-form-group">
-            <label for="HysplitFormSpecDuration">Release Duration (hr):</label>
-            <input type="number" id="HysplitFormSpecDuration" value="1" min="1">
+            <div id="HysplitDensityGroup" style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="HysplitFormDensity">Ptcl Density (g cm-3):</label>
+            </div>
+            <input type="number" id="HysplitFormDensity" value="1.2" min="0.1" step="0.1">
           </div>
         </div>
       </div>
@@ -891,7 +896,7 @@ title: ""
         * Note: Simulations are performed using <b style="color: var(--card-shadow);">NAM 12km</b> meteorological data.
         Dispersion modeling in this app is conducted with <b style="color: var(--card-shadow);">minimal physical
           parameters</b> due to server
-        resource constraints. <b style="color: var(--card-shadow);"> Use results for reference only </b>. For detailed
+        resource constraints. <b style="color: var(--card-shadow);"> Use results for reference only</b>. For detailed
         scientific analysis, please visit the
         official <a href="https://www.ready.noaa.gov/hypub-bin/dispasrc.pl" target="_blank"
           style="color: var(--card-shadow); text-decoration: underline;">NOAA READY Website</a>.

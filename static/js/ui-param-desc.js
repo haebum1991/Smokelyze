@@ -31,6 +31,38 @@ export const DescData = {
                   "<li><b>Topo</b>: <a href='https://opentopomap.org' target='_blank'>OpenTopoMap</a></li>" +
                   "<li><b>Vector</b>: 'Liberty' vector maps by <a href='https://openfreemap.org/' target='_blank'>OpenFreeMap</a></li></ul>" +
                   "<br><i>* Note</i>: If the map suddenly turns into a <b>Grey Screen</b> or fails to load, your device may have exhausted its graphics memory limit. In this case, please immediately switch the map type to <b>Default or Light</b> to restore stability."
+        },
+        {
+            id: "HysplitFormDuration",
+            title: "Duration (hr)",
+            desc: "The total duration (in hours) to run the simulation. This value represents the simulation period for both <b>Backward (BWD)</b> and <b>Forward (FWD)</b> modes."
+        },
+        {
+            id: "HysplitFormHeight",
+            title: "Height (AGL) (m)",
+            desc: "The height above ground level (AGL) in meters. <br><ul>" +
+                "<li>For <b>Trajectory</b>: It defines the receptor site's height of interest.</li>" +
+                "<li>For <b>Dispersion</b>: It represents the source release height from emission sources something like that. In HYSPLIT READY, this is equivalent to the <b>Release Top</b> parameter.</li></ul>"
+        },
+        {
+            id: "HysplitFormRate",
+            title: "Release Rate (kg hr-1)",
+            desc: "Rate of mass emission of the pollutant per hour. <br><i>* Note</i>: In HYSPLIT READY, this is equivalent to the <b>Release Quantity (kg)</b> divided by the <b>Release Duration (hr)</b>."
+        },
+        {
+            id: "HysplitFormSpecDuration",
+            title: "Release Duration (hr)",
+            desc: "The release duration (in hours) that the pollutant is emitted from the source. In HYSPLIT READY, this corresponds to the <b>Release Duration (hr)</b> parameter."
+        },
+        {
+            id: "HysplitFormPdiam",
+            title: "Particle Diameter (μm)",
+            desc: "The aerodynamic diameter of the pollutant particles. <b>This is a key parameter for calculating gravitational settling (dry deposition)</b>."
+        },
+        {
+            id: "HysplitFormDensity",
+            title: "Particle Density (g cm-3)",
+            desc: "The density of the pollutant particles. <b>Used for calculating gravitational settling (dry deposition)</b>."
         }
     ],
     "desc-drawer-only": [

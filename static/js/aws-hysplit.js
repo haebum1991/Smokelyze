@@ -9,6 +9,7 @@ import { updateAuthButton } from "./signin.js";
 import { setHysplitDrawer, appendSwitch } from "./ui-toggles.js";
 import { logUserAction } from "./fb-logging.js";
 import { state as globalState } from "./ui-state.js";
+import { appendGenericHelpIcon } from "./ui-param-desc.js";
 
 // --- Configuration & State ---
 const HYSPLIT_API_URL = "https://tiwczmnrwbmsonuap4r2fzpnsm0fqnyp.lambda-url.us-east-1.on.aws/hysplit";
@@ -211,6 +212,14 @@ export function initHysplit() {
         map.once("styledata", initFlowAnimation);
     }
     console.log("[HYSPLIT] Full Init Complete!");
+    
+    // 5. Parameter help icons
+    appendGenericHelpIcon("HysplitDurationMainGroup", "HysplitFormDuration");
+    appendGenericHelpIcon("HysplitHeightGroup", "HysplitFormHeight");
+    appendGenericHelpIcon("HysplitRateGroup", "HysplitFormRate");
+    appendGenericHelpIcon("HysplitDurationGroup", "HysplitFormSpecDuration");
+    appendGenericHelpIcon("HysplitPdiamGroup", "HysplitFormPdiam");
+    appendGenericHelpIcon("HysplitDensityGroup", "HysplitFormDensity");
 }
 
 /**
@@ -482,7 +491,6 @@ function uiShowHysplitModal(params = null) {
             if (document.getElementById("HysplitFormRate")) document.getElementById("HysplitFormRate").value = params.species_rate || 5;
             if (document.getElementById("HysplitFormPdiam")) document.getElementById("HysplitFormPdiam").value = params.species_pdiam || 2.5;
             if (document.getElementById("HysplitFormDensity")) document.getElementById("HysplitFormDensity").value = params.species_density || 1.2;
-            if (document.getElementById("HysplitFormShape")) document.getElementById("HysplitFormShape").value = params.species_shape_factor || 1.0;
             if (document.getElementById("HysplitFormSpecDuration")) document.getElementById("HysplitFormSpecDuration").value = params.species_duration || 1;
         }
     }
@@ -528,7 +536,6 @@ function checkHysplitDuplicate() {
                 parseFloat(document.getElementById("HysplitFormRate").value) === (b.species_rate || 5) &&
                 parseFloat(document.getElementById("HysplitFormPdiam").value) === (b.species_pdiam || 2.5) &&
                 parseFloat(document.getElementById("HysplitFormDensity").value) === (b.species_density || 1.2) &&
-                parseFloat(document.getElementById("HysplitFormShape").value) === (b.species_shape_factor || 1.0) &&
                 parseInt(document.getElementById("HysplitFormSpecDuration").value) === (b.species_duration || 1)
             );
         }
@@ -619,7 +626,6 @@ async function clickOnSubmitHysplit() {
                 parseFloat(document.getElementById("HysplitFormRate").value) === (b.species_rate || 5) &&
                 parseFloat(document.getElementById("HysplitFormPdiam").value) === (b.species_pdiam || 2.5) &&
                 parseFloat(document.getElementById("HysplitFormDensity").value) === (b.species_density || 1.2) &&
-                parseFloat(document.getElementById("HysplitFormShape").value) === (b.species_shape_factor || 1.0) &&
                 parseInt(document.getElementById("HysplitFormSpecDuration").value) === (b.species_duration || 1)
             );
         }
@@ -674,7 +680,6 @@ async function clickOnSubmitHysplit() {
             baseParams.species_rate = parseFloat(document.getElementById("HysplitFormRate").value);
             baseParams.species_pdiam = parseFloat(document.getElementById("HysplitFormPdiam").value);
             baseParams.species_density = parseFloat(document.getElementById("HysplitFormDensity").value);
-            baseParams.species_shape_factor = parseFloat(document.getElementById("HysplitFormShape").value);
             baseParams.species_duration = parseInt(document.getElementById("HysplitFormSpecDuration").value);
         }
 
