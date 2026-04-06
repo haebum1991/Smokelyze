@@ -246,7 +246,7 @@ export function initMapAnimate() {
 
                 if (isCancelled) throw new Error("Cancelled_by_user");
 
-                const dataUrl = await getMapCaptureDataUrl();
+                const dataUrl = await getMapCaptureDataUrl({ excludeTooltip: true });
                 if (dataUrl) {
                     const img = new Image();
                     img.src = dataUrl;

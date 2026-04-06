@@ -7,7 +7,7 @@ import { toggleSpinner } from "./loader-ui.js";
  * Shared capture process for both manual download and AI analysis
  * Returns the final combined canvas with all original styling
  */
-async function captureMapProcess() {
+async function captureMapProcess(options = {}) {
     if (!map) return null;
 
     return new Promise((resolve, reject) => {
@@ -31,7 +31,7 @@ async function captureMapProcess() {
                             document.querySelector(".toolbar-date"),
                             document.getElementById("LegendDrawer"),
                             ...Array.from(document.querySelectorAll(".mapboxgl-marker, .maplibregl-marker")),
-                            document.getElementById("MapTooltip")
+                            options.excludeTooltip ? null : document.getElementById("MapTooltip")
                         ].filter(Boolean);
 
                         for (const el of overlays) {
@@ -131,9 +131,9 @@ function drawBrandingAndLicense(ctx, canvas) {
     ctx.restore();
 }
 
-export async function getMapCaptureDataUrl() {
+export async function getMapCaptureDataUrl(options = {}) {
     try {
-        const canvas = await captureMapProcess();
+        const canvas = await captureMapProcess(options);
         return canvas ? canvas.toDataURL("image/png") : null;
     } catch (e) {
         console.error("AI Capture Error:", e);
