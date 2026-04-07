@@ -95,7 +95,7 @@ export const DescData = {
         {
             id: "HysplitSim",
             title: "HYSPLIT Simulation",
-            desc: "<b style='color: var(--card-shadow);'>HYSPLIT (Hybrid Single-Particle Lagrangian Integrated Trajectory)</b> is a model for computing simple air mass trajectories, as well as complex transport, and dispersion. <br><br>" +
+            desc: "<b style='color: var(--card-shadow);'>HYSPLIT (Hybrid Single-Particle Lagrangian Integrated Trajectory)</b> is a model for computing air mass trajectories, as well as complex transport, and dispersion. <br><br>" +
                 "In our application, you can execute <b>Forward/Backward Trajectories</b> and <b>Dispersion Simulations</b> based on NAM12 meteorological data (for values outside the specified range, GDAS1 is used). " +
                 "<ul><li><b>Trajectory</b>: Tracks the movement of an air mass over time. Useful for finding the source or destination of a smoke plume.</li>" +
                 "<li><b>Dispersion</b>: Simulates the spread and concentration of pollutants over time, including physical effects like <b>Gravitational Settling</b>.</li></ul>" +
@@ -344,14 +344,14 @@ export const DescData = {
         { id: "resids", title: "Residual", desc: "The difference between observed and predicted MDA8 (Obs MDA8 - Pred MDA8) from GAM" },
         { id: "resids-quant", title: "Quant residual", desc: "Estimated residual quantile based on non-smoke days" },
         { id: "pm25-obs", title: "Obs PM2.5", desc: "Daily average PM2.5 concentration observed at AQS monitoring sites" },
-        { id: "pm25-quant", title: "Quant PM2.5", desc: "Estimated PM2.5 quantile based on HMS = 0 (non-overhead smoke plume)" },
+        { id: "pm25-quant", title: "Quant PM2.5", desc: "Estimated PM2.5 quantile based on HMS = 0 (non-overhead smoke plume cases) by month" },
         { id: "pm25-crit", title: "PM2.5-crit", desc: "PM2.5-criteria using Med + 1.0 MAD method" },
         { id: "tmax", title: "TMAX", desc: "Daily maximum temperature (K) from MERRA-2" },
         { id: "srad", title: "SRAD", desc: "Daily mean surface shortwave solar flux (W m⁻²) from MERRA-2" },
         { id: "mda8-pred-edm", title: "Pred MDA8 (EDM)", desc: "Predicted MDA8 from the Generalized Additive Model (GAM) (EDM version)" },
         { id: "smo-edm", title: "SMO (EDM)", desc: "Smoke contribution to O3 (or Smoke O3, SMO), SMO is equal to Residual on smoke days (NA for non-smoke day) (EDM version)" },
         { id: "resids-edm", title: "Residual (EDM)", desc: "The difference between observed and predicted MDA8 (Obs MDA8 - Pred MDA8) from GAM (EDM version)" },
-        { id: "resids-quant-edm", title: "Quant residual (EDM)", desc: "Estimated PM2.5 quantile based on HMS = 0 (non-overhead smoke plume) (EDM version)" },
+        { id: "resids-quant-edm", title: "Quant residual (EDM)", desc: "Estimated residual quantile based on non-smoke days (EDM version)" },
         { id: "smokeday", title: "Smoke day (SMD)", desc: "Identified smoke day using HMS and PM2.5-criteria" },
         { id: "smokeday-975", title: "SMO > 97.5th", desc: "[Smoke day] & [SMO > 97.5th percentile residual]" },
         { id: "smokeday-975-edm", title: "SMO > 97.5th (EDM)", desc: "[Smoke day] & [SMO > 97.5th percentile residual] (EDM version)" },
@@ -373,7 +373,7 @@ export const DescData = {
         { id: "resids", title: "Residual", desc: "The difference between observed and predicted MDA8 (Obs MDA8 - Pred MDA8) from GAM" },
         { id: "resids-quant", title: "Quant residual", desc: "Estimated residual quantile based on non-smoke days" },
         { id: "pm25-obs", title: "Obs PM2.5", desc: "Daily average PM2.5 concentration observed at AQS monitoring sites" },
-        { id: "pm25-quant", title: "Quant PM2.5", desc: "Estimated PM2.5 quantile based on HMS = 0 (non-overhead smoke plume)" },
+        { id: "pm25-quant", title: "Quant PM2.5", desc: "Estimated PM2.5 quantile based on HMS = 0 (non-overhead smoke plume cases) by month" },
         { id: "pm25-crit", title: "PM2.5-crit", desc: "PM2.5-criteria using Med + 1.0 MAD method" },
         { id: "tmax", title: "TMAX", desc: "Daily maximum temperature (°C) from IEM-ASOS" },
         { id: "srad", title: "SRAD", desc: "Daily mean surface shortwave solar flux (W m⁻²) from MERRA-2" },
@@ -390,7 +390,7 @@ export const DescData = {
                 "<em>GeoHealth</em>, Under review, 2025.<br>"
         },
         { id: "pm25-obs", title: "Obs PM2.5", desc: "Daily average PM2.5 concentration observed at AQS monitoring sites" },
-        { id: "pm25-quant", title: "Quant PM2.5", desc: "Estimated PM2.5 quantile based on HMS = 0 (non-overhead smoke plume)" },
+        { id: "pm25-quant", title: "Quant PM2.5", desc: "Estimated PM2.5 quantile based on HMS = 0 (non-overhead smoke plume cases) by month" },
         { id: "pm25-crit-m0p5m", title: "PM2.5-crit m0p5m", desc: "PM2.5-criteria using Med + 0.5 MAD method (m0p5m)" },
         { id: "pm25-crit-m1p0m", title: "PM2.5-crit m1p0m", desc: "PM2.5-criteria using Med + 1.0 MAD method (m1p0m)" },
         { id: "pm25-smoke-m0p5m", title: "Smoke PM2.5 m0p5m", desc: "Smoke contribution to PM2.5 (Smoke PM2.5) (PM2.5 - PM2.5-criteria (m0p5m))" },
