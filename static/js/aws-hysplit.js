@@ -176,6 +176,13 @@ export function initHysplit() {
 
         // I. Download CSV
         const csvBtn = e.target.closest(".export-btn-csv");
+        const animBtn = e.target.closest(".hysplit-item-anim");
+
+        if (animBtn) {
+            const runId = parseInt(animBtn.dataset.runId);
+            showDispersionAnimation(runId);
+            return;
+        }
 
         if (csvBtn) {
             const runId = parseInt(csvBtn.dataset.runId);
@@ -226,6 +233,8 @@ export function initHysplit() {
     appendGenericHelpIcon("DivHysplitReleaseDuration", "InputHysplitReleaseDuration");
     appendGenericHelpIcon("DivHysplitPdiam", "InputHysplitPdiam");
     appendGenericHelpIcon("DivHysplitPdensity", "InputHysplitPdensity");
+    
+    initDispersionAnimator();
 }
 
 /**
@@ -774,8 +783,15 @@ function updateHysplitDrawerList() {
         const p = item.params;
         const visibleCls = item.visible ? "active" : "";
         const eyeIcon = item.visible
-            ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
-            : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+            ? `<svg width="18" height="18"><use xlink:href="#icon-eye-open" /></svg>`
+            : `<svg width="18" height="18"><use xlink:href="#icon-eye-closed" /></svg>`;
+
+        const isDispersion = (p.run_type === "dispersion");
+        const animBtn = isDispersion
+            ? `<button class="hysplit-item-anim ui-btn-close" data-run-id="${item.runId}" title="See Animation">
+                 <svg width="18" height="18"><use xlink:href="#icon-hysplit-anim" /></svg>
+               </button>`
+            : "";
 
         return `
             <div class="Hysplit-item" data-run-id="${item.runId}" style="border-left-color: ${utils.ESML(item.color)}; border-left-width: 5px;">
@@ -784,8 +800,9 @@ function updateHysplitDrawerList() {
                         ${utils.ESML(p.date)} ${utils.ESML(p.time)}:00 UTC
                     </div>
                     <div style="display: flex; gap: 0.5rem;">
+                        ${animBtn}
                         <button class="hysplit-item-focus ui-btn-close" data-run-id="${item.runId}" title="Receptor Location">
-                            <svg width="20" height="20">
+                            <svg width="18" height="18">
                                 <use xlink:href="#icon-location" />
                             </svg>
                         </button>
@@ -793,7 +810,7 @@ function updateHysplitDrawerList() {
                             ${eyeIcon}
                         </button>
                         <button class="hysplit-item-remove ui-btn-close" data-run-id="${item.runId}">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            <svg width="18" height="18"><use xlink:href="#icon-close" /></svg>
                         </button>
                     </div>
                 </div>
@@ -1385,5 +1402,229 @@ export function toggleFlowAnimation(show) {
     if (map.getLayer("trajflow-layer-glow")) map.setLayoutProperty("trajflow-layer-glow", "visibility", visibility);
     if (map.getLayer("trajflow-layer-core")) map.setLayoutProperty("trajflow-layer-core", "visibility", visibility);
     if (show && state._startFlowAnim) state._startFlowAnim();
+}
+
+// --- Dispersion Animation Controller ---
+let dispersionAnimState = {
+    isRunning: false,
+    intervalId: null,
+    currentStep: 0,
+    steps: [], // Array of unique date2 strings
+    runId: null,
+    data: null
+};
+
+function initDispersionAnimator() {
+    const playBtn = document.getElementById("DispersionAnimPlayBtn");
+    const slider = document.getElementById("DispersionAnimSlider");
+    const closeBtn = document.getElementById("DispersionAnimClose");
+    
+    if (playBtn) playBtn.addEventListener("click", toggleDispersionAnimPlayback);
+    if (slider) slider.addEventListener("input", (e) => {
+        stopDispersionAnimPlayback();
+        updateDispersionFrame(parseInt(e.target.value));
+    });
+    if (closeBtn) closeBtn.addEventListener("click", hideDispersionAnimator);
+
+    makeDraggable(document.getElementById("DispersionAnimModal"), document.getElementById("DispersionAnimHeader"));
+}
+
+function showDispersionAnimation(runId) {
+    const item = state.history.find(h => h.runId === runId);
+    if (!item || !item.data) return;
+
+    dispersionAnimState.runId = runId;
+    dispersionAnimState.data = item.data;
+    
+    // Extract unique time steps (date2)
+    const uniqueSteps = [...new Set(item.data.map(pt => pt.date2))].sort((a, b) => new Date(a) - new Date(b));
+    dispersionAnimState.steps = uniqueSteps;
+    dispersionAnimState.currentStep = 0;
+
+    const modal = document.getElementById("DispersionAnimModal");
+    const slider = document.getElementById("DispersionAnimSlider");
+    if (modal) {
+        modal.style.display = "flex";
+        // Apply color indicator (matching history item style)
+        modal.style.borderLeft = `5px solid ${utils.ESML(item.color)}`;
+    }
+    const meta = document.getElementById("DispersionAnimMeta");
+    const massEl = document.getElementById("DispersionAnimMassDisplay");
+    if (massEl) massEl.innerHTML = "";
+    if (meta) {
+        const p = item.params;
+        const dirLabel = p.direction === "backward" ? "Backward" : "Forward";
+        meta.innerHTML = `<span style="color: var(--text-main);">Base:</span> <span style="color: var(--card-shadow);">${utils.ESML(p.date)} ${utils.ESML(p.time)}:00 UTC</span><br> 
+                          <span style="color: var(--text-main);">Dir:</span> <span style="color: var(--card-shadow);">${utils.ESML(dirLabel)}</span>`;
+    }
+    if (slider) {
+        slider.max = uniqueSteps.length - 1;
+        slider.value = 0;
+    }
+
+    updateDispersionFrame(0);
+}
+
+function toggleDispersionAnimPlayback() {
+    if (dispersionAnimState.isRunning) {
+        stopDispersionAnimPlayback();
+    } else {
+        startDispersionAnimPlayback();
+    }
+}
+
+function startDispersionAnimPlayback() {
+    if (dispersionAnimState.isRunning) return;
+    dispersionAnimState.isRunning = true;
+    updateDispersionPlayIcon(true);
+
+    dispersionAnimState.intervalId = setInterval(() => {
+        let next = dispersionAnimState.currentStep + 1;
+        if (next >= dispersionAnimState.steps.length) {
+            next = 0; // Loop back
+        }
+        updateDispersionFrame(next);
+    }, 200);
+}
+
+function stopDispersionAnimPlayback() {
+    if (!dispersionAnimState.isRunning) return;
+    dispersionAnimState.isRunning = false;
+    updateDispersionPlayIcon(false);
+    if (dispersionAnimState.intervalId) {
+        clearInterval(dispersionAnimState.intervalId);
+        dispersionAnimState.intervalId = null;
+    }
+}
+
+function updateDispersionPlayIcon(playing) {
+    const icon = document.getElementById("DispersionAnimPlayIcon");
+    if (!icon) return;
+    if (playing) {
+        // Pause icon path
+        icon.setAttribute("d", "M6 19h4V5H6v14zm8-14v14h4V5h-4z");
+    } else {
+        // Play icon path
+        icon.setAttribute("d", "M8 5v14l11-7z");
+    }
+}
+
+function hideDispersionAnimator() {
+    stopDispersionAnimPlayback();
+    const modal = document.getElementById("DispersionAnimModal");
+    if (modal) modal.style.display = "none";
+    
+    // Restore full data view on closing
+    if (dispersionAnimState.runId) {
+        const item = state.history.find(h => h.runId === dispersionAnimState.runId);
+        if (item && item.visible) {
+            const source = map.getSource(`hysplit-src-traj-${item.runId}`);
+            if (source) {
+                const features = item.data.map(pt => ({
+                    type: "Feature",
+                    geometry: { type: "Point", coordinates: [pt.lon, pt.lat] },
+                    properties: { ...pt }
+                }));
+                source.setData({ type: "FeatureCollection", features });
+            }
+        }
+    }
+}
+
+function updateDispersionFrame(index) {
+    dispersionAnimState.currentStep = index;
+    const timeStr = dispersionAnimState.steps[index];
+    const data = dispersionAnimState.data;
+
+    // Update UI
+    const timeDisplay = document.getElementById("DispersionAnimTimeDisplay");
+    const stepDisplay = document.getElementById("DispersionAnimStepDisplay");
+    const slider = document.getElementById("DispersionAnimSlider");
+    const massEl = document.getElementById("DispersionAnimMassDisplay");
+    const meta = document.getElementById("DispersionAnimMeta");
+
+    if (stepDisplay) stepDisplay.innerText = `Step: ${index + 1} / ${dispersionAnimState.steps.length}`;
+    if (timeDisplay) {
+        timeDisplay.innerHTML = `<span style="color: var(--text-main);">Current:</span> <span style="color: var(--card-shadow);">${utils.ESML(timeStr)} UTC</span>`;
+    }
+    if (slider) slider.value = index;
+
+    // Update Map Layer for this run
+    const runId = dispersionAnimState.runId;
+    const source = map.getSource(`hysplit-src-traj-${runId}`);
+    if (source) {
+        const filtered = data.filter(pt => pt.date2 === timeStr);
+        
+        // Calculate total for the current step (Only trust q_kg for Total Mass)
+        let totalValue = 0;
+        let hasQkg = false;
+        if (filtered.length > 0 && filtered[0].q_kg !== undefined) {
+            hasQkg = true;
+            totalValue = filtered.reduce((acc, pt) => acc + (parseFloat(pt.q_kg) || 0), 0);
+        }
+
+        if (massEl) {
+            if (hasQkg) {
+                const expStr = totalValue.toExponential(3);
+                const [mantissa, exponent] = expStr.split("e");
+                const formattedExponent = exponent.replace("+", "");
+                const formattedMass = `${utils.ESML(mantissa)} &times; 10<sup>${utils.ESML(formattedExponent)}</sup>`;
+                massEl.innerHTML = `<span style="color: var(--text-main);">Total Mass:</span> <b style="color: var(--card-shadow);">${formattedMass}</b> kg`;
+                massEl.style.display = "block";
+            } else {
+                massEl.style.display = "none";
+            }
+        }
+
+        if (meta) {
+            const item = state.history.find(h => h.runId === runId);
+            const p = item.params;
+            const dirLabel = p.direction === "backward" ? "Backward" : "Forward";
+            meta.innerHTML = `<span style="color: var(--text-main);">Base:</span> <span style="color: var(--card-shadow);">${utils.ESML(p.date)} ${utils.ESML(p.time)}:00 UTC</span><br>
+                              <span style="color: var(--text-main);">Dir:</span> <span style="color: var(--card-shadow);">${utils.ESML(dirLabel)}</span>`;
+        }
+
+        const features = filtered.map(pt => ({
+            type: "Feature",
+            geometry: { type: "Point", coordinates: [pt.lon, pt.lat] },
+            properties: { ...pt }
+        }));
+        source.setData({ type: "FeatureCollection", features });
+    }
+}
+
+/**
+ * Utility for making elements draggable (Floating Modals)
+ */
+function makeDraggable(el, handle) {
+    if (!el || !handle) return;
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    
+    handle.onmousedown = dragMouseDown;
+
+    function dragMouseDown(e) {
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        el.style.top = (el.offsetTop - pos2) + "px";
+        el.style.left = (el.offsetLeft - pos1) + "px";
+        el.style.right = "auto"; // Unlock from fixed right
+        el.style.bottom = "auto";
+    }
+
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
 }
 

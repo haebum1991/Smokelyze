@@ -1039,3 +1039,44 @@ title: ""
   </div>
 </div>
 
+<!-- Floating Dispersion Animator Modal -->
+<div id="DispersionAnimModal" class="dispersion-anim-modal" style="display: none;">
+  <div class="dispersion-anim-header" id="DispersionAnimHeader">
+    <div style="display: flex; align-items: center; gap: 0.8rem;">
+      <svg width="20" height="20" style="color: var(--text-main);">
+        <use xlink:href="#icon-hysplit" />
+      </svg>
+      <span class="dispersion-anim-title">Dispersion Animator</span>
+    </div>
+    <div class="dispersion-anim-header-handle">
+      <svg width="20" height="20">
+        <use xlink:href="#icon-drag-handle" />
+      </svg>
+    </div>
+    <button id="DispersionAnimClose" class="ui-btn-close">
+      <svg width="20" height="20">
+        <use xlink:href="#icon-close" />
+      </svg>
+    </button>
+  </div>
+  <div class="dispersion-anim-body">
+    <div class="dispersion-anim-info">
+      <div id="DispersionAnimStepDisplay" style="font-size: 1.4rem; color: var(--text-main); margin-bottom: 0.2rem;">Step: 0 / 0</div>
+      <div id="DispersionAnimTimeDisplay" style="font-size: 1.6rem; font-weight: bold; color: var(--text-heading);">
+        Current: ...
+      </div>
+      <div id="DispersionAnimMassDisplay" style="font-size: 1.4rem; margin-top: 0.2rem;"></div>
+      <div id="DispersionAnimMeta" style="font-size: 1.3rem; margin-top: 0.4rem; padding-top: 0.4rem; border-top: 0.1rem solid var(--border-main);"></div>
+    </div>
+    <div class="dispersion-anim-controls">
+      <button id="DispersionAnimPlayBtn" class="anim-control-btn" title="Play/Pause">
+        <svg width="24" height="24" fill="currentColor">
+          <path id="DispersionAnimPlayIcon" d="M8 5v14l11-7z" />
+        </svg>
+      </button>
+      <input type="range" id="DispersionAnimSlider" min="0" max="0" value="0" step="1"
+        style="flex: 1; cursor: pointer;">
+    </div>
+  </div>
+</div>
+
