@@ -1507,8 +1507,30 @@ function initDispersionDrawer() {
 }
 
 function showDispersionDrawer(runId) {
+
+    // If another run was already open in the drawer, clean up its map state first
+    if (DispersionDrawerState.runId && DispersionDrawerState.runId !== runId) {
+        hideDispersionDrawer();
+    }
+    
     const item = state.history.find(h => h.runId === runId);
     if (!item || !item.data) return;
+    
+    // E.1. Activate visibility if it is currently hidden
+    if (!item.visible) {
+        toggleTrajectoryVisibility(runId);
+    }
+
+    // Receptor location (hour.inc = 0 is usually data[0])
+    if (utils.highlightLocation) {
+        const pt = item.data[0];
+        const props = {
+            ...pt,
+            color: item.color,
+            run_type: "dispersion"
+        };
+        utils.highlightLocation([pt.lon, pt.lat], props, "hysplit", 8);
+    }
 
     DispersionDrawerState.runId = runId;
     DispersionDrawerState.data = item.data;
