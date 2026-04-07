@@ -2022,13 +2022,14 @@ body.FigurePage-drawer-open .Hysplit-drawer.open {
 }
 
 
-/* ================ Ai Chat setting ================ */
+/* ================ AiChat/Dispersion setting ================ */
 #AiChatToggle {
   top: calc(var(--header-height-total) + var(--toolbar-date-height));
   right: 1rem;
 }
 
-#AiChatDrawer {
+#AiChatDrawer,
+#DispersionDrawer {
   z-index: calc(var(--z-highest) - 1);
   transition: opacity 0.3s ease, visibility 0.3s ease;
   transform: none;
@@ -2036,20 +2037,23 @@ body.FigurePage-drawer-open .Hysplit-drawer.open {
   right: 10rem;
 }
 
-#AiChatDrawer.collapsed {
+#AiChatDrawer.collapsed,
+#DispersionDrawer.collapsed {
   opacity: 0;
   visibility: hidden;
   transform: none;
   pointer-events: none;
 }
 
-#AiChatDrawer:not(.collapsed) {
+#AiChatDrawer:not(.collapsed),
+#DispersionDrawer:not(.collapsed) {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
 }
 
-#AiChatDrawer .accordion-header {
+#AiChatDrawer .accordion-header,
+#DispersionDrawer .accordion-header {
   cursor: move;
   user-select: none;
   display: flex;
@@ -2057,12 +2061,18 @@ body.FigurePage-drawer-open .Hysplit-drawer.open {
   justify-content: space-between;
 }
 
-.ai-chat-draggable-header .accordion-title {
+#AiChatHeaderDraggable .accordion-title,
+#DispersionDrawerHeaderDraggable .accordion-title {
   flex: 1;
   white-space: nowrap;
 }
 
-.ai-chat-header-handle {
+#AiChatHeaderDraggable:hover .ui-handle-draggable,
+#DispersionDrawerHeaderDraggable:hover .ui-handle-draggable {
+  opacity: 0.8;
+}
+
+.ui-handle-draggable {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -2070,13 +2080,57 @@ body.FigurePage-drawer-open .Hysplit-drawer.open {
   opacity: 0.4;
   transition: opacity 0.3s;
   padding: 0 1rem;
+  cursor: grab;
 }
 
-.ai-chat-draggable-header:hover .ai-chat-header-handle {
-  opacity: 0.8;
+.ui-handle-draggable:active {
+  cursor: grabbing;
 }
 
-.ai-chat-header-btns {
+/* Ai Chat Specifics */
+#AiChatList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+#AiChatInputContainer {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-top: 0.1rem solid var(--card-shadow);
+  background: var(--color-bg);
+  border-radius: 0 0 0 var(--border-radius-0p8rem);
+}
+
+#AiChatInput {
+  flex: 1;
+  resize: none;
+  border-radius: var(--border-radius-0p8rem);
+  border: 0.1rem solid var(--text-soft);
+  padding: 0.5rem;
+  font-family: inherit;
+  font-size: 1.4rem;
+  background: var(--color-bg);
+  color: var(--text-main);
+}
+
+#AiChatSubmitBtn {
+  background: var(--map-accordion-gradient-start);
+  color: var(--text-strong);
+  border: none;
+  border-radius: var(--border-radius-0p8rem);
+  padding: 0 1rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+  box-shadow: 0.1rem 0.1rem 0.2rem var(--text-soft);
+}
+
+#AiChatBtnWrapper {
   flex: 1;
   display: flex;
   align-items: center;
@@ -2084,17 +2138,28 @@ body.FigurePage-drawer-open .Hysplit-drawer.open {
   gap: 2rem;
 }
 
-#AiChatDrawer .accordion {
+#AiChatDrawer .accordion,
+#DispersionDrawer .accordion {
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.3);
   border-radius: var(--border-radius-0p8rem);
   position: relative;
   resize: both;
   overflow: hidden;
+  max-height: calc(100vh - var(--header-height-total) - var(--footer-height));
+}
+
+#AiChatDrawer .accordion {
   width: 40rem;
   height: 60rem;
   min-width: 30rem;
   min-height: 30rem;
-  max-height: calc(100vh - var(--header-height-total) - var(--footer-height));
+}
+
+#DispersionDrawer .accordion {
+  height: max-content;
+  min-height: max-content;
 }
 
 #AiChatDrawer .accordion::after {
@@ -2238,13 +2303,82 @@ body.FigurePage-drawer-open .Hysplit-drawer.open {
   font-weight: bold;
 }
 
+
+/* ================ Dispersion Animator (Shared Drawer Sub-elements) ================ */
+#DispersionDrawerBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.2rem;
+  overflow-y: auto;
+}
+
+#DispersionDrawerControls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+#DispersionDrawerPlayBtn {
+  background: var(--map-accordion-gradient-start);
+  color: var(--color-white);
+  border: none;
+  border-radius: 50%;
+  width: 3.6rem;
+  height: 3.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+#DispersionDrawerPlayBtn:hover {
+  transform: scale(1.1);
+}
+
+#DispersionDrawerPlayBtn:active {
+  transform: scale(0.95);
+}
+
+#DispersionDrawerStepDisplay {
+  font-size: 1.4rem;
+  color: var(--text-main);
+  margin-bottom: 0.2rem;
+}
+
+#DispersionDrawerTimeDisplay {
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: var(--text-heading);
+}
+
+#DispersionDrawerMassDisplay {
+  font-size: 1.4rem;
+  margin-top: 0.2rem;
+}
+
+#DispersionDrawerMeta {
+  font-size: 1.3rem; 
+  margin-top: 0.4rem; 
+  padding-top: 0.4rem; 
+  border-top: 0.1rem solid var(--border-main);
+}
+
+#DispersionDrawerSlider {
+  flex: 1;
+  cursor: pointer;
+}
+
 @media (max-width: 1024px) {
 
   #AiChatToggle {
     top: calc(var(--header-height-total) + var(--toolbar-date-height) + 7rem);
   }
 
-  #AiChatDrawer {
+  #AiChatDrawer,
+  #DispersionDrawer {
     top: auto !important;
     bottom: 0 !important;
     right: 0 !important;
@@ -2255,15 +2389,18 @@ body.FigurePage-drawer-open .Hysplit-drawer.open {
     visibility: visible !important;
   }
 
-  #AiChatDrawer.collapsed {
+  #AiChatDrawer.collapsed,
+  #DispersionDrawer.collapsed {
     transform: translateY(100%);
   }
 
-  #AiChatDrawer:not(.collapsed) {
+  #AiChatDrawer:not(.collapsed),
+  #DispersionDrawer:not(.collapsed) {
     transform: translateY(0);
   }
 
-  #AiChatDrawer .accordion-header {
+  #AiChatDrawer .accordion-header,
+  #DispersionDrawer .accordion-header {
     cursor: default;
   }
 
@@ -2271,12 +2408,18 @@ body.FigurePage-drawer-open .Hysplit-drawer.open {
     resize: none;
     width: 100%;
     height: 70vh;
-    /* Bottom to middle */
     border-radius: var(--border-radius-0p8rem) var(--border-radius-0p8rem) 0 0;
     box-shadow: 0 -0.5rem 2rem rgba(0, 0, 0, 0.2);
   }
 
-  .ai-chat-header-handle {
+  #DispersionDrawer .accordion {
+    resize: none;
+    width: 100%;
+    border-radius: var(--border-radius-0p8rem) var(--border-radius-0p8rem) 0 0;
+    box-shadow: 0 -0.5rem 2rem rgba(0, 0, 0, 0.2);
+  }
+
+  .ui-handle-draggable {
     display: none;
   }
 }

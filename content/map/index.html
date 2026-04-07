@@ -450,17 +450,17 @@ title: ""
 </div>
 
 <div class="accordion-page collapsed" id="AiChatDrawer">
-  <div class="accordion" style="display: flex; flex-direction: column;">
-    <div class="accordion-header ai-chat-draggable-header">
+  <div class="accordion">
+    <div class="accordion-header" id="AiChatHeaderDraggable">
       <span class="accordion-title">
         Ai Chat (Beta)
       </span>
-      <div class="ai-chat-header-handle">
+      <div class="ui-handle-draggable">
         <svg width="20" height="20">
           <use xlink:href="#icon-drag-handle" />
         </svg>
       </div>
-      <div class="ai-chat-header-btns">
+      <div id="AiChatBtnWrapper">
         <button id="AiChatClearBtn" class="ui-btn-close" title="Clear Chat">
           Clear
         </button>
@@ -471,16 +471,12 @@ title: ""
         </button>
       </div>
     </div>
-    <div id="AiChatList"
-      style="flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+    <div id="AiChatList">
       <!-- Chat messages injected via JS -->
     </div>
-    <div
-      style="display: flex; gap: 0.5rem; padding: 1rem; border-top: 0.1rem solid var(--card-shadow); background: var(--color-bg); border-radius: 0 0 0 var(--border-radius-0p8rem);">
-      <textarea id="AiChatInput" placeholder="Ask me anything!" rows="2"
-        style="flex: 1; resize: none; border-radius: var(--border-radius-0p8rem); border: 0.1rem solid var(--text-soft); padding: 0.5rem; font-family: inherit; font-size: 1.4rem; background: var(--color-bg); color: var(--text-main);"></textarea>
-      <button id="AiChatSubmitBtn"
-        style="background: var(--map-accordion-gradient-start); color: var(--text-strong); border: none; border-radius: var(--border-radius-0p8rem); padding: 0 1rem; cursor: pointer; font-weight: bold; transition: background 0.3s; box-shadow: 0.1rem 0.1rem 0.2rem var(--text-soft);">Send</button>
+    <div id="AiChatInputContainer">
+      <textarea id="AiChatInput" placeholder="Ask me anything!" rows="2"></textarea>
+      <button id="AiChatSubmitBtn">Send</button>
     </div>
   </div>
 </div>
@@ -1040,43 +1036,43 @@ title: ""
 </div>
 
 <!-- Floating Dispersion Animator Modal -->
-<div id="DispersionAnimModal" class="dispersion-anim-modal" style="display: none;">
-  <div class="dispersion-anim-header" id="DispersionAnimHeader">
-    <div style="display: flex; align-items: center; gap: 0.8rem;">
-      <svg width="20" height="20" style="color: var(--text-main);">
-        <use xlink:href="#icon-hysplit" />
-      </svg>
-      <span class="dispersion-anim-title">Dispersion Animator</span>
-    </div>
-    <div class="dispersion-anim-header-handle">
-      <svg width="20" height="20">
-        <use xlink:href="#icon-drag-handle" />
-      </svg>
-    </div>
-    <button id="DispersionAnimClose" class="ui-btn-close">
-      <svg width="20" height="20">
-        <use xlink:href="#icon-close" />
-      </svg>
-    </button>
-  </div>
-  <div class="dispersion-anim-body">
-    <div class="dispersion-anim-info">
-      <div id="DispersionAnimStepDisplay" style="font-size: 1.4rem; color: var(--text-main); margin-bottom: 0.2rem;">Step: 0 / 0</div>
-      <div id="DispersionAnimTimeDisplay" style="font-size: 1.6rem; font-weight: bold; color: var(--text-heading);">
-        Current: ...
+<div class="accordion-page collapsed" id="DispersionDrawer">
+  <div class="accordion">
+    <div class="accordion-header" id="DispersionDrawerHeaderDraggable">
+      <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <svg width="20" height="20" style="color: var(--text-main);">
+          <use xlink:href="#icon-hysplit" />
+        </svg>
+        <span class="accordion-title">Dispersion Animator</span>
       </div>
-      <div id="DispersionAnimMassDisplay" style="font-size: 1.4rem; margin-top: 0.2rem;"></div>
-      <div id="DispersionAnimMeta" style="font-size: 1.3rem; margin-top: 0.4rem; padding-top: 0.4rem; border-top: 0.1rem solid var(--border-main);"></div>
-    </div>
-    <div class="dispersion-anim-controls">
-      <button id="DispersionAnimPlayBtn" class="anim-control-btn" title="Play/Pause">
-        <svg width="24" height="24" fill="currentColor">
-          <path id="DispersionAnimPlayIcon" d="M8 5v14l11-7z" />
+      <div class="ui-handle-draggable">
+        <svg width="20" height="20">
+          <use xlink:href="#icon-drag-handle" />
+        </svg>
+      </div>
+      <button id="DispersionDrawerClose" class="ui-btn-close">
+        <svg width="20" height="20">
+          <use xlink:href="#icon-close" />
         </svg>
       </button>
-      <input type="range" id="DispersionAnimSlider" min="0" max="0" value="0" step="1"
-        style="flex: 1; cursor: pointer;">
     </div>
+    <div id="DispersionDrawerBody">
+      <div id="DispersionDrawerInfo">
+        <div id="DispersionDrawerStepDisplay">Step: 0 / 0</div>
+        <div id="DispersionDrawerTimeDisplay">Current: ...</div>
+        <div id="DispersionDrawerMassDisplay"></div>
+        <div id="DispersionDrawerMeta"></div>
+      </div>
+      <div id="DispersionDrawerControls">
+        <button id="DispersionDrawerPlayBtn" title="Play/Pause">
+          <svg width="24" height="24" fill="currentColor">
+            <path id="DispersionDrawerPlayIcon" d="M8 5v14l11-7z" />
+          </svg>
+        </button>
+        <input type="range" id="DispersionDrawerSlider" min="0" max="0" value="0" step="1">
+      </div>
+    </div>
+    <br>
   </div>
 </div>
 

@@ -92,7 +92,7 @@ export function initAiChat() {
     });
 
     // Make it draggable
-    makeDraggable(aiDrawer, aiDrawer.querySelector(".accordion-header"));
+    makeDraggable(aiDrawer, document.getElementById("AiChatHeaderDraggable"));
     
     // Add Swipe to close for mobile
     addSwipeClose(aiDrawer, {

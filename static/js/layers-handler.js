@@ -193,11 +193,18 @@ export function applyLayerToggles() {
         .map(cb => cb.id.replace("layer-", ""));
     
     // Check if ANY NEW actual layer (excluding hysplit) was added since last time
-    // This allows us to auto-open the legend ONLY when a new checkbox is clicked,
-    // and NOT when hysplit trajectories are toggled from the drawer.
-    const newLayerAdded = currentCheckedIds.some(id => 
+    // If a layer is newly checked, ALWAYS ensure its legend drawer is expanded.
+    const newlyAddedIds = currentCheckedIds.filter(id => 
         id !== "hysplit" && !_cachedActiveLayerIds.includes(`layer-${id}`)
     );
+    
+    newlyAddedIds.forEach(id => {
+        if (closedLegendIds.has(id)) {
+            closedLegendIds.delete(id);
+        }
+    });
+
+    const newLayerAdded = newlyAddedIds.length > 0;
     
     // [New] Participatory pseudo-layers (managed externally)
     if (window.isHysplitVisible?.()) currentCheckedIds.push("hysplit");

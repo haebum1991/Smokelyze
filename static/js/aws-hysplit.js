@@ -6,7 +6,7 @@ import * as utils from "./utils.js";
 import { showErrorToast, showTaskNotification } from "./loader-ui.js"; // CRITICAL: Use loader-ui to break circular loop
 import { generatePopupHTML } from "./layers-tooltip.js";
 import { updateAuthButton } from "./signin.js";
-import { setHysplitDrawer, appendSwitch } from "./ui-toggles.js";
+import { setHysplitDrawer, addSwipeClose } from "./ui-toggles.js";
 import { logUserAction } from "./fb-logging.js";
 import { state as globalState } from "./ui-state.js";
 import { appendGenericHelpIcon } from "./ui-param-desc.js";
@@ -186,7 +186,7 @@ export function initHysplit() {
 
         if (animBtn) {
             const runId = parseInt(animBtn.dataset.runId);
-            showDispersionAnimation(runId);
+            showDispersionDrawer(runId);
             return;
         }
 
@@ -240,7 +240,7 @@ export function initHysplit() {
     appendGenericHelpIcon("DivHysplitPdiam", "InputHysplitPdiam");
     appendGenericHelpIcon("DivHysplitPdensity", "InputHysplitPdensity");
     
-    initDispersionAnimator();
+    initDispersionDrawer();
 }
 
 /**
@@ -858,9 +858,18 @@ function setHysplitVisibility(runId, visible) {
         const testLayer = `hysplit-layer-point-${item.runId}`;
 
         if (visible && !map.getLayer(testLayer)) {
-            drawTrajectoryLayers(item.runId, item.data, item.params.direction, item.color, true);
+            const isDispersion = (item.params.run_type === "dispersion");
+            if (isDispersion) {
+                drawDispersionLayers(item.runId, item.data, item.color, true);
+            } else {
+                drawTrajectoryLayers(item.runId, item.data, item.params.direction, item.color, true);
+            }
         } else {
-            LAYER_SUFFIXES.forEach(suffix => {
+            const suffixes = (item.params.run_type === "dispersion") 
+                ? ["heatmap", "point"] 
+                : ["wall", "line", "points", "vispoints", "point"];
+
+            suffixes.forEach(suffix => {
                 const layerId = `hysplit-layer-${suffix}-${item.runId}`;
                 if (map.getLayer(layerId)) {
                     map.setLayoutProperty(layerId, "visibility", visibility);
@@ -882,14 +891,23 @@ function toggleTrajectoryVisibility(runId) {
     if (item.visible) {
         const testLayer = `hysplit-layer-point-${runId}`;
         if (!map.getLayer(testLayer)) {
-            drawTrajectoryLayers(item.runId, item.data, item.params.direction, item.color, true);
+            const isDispersion = (item.params.run_type === "dispersion");
+            if (isDispersion) {
+                drawDispersionLayers(item.runId, item.data, item.color, true);
+            } else {
+                drawTrajectoryLayers(item.runId, item.data, item.params.direction, item.color, true);
+            }
             updateHysplitDrawerList();
             return;
         }
     }
 
     const visibility = item.visible ? "visible" : "none";
-    LAYER_SUFFIXES.forEach(suffix => {
+    const suffixes = (item.params.run_type === "dispersion") 
+        ? ["heatmap", "point"] 
+        : ["wall", "line", "points", "vispoints", "point"];
+
+    suffixes.forEach(suffix => {
         const layerId = `hysplit-layer-${suffix}-${runId}`;
         if (map.getLayer(layerId)) {
             map.setLayoutProperty(layerId, "visibility", visibility);
@@ -1455,7 +1473,7 @@ export function toggleFlowAnimation(show) {
 }
 
 // --- Dispersion Animation Controller ---
-let dispersionAnimState = {
+let DispersionDrawerState = {
     isRunning: false,
     intervalId: null,
     currentStep: 0,
@@ -1464,44 +1482,68 @@ let dispersionAnimState = {
     data: null
 };
 
-function initDispersionAnimator() {
+function initDispersionDrawer() {
     if (window._dispersionInitialized) return;
-    const playBtn = document.getElementById("DispersionAnimPlayBtn");
-    const slider = document.getElementById("DispersionAnimSlider");
-    const closeBtn = document.getElementById("DispersionAnimClose");
+    const playBtn = document.getElementById("DispersionDrawerPlayBtn");
+    const slider = document.getElementById("DispersionDrawerSlider");
+    const closeBtn = document.getElementById("DispersionDrawerClose");
 
-    if (playBtn) playBtn.addEventListener("click", toggleDispersionAnimPlayback);
+    if (playBtn) playBtn.addEventListener("click", toggleDispersionDrawerPlayback);
     if (slider) slider.addEventListener("input", (e) => {
-        stopDispersionAnimPlayback();
+        stopDispersionDrawerPlayback();
         updateDispersionFrame(parseInt(e.target.value));
     });
-    if (closeBtn) closeBtn.addEventListener("click", hideDispersionAnimator);
+    if (closeBtn) closeBtn.addEventListener("click", hideDispersionDrawer);
 
-    makeDraggable(document.getElementById("DispersionAnimModal"), document.getElementById("DispersionAnimHeader"));
+    makeDraggable(document.getElementById("DispersionDrawer"), document.getElementById("DispersionDrawerHeaderDraggable"));
+ 
+    // Use swipe to close from ui-toggles
+    addSwipeClose(document.getElementById("DispersionDrawer"), {
+        direction: "down",
+        onClose: hideDispersionDrawer
+    });
+
     window._dispersionInitialized = true;
 }
 
-function showDispersionAnimation(runId) {
+function showDispersionDrawer(runId) {
     const item = state.history.find(h => h.runId === runId);
     if (!item || !item.data) return;
 
-    dispersionAnimState.runId = runId;
-    dispersionAnimState.data = item.data;
+    DispersionDrawerState.runId = runId;
+    DispersionDrawerState.data = item.data;
     
     // Extract unique time steps (date2)
     const uniqueSteps = [...new Set(item.data.map(pt => pt.date2))].sort((a, b) => new Date(a) - new Date(b));
-    dispersionAnimState.steps = uniqueSteps;
-    dispersionAnimState.currentStep = 0;
+    DispersionDrawerState.steps = uniqueSteps;
+    DispersionDrawerState.currentStep = 0;
 
-    const modal = document.getElementById("DispersionAnimModal");
-    const slider = document.getElementById("DispersionAnimSlider");
+    const modal = document.getElementById("DispersionDrawer");
+    const slider = document.getElementById("DispersionDrawerSlider");
     if (modal) {
-        modal.style.display = "flex";
+        modal.classList.remove("collapsed");
+        
+        // Close competing accordions on mobile to avoid overlap
+        if (window.innerWidth <= 1024) {
+            // Close Layer accordion
+            const layerAccordion = document.getElementById("AccordionPage");
+            if (layerAccordion && !layerAccordion.classList.contains("collapsed")) {
+                document.getElementById("AccordionToggle")?.click();
+            }
+            // Close Hysplit drawer
+            const hysplitDrawer = document.getElementById("HysplitDrawer");
+            if (hysplitDrawer && hysplitDrawer.classList.contains("open")) {
+                setHysplitDrawer(false);
+            }
+        }
+        
         // Apply color indicator (matching history item style)
-        modal.style.borderLeft = `5px solid ${utils.ESML(item.color)}`;
+        const accordion = modal.querySelector(".accordion");
+        if (accordion) accordion.style.borderLeft = `5px solid ${utils.ESML(item.color)}`;
     }
-    const meta = document.getElementById("DispersionAnimMeta");
-    const massEl = document.getElementById("DispersionAnimMassDisplay");
+    
+    const meta = document.getElementById("DispersionDrawerMeta");
+    const massEl = document.getElementById("DispersionDrawerMassDisplay");
     if (massEl) massEl.innerHTML = "";
     if (meta) {
         const p = item.params;
@@ -1517,40 +1559,40 @@ function showDispersionAnimation(runId) {
     updateDispersionFrame(0);
 }
 
-function toggleDispersionAnimPlayback() {
-    if (dispersionAnimState.isRunning) {
-        stopDispersionAnimPlayback();
+function toggleDispersionDrawerPlayback() {
+    if (DispersionDrawerState.isRunning) {
+        stopDispersionDrawerPlayback();
     } else {
-        startDispersionAnimPlayback();
+        startDispersionDrawerPlayback();
     }
 }
 
-function startDispersionAnimPlayback() {
-    if (dispersionAnimState.isRunning) return;
-    dispersionAnimState.isRunning = true;
+function startDispersionDrawerPlayback() {
+    if (DispersionDrawerState.isRunning) return;
+    DispersionDrawerState.isRunning = true;
     updateDispersionPlayIcon(true);
 
-    dispersionAnimState.intervalId = setInterval(() => {
-        let next = dispersionAnimState.currentStep + 1;
-        if (next >= dispersionAnimState.steps.length) {
+    DispersionDrawerState.intervalId = setInterval(() => {
+        let next = DispersionDrawerState.currentStep + 1;
+        if (next >= DispersionDrawerState.steps.length) {
             next = 0; // Loop back
         }
         updateDispersionFrame(next);
     }, 200);
 }
 
-function stopDispersionAnimPlayback() {
-    if (!dispersionAnimState.isRunning) return;
-    dispersionAnimState.isRunning = false;
+function stopDispersionDrawerPlayback() {
+    if (!DispersionDrawerState.isRunning) return;
+    DispersionDrawerState.isRunning = false;
     updateDispersionPlayIcon(false);
-    if (dispersionAnimState.intervalId) {
-        clearInterval(dispersionAnimState.intervalId);
-        dispersionAnimState.intervalId = null;
+    if (DispersionDrawerState.intervalId) {
+        clearInterval(DispersionDrawerState.intervalId);
+        DispersionDrawerState.intervalId = null;
     }
 }
 
 function updateDispersionPlayIcon(playing) {
-    const icon = document.getElementById("DispersionAnimPlayIcon");
+    const icon = document.getElementById("DispersionDrawerPlayIcon");
     if (!icon) return;
     if (playing) {
         // Pause icon path
@@ -1561,14 +1603,14 @@ function updateDispersionPlayIcon(playing) {
     }
 }
 
-function hideDispersionAnimator() {
-    stopDispersionAnimPlayback();
-    const modal = document.getElementById("DispersionAnimModal");
-    if (modal) modal.style.display = "none";
+function hideDispersionDrawer() {
+    stopDispersionDrawerPlayback();
+    const modal = document.getElementById("DispersionDrawer");
+    if (modal) modal.classList.add("collapsed");
     
     // Restore full data view on closing
-    if (dispersionAnimState.runId) {
-        const item = state.history.find(h => h.runId === dispersionAnimState.runId);
+    if (DispersionDrawerState.runId) {
+        const item = state.history.find(h => h.runId === DispersionDrawerState.runId);
         if (item && item.visible) {
             const source = map.getSource(`hysplit-src-traj-${item.runId}`);
             if (source) {
@@ -1584,25 +1626,25 @@ function hideDispersionAnimator() {
 }
 
 function updateDispersionFrame(index) {
-    dispersionAnimState.currentStep = index;
-    const timeStr = dispersionAnimState.steps[index];
-    const data = dispersionAnimState.data;
+    DispersionDrawerState.currentStep = index;
+    const timeStr = DispersionDrawerState.steps[index];
+    const data = DispersionDrawerState.data;
 
     // Update UI
-    const timeDisplay = document.getElementById("DispersionAnimTimeDisplay");
-    const stepDisplay = document.getElementById("DispersionAnimStepDisplay");
-    const slider = document.getElementById("DispersionAnimSlider");
-    const massEl = document.getElementById("DispersionAnimMassDisplay");
-    const meta = document.getElementById("DispersionAnimMeta");
+    const timeDisplay = document.getElementById("DispersionDrawerTimeDisplay");
+    const stepDisplay = document.getElementById("DispersionDrawerStepDisplay");
+    const slider = document.getElementById("DispersionDrawerSlider");
+    const massEl = document.getElementById("DispersionDrawerMassDisplay");
+    const meta = document.getElementById("DispersionDrawerMeta");
 
-    if (stepDisplay) stepDisplay.innerText = `Step: ${index + 1} / ${dispersionAnimState.steps.length}`;
+    if (stepDisplay) stepDisplay.innerText = `Step: ${index + 1} / ${DispersionDrawerState.steps.length}`;
     if (timeDisplay) {
         timeDisplay.innerHTML = `<span style="color: var(--text-main);">Current:</span> <span style="color: var(--card-shadow);">${utils.ESML(timeStr)} UTC</span>`;
     }
     if (slider) slider.value = index;
 
     // Update Map Layer for this run
-    const runId = dispersionAnimState.runId;
+    const runId = DispersionDrawerState.runId;
     const source = map.getSource(`hysplit-src-traj-${runId}`);
     if (source) {
         const filtered = data.filter(pt => pt.date2 === timeStr);
@@ -1655,6 +1697,8 @@ function makeDraggable(el, handle) {
     handle.onmousedown = dragMouseDown;
 
     function dragMouseDown(e) {
+        if (window.innerWidth <= 1024) return;
+        if (e.target.closest("button")) return;
         e.preventDefault();
         pos3 = e.clientX;
         pos4 = e.clientY;
