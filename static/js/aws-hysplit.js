@@ -24,6 +24,7 @@ const state = {
     modalBaseParams: null,
     showFlowStream: false,
     isRunning: false,
+    hoverListeners: {}, // Memory Leak Guard: Track map listeners per runId
 };
 
 // --- Animation State (Module Scope to prevent Duplication) ---
@@ -906,6 +907,15 @@ function toggleTrajectoryVisibility(runId) {
 function removeTrajectory(runId) {
     state.history = state.history.filter(h => h.runId !== runId);
     saveToStorage();
+    
+    // --- Memory Leak Guard: Remove Event Listeners ---
+    if (state.hoverListeners[runId]) {
+        const listeners = state.hoverListeners[runId];
+        listeners.forEach(l => {
+            map.off(l.type, l.layer, l.fn);
+        });
+        delete state.hoverListeners[runId];
+    }
 
     LAYER_SUFFIXES.forEach(suffix => {
         const layerId = `hysplit-layer-${suffix}-${runId}`;
@@ -1183,7 +1193,7 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
 
     // Precise Hover Events (Pick closest feature among overlaps)
     const hoverLayer = `hysplit-layer-points-${runId}`;
-    map.on("mousemove", hoverLayer, (e) => {
+    const onMouseMove = (e) => {
         if (globalState?.tooltipLocked) return;
         map.getCanvas().style.cursor = "pointer";
         const tooltip = document.getElementById("MapTooltip");
@@ -1222,17 +1232,17 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
         if (y + 400 > window.innerHeight) y = e.originalEvent.clientY - 410;
         tooltip.style.left = `${x / 10}rem`;
         tooltip.style.top = `${y / 10}rem`;
-    });
+    };
 
-    map.on("mouseleave", hoverLayer, () => {
+    const onMouseLeave = () => {
         if (globalState?.tooltipLocked) return;
         map.getCanvas().style.cursor = "";
         const tooltip = document.getElementById("MapTooltip");
         if (tooltip) tooltip.style.display = "none";
-    });
+    };
     
     // Exact Click Event (highlightLocation)
-    map.on("click", hoverLayer, (e) => {
+    const onClick = (e) => {
         let f = e.features?.[0];
         if (e.features && e.features.length > 1) {
             let minSqDist = Infinity;
@@ -1260,7 +1270,19 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
             e.preventDefault(); // Stop click from bubbling up and triggering clearHighlight
             utils.highlightLocation([fLon, fLat], props, "hysplit", 10);
         }
-    });
+    };
+
+    // Bind listeners and register for cleanup
+    map.on("mousemove", hoverLayer, onMouseMove);
+    map.on("mouseleave", hoverLayer, onMouseLeave);
+    map.on("click", hoverLayer, onClick);
+
+    if (!state.hoverListeners[runId]) state.hoverListeners[runId] = [];
+    state.hoverListeners[runId].push(
+        { type: "mousemove", layer: hoverLayer, fn: onMouseMove },
+        { type: "mouseleave", layer: hoverLayer, fn: onMouseLeave },
+        { type: "click", layer: hoverLayer, fn: onClick }
+    );
 
     // Ensure flow animation stays on top of newly added static layers
     if (map.getLayer("trajflow-layer-glow")) map.moveLayer("trajflow-layer-glow");
@@ -1356,7 +1378,7 @@ function drawDispersionLayers(runId, data, color, isRestoring = false) {
     
     // --- Tooltip & Interaction ---
     const hoverLayer = `hysplit-layer-point-${runId}`;
-    map.on("mousemove", hoverLayer, (e) => {
+    const onMouseMove = (e) => {
         if (globalState?.tooltipLocked) return;
         map.getCanvas().style.cursor = "pointer";
         const tooltip = document.getElementById("MapTooltip");
@@ -1383,16 +1405,16 @@ function drawDispersionLayers(runId, data, color, isRestoring = false) {
         if (y + 400 > window.innerHeight) y = e.originalEvent.clientY - 410;
         tooltip.style.left = `${x / 10}rem`;
         tooltip.style.top = `${y / 10}rem`;
-    });
+    };
 
-    map.on("mouseleave", hoverLayer, () => {
+    const onMouseLeave = () => {
         if (globalState?.tooltipLocked) return;
         map.getCanvas().style.cursor = "";
         const tooltip = document.getElementById("MapTooltip");
         if (tooltip) tooltip.style.display = "none";
-    });
+    };
 
-    map.on("click", hoverLayer, (e) => {
+    const onClick = (e) => {
         const f = e.features?.[0];
         if (!f) return;
         const [fLon, fLat] = f.geometry.coordinates;
@@ -1402,7 +1424,19 @@ function drawDispersionLayers(runId, data, color, isRestoring = false) {
             e.preventDefault();
             utils.highlightLocation([fLon, fLat], props, "hysplit", 10);
         }
-    });
+    };
+
+    // Bind listeners and register for cleanup
+    map.on("mousemove", hoverLayer, onMouseMove);
+    map.on("mouseleave", hoverLayer, onMouseLeave);
+    map.on("click", hoverLayer, onClick);
+
+    if (!state.hoverListeners[runId]) state.hoverListeners[runId] = [];
+    state.hoverListeners[runId].push(
+        { type: "mousemove", layer: hoverLayer, fn: onMouseMove },
+        { type: "mouseleave", layer: hoverLayer, fn: onMouseLeave },
+        { type: "click", layer: hoverLayer, fn: onClick }
+    );
     
     if (!isRestoring) {
         const bounds = data.reduce((acc, pt) => acc.extend([pt.lon, pt.lat]), new maplibregl.LngLatBounds([data[0].lon, data[0].lat], [data[0].lon, data[0].lat]));
