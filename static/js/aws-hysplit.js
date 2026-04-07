@@ -40,6 +40,12 @@ export function initHysplit() {
         clearHysplitTrajectory(e.detail?.deleteHistory ?? false);
     });
     
+    // Toggle flow event from ui-toggles.js
+    window.addEventListener("hysplit-flow-toggle", (e) => {
+        state.showFlowStream = e.detail;
+        toggleFlowAnimation(e.detail);
+    });
+    
     // 1. Capture coordinate from context menu (parallel to fb-MapPost)
     map.on("contextmenu", (e) => {
         state.pendingLngLat = e.lngLat;
@@ -53,7 +59,7 @@ export function initHysplit() {
             checkHysplitDuplicate();
             
             // Toggle dispersion settings / Sync defaults
-            if (e.target.id === "HysplitFormType") {
+            if (e.target.id === "InputHysplitType") {
                 const val = e.target.value;
                 const group = document.getElementById("HysplitDispersionGroup");
                 if (group) group.style.display = (val === "dispersion") ? "block" : "none";
@@ -179,7 +185,7 @@ export function initHysplit() {
 
         // G. Clear All
         if (e.target.closest("#HysplitBtnClearAll")) {
-            if (confirm("Clear all HYSPLIT trajectories?")) {
+            if (confirm("Clear all HYSPLIT simulation?")) {
                 clearHysplitTrajectory();
             }
             return;
@@ -190,7 +196,7 @@ export function initHysplit() {
     onAuthStateChanged(auth, (user) => {
         state.currentUser = user;
         updateAuthButton("MapPostBtnHysplit", user, "Run HYSPLIT");
-        updateAuthButton("HysplitBtnNew", user, "+Trajectory");
+        updateAuthButton("HysplitBtnNew", user, "+Simulation");
 
         if (user) {
             // Restore from LocalStorage when logged in
@@ -214,12 +220,12 @@ export function initHysplit() {
     console.log("[HYSPLIT] Full Init Complete!");
     
     // 5. Parameter help icons
-    appendGenericHelpIcon("HysplitDurationMainGroup", "HysplitFormDuration");
-    appendGenericHelpIcon("HysplitHeightGroup", "HysplitFormHeight");
-    appendGenericHelpIcon("HysplitRateGroup", "HysplitFormRate");
-    appendGenericHelpIcon("HysplitDurationGroup", "HysplitFormSpecDuration");
-    appendGenericHelpIcon("HysplitPdiamGroup", "HysplitFormPdiam");
-    appendGenericHelpIcon("HysplitDensityGroup", "HysplitFormDensity");
+    appendGenericHelpIcon("DivHysplitDuration", "InputHysplitDuration");
+    appendGenericHelpIcon("DivHysplitHeight", "InputHysplitHeight");
+    appendGenericHelpIcon("DivHysplitReleaseRate", "InputHysplitRate");
+    appendGenericHelpIcon("DivHysplitReleaseDuration", "InputHysplitReleaseDuration");
+    appendGenericHelpIcon("DivHysplitPdiam", "InputHysplitPdiam");
+    appendGenericHelpIcon("DivHysplitPdensity", "InputHysplitPdensity");
 }
 
 /**
@@ -282,20 +288,10 @@ function initFlowAnimation() {
         data: { type: "FeatureCollection", features: [] }
     });
 
-    const flowContainer = document.getElementById("ToggleSwitchHysplitFlow");
-    if (flowContainer) {
-        appendSwitch(flowContainer, {
-            id: "toggle-hysplit-flow",
-            label: "Show Flow stream",
-            checked: state.showFlowStream,
-            onChange: (val) => {
-                state.showFlowStream = val;
-                const visibility = val ? "visible" : "none";
-                if (map.getLayer("trajflow-layer-glow")) map.setLayoutProperty("trajflow-layer-glow", "visibility", visibility);
-                if (map.getLayer("trajflow-layer-core")) map.setLayoutProperty("trajflow-layer-core", "visibility", visibility);
-                if (val && state._startFlowAnim) state._startFlowAnim();
-            }
-        });
+    // Sync switch state if it was already created in ui-toggles.js
+    const flowCheck = document.getElementById("MapBtnHysplitFlow");
+    if (flowCheck) {
+        flowCheck.checked = state.showFlowStream;
     }
 
     // 1. Glow Layer (Outer neon glow)
@@ -454,8 +450,8 @@ function uiShowHysplitModal(params = null) {
     state.previewMarker = new maplibregl.Marker({ element: el, anchor: "bottom" }).setLngLat(lngLat).addTo(map);
 
     const modalOverlay = document.getElementById("HysplitModalOverlay");
-    const locEl = document.getElementById("HysplitFormLocation");
-    const dateEl = document.getElementById("HysplitFormDate");
+    const locEl = document.getElementById("InputHysplitLocation");
+    const dateEl = document.getElementById("InputHysplitDate");
     const dateVal = document.getElementById("datePicker")?.value || "";
 
     if (locEl) locEl.innerText = `${lngLat.lng.toFixed(4)}, ${lngLat.lat.toFixed(4)}`;
@@ -469,9 +465,9 @@ function uiShowHysplitModal(params = null) {
 
     // Set form fields if params exist
     if (params) {
-        const timeEl = document.getElementById("HysplitFormTime");
-        const durEl = document.getElementById("HysplitFormDuration");
-        const heightEl = document.getElementById("HysplitFormHeight");
+        const timeEl = document.getElementById("InputHysplitTime");
+        const durEl = document.getElementById("InputHysplitDuration");
+        const heightEl = document.getElementById("InputHysplitHeight");
 
         if (timeEl) timeEl.value = params.time;
         if (durEl) durEl.value = params.duration;
@@ -480,7 +476,7 @@ function uiShowHysplitModal(params = null) {
         const dirRadio = document.querySelector(`input[name="HysplitDirection"][value="${params.direction}"]`);
         if (dirRadio) dirRadio.checked = true;
         
-        const typeEl = document.getElementById("HysplitFormType");
+        const typeEl = document.getElementById("InputHysplitType");
         if (typeEl) {
             typeEl.value = params.run_type || "trajectory";
             const group = document.getElementById("HysplitDispersionGroup");
@@ -488,10 +484,10 @@ function uiShowHysplitModal(params = null) {
         }
 
         if (params.run_type === "dispersion") {
-            if (document.getElementById("HysplitFormRate")) document.getElementById("HysplitFormRate").value = params.species_rate || 5;
-            if (document.getElementById("HysplitFormPdiam")) document.getElementById("HysplitFormPdiam").value = params.species_pdiam || 2.5;
-            if (document.getElementById("HysplitFormDensity")) document.getElementById("HysplitFormDensity").value = params.species_density || 1.2;
-            if (document.getElementById("HysplitFormSpecDuration")) document.getElementById("HysplitFormSpecDuration").value = params.species_duration || 1;
+            if (document.getElementById("InputHysplitRate")) document.getElementById("InputHysplitRate").value = params.species_rate || 5;
+            if (document.getElementById("InputHysplitPdiam")) document.getElementById("InputHysplitPdiam").value = params.species_pdiam || 2.5;
+            if (document.getElementById("InputHysplitPdensity")) document.getElementById("InputHysplitPdensity").value = params.species_density || 1.2;
+            if (document.getElementById("InputHysplitReleaseDuration")) document.getElementById("InputHysplitReleaseDuration").value = params.species_duration || 1;
         }
     }
 
@@ -512,13 +508,13 @@ function checkHysplitDuplicate() {
     let isSame = false;
 
     if (state.modalBaseParams) {
-        const time = document.getElementById("HysplitFormTime").value;
+        const time = document.getElementById("InputHysplitTime").value;
         const directionEl = document.querySelector('input[name="HysplitDirection"]:checked');
         const direction = directionEl ? directionEl.value : "backward";
-        const duration = parseFloat(document.getElementById("HysplitFormDuration").value);
-        const height = parseFloat(document.getElementById("HysplitFormHeight").value);
-        const date = document.getElementById("HysplitFormDate").value;
-        const run_type = document.getElementById("HysplitFormType").value;
+        const duration = parseFloat(document.getElementById("InputHysplitDuration").value);
+        const height = parseFloat(document.getElementById("InputHysplitHeight").value);
+        const date = document.getElementById("InputHysplitDate").value;
+        const run_type = document.getElementById("InputHysplitType").value;
 
         const b = state.modalBaseParams;
         isSame = (
@@ -533,10 +529,10 @@ function checkHysplitDuplicate() {
         // If dispersion, check extra params
         if (isSame && run_type === "dispersion") {
             isSame = (
-                parseFloat(document.getElementById("HysplitFormRate").value) === (b.species_rate || 5) &&
-                parseFloat(document.getElementById("HysplitFormPdiam").value) === (b.species_pdiam || 2.5) &&
-                parseFloat(document.getElementById("HysplitFormDensity").value) === (b.species_density || 1.2) &&
-                parseInt(document.getElementById("HysplitFormSpecDuration").value) === (b.species_duration || 1)
+                parseFloat(document.getElementById("InputHysplitRate").value) === (b.species_rate || 5) &&
+                parseFloat(document.getElementById("InputHysplitPdiam").value) === (b.species_pdiam || 2.5) &&
+                parseFloat(document.getElementById("InputHysplitPdensity").value) === (b.species_density || 1.2) &&
+                parseInt(document.getElementById("InputHysplitReleaseDuration").value) === (b.species_duration || 1)
             );
         }
 
@@ -600,16 +596,16 @@ async function clickOnSubmitHysplit() {
     }
     
     const submitBtn = document.getElementById("HysplitBtnSubmit");
-    const time = document.getElementById("HysplitFormTime").value;
+    const time = document.getElementById("InputHysplitTime").value;
     const directionEl = document.querySelector('input[name="HysplitDirection"]:checked');
     const direction = directionEl ? directionEl.value : "backward";
-    const duration = parseFloat(document.getElementById("HysplitFormDuration").value);
-    const height = parseFloat(document.getElementById("HysplitFormHeight").value);
-    const date = document.getElementById("HysplitFormDate").value;
+    const duration = parseFloat(document.getElementById("InputHysplitDuration").value);
+    const height = parseFloat(document.getElementById("InputHysplitHeight").value);
+    const date = document.getElementById("InputHysplitDate").value;
     const lngLat = state.pendingLngLat;
 
     // Check for identical duplicate submission
-    const runType = document.getElementById("HysplitFormType").value;
+    const runType = document.getElementById("InputHysplitType").value;
     if (state.modalBaseParams) {
         const b = state.modalBaseParams;
         let isSame = (
@@ -623,10 +619,10 @@ async function clickOnSubmitHysplit() {
 
         if (isSame && runType === "dispersion") {
             isSame = (
-                parseFloat(document.getElementById("HysplitFormRate").value) === (b.species_rate || 5) &&
-                parseFloat(document.getElementById("HysplitFormPdiam").value) === (b.species_pdiam || 2.5) &&
-                parseFloat(document.getElementById("HysplitFormDensity").value) === (b.species_density || 1.2) &&
-                parseInt(document.getElementById("HysplitFormSpecDuration").value) === (b.species_duration || 1)
+                parseFloat(document.getElementById("InputHysplitRate").value) === (b.species_rate || 5) &&
+                parseFloat(document.getElementById("InputHysplitPdiam").value) === (b.species_pdiam || 2.5) &&
+                parseFloat(document.getElementById("InputHysplitPdensity").value) === (b.species_density || 1.2) &&
+                parseInt(document.getElementById("InputHysplitReleaseDuration").value) === (b.species_duration || 1)
             );
         }
 
@@ -661,7 +657,7 @@ async function clickOnSubmitHysplit() {
         // Get the ID token for the current user to secure the API call
         const idToken = await auth.currentUser.getIdToken(true);
 
-        const runType = document.getElementById("HysplitFormType").value;
+        const runType = document.getElementById("InputHysplitType").value;
 
         const baseParams = {
             lon: lngLat.lng,
@@ -677,10 +673,10 @@ async function clickOnSubmitHysplit() {
         // Add dispersion params if needed
         if (runType === "dispersion") {
             baseParams.particle_num = 500; // Fixed for server capacity
-            baseParams.species_rate = parseFloat(document.getElementById("HysplitFormRate").value);
-            baseParams.species_pdiam = parseFloat(document.getElementById("HysplitFormPdiam").value);
-            baseParams.species_density = parseFloat(document.getElementById("HysplitFormDensity").value);
-            baseParams.species_duration = parseInt(document.getElementById("HysplitFormSpecDuration").value);
+            baseParams.species_rate = parseFloat(document.getElementById("InputHysplitRate").value);
+            baseParams.species_pdiam = parseFloat(document.getElementById("InputHysplitPdiam").value);
+            baseParams.species_density = parseFloat(document.getElementById("InputHysplitPdensity").value);
+            baseParams.species_duration = parseInt(document.getElementById("InputHysplitReleaseDuration").value);
         }
 
         const params = new URLSearchParams(baseParams);
@@ -944,8 +940,8 @@ function renderHysplitTrajectory(data, direction, existingRunId = null, isRestor
         drawTrajectoryLayers(runId, data, direction, color, isRestoring);
     }
 
-    // Cache coordinates for flow animation
-    let flowCoords = data.map(pt => [pt.lon, pt.lat]);
+    // Cache coordinates for flow animation (Exclude dispersion)
+    let flowCoords = isDispersion ? [] : data.map(pt => [pt.lon, pt.lat]);
     if (direction === "backward") flowCoords.reverse();
 
     // Update History & Drawer
@@ -1379,5 +1375,15 @@ function drawDispersionLayers(runId, data, color, isRestoring = false) {
         const bounds = data.reduce((acc, pt) => acc.extend([pt.lon, pt.lat]), new maplibregl.LngLatBounds([data[0].lon, data[0].lat], [data[0].lon, data[0].lat]));
         map.fitBounds(bounds, { padding: 100, duration: 2000 });
     }
+}
+
+/**
+ * Toggles the visibility of the flow animation layers.
+ */
+export function toggleFlowAnimation(show) {
+    const visibility = show ? "visible" : "none";
+    if (map.getLayer("trajflow-layer-glow")) map.setLayoutProperty("trajflow-layer-glow", "visibility", visibility);
+    if (map.getLayer("trajflow-layer-core")) map.setLayoutProperty("trajflow-layer-core", "visibility", visibility);
+    if (show && state._startFlowAnim) state._startFlowAnim();
 }
 

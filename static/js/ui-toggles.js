@@ -548,6 +548,21 @@ export function initHysplitDrawer() {
     if (btn) btn.addEventListener("click", () => setHysplitDrawer());
     addCloseHandler(closeBtn, () => setHysplitDrawer(false));
     addSwipeClose(drawer, { direction: "left", onClose: () => setHysplitDrawer(false) });
+    
+    const container = document.getElementById("ToggleSwitchHysplitFlow");
+    if (container) {
+        appendSwitch(container, {
+            id: "MapBtnHysplitFlow",
+            label: "Show Flow stream",
+            checked: false, // Initial state will be synced by aws-hysplit.js
+            onChange: (val) => {
+                window.dispatchEvent(new CustomEvent("hysplit-flow-toggle", { detail: val }));
+            }
+        });
+    }
+
+    // Add help icon for standalone modal
+    appendDrawerHelpIcon("HysplitDrawer", "HysplitSim");
 }
 
 /**

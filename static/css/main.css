@@ -1031,6 +1031,15 @@ body.page-about .sidebar {
   overflow-y: auto;
 }
 
+.profile-card .auth-card-header,
+.settings-card .auth-card-header {
+  position: sticky;
+  top: 0;
+  background: var(--color-bg);
+  border-bottom: 0.1rem solid var(--card-shadow);
+  z-index: 10;
+}
+
 .auth-card-header {
   position: relative;
   margin-bottom: 0.5rem;

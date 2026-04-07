@@ -49,7 +49,7 @@ title: ""
       <canvas class="ui-pulsing-icon" data-type="alert" width="36" height="36" style="vertical-align:middle;"></canvas>
     </button>
     
-    <button class="accordion-toggle" id="HysplitToggle" title="HYSPLIT Trajectories">
+    <button class="accordion-toggle" id="HysplitToggle" title="HYSPLIT Simulation">
        <svg width="24" height="24">
          <use xlink:href="#icon-hysplit" />
        </svg>
@@ -403,23 +403,26 @@ title: ""
 
 <div class="Hysplit-drawer" id="HysplitDrawer">
   <div class="Hysplit-drawer-header">
-    <h3 id="HysplitDrawerTitle">HYSPLIT (Beta)</h3>
+    <h3 id="HysplitDrawerTitle">HYSPLIT Simulation</h3>
     <button class="ui-btn-close" id="HysplitDrawerClose">
       <svg width="20" height="20">
         <use xlink:href="#icon-close" />
       </svg>
     </button>
   </div>
+  
+  <div id="ToggleSwitchHysplitFlow" style="padding: 1rem 1.5rem; border-bottom: 0.1rem solid var(--border-main);">
+  </div>
+  
   <div style="padding: 1rem 1.5rem; border-bottom: 0.1rem solid var(--border-main); display: flex; gap: 1rem; align-items: center;">
     <button id="HysplitBtnNew" class="MapPost-item-link" style="flex: 1; margin: 0; display: block; text-align: center;">
-      +Trajectory
+      +Simulation
     </button>
     <button id="HysplitBtnClearAll" class="reply-btn-cancel" style="padding: 0.5rem 1rem; font-size: 1.4rem;">
       Clear All
     </button>
   </div>
-  <div id="ToggleSwitchHysplitFlow" style="padding: 1rem 1.5rem; border-bottom: 0.1rem solid var(--border-main);">
-  </div>
+  
   <div
     style="padding: 0.5rem 1.5rem; font-size: 1.4rem; color: var(--text-main); border-bottom: 0.1rem solid var(--border-main);">
     Results are saved in your local browser (max 10 items).
@@ -775,20 +778,20 @@ title: ""
     <div class="MapPost-modal-body">
       <div class="MapPost-form-group">
         <label>Location (lon, lat):</label>
-        <div id="HysplitFormLocation"
+        <div id="InputHysplitLocation"
           style="padding: 0.8rem; background: var(--color-bg-alt); border-radius: 0.4rem; font-family: monospace;">
         </div>
       </div>
 
       <div class="MapPost-form-group-row">
         <div class="MapPost-form-group">
-          <label for="HysplitFormDate">Input Date:</label>
-          <input type="date" id="HysplitFormDate">
+          <label for="InputHysplitDate">Input Date:</label>
+          <input type="date" id="InputHysplitDate">
         </div>
 
         <div class="MapPost-form-group">
-          <label for="HysplitFormTime">Input Time (UTC):</label>
-          <select id="HysplitFormTime">
+          <label for="InputHysplitTime">Input Time (UTC):</label>
+          <select id="InputHysplitTime">
             <option value="00">00:00</option>
             <option value="01">01:00</option>
             <option value="02">02:00</option>
@@ -819,24 +822,24 @@ title: ""
 
       <div class="MapPost-form-group-row">
         <div class="MapPost-form-group">
-          <div id="HysplitDurationMainGroup" style="display: flex; align-items: center; justify-content: space-between;">
-            <label for="HysplitFormDuration">Duration (hr):</label>
+          <div id="DivHysplitDuration" style="display: flex; align-items: center; justify-content: space-between;">
+            <label for="InputHysplitDuration">Duration (hr):</label>
           </div>
-          <input type="number" id="HysplitFormDuration" value="24" min="1" max="240">
+          <input type="number" id="InputHysplitDuration" value="24" min="1" max="240">
         </div>
 
         <div class="MapPost-form-group">
-          <div id="HysplitHeightGroup" style="display: flex; align-items: center; justify-content: space-between;">
-            <label for="HysplitFormHeight">Height (AGL) (m):</label>
+          <div id="DivHysplitHeight" style="display: flex; align-items: center; justify-content: space-between;">
+            <label for="InputHysplitHeight">Height (AGL) (m):</label>
           </div>
-          <input type="number" id="HysplitFormHeight" value="500" min="10" max="10000">
+          <input type="number" id="InputHysplitHeight" value="500" min="10" max="10000">
         </div>
       </div>
 
       <div class="MapPost-form-group-row">
         <div class="MapPost-form-group">
-          <label for="HysplitFormType">Run Type:</label>
-          <select id="HysplitFormType" class="MapPost-select">
+          <label for="InputHysplitType">Run Type:</label>
+          <select id="InputHysplitType" class="MapPost-select">
             <option value="trajectory" selected>Trajectory</option>
             <option value="dispersion">Dispersion</option>
           </select>
@@ -862,31 +865,31 @@ title: ""
 
         <div class="MapPost-form-group-row">
           <div class="MapPost-form-group">
-            <div id="HysplitRateGroup" style="display: flex; align-items: center; justify-content: space-between;">
-              <label for="HysplitFormRate">Release Rate (kg hr-1):</label>
+            <div id="DivHysplitReleaseRate" style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="InputHysplitRate">Release Rate (kg hr-1):</label>
             </div>
-            <input type="number" id="HysplitFormRate" value="5" min="0.1" step="0.1">
+            <input type="number" id="InputHysplitRate" value="5" min="0.1" step="0.1">
           </div>
           <div class="MapPost-form-group">
-            <div id="HysplitDurationGroup" style="display: flex; align-items: center; justify-content: space-between;">
-              <label for="HysplitFormSpecDuration">Release Duration (hr):</label>
+            <div id="DivHysplitReleaseDuration" style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="InputHysplitReleaseDuration">Release Duration (hr):</label>
             </div>
-            <input type="number" id="HysplitFormSpecDuration" value="1" min="1">
+            <input type="number" id="InputHysplitReleaseDuration" value="1" min="1">
           </div>
         </div>
 
         <div class="MapPost-form-group-row">
           <div class="MapPost-form-group">
-            <div id="HysplitPdiamGroup" style="display: flex; align-items: center; justify-content: space-between;">
-              <label for="HysplitFormPdiam">Ptcl Dia. (μm):</label>
+            <div id="DivHysplitPdiam" style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="InputHysplitPdiam">Ptcl Dia. (μm):</label>
             </div>
-            <input type="number" id="HysplitFormPdiam" value="2.5" min="0.1" step="0.1">
+            <input type="number" id="InputHysplitPdiam" value="2.5" min="0.1" step="0.1">
           </div>
           <div class="MapPost-form-group">
-            <div id="HysplitDensityGroup" style="display: flex; align-items: center; justify-content: space-between;">
-              <label for="HysplitFormDensity">Ptcl Density (g cm-3):</label>
+            <div id="DivHysplitPdensity" style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="InputHysplitPdensity">Ptcl Density (g cm-3):</label>
             </div>
-            <input type="number" id="HysplitFormDensity" value="1.2" min="0.1" step="0.1">
+            <input type="number" id="InputHysplitPdensity" value="1.2" min="0.1" step="0.1">
           </div>
         </div>
       </div>

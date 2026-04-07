@@ -48,7 +48,7 @@ const TUTORIAL_STEPS = [
     {
         element: "#HysplitToggle",
         popover: {
-            title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-hysplit"/></svg></span> HYSPLIT Trajectories',
+            title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-hysplit"/></svg></span> HYSPLIT Simulation',
             description: "Run custom HYSPLIT models from any point on the map. You can view, manage, and even download your simulation history directly from this drawer.",
             side: "right",
             align: "start",

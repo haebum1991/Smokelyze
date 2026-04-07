@@ -33,34 +33,34 @@ export const DescData = {
                   "<br><i>* Note</i>: If the map suddenly turns into a <b>Grey Screen</b> or fails to load, your device may have exhausted its graphics memory limit. In this case, please immediately switch the map type to <b>Default or Light</b> to restore stability."
         },
         {
-            id: "HysplitFormDuration",
+            id: "InputHysplitDuration",
             title: "Duration (hr)",
-            desc: "The total duration (in hours) to run the simulation. This value represents the simulation period for both <b>Backward (BWD)</b> and <b>Forward (FWD)</b> modes."
+            desc: "The duration (in hours) to run the simulation. This value represents the simulation period for both <b>Backward (BWD)</b> and <b>Forward (FWD)</b> modes."
         },
         {
-            id: "HysplitFormHeight",
+            id: "InputHysplitHeight",
             title: "Height (AGL) (m)",
             desc: "The height above ground level (AGL) in meters. <br><ul>" +
                 "<li>For <b>Trajectory</b>: It defines the receptor site's height of interest.</li>" +
                 "<li>For <b>Dispersion</b>: It represents the source release height from emission sources something like that. In HYSPLIT READY, this is equivalent to the <b>Release Top</b> parameter.</li></ul>"
         },
         {
-            id: "HysplitFormRate",
+            id: "InputHysplitRate",
             title: "Release Rate (kg hr-1)",
             desc: "Rate of mass emission of the pollutant per hour. <br><i>* Note</i>: In HYSPLIT READY, this is equivalent to the <b>Release Quantity (kg)</b> divided by the <b>Release Duration (hr)</b>."
         },
         {
-            id: "HysplitFormSpecDuration",
+            id: "InputHysplitReleaseDuration",
             title: "Release Duration (hr)",
             desc: "The release duration (in hours) that the pollutant is emitted from the source. In HYSPLIT READY, this corresponds to the <b>Release Duration (hr)</b> parameter."
         },
         {
-            id: "HysplitFormPdiam",
+            id: "InputHysplitPdiam",
             title: "Particle Diameter (μm)",
             desc: "The aerodynamic diameter of the pollutant particles. <b>This is a key parameter for calculating gravitational settling (dry deposition)</b>."
         },
         {
-            id: "HysplitFormDensity",
+            id: "InputHysplitPdensity",
             title: "Particle Density (g cm-3)",
             desc: "The density of the pollutant particles. <b>Used for calculating gravitational settling (dry deposition)</b>."
         }
@@ -91,6 +91,15 @@ export const DescData = {
                   "<li>In our app, <b style='color: var(--card-shadow);'>" +
                   "this data is managed in real-time. </b>" +
                   "Only registered users can create or reply to MapPost. </li></ul>"
+        },
+        {
+            id: "HysplitSim",
+            title: "HYSPLIT Simulation",
+            desc: "<b style='color: var(--card-shadow);'>HYSPLIT (Hybrid Single-Particle Lagrangian Integrated Trajectory)</b> is a model for computing simple air mass trajectories, as well as complex transport, and dispersion. <br><br>" +
+                "In our application, you can execute <b>Forward/Backward Trajectories</b> and <b>Dispersion Simulations</b> based on NAM12 meteorological data (for values outside the specified range, GDAS1 is used). " +
+                "<ul><li><b>Trajectory</b>: Tracks the movement of an air mass over time. Useful for finding the source or destination of a smoke plume.</li>" +
+                "<li><b>Dispersion</b>: Simulates the spread and concentration of pollutants over time, including physical effects like <b>Gravitational Settling</b>.</li></ul>" +
+                "Official page: <a href='https://www.ready.noaa.gov/HYSPLIT.php' target='_blank'>NOAA READY HYSPLIT</a>"
         }
     ],
     "desc-nifc": [
