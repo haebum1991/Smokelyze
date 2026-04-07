@@ -26,6 +26,11 @@ const state = {
     isRunning: false,
 };
 
+// --- Animation State (Module Scope to prevent Duplication) ---
+let flowAnimRunning = false;
+let lastFrameTime = 0;
+const TARGET_FPS = 20; 
+const FRAME_INTERVAL = 1000 / TARGET_FPS;
 const RAINBOW_COLORS = ["#007cff", "#ff4d4d", "#2ecc71", "#e67e22", "#9b59b6", "#1abc9c", "#f1c40f"];
 const LAYER_SUFFIXES = ["wall", "line", "points", "vispoints", "point", "heatmap"];
 
@@ -335,91 +340,94 @@ function initFlowAnimation() {
             "circle-opacity": ["get", "opacity"]
         }
     });
-    
-    let flowAnimRunning = false;
-    let lastFrameTime = 0;
-    const TARGET_FPS = 20; // Drastically reduce from 60fps to 20fps
-    const FRAME_INTERVAL = 1000 / TARGET_FPS;
 
-    const animate = (timestamp) => {
-        // Check if animation should keep running
-        const hasVisible = state.showFlowStream && state.history.some(
-            item => item.visible && item.flowCoords && item.flowCoords.length >= 2
-        );
-
-        if (!hasVisible) {
-            flowAnimRunning = false;
-            // Clear any leftover particles from the map
-            const source = map.getSource("trajflow-source");
-            if (source) source.setData({ type: "FeatureCollection", features: [] });
-            return; // Fully stop the loop — CPU rests
-        }
-        
-        // Throttling: Skip frames to enforce 20 FPS limit
-        if (!timestamp) timestamp = performance.now();
-        const elapsed = timestamp - lastFrameTime;
-        if (elapsed < FRAME_INTERVAL) {
-            requestAnimationFrame(animate);
-            return;
-        }
-        lastFrameTime = timestamp - (elapsed % FRAME_INTERVAL);
-        
-        const now = performance.now();
-        const duration = 2000;
-
-        const features = [];
-        state.history.forEach(item => {
-            if (!item.visible || !item.flowCoords || item.flowCoords.length < 2) return;
-
-            const c = item.flowCoords;
-            const streakCount = 8; // Increased for a longer, denser stream
-
-            for (let sIdx = 0; sIdx < streakCount; sIdx++) {
-                const streakOffset = (sIdx * 25); // Tightened offset for a continuous [liquid] look
-                // Fix negative modulo for early page load
-                let timePos = (now - streakOffset);
-                let progress = (timePos % duration + duration) % duration / duration;
-
-                const idx = progress * (c.length - 1);
-                const i = Math.floor(idx);
-                const next = Math.min(i + 1, c.length - 1);
-                const t = idx % 1;
-
-                const pos = [
-                    c[i][0] + (c[next][0] - c[i][0]) * t,
-                    c[i][1] + (c[next][1] - c[i][1]) * t
-                ];
-
-                const alpha = 1.0 - (sIdx / streakCount);
-                const size = 1.0 - (sIdx / (streakCount * 1.5)); // Tail shrinks less aggressively
-
-                features.push({
-                    type: "Feature",
-                    geometry: { type: "Point", coordinates: pos },
-                    properties: {
-                        color: item.color,
-                        opacity: alpha,
-                        sizeScale: size
-                    }
-                });
-            }
-        });
-
-        const source = map.getSource("trajflow-source");
-        if (source) {
-            source.setData({ type: "FeatureCollection", features });
-        }
-
-        requestAnimationFrame(animate);
-    };
-
-    // Helper: restarts the animation loop only if not already running
-    state._startFlowAnim = () => {
-        if (flowAnimRunning) return;
-        flowAnimRunning = true;
-        requestAnimationFrame(animate);
-    };
+    // Restart animation if it was supposed to be running
+    if (state.showFlowStream) {
+        state._startFlowAnim();
+    }
 }
+
+function animate(timestamp) {
+    // Check if animation should keep running
+    const hasVisible = state.showFlowStream && state.history.some(
+        item => item.visible && item.flowCoords && item.flowCoords.length >= 2
+    );
+
+    if (!hasVisible) {
+        flowAnimRunning = false;
+        // Clear any leftover particles from the map
+        const source = map.getSource("trajflow-source");
+        if (source) source.setData({ type: "FeatureCollection", features: [] });
+        return; // Fully stop the loop — CPU rests
+    }
+    
+    // Throttling: Skip frames to enforce 20 FPS limit
+    if (!timestamp) timestamp = performance.now();
+    const elapsed = timestamp - lastFrameTime;
+    if (elapsed < FRAME_INTERVAL) {
+        requestAnimationFrame(animate);
+        return;
+    }
+    lastFrameTime = timestamp - (elapsed % FRAME_INTERVAL);
+    
+    const now = performance.now();
+    const duration = 2000;
+
+    const features = [];
+    state.history.forEach(item => {
+        if (!item.visible || !item.flowCoords || item.flowCoords.length < 2) return;
+
+        const c = item.flowCoords;
+        const streakCount = 8; // Increased for a longer, denser stream
+
+        for (let sIdx = 0; sIdx < streakCount; sIdx++) {
+            const streakOffset = (sIdx * 25); // Tightened offset for a continuous [liquid] look
+            // Fix negative modulo for early page load
+            let timePos = (now - streakOffset);
+            let progress = (timePos % duration + duration) % duration / duration;
+
+            const idx = progress * (c.length - 1);
+            const i = Math.floor(idx);
+            const next = Math.min(i + 1, c.length - 1);
+            const t = idx % 1;
+
+            const pos = [
+                c[i][0] + (c[next][0] - c[i][0]) * t,
+                c[i][1] + (c[next][1] - c[i][1]) * t
+            ];
+
+            const alpha = 1.0 - (sIdx / streakCount);
+            const size = 1.0 - (sIdx / (streakCount * 1.5)); // Tail shrinks less aggressively
+
+            features.push({
+                type: "Feature",
+                geometry: { type: "Point", coordinates: pos },
+                properties: {
+                    color: item.color,
+                    opacity: alpha,
+                    sizeScale: size
+                }
+            });
+        }
+    });
+
+    const source = map.getSource("trajflow-source");
+    if (source) {
+        source.setData({ type: "FeatureCollection", features });
+    }
+
+    requestAnimationFrame(animate);
+}
+
+
+// Helper: restarts the animation loop only if not already running
+state._startFlowAnim = () => {
+    if (flowAnimRunning) return;
+    console.debug("[HYSPLIT-FLOW] Animation starting...");
+    flowAnimRunning = true;
+    lastFrameTime = performance.now();
+    requestAnimationFrame(animate);
+};
 
 
 export function handleHysplitModeToggle(force) {
@@ -587,14 +595,22 @@ function loadFromStorage() {
     if (!saved) return;
     try {
         const history = JSON.parse(saved);
+
+        // --- BULLETPROOF GUARD ---
+        // Prevents duplicate rendering/memory leaks if Firebase triggers token refresh multiple times
+        const existingRunIds = state.history.map(h => String(h.runId));
+
         // Render in reverse to maintain original unshift order
         [...history].reverse().forEach(item => {
-            renderHysplitTrajectory(item.data, item.params.direction, item.runId, true, item.params);
+            if (!existingRunIds.includes(String(item.runId))) {
+                renderHysplitTrajectory(item.data, item.params.direction, item.runId, true, item.params);
+            }
         });
     } catch (e) {
         console.error("HYSPLIT: Error loading from storage", e);
     }
 }
+
 
 // --- API & Execution ---
 async function clickOnSubmitHysplit() {
@@ -1415,10 +1431,11 @@ let dispersionAnimState = {
 };
 
 function initDispersionAnimator() {
+    if (window._dispersionInitialized) return;
     const playBtn = document.getElementById("DispersionAnimPlayBtn");
     const slider = document.getElementById("DispersionAnimSlider");
     const closeBtn = document.getElementById("DispersionAnimClose");
-    
+
     if (playBtn) playBtn.addEventListener("click", toggleDispersionAnimPlayback);
     if (slider) slider.addEventListener("input", (e) => {
         stopDispersionAnimPlayback();
@@ -1427,6 +1444,7 @@ function initDispersionAnimator() {
     if (closeBtn) closeBtn.addEventListener("click", hideDispersionAnimator);
 
     makeDraggable(document.getElementById("DispersionAnimModal"), document.getElementById("DispersionAnimHeader"));
+    window._dispersionInitialized = true;
 }
 
 function showDispersionAnimation(runId) {
