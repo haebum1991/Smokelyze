@@ -143,7 +143,7 @@ export const DescData = {
         {
             id: "airnow-hourly-ozone",
             title: "Obs O3 (hourly)",
-            desc: "<b>Obs O3 (hourly)</b> provides real-time hourly ground-level ozone (O3) concentrations from the US EPA AirNow network via the RSIG server. " +
+            desc: "<b>Obs O3 (hourly)</b> provides real-time hourly ground-level ozone (O3) concentrations from the US EPA AirNow network. " +
                   "Ground-level ozone is formed by chemical reactions between pollutants and sunlight, often exacerbated by wildfire emissions. " +
                   "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Hourly</b></li>" +
                   "<li>Typically has a <b style='color: var(--card-shadow);'>1-2 hour reporting delay</b> from the current local time.</li></ul>"
@@ -151,7 +151,7 @@ export const DescData = {
         {
             id: "airnow-hourly-pm25",
             title: "Obs PM2.5 (hourly)",
-            desc: "<b>Obs PM2.5 (hourly)</b> provides real-time hourly fine particulate matter (PM2.5) concentrations from the US EPA AirNow network via the RSIG server. " +
+            desc: "<b>Obs PM2.5 (hourly)</b> provides real-time hourly fine particulate matter (PM2.5) concentrations from the US EPA AirNow network. " +
                   "This data is crucial for identifying immediate smoke impacts and tracking air quality trends as they happen. " +
                   "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Hourly</b></li>" +
                   "<li>Typically has a <b style='color: var(--card-shadow);'>1-2 hour reporting delay</b> from the current local time.</li></ul>"
@@ -159,7 +159,7 @@ export const DescData = {
         {
             id: "airnow-hourly-no2",
             title: "Obs NO2 (hourly)",
-            desc: "<b>Obs NO2 (hourly)</b> provides real-time hourly nitrogen dioxide (NO2) concentrations from the US EPA AirNow network via the RSIG server. " +
+            desc: "<b>Obs NO2 (hourly)</b> provides real-time hourly nitrogen dioxide (NO2) concentrations from the US EPA AirNow network. " +
                   "NO2 is a primary pollutant from combustion sources and is a key precursor to ozone and secondary particulate matter formation. " +
                   "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Hourly</b></li>" +
                   "<li>Typically has a <b style='color: var(--card-shadow);'>1-2 hour reporting delay</b> from the current local time.</li></ul>"
