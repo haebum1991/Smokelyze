@@ -200,63 +200,29 @@ export function generatePopupHTML(p, dataSource, isLocked) {
         ${p.q_kg !== undefined ? `<div style="${rowStyle}"><b>Mass:</b> ${ESML(smartFmt(p.q_kg, "q_kg", dataSource, 3))} kg</div>` : ""}`;
     }
     
-    if (dataSource.startsWith("airnow-")) {
-
-      let AirnowHtml = `
-          ${closeBtn}
-          <div style="${rowStyleHead}"><b>AirNow (Hourly)</b></div>
-          <hr style="${hrStyle}">
-          `;
-                    
-      if (dataSource === "airnow-hourly-pm25") {
-          AirnowHtml += `
-          <div style="${rowStyle}"> 
-            <b>Obs PM2.5 (hourly) (ug m⁻³):</b> 
-            <b style="color: var(--card-shadow);">
-              ${ESML(smartFmt(p["pm25(ug/m3)"], "pm25(ug/m3)", dataSource))}
-            </b>
-          </div>
-          <hr style="${hrStyle}">
-          <div style="${rowStyle}"><b>Param code:</b> ${ESML(p["paramCode"] || "NA")}</div>
-          <div style="${rowStyle}"><b>State:</b> ${ESML(p["state"] || "NA")}</div>
-          <div style="${rowStyle}"><b>AQS PM:</b> ${ESML(p["AQS"] || "NA")}</div>
-          `;
-      }
-      
-      if (dataSource === "airnow-hourly-ozone") {
-          AirnowHtml += `
-          <div style="${rowStyle}"> 
-            <b>Obs O3 (hourly) (ppb):</b> 
-            <b style="color: var(--card-shadow);">
-              ${ESML(smartFmt(p["ozone(ppb)"], "ozone(ppb)", dataSource))}
-            </b>
-          </div>
-          <hr style="${hrStyle}">
-          <div style="${rowStyle}"><b>Param code:</b> ${ESML(p["paramCode"] || "NA")}</div>
-          <div style="${rowStyle}"><b>State:</b> ${ESML(p["state"] || "NA")}</div>
-          <div style="${rowStyle}"><b>AQS O3:</b> ${ESML(p["AQS"] || "NA")}</div>
-          `;
-      }
-
-      if (dataSource === "airnow-hourly-no2") {
-          AirnowHtml += `
-          <div style="${rowStyle}"> 
-            <b>Obs NO2 (hourly) (ppb):</b> 
-            <b style="color: var(--card-shadow);">
-              ${ESML(smartFmt(p["no2(ppb)"], "no2(ppb)", dataSource))}
-            </b>
-          </div>
-          <hr style="${hrStyle}">
-          <div style="${rowStyle}"><b>Param code:</b> ${ESML(p["paramCode"] || "NA")}</div>
-          <div style="${rowStyle}"><b>State:</b> ${ESML(p["state"] || "NA")}</div>
-          <div style="${rowStyle}"><b>AQS NO2:</b> ${ESML(p["AQS"] || "NA")}</div>
-          `;
-      }
-      
-      return AirnowHtml += `
-          <div style="${rowStyle}"><b>Latitude:</b> ${ESML(smartFmt(p["latitude(deg)"], "latitude(deg)", dataSource, 3))}</div>
-          <div style="${rowStyle}"><b>Longitude:</b> ${ESML(smartFmt(p["longitude(deg)"], "longitude(deg)", dataSource, 3))}</div>
-          <div style="${rowStyle}"><b>Timestamp:</b> ${ESML(p["timestamp(utc)"] || "NA")}</div>
+    if (dataSource.startsWith("airnow-hourly-")) {
+        return `
+              ${closeBtn}
+              <div style="${rowStyleHead}"><b>AirNow (Hourly)</b></div>
+              <hr style="${hrStyle}">
+              <div style="${rowStyle}"> 
+                <b>Obs PM2.5 (hourly) (µg m⁻³):</b> 
+                <b style="color: var(--card-shadow);">${ESML(smartFmt(p["pm25(ug/m3)"], "pm25(ug/m3)", dataSource))}</b>
+              </div>
+              <div style="${rowStyle}"> 
+                <b>Obs O3 (hourly) (ppb):</b> 
+                <b style="color: var(--card-shadow);">${ESML(smartFmt(p["ozone(ppb)"], "ozone(ppb)", dataSource))}</b>
+              </div>
+              <div style="${rowStyle}"> 
+                <b>Obs NO2 (hourly) (ppb):</b> 
+                <b style="color: var(--card-shadow);">${ESML(smartFmt(p["no2(ppb)"], "no2(ppb)", dataSource))}</b>
+              </div>
+              <hr style="${hrStyle}">
+              <div style="${rowStyle}"><b>State:</b> ${ESML(p["state"] || "NA")}</div>
+              <div style="${rowStyle}"><b>AQS:</b> ${ESML(p["AQS"] || "NA")}</div>
+              <div style="${rowStyle}"><b>Latitude:</b> ${ESML(smartFmt(p["lat"], "lat", dataSource, 3))}</div>
+              <div style="${rowStyle}"><b>Longitude:</b> ${ESML(smartFmt(p["lon"], "lon", dataSource, 3))}</div>
+              <div style="${rowStyle}"><b>Timestamp (UTC):</b> ${ESML(p["current_hour_str"] || "NA")}</div>
           `;
     }
     

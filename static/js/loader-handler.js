@@ -719,6 +719,9 @@ function bindEventsLoaderHandler() {
                     toggleSpinner(false);
                 }
             }
+            
+            // 3. Keep Statistical Tools date and charts completely in sync with the new time
+            triggerRefresh();
         }, 500));
     }
     // ---- [External data] AirNow ----

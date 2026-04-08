@@ -41,6 +41,7 @@ const PUBLIC_PREFIXES = [
   "modis_burn_area_date_geojson",
   "modis_burn_area_year_json",
   "airnow_date_geojson",
+  "airnow_hourly_geojson",
   "smokeday",
   "tempo_date_png",
   "tropomi_date_png"
@@ -123,6 +124,7 @@ function extractGcsPath(event) {
     "noaa_hms_fire_date_json",
     "noaa_hms_fire_year_json",
     "airnow_date_geojson",
+    "airnow_hourly_geojson",
     "smokeday",
     "tempo_date_png",
     "tropomi_date_png"

@@ -49,6 +49,12 @@
   to   = "/.netlify/functions/gcs-proxy/airnow_date_geojson/:splat"
   status = 200
   force  = true
+
+[[redirects]]
+  from = "/airnow_hourly_geojson/*"
+  to   = "/.netlify/functions/gcs-proxy/airnow_hourly_geojson/:splat"
+  status = 200
+  force  = true
   
 [[redirects]]
   from = "/noaa_hms_smoke_date_geojson/*"
