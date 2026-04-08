@@ -59,7 +59,7 @@ export function airnowActivateHour(geojson, hour) {
         p["pm25(ug/m3)"] = p[pmField];
         p["ozone(ppb)"] = p[ozoneField];
         p["no2(ppb)"] = p[no2Field];
-        p["current_hour_str"] = `${p["date"] || ""} ${hourStr}:00 (UTC)`;
+        p["current_hour_str"] = `${p["date"] || ""} ${hourStr}:00 UTC`;
 
         // Use [pm25] as the representative key for the hourly bundle to ensure map sync and tooltips work properly
         p.dsKeyForFigure = "airnow-hourly-pm25";

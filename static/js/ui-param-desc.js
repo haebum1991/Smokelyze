@@ -100,6 +100,46 @@ export const DescData = {
                 "<ul><li><b>Trajectory</b>: Tracks the movement of an air mass over time. Useful for finding the source or destination of a smoke plume.</li>" +
                 "<li><b>Dispersion</b>: Simulates the spread and concentration of pollutants over time, including physical effects like <b>Gravitational Settling</b>.</li></ul>" +
                 "Official page: <a href='https://www.ready.noaa.gov/HYSPLIT.php' target='_blank'>NOAA READY HYSPLIT</a>"
+        },
+        { 
+            id: "fig-table",
+            title: "Statistical Data Table",
+            desc: "Displays a comprehensive tabular view of daily or annual metrics across regions and monitoring sites. " +
+                  "<br><ul><li><b>Drill-down</b>: Click on a region or state name to explore site-level statistics for that area.</li>" +
+                  "<li><b>Data Export</b>: Download the currently displayed results as a .CSV file for local analysis in Excel or other tools.</li>" +
+                  "<li><b>Metric Grouping</b>: Selected layers are automatically grouped by source (e.g., GAM v2 vs. AirNow) for clarity.</li></ul>"
+        },
+        { 
+            id: "fig-barline",
+            title: "Bar & Line Layout",
+            desc: "Visualizes trends and comparisons using an interactive bar and line chart interface. " +
+                  "<br><ul><li><b>Multi-Axis Comparison</b>: Supports multiple vertical axes to simultaneously compare different data types (e.g., O3 concentrations vs. TMAX).</li>" +
+                  "<li><b>Exceedance Monitoring</b>: Highlights exceedance days (> 70 ppb) with specific color coding for smoke-impacted vs. non-smoke cases.</li>" +
+                  "<li><b>Interactive Drill-down</b>: Click on labels to switch between national/state overview and site-specific details.</li></ul>"
+        },
+        { 
+            id: "fig-parcoords",
+            title: "Parallel Coordinates Plot",
+            desc: "A powerful multidimensional visualization tool for identifying correlations across multiple variables. " +
+                  "<br><ul><li><b>Relationship Analysis</b>: Map each selected metric (O3, PM2.5, SRAD, etc.) to a vertical axis to observe multivariate trends.</li>" +
+                  "<li><b>Dynamic Filtering</b>: The order and number of axes are determined by the order in which you select data layers in the sidebar.</li>" +
+                  "<li><b>Geospatial Link</b>: Clicking on site-specific lines or labels will locate and highlight them on the main map.</li></ul>"
+        },
+        { 
+            id: "fig-scatter",
+            title: "Scatter Plot Analysis",
+            desc: "Directly compares two or more variables to evaluate model performance and identify data correlations. " +
+                  "<br><ul><li><b>Model Performance</b>: Includes a 1:1 reference line to assess how well predicted values align with observations.</li>" +
+                  "<li><b>Smoke Categorization</b>: Automatically classifies points into Smoke Days (SMD) and Non-Smoke Days (NSD) based on HMS and PM2.5 criteria.</li>" +
+                  "<li><b>Interactive Mapping</b>: Selecting data points highlights the corresponding monitoring site on the map, facilitating detailed inspection.</li></ul>"
+        },
+        {
+            id: "fig-heatmap",
+            title: "Annual Heatmap Analysis",
+            desc: "Provides a seasonal overview of satellite-derived and model data using a color-coded grid. " +
+                  "<br><ul><li><b>Temporal Trends</b>: Easily observe how metrics like area burned or smoke density change month-to-month throughout the year.</li>" +
+                  "<li><b>Spatial Comparison</b>: Compare intensity across different states or regions in a single unified view.</li>" +
+                  "<li><b>Data Focus</b>: Optimized for Satellite (HMS, MODIS) and long-term analysis datasets.</li></ul>"
         }
     ],
     "desc-nifc": [

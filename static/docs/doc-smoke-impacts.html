@@ -71,21 +71,30 @@
         locations. So, this points out the greater challenge of identifying moderate smoke levels at more polluted
         urban locations. At the same time, we note that the mean and median PM<sub>2.5</sub>-criteria are 8.51 and
         8.46 μg m<sup>-3</sup>, respectively, so this is not an issue at the vast majority of sites and more than 93%
-        of the 803 O<sub>3</sub> sites (i.e., GAM v3) we consider have PM<sub>2.5</sub>-criteria less than 12 μg
+        of the 803 O<sub>3</sub> sites (i.e., GAM v2) we consider have PM<sub>2.5</sub>-criteria less than 12 μg
         m<sup>-3</sup>.
     </p>
     <p>
-        Note that the PM<sub>2.5</sub> criteria can change very slightly for each dataset due to different averaging
-        periods. For example, the GAM v1 dataset for 2018-2023 has a national mean median + ½ MAD across all sites of
-        xx μg m<sup>-3</sup>, whereas the GAM V2 dataset has a national mean median + ½ MAD across all sites of xx μg
-        m<sup>-3</sup>. The difference is small at nearly all sites and will only be relevant for days that are very
-        close to the criteria (e.g., low smoke days).
+        Note that the PM<sub>2.5</sub> criteria can differ between datasets due to variations in calculation
+        methodologies and time periods. As mentioned above, the criteria for the GAM v1 dataset (May–September
+        2018–2023) were based on the <strong>Mean + 1 SD</strong> method and calculated as a single fixed value for each
+        site. In contrast, the GAM v2 dataset (April–October 2019–2024) utilizes the <strong>Median + 1 MAD</strong>
+        method calculated on a monthly basis, yielding seven distinct values (one for each month from April to
+        October) per site. These variations in both statistical metrics and temporal resolution may lead to
+        differences in criteria between the two versions, primarily affecting days with PM<sub>2.5</sub>
+        concentrations near the threshold.
     </p>
     <p>
-        Finally, one variable to pay attention to in our datasets is the "Quant_PM2.5". This gives the percentile of
-        each PM<sub>2.5</sub> value, in comparison to the HMS=0 data. The greater is this value, the greater is the
-        confidence that smoke has influenced the PM<sub>2.5</sub> data. During smoke events, we can see that many
-        adjacent sites have high values (>95<sup>th</sup> percentile) for Quant_PM2.5.
+        Finally, one variable to pay attention to in our datasets is the "Quant_PM2.5" (Quantile PM<sub>2.5</sub>).
+        This value represents the percentile of each daily PM<sub>2.5</sub> observation based on the Empirical
+        Cumulative Distribution Function (ECDF) of PM<sub>2.5</sub> values on days with non-smoke plume overhead
+        (HMS=0).
+        This quantile derivation is designed to be fully consistent with the scope of the PM<sub>2.5</sub>-criteria
+        calculation;
+        specifically, for the GAM v2 dataset, Quant_PM2.5 is calculated according to each site's distinct monthly ECDF
+        to account for seasonal shifts in the background distribution. The higher this value, the greater the
+        statistical confidence that smoke has influenced the PM<sub>2.5</sub> data. During significant smoke events,
+        we typically observe many adjacent sites with high Quant_PM2.5 values (e.g., >95<sup>th</sup> percentile).
     </p>
 </section>
 
@@ -115,7 +124,7 @@
         publications.
     </p>
     <p>
-        Figure 2, below, shows performance of the GAM v3 for 803 sites nationally for data from April–October
+        Figure 2, below, shows performance of the GAM v2 for 803 sites nationally for data from April–October
         2019–2024. This plot includes all observed and predicted MDA8 values and has a mean R<sup>2</sup> of 0.83.
         The mean R<sup>2</sup> for the individual GAMs at these 803 sites is 0.75. We define the model residuals as
         observed MDA8 – GAM predicted MDA8. On smoke days, we define the smoke O<sub>3</sub> (SMO) to be equal to
@@ -188,7 +197,7 @@
         obtain Y<sub>EDM</sub>. Hereafter, this method will be referred to as GAM-EDM.
     </p>
     <p>
-        Figure 4 shows performance of the GAM v3-EDM for 803 sites nationally for data from April–October 2019–2024.
+        Figure 4 shows performance of the GAM v2-EDM for 803 sites nationally for data from April–October 2019–2024.
         The slope was slightly lower compared to Figure 2, and this is a natural phenomenon when applying bias
         correction. However, what is important is when we investigate true positives (TP) that exceed 70 ppb for both
         observed and predicted MDA8. The TP of GAM-EDM for training data (63%) improved by 18% compared to GAM (45%).

@@ -4,6 +4,7 @@ import { resetUIAndData, resetAccordionDetails, resetMapViewToDefault } from "./
 import * as utils from "./utils.js";
 import { auth } from "./fb-init.js";
 import { updateAuthButton } from "./signin.js";
+import { showHelpModal } from "./ui-param-desc.js";
 
 export let onCurrentPlotHide = null;
 export function setOnCurrentPlotHide(fn) { onCurrentPlotHide = fn; }
@@ -596,6 +597,60 @@ export function setupPlotTabs() {
             });
         });
     });
+    
+    // [New] Add Help Icons to each container (Plot Body) systematically
+    const helpMap = {
+        "stats-plot-for-table-date": "fig-table",
+        "stats-plot-for-table-year": "fig-table",
+        "stats-plot-for-barline-date": "fig-barline",
+        "stats-plot-for-parcoords-date": "fig-parcoords",
+        "stats-plot-for-scatter-date": "fig-scatter",
+        "stats-plot-for-heatmap-year": "fig-heatmap"
+    };
+
+    for (const [containerId, descId] of Object.entries(helpMap)) {
+        const container = document.getElementById(containerId);
+        if (!container) continue;
+
+        // Prevent duplicate icons
+        if (container.querySelector(".stats-container-help-trigger")) continue;
+
+        // Ensure container can position absolute children
+        container.style.position = "relative";
+
+        const helpIcon = document.createElement("button");
+        helpIcon.className = "stats-container-help-trigger drawer-help-btn";
+        helpIcon.innerHTML = `
+            <svg width="20" height="20">
+                <use xlink:href="#icon-help" />
+            </svg>
+        `;
+        helpIcon.title = "Tool Description";
+
+        // Position at top-right corner of the body
+        Object.assign(helpIcon.style, {
+            position: "absolute",
+            top: "1rem",
+            left: "0",
+            zIndex: "100",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: "0.2rem",
+            opacity: "0.8",
+            transition: "opacity 0.2s"
+        });
+
+        helpIcon.addEventListener("click", (e) => {
+            e.stopPropagation();
+            showHelpModal(descId);
+        });
+
+        helpIcon.addEventListener("mouseenter", () => { helpIcon.style.opacity = "1"; });
+        helpIcon.addEventListener("mouseleave", () => { helpIcon.style.opacity = "0.6"; });
+
+        container.appendChild(helpIcon);
+    }
 }
 
 window.addEventListener("themeChanged", () => {
@@ -895,7 +950,13 @@ export function resetPlotContainer(container, observerProp) {
     try {
         if (window.Plotly) Plotly.purge(container);
     } catch (e) { /* ignore */ }
-    container.innerHTML = "";
+    
+    // [Fix] Preserve help icons when clearing the container
+    Array.from(container.children).forEach(child => {
+        if (!child.classList.contains("stats-container-help-trigger")) {
+            child.remove();
+        }
+    });
 }
 
 export function attachResizeObserver(container, observerProp) {
@@ -994,6 +1055,9 @@ export function exportTableToCSV(tableSelector, filename) {
 
       let data = cell.innerText.replace(/\r?\n|\r/g, " ").trim();
       data = data.replace(/↓|↑/g, "").trim();
+      
+      // [Fix] CSV 내보내기 시 슬래시(/)를 파이프(|)로 변경하여 엑셀 날짜 변환 방지
+      data = data.replace(/\//g, "|");
       data = `"${data.replace(/"/g, '""')}"`;
 
       const rowSpan = cell.rowSpan || 1;

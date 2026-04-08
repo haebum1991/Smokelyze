@@ -1267,7 +1267,7 @@ tr.stats-state-row-ca.show {
 .stats-plot-tab-sub-container {
   display: none;
   height: 55vh;
-  padding-top: 1rem;
+  padding-top: 3rem;
   box-sizing: border-box;
 }
 
