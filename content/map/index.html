@@ -49,6 +49,12 @@ title: ""
       <canvas class="ui-pulsing-icon" data-type="alert" width="36" height="36" style="vertical-align:middle;"></canvas>
     </button>
     
+    <button class="accordion-toggle" id="AerscreenToggle" title="Dispersion Screening" style="display: none;">
+      <svg width="24" height="24">
+        <use xlink:href="#icon-aerscreen" />
+      </svg>
+    </button>
+    
     <button class="accordion-toggle" id="HysplitToggle" title="HYSPLIT Simulation">
        <svg width="24" height="24">
          <use xlink:href="#icon-hysplit" />
@@ -435,6 +441,38 @@ title: ""
   </div>
 </div>
 
+<div class="Aerscreen-drawer" id="AerscreenDrawer">
+  <div class="Aerscreen-drawer-header">
+    <h3 id="AerscreenDrawerTitle">AERSCREEN Dispersion</h3>
+    <button class="ui-btn-close" id="AerscreenDrawerClose">
+      <svg width="20" height="20">
+        <use xlink:href="#icon-close" />
+      </svg>
+    </button>
+  </div>
+
+  <div
+    style="padding: 1rem 1.5rem; border-bottom: 0.1rem solid var(--border-main); display: flex; gap: 1rem; align-items: center;">
+    <button id="AerscreenBtnNew" class="MapPost-item-link"
+      style="flex: 1; margin: 0; display: block; text-align: center;">
+      +Simulation
+    </button>
+    <button id="AerscreenBtnClearAll" class="reply-btn-cancel" style="padding: 0.5rem 1rem; font-size: 1.4rem;">
+      Clear All
+    </button>
+  </div>
+
+  <div
+    style="padding: 0.5rem 1.5rem; font-size: 1.4rem; color: var(--text-main); border-bottom: 0.1rem solid var(--border-main);">
+    Results are saved in your local browser (max 10 items).
+  </div>
+  <div class="Aerscreen-drawer-list" id="AerscreenDrawerList" style="flex: 1; overflow-y: auto;">
+    <div style="padding: 2rem; text-align: center; color: var(--text-main); font-size: 1.4rem;">
+      No simulations yet.<br>Click a point on map or use the button above.
+    </div>
+  </div>
+</div>
+
 <div class="Legend-drawer" id="LegendDrawer">
   <div class="Legend-drawer-header">
     <h3 id="LegendDrawerTitle">Legend</h3>
@@ -686,6 +724,7 @@ title: ""
 <script type="module" src="/js/stats-yearly.js"></script>
 <script type="module" src="/js/ui-tutorial.js"></script>
 <script type="module" src="/js/map-animate.js"></script>
+<script type="module" src="/js/aerscreen.js"></script>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/driver.js@1.4.0/dist/driver.js.iife.js"></script>
@@ -698,6 +737,7 @@ title: ""
   <div class="reply-btn-wrapper" style="justify-content: center; flex-direction: column; gap: 0.5rem; padding: 0.5rem;">
     <button class="reply-btn-submit" id="MapPostBtnWrite" style="width: 100%;">Add MapPost</button>
     <button class="reply-btn-submit" id="MapPostBtnHysplit" style="width: 100%;">Run HYSPLIT</button>
+    <button class="reply-btn-submit" id="MapPostBtnAerscreen">AERSCREEN</button>
     <button class="reply-btn-cancel" id="MapPostBtnClose" style="width: 100%;">Close</button>
   </div>
 </div>
@@ -906,6 +946,107 @@ title: ""
       <div class="reply-btn-wrapper">
         <button class="reply-btn-submit" id="HysplitBtnSubmit">Run Simulation</button>
         <button class="reply-btn-cancel" id="HysplitBtnCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Aerscreen Modal -->
+<div class="MapPost-modal-overlay" id="AerscreenModalOverlay" style="display:none;">
+  <div class="MapPost-modal">
+    <div class="MapPost-modal-header">
+      <h3 id="AerscreenModalTitle">Dispersion & AERSCREEN</h3>
+      <button class="ui-btn-close" id="AerscreenModalClose">
+        <svg width="20" height="20">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="MapPost-modal-body">
+      <div class="MapPost-form-group">
+        <label>Location (lon, lat):</label>
+        <div id="InputAerscreenLocation"
+          style="padding: 0.8rem; background: var(--color-bg-alt); border-radius: 0.4rem; font-family: monospace;">
+        </div>
+        <input type="hidden" id="AerscreenSourceLon">
+        <input type="hidden" id="AerscreenSourceLat">
+      </div>
+
+      <div class="MapPost-form-group-row">
+        <div class="MapPost-form-group">
+          <label for="AerscreenMode">Simulation Mode</label>
+          <select id="AerscreenMode" class="MapPost-select">
+            <option value="simplified" selected>Simplified Gaussian Plume Model</option>
+            <option value="aerscreen">EPA AERSCREEN</option>
+          </select>
+        </div>
+        <div class="MapPost-form-group">
+          <label for="AerscreenPreset">Preset Scenario</label>
+          <select id="AerscreenPreset" class="MapPost-select">
+            <option value="smallFire">Small Fire (~100 acres)</option>
+            <option value="mediumFire" selected>Medium Fire (~1,000 acres)</option>
+            <option value="largeFire">Large Fire (~10,000 acres)</option>
+            <option value="majorFire">Major Fire (~100,000+ acres)</option>
+            <option value="custom">Custom (Manual Input)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="MapPost-form-group-row">
+        <div class="MapPost-form-group">
+          <label for="AerscreenEmissionRate">Emission Rate (kg hr-1)</label>
+          <input type="number" id="AerscreenEmissionRate" value="1800" min="0" step="100">
+        </div>
+        <div class="MapPost-form-group">
+          <label for="AerscreenEffHeight">Effective Height (m)</label>
+          <input type="number" id="AerscreenEffHeight" value="800" min="0" step="50">
+        </div>
+      </div>
+
+      <div class="MapPost-form-group-row">
+        <div class="MapPost-form-group">
+          <label for="AerscreenWindSpeed">Wind Speed (m s-1)</label>
+          <input type="number" id="AerscreenWindSpeed" value="5" min="0.5" max="30" step="0.5">
+        </div>
+        <div class="MapPost-form-group">
+          <label for="AerscreenWindDir">Wind Direction (°)</label>
+          <input type="number" id="AerscreenWindDir" value="270" min="0" max="360" step="5">
+        </div>
+      </div>
+
+      <div class="MapPost-form-group-row">
+        <div class="MapPost-form-group">
+          <label for="AerscreenStability">Stability Class</label>
+          <select id="AerscreenStability" class="MapPost-select">
+            <option value="A">A: Very Unstable</option>
+            <option value="B">B: Unstable</option>
+            <option value="C">C: Slightly Unstable</option>
+            <option value="D" selected>D: Neutral</option>
+            <option value="E">E: Slightly Stable</option>
+            <option value="F">F: Stable</option>
+          </select>
+        </div>
+        <div class="MapPost-form-group">
+          <label for="AerscreenTerrain">Terrain</label>
+          <select id="AerscreenTerrain" class="MapPost-select">
+            <option value="rural" selected>Rural</option>
+            <option value="urban">Urban</option>
+          </select>
+        </div>
+      </div>
+
+      <div
+        style="margin-top: 1.5rem; font-size: 1.3rem; color: var(--text-main); border-top: 0.1rem solid var(--border-main); padding-top: 0.8rem;">
+        <strong>Screening Level Analysis</strong>: Uses simplified Gaussian plume or EPA AERSCREEN model. Results do
+        not replace full AERMOD regulatory modeling for permit applications.
+      </div>
+    </div>
+
+    <div class="MapPost-modal-footer">
+      <div class="reply-btn-wrapper">
+        <button class="reply-btn-submit" id="AerscreenBtnRun">Run Simulation</button>
+        <button class="reply-btn-cancel" id="AerscreenBtnCancel">Cancel</button>
       </div>
     </div>
   </div>

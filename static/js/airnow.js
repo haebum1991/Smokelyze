@@ -7,13 +7,15 @@
 import { LAYER_TEMPLATES } from "./layers-def.js";
 import { regionStats } from "./layers-state.js";
 import { usStates, caStates } from "./stats-common.js";
+import { getCacheBuster } from "./utils.js";
 
 /**
  * Build local path for AirNow daily GeoJSON bundle
  */
 export function airnowBuildURL(coverage, isoDate) {
     const year = isoDate.split("-")[0];
-    return `/airnow_hourly_geojson/${year}/airnow_${isoDate}.geojson.gz`;
+    const cacheBuster = getCacheBuster(isoDate);
+    return `/airnow_hourly_geojson/${year}/airnow_${isoDate}.geojson.gz${cacheBuster}`;
 }
 
 /**

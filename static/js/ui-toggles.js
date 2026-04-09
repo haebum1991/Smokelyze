@@ -382,9 +382,9 @@ function createDrawerToggle(config) {
                 // Mobile: Close everything
                 closeAllExcept(id);
                 clearHighlight?.();
-            } else if (["legend", "news", "MapPost", "hysplit"].includes(id)) {
+            } else if (["legend", "news", "MapPost", "hysplit", "aerscreen"].includes(id)) {
                 // PC: Only close siblings in the same group (Left side drawers)
-                closeAllExcept(id, ["legend", "news", "MapPost", "hysplit"]);
+                closeAllExcept(id, ["legend", "news", "MapPost", "hysplit", "aerscreen"]);
             }
             onOpen?.();
         } else {
@@ -566,6 +566,28 @@ export function initHysplitDrawer() {
 }
 
 /**
+ * 8. Aerscreen Drawer
+ */
+export const setAerscreenDrawer = createDrawerToggle({
+    id: "aerscreen",
+    btnId: "AerscreenToggle",
+    drawerId: "AerscreenDrawer",
+    bodyClass: "Aerscreen-drawer-open",
+    onOpen: () => window.dispatchEvent(new CustomEvent("aerscreen-drawer-opened"))
+});
+
+export function initAerscreenDrawer() {
+    const btn = document.getElementById("AerscreenToggle");
+    const drawer = document.getElementById("AerscreenDrawer");
+    const closeBtn = document.getElementById("AerscreenDrawerClose");
+    if (!drawer) return;
+
+    if (btn) btn.addEventListener("click", () => setAerscreenDrawer());
+    addCloseHandler(closeBtn, () => setAerscreenDrawer(false));
+    addSwipeClose(drawer, { direction: "left", onClose: () => setAerscreenDrawer(false) });
+}
+
+/**
  * Main Initialization
  */
 export function initAll() {
@@ -576,6 +598,7 @@ export function initAll() {
     initMapPostDrawer();
     initLegendDrawer();
     initHysplitDrawer();
+    initAerscreenDrawer();
     appendAllLayerHelpIcons();
 }
 

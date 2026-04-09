@@ -525,7 +525,7 @@ fb.onAuthStateChanged(fb.auth, async (user) => {
             const userSnap = await getDoc(doc(db, "smokelyze_users", user.uid));
             if (userSnap.exists()) {
                 const data = userSnap.data();
-                state.isAdmin = (data.role === "admin" || data.userRole === "admin" || data.isAdmin === true);
+                state.isAdmin = (data.role === "admin");
             }
         } catch (e) { console.warn("Failed to fetch user role:", e); }
     }
