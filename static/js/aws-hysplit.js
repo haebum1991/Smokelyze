@@ -43,13 +43,13 @@ export function initHysplit() {
     // Listen for reset events from ui-reset.js (Decoupled Reset)
     document.addEventListener("smokelyze-reset-hysplit", (e) => {
         console.log("[HYSPLIT] Reset event received.");
+        hideDispersionDrawer(); // Ensure animator is closed
         clearHysplitTrajectory(e.detail?.deleteHistory ?? false);
     });
     
-    // Toggle flow event from ui-toggles.js
-    window.addEventListener("hysplit-flow-toggle", (e) => {
-        state.showFlowStream = e.detail;
-        toggleFlowAnimation(e.detail);
+    // Toggle ALL visibility event from ui-toggles.js
+    window.addEventListener("hysplit-all-toggle", (e) => {
+        setHysplitVisibility("all", e.detail);
     });
     
     // 1. Capture coordinate from context menu (parallel to fb-MapPost)
@@ -186,7 +186,29 @@ export function initHysplit() {
 
         if (animBtn) {
             const runId = parseInt(animBtn.dataset.runId);
-            showDispersionDrawer(runId);
+            const item = state.history.find(h => h.runId === runId);
+            if (item) {
+                if (item.params.run_type === "dispersion") {
+                    if (DispersionDrawerState.runId === runId) {
+                        hideDispersionDrawer();
+                    } else {
+                        showDispersionDrawer(runId);
+                    }
+                } else {
+                    const willTurnOn = !state.showFlowStream;
+                    if (!item.visible) {
+                        toggleTrajectoryVisibility(runId);
+                    }
+                    if (willTurnOn && utils.highlightLocation && item.data && item.data.length > 0) {
+                        const pt = item.data[0];
+                        const props = { ...pt, color: item.color, run_type: "trajectory" };
+                        utils.highlightLocation([pt.lon, pt.lat], props, "hysplit", 8);
+                    }
+                    state.showFlowStream = willTurnOn;
+                    toggleFlowAnimation(state.showFlowStream);
+                }
+                updateHysplitDrawerList();
+            }
             return;
         }
 
@@ -804,11 +826,15 @@ function updateHysplitDrawerList() {
             : `<svg width="18" height="18"><use xlink:href="#icon-eye-closed" /></svg>`;
 
         const isDispersion = (p.run_type === "dispersion");
-        const animBtn = isDispersion
-            ? `<button class="hysplit-item-anim ui-btn-close" data-run-id="${item.runId}" title="See Animation">
-                 <svg width="18" height="18"><use xlink:href="#icon-hysplit-anim" /></svg>
-               </button>`
-            : "";
+        const animActive = isDispersion 
+            ? (DispersionDrawerState.runId === item.runId)
+            : state.showFlowStream;
+        const animActiveCls = animActive ? "active" : "";
+
+        const animIcon = animActive ? "icon-hysplit-anim" : "icon-hysplit-anim-off";
+        const animBtn = `<button class="hysplit-item-anim ui-btn-close ${animActiveCls}" data-run-id="${item.runId}" title="See Animation">
+                             <svg width="18" height="18"><use xlink:href="#${animIcon}" /></svg>
+                           </button>`;
 
         return `
             <div class="Hysplit-item" data-run-id="${item.runId}" style="border-left-color: ${utils.ESML(item.color)}; border-left-width: 5px;">
@@ -823,7 +849,7 @@ function updateHysplitDrawerList() {
                                 <use xlink:href="#icon-location" />
                             </svg>
                         </button>
-                        <button class="hysplit-item-toggle ui-btn-close ${visibleCls}" data-run-id="${item.runId}">
+                        <button class="hysplit-item-toggle ui-btn-close ${visibleCls}" data-run-id="${item.runId}" title="Show on Map">
                             ${eyeIcon}
                         </button>
                         <button class="hysplit-item-remove ui-btn-close" data-run-id="${item.runId}">
@@ -924,6 +950,12 @@ function toggleTrajectoryVisibility(runId) {
 
 function removeTrajectory(runId) {
     state.history = state.history.filter(h => h.runId !== runId);
+    
+    // If the removed run was active in the dispersion animator, close it
+    if (DispersionDrawerState.runId === runId) {
+        hideDispersionDrawer();
+    }
+    
     saveToStorage();
     
     // --- Memory Leak Guard: Remove Event Listeners ---
@@ -1018,7 +1050,7 @@ function renderHysplitTrajectory(data, direction, existingRunId = null, isRestor
         height: data[0].height?.toFixed(1) || 0
     };
 
-    state.history.unshift({ runId, color, params, data, flowCoords, visible: true });
+    state.history.unshift({ runId, color, params, data, flowCoords, visible: !isRestoring });
 
     // Enforce 10-item limit: remove oldest if exceeded
     if (state.history.length > 10) {
@@ -1041,6 +1073,7 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
     if (!map || !data || data.length === 0) return;
 
     const exaggeration = 15;
+    const visibility = isRestoring ? "none" : "visible";
     let coords3D = data.map(pt => [pt.lon, pt.lat, pt.height || 0]);
     if (direction === "backward") coords3D = coords3D.reverse();
     const receptorPoint = direction === "backward" ? coords3D[coords3D.length - 1] : coords3D[0];
@@ -1133,7 +1166,8 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
             "fill-extrusion-color": color,
             "fill-extrusion-height": ["get", "height"],
             "fill-extrusion-opacity": 0.4
-        }
+        },
+        layout: { visibility }
     });
 
     // 2. Line Layer
@@ -1146,7 +1180,8 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
             "line-color": color,
             "line-width": 3,
             "line-dasharray": [2, 1]
-        }
+        },
+        layout: { visibility }
     });
 
     // 4. Hourly Points Layer (The one we hover on)
@@ -1166,7 +1201,8 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
             "circle-color": color,
             "circle-opacity": 0.0,
             "circle-stroke-width": 0,
-        }
+        },
+        layout: { visibility }
     });
 
     // 5. Visible Points Layer
@@ -1186,7 +1222,8 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
             "circle-color": color,
             "circle-stroke-width": 1,
             "circle-stroke-color": "#ffffff"
-        }
+        },
+        layout: { visibility }
     });
 
     // 6. Receptor point
@@ -1206,7 +1243,8 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
             "circle-color": "#ffffff",
             "circle-stroke-width": 2,
             "circle-stroke-color": color
-        }
+        },
+        layout: { visibility }
     });
 
     // Precise Hover Events (Pick closest feature among overlaps)
@@ -1317,6 +1355,8 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
  */
 function drawDispersionLayers(runId, data, color, isRestoring = false) {
     if (!map || !data || data.length === 0) return;
+    
+    const visibility = isRestoring ? "none" : "visible";
 
     const features = data.map(pt => ({
         type: "Feature",
@@ -1368,7 +1408,8 @@ function drawDispersionLayers(runId, data, color, isRestoring = false) {
                 10, 18
             ],
             "heatmap-opacity": 0.8
-        }
+        },
+        layout: { visibility }
     });
 
     // 2. Individual Particles (Circle Layer) - for detailed view when zoomed in
@@ -1391,7 +1432,8 @@ function drawDispersionLayers(runId, data, color, isRestoring = false) {
             ],
             "circle-stroke-width": 0.5,
             "circle-stroke-color": "#ffffff"
-        }
+        },
+        layout: { visibility }
     });
     
     // --- Tooltip & Interaction ---
@@ -1645,6 +1687,10 @@ function hideDispersionDrawer() {
             }
         }
     }
+    
+    // Reset active state to refresh icons in drawer list
+    DispersionDrawerState.runId = null;
+    updateHysplitDrawerList();
 }
 
 function updateDispersionFrame(index) {

@@ -1675,10 +1675,8 @@ body.FigurePage-drawer-open .Aerscreen-drawer.open {
 
   .Legend-drawer,
   .MapPost-drawer,
-  .WFnews-drawer,
-  .Aerscreen-drawer {
+  .WFnews-drawer {
     width: 100%;
-    top: calc(var(--header-height-total) + var(--toolbar-date-height));
   }
   
   .Legend-drawer {

@@ -553,10 +553,10 @@ export function initHysplitDrawer() {
     if (container) {
         appendSwitch(container, {
             id: "MapBtnHysplitFlow",
-            label: "Show Flow stream",
-            checked: false, // Initial state will be synced by aws-hysplit.js
+            label: "Show All Sim. on Map",
+            checked: false, 
             onChange: (val) => {
-                window.dispatchEvent(new CustomEvent("hysplit-flow-toggle", { detail: val }));
+                window.dispatchEvent(new CustomEvent("hysplit-all-toggle", { detail: val }));
             }
         });
     }

@@ -7,6 +7,7 @@ import { auth } from "./fb-init.js";
 import { map } from "./map-init.js";
 import { showErrorToast } from "./loader-ui.js";
 import * as utils from "./utils.js";
+import { setAerscreenDrawer } from "./ui-toggles.js";
 
 const AERSCREEN_CONFIG = {
     API_URL: "https://fetch-aerscreen-go-service-1068523865415.us-central1.run.app/api/dispersion/aerscreen"
@@ -781,6 +782,7 @@ export function handleAerscreenModeToggle(force) {
         if (showErrorToast) {
             showErrorToast("AERSCREEN Mode: Click on the map to select a source location.", "info");
         }
+        setAerscreenDrawer(false);
     } else {
         mapEl.classList.remove("Aerscreen-mode-cursor");
     }
@@ -1122,6 +1124,13 @@ export function destroyDispersion() {
     clearMapLayers();
     aerscreenHistory = [];
     updateAerscreenDrawerList();
+    
+    // Close result panel if open
+    const panel = document.getElementById("AerscreenResultOverlay");
+    if (panel) panel.style.display = "none";
+
+    // Close drawer
+    if (setAerscreenDrawer) setAerscreenDrawer(false);
 }
 
 // ============================================================
@@ -1174,7 +1183,7 @@ document.body.addEventListener("click", (e) => {
 });
 
 // Listen for reset events from ui-reset.js (Decoupled Reset)
-document.addEventListener("smokelyze-reset-dispersion", () => {
+document.addEventListener("smokelyze-reset-aerscreen", () => {
     destroyDispersion();
 });
 

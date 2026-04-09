@@ -14,7 +14,15 @@ import { clearModelStats } from "./loader.js";
 import { hideTimeControls } from "./ui-time.js";
 import { clearAllRaster } from "./raster-loader.js";
 import { updateAllActiveSources } from "./loader.js";
-import { setStatsDrawer, setDescDrawer, setNewsDrawer, setMapPostDrawer, setLegendDrawer, setHysplitDrawer } from "./ui-toggles.js";
+import { 
+  setStatsDrawer, 
+  setDescDrawer, 
+  setNewsDrawer, 
+  setMapPostDrawer, 
+  setLegendDrawer, 
+  setHysplitDrawer, 
+  setAerscreenDrawer 
+} from "./ui-toggles.js";
 
 function numOr(x, d) { return (typeof x === "number" && isFinite(x)) ? x : d; }
 
@@ -70,9 +78,10 @@ export function resetUIAndData() {
   // Final single refresh for loaders/UI
   updateAllActiveSources?.();
   
-  // 7) Clear HYSPLIT from Map (But keep in Storage)
-  // Decoupled via event: No direct import or window global needed
+  // 7) Clear HYSPLIT & AERSCREEN from Map (But keep in Storage)
+  // Decoupled via events: No direct import needed
   document.dispatchEvent(new CustomEvent("smokelyze-reset-hysplit", { detail: { deleteHistory: false } }));
+  document.dispatchEvent(new CustomEvent("smokelyze-reset-aerscreen"));
 }
 
 /**
@@ -86,6 +95,7 @@ export function closeAllDrawersExceptAccordion() {
   setMapPostDrawer?.(false);
   setLegendDrawer?.(false);
   setHysplitDrawer?.(false);
+  setAerscreenDrawer?.(false);
 
   // 2) AI Chat (Uses different class structure)
   const aiDrawer = document.getElementById("AiChatDrawer");
