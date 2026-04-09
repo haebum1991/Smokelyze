@@ -43,7 +43,33 @@ export function initHysplit() {
     // Listen for reset events from ui-reset.js (Decoupled Reset)
     document.addEventListener("smokelyze-reset-hysplit", (e) => {
         console.log("[HYSPLIT] Reset event received.");
-        hideDispersionDrawer(); // Ensure animator is closed
+        
+        // 1. Stop active API execution if running
+        if (state.isRunning && state.abortController) {
+            console.log("[HYSPLIT] Aborting active simulation...");
+            state.abortController.abort();
+            state.isRunning = false;
+            state.abortController = null;
+            
+            // Reset Submit Button UI immediately
+            const submitBtn = document.getElementById("HysplitBtnSubmit");
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Run Simulation";
+                submitBtn.style.opacity = "1";
+            }
+            const titleEl = document.getElementById("HysplitModalTitle");
+            if (titleEl) titleEl.innerText = "HYSPLIT Simulation";
+        }
+
+        // 2. Stop map animations
+        state.showFlowStream = false;
+        toggleFlowAnimation(false);
+        const flowCheck = document.getElementById("MapBtnHysplitFlow");
+        if (flowCheck) flowCheck.checked = false;
+        
+        DispersionDrawerState.runId = null; // Clear active dispersion run reference
+        hideDispersionDrawer(); // Ensure animator drawer is closed
         clearHysplitTrajectory(e.detail?.deleteHistory ?? false);
     });
     
@@ -886,9 +912,9 @@ function setHysplitVisibility(runId, visible) {
         if (visible && !map.getLayer(testLayer)) {
             const isDispersion = (item.params.run_type === "dispersion");
             if (isDispersion) {
-                drawDispersionLayers(item.runId, item.data, item.color, true);
+                drawDispersionLayers(item.runId, item.data, item.color, false);
             } else {
-                drawTrajectoryLayers(item.runId, item.data, item.params.direction, item.color, true);
+                drawTrajectoryLayers(item.runId, item.data, item.params.direction, item.color, false);
             }
         } else {
             const suffixes = (item.params.run_type === "dispersion") 
@@ -919,9 +945,9 @@ function toggleTrajectoryVisibility(runId) {
         if (!map.getLayer(testLayer)) {
             const isDispersion = (item.params.run_type === "dispersion");
             if (isDispersion) {
-                drawDispersionLayers(item.runId, item.data, item.color, true);
+                drawDispersionLayers(item.runId, item.data, item.color, false);
             } else {
-                drawTrajectoryLayers(item.runId, item.data, item.params.direction, item.color, true);
+                drawTrajectoryLayers(item.runId, item.data, item.params.direction, item.color, false);
             }
             updateHysplitDrawerList();
             return;

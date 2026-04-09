@@ -14,14 +14,21 @@ const AERSCREEN_CONFIG = {
 };
 
 export const AerscreenTool = {
+    isRunning: false,
+    abortController: null,
     /**
      * Calls the backend AERSCREEN API
      * @param {Object} params - Emission parameters from the UI
      */
     async runAnalysis(params) {
-        console.log("Starting AERSCREEN Analysis with params:", params);
+        if (this.isRunning) {
+            if (showErrorToast) showErrorToast("AERSCREEN is already running.", "warning");
+            return;
+        }
 
         // Let user know we are working (UI Feedback)
+        this.isRunning = true;
+        this.abortController = new AbortController();
         this.showLoading(true);
 
         try {
@@ -52,6 +59,7 @@ export const AerscreenTool = {
 
             const response = await fetch(AERSCREEN_CONFIG.API_URL, {
                 method: "POST",
+                signal: this.abortController.signal,
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${idToken}`
@@ -66,10 +74,31 @@ export const AerscreenTool = {
 
             this.handleSuccess(result, params);
         } catch (error) {
-            console.error("AERSCREEN Failed:", error);
-            alert(`AERSCREEN Analysis Failed: ${error.message}
-Make sure the backend is running!`);
+            if (error.name === "AbortError") {
+                console.log("AERSCREEN: Analysis aborted by user.");
+            } else {
+                console.error("AERSCREEN Failed:", error);
+                if (showErrorToast) {
+                    showErrorToast(`AERSCREEN Failed: ${error.message}`, "error");
+                } else {
+                    alert(`AERSCREEN Analysis Failed: ${error.message}`);
+                }
+            }
         } finally {
+            this.isRunning = false;
+            this.abortController = null;
+            this.showLoading(false);
+        }
+    },
+
+    /**
+     * Aborts the currently running analysis
+     */
+    abortAnalysis() {
+        if (this.isRunning && this.abortController) {
+            this.abortController.abort();
+            this.isRunning = false;
+            this.abortController = null;
             this.showLoading(false);
         }
     },
@@ -95,11 +124,6 @@ Make sure the backend is running!`);
 
         // 2. Add to history
         const runId = Date.now();
-        // Hide previous run
-        if (aerscreenHistory.length > 0) {
-            aerscreenHistory.forEach(h => h.visible = false);
-        }
-
         aerscreenHistory.unshift({
             runId: runId,
             params: params,
@@ -116,7 +140,7 @@ Make sure the backend is running!`);
 
         // 3. Add visual marker on the map for the Peak Concentration point
         try {
-            this.markPeakOnMap(result, params);
+            markPeakOnMap(runId, result, params);
         } catch (e) {
             console.warn("AERSCREEN: Map marker failed (non-critical):", e.message);
         }
@@ -188,36 +212,6 @@ Make sure the backend is running!`);
                 </div>
             </div>
         `;
-    },
-
-    /**
-     * Adds a peak marker on the map
-     */
-    markPeakOnMap(result, params) {
-        if (!map) return;
-
-        // Calculate the peak point location based on distance and wind direction
-        // This is a simplified projection
-        const distKm = result.distance_to_max / 1000;
-        const bearing = (params.wind_direction + 180) % 360; // Wind is going TO this direction
-
-        const sourceLon = params.lon;
-        const sourceLat = params.lat;
-
-        // Simple projection: 1 degree lat ~ 111km, 1 degree lon ~ 111 * cos(lat)
-        const dLat = (distKm / 111) * Math.cos(bearing * Math.PI / 180);
-        const dLon = (distKm / (111 * Math.cos(sourceLat * Math.PI / 180))) * Math.sin(bearing * Math.PI / 180);
-
-        const peakLon = sourceLon + dLon;
-        const peakLat = sourceLat + dLat;
-
-        // Add a marker and fly to it
-        new maplibregl.Marker({ color: "#ff0000", scale: 1.2 })
-            .setLngLat([peakLon, peakLat])
-            .setPopup(new maplibregl.Popup().setHTML(`<b>Peak Impact</b><br>${result.max_concentration.toFixed(1)} µg/m³`))
-            .addTo(map);
-
-        map.flyTo({ center: [peakLon, peakLat], zoom: 11, speed: 1.5 });
     },
 
     showLoading(show) {
@@ -331,7 +325,7 @@ function getDispersionCoeffs(x, stabilityClass, terrain = "rural") {
 
 /**
  * Estimates effective plume rise for buoyancy-dominated fire plumes.
- * Uses Briggs' buoyancy formulas adapted for fires.
+ * Uses Briggs buoyancy formulas adapted for fires.
  * 
  * Fb = g · Qh / (π · ρa · Cp · Ta)       [Briggs, 1969]
  * ΔH = 21.425 · Fb^(3/4) / u   (Fb < 55)
@@ -527,7 +521,7 @@ function generateContourGeoJSON(gridResult, sourceLon, sourceLat, levels) {
 }
 
 /**
- * Simple convex hull (Andrew's monotone chain algorithm)
+ * Simple convex hull (Andrew monotone chain algorithm)
  * @param {number[][]} points - Array of [x, y]
  * @returns {number[][]} Hull vertices in order
  */
@@ -555,7 +549,7 @@ function convexHull(points) {
         upper.push(p);
     }
 
-    // Remove last point of each half because it's repeated
+    // Remove last point of each half because its repeated
     lower.pop();
     upper.pop();
 
@@ -605,34 +599,71 @@ function calcReceptorConcentration(params) {
 // Section 5: Map Rendering (MapLibre Integration)
 // ============================================================
 
-const SOURCE_ID = "dispersion-contour-source";
-const FILL_LAYER_ID = "dispersion-contour-fill";
-const LINE_LAYER_ID = "dispersion-contour-line";
-const MARKER_SOURCE_ID = "dispersion-source-marker";
-const MARKER_LAYER_ID = "dispersion-source-marker-layer";
+const getSourceId = (runId) => `aerscreen-src-contour-${runId}`;
+const getFillLayerId = (runId) => `aerscreen-layer-fill-${runId}`;
+const getLineLayerId = (runId) => `aerscreen-layer-line-${runId}`;
+const getMarkerSourceId = (runId) => `aerscreen-src-marker-${runId}`;
+const getMarkerLayerId = (runId) => `aerscreen-layer-marker-${runId}`;
 
-let currentMarker = null;
+let activeMarkers = {}; // Store MapLibre markers by runId
+
+/**
+ * Adds a peak marker on the map
+ */
+function markPeakOnMap(runId, result, params) {
+    if (!map) return;
+
+    // Calculate the peak point location
+    const distKm = result.distance_to_max / 1000;
+    const bearing = (params.wind_direction + 180) % 360;
+
+    const sourceLon = params.lon;
+    const sourceLat = params.lat;
+
+    const dLat = (distKm / 111) * Math.cos(bearing * Math.PI / 180);
+    const dLon = (distKm / (111 * Math.cos(sourceLat * Math.PI / 180))) * Math.sin(bearing * Math.PI / 180);
+
+    const peakLon = sourceLon + dLon;
+    const peakLat = sourceLat + dLat;
+
+    // Remove old marker for this run if exists
+    if (activeMarkers[runId]) {
+        activeMarkers[runId].remove();
+    }
+
+    // Add a marker and fly to it
+    const marker = new maplibregl.Marker({ color: "#ff0000", scale: 1.2 })
+        .setLngLat([peakLon, peakLat])
+        .setPopup(new maplibregl.Popup().setHTML(`<b>Peak Impact</b><br>${result.max_concentration.toFixed(1)} µg/m³`))
+        .addTo(map);
+
+    activeMarkers[runId] = marker;
+    map.flyTo({ center: [peakLon, peakLat], zoom: 11, speed: 1.5 });
+}
 
 /**
  * Renders dispersion contours on the MapLibre map.
- * @param {Object} geojson - GeoJSON FeatureCollection from generateContourGeoJSON
- * @param {number} sourceLon
- * @param {number} sourceLat
  */
-function renderContoursOnMap(geojson, sourceLon, sourceLat) {
+function renderContoursOnMap(runId, geojson, sourceLon, sourceLat) {
     if (!map) return;
 
-    // Remove existing layers/sources
-    clearMapLayers();
+    const srcId = getSourceId(runId);
+    const fillId = getFillLayerId(runId);
+    const lineId = getLineLayerId(runId);
+    const mSrcId = getMarkerSourceId(runId);
+    const mLayerId = getMarkerLayerId(runId);
+
+    // Remove existing layers for this specific run if they exist
+    clearMapLayers(runId);
 
     // Add source with contour data
-    map.addSource(SOURCE_ID, { type: "geojson", data: geojson });
+    map.addSource(srcId, { type: "geojson", data: geojson });
 
     // Fill layer (semi-transparent colored regions)
     map.addLayer({
-        id: FILL_LAYER_ID,
+        id: fillId,
         type: "fill",
-        source: SOURCE_ID,
+        source: srcId,
         paint: {
             "fill-color": [
                 "interpolate", ["linear"], ["get", "concentration"],
@@ -651,9 +682,9 @@ function renderContoursOnMap(geojson, sourceLon, sourceLat) {
 
     // Outline layer
     map.addLayer({
-        id: LINE_LAYER_ID,
+        id: lineId,
         type: "line",
-        source: SOURCE_ID,
+        source: srcId,
         paint: {
             "line-color": [
                 "interpolate", ["linear"], ["get", "concentration"],
@@ -667,8 +698,8 @@ function renderContoursOnMap(geojson, sourceLon, sourceLat) {
         }
     });
 
-    // Source marker (fire icon point)
-    map.addSource(MARKER_SOURCE_ID, {
+    // Source marker
+    map.addSource(mSrcId, {
         type: "geojson",
         data: {
             type: "FeatureCollection",
@@ -681,9 +712,9 @@ function renderContoursOnMap(geojson, sourceLon, sourceLat) {
     });
 
     map.addLayer({
-        id: MARKER_LAYER_ID,
+        id: mLayerId,
         type: "circle",
-        source: MARKER_SOURCE_ID,
+        source: mSrcId,
         paint: {
             "circle-radius": 8,
             "circle-color": "#ff3300",
@@ -693,20 +724,46 @@ function renderContoursOnMap(geojson, sourceLon, sourceLat) {
     });
 }
 
-/** Removes all dispersion layers from the map */
-function clearMapLayers() {
+/** Removes dispersion layers from the map */
+function clearMapLayers(runId) {
     if (!map) return;
 
-    [FILL_LAYER_ID, LINE_LAYER_ID, MARKER_LAYER_ID].forEach(id => {
-        if (map.getLayer(id)) map.removeLayer(id);
-    });
-    [SOURCE_ID, MARKER_SOURCE_ID].forEach(id => {
-        if (map.getSource(id)) map.removeSource(id);
+    const idsToRemove = runId ? [runId] : aerscreenHistory.map(h => h.runId);
+
+    idsToRemove.forEach(id => {
+        const fillId = getFillLayerId(id);
+        const lineId = getLineLayerId(id);
+        const mLayerId = getMarkerLayerId(id);
+        const srcId = getSourceId(id);
+        const mSrcId = getMarkerSourceId(id);
+
+        if (map.getLayer(fillId)) map.removeLayer(fillId);
+        if (map.getLayer(lineId)) map.removeLayer(lineId);
+        if (map.getLayer(mLayerId)) map.removeLayer(mLayerId);
+        if (map.getSource(srcId)) map.removeSource(srcId);
+        if (map.getSource(mSrcId)) map.removeSource(mSrcId);
+
+        if (activeMarkers[id]) {
+            activeMarkers[id].remove();
+            delete activeMarkers[id];
+        }
     });
 
-    if (currentMarker) {
-        currentMarker.remove();
-        currentMarker = null;
+    // Final sweep for any orphaned aerscreen layers
+    if (!runId) {
+        try {
+            const style = map.getStyle();
+            if (style.layers) {
+                style.layers.forEach(l => {
+                    if (l.id.startsWith("aerscreen-layer-")) map.removeLayer(l.id);
+                });
+            }
+            if (style.sources) {
+                Object.keys(style.sources).forEach(id => {
+                    if (id.startsWith("aerscreen-src-")) map.removeSource(id);
+                });
+            }
+        } catch (e) { }
     }
 }
 
@@ -743,19 +800,12 @@ function loadFromStorage() {
     if (!saved) return;
     try {
         const history = JSON.parse(saved);
+        // HYSPLIT-like logic: set all to false when initializing from storage
+        history.forEach(item => {
+            item.visible = false;
+        });
         aerscreenHistory = history;
         updateAerscreenDrawerList();
-
-        // Restore the most recent visible run if exists
-        const visibleRun = aerscreenHistory.find(h => h.visible);
-        if (visibleRun) {
-            if (visibleRun.geojson) {
-                renderContoursOnMap(visibleRun.geojson, visibleRun.params.lon, visibleRun.params.lat);
-            } else if (visibleRun.peakPoint) {
-                // Restoration logic for peak marker could go here if needed
-                AerscreenTool.markPeakOnMap(visibleRun.peakPoint, visibleRun.params);
-            }
-        }
     } catch (e) {
         console.error("AERSCREEN: Error loading from storage", e);
     }
@@ -881,6 +931,10 @@ function bindEvents() {
                 const runId = parseInt(focusBtn.getAttribute("data-run-id"));
                 const item = aerscreenHistory.find(h => h.runId === runId);
                 if (item && map) {
+                    // Automatically show if hidden
+                    if (!item.visible) {
+                        toggleVisibility(runId);
+                    }
                     // Fly to the emission location and highlight it
                     map.flyTo({ center: [item.params.lon, item.params.lat], zoom: 10, speed: 1.5 });
                 }
@@ -967,10 +1021,7 @@ function handleManualRun() {
     const contourLevels = [0.1, 0.5, 1, 5, 10, 25, 50, 100, 250, 500];
     const geojson = generateContourGeoJSON(gridResult, sourceLon, sourceLat, contourLevels);
 
-    // 3. Render on map
-    renderContoursOnMap(geojson, sourceLon, sourceLat);
-
-    // 4. Find max concentration
+    // 3. Find max concentration
     const maxConc = Math.max(...gridResult.grid);
     const maxIdx = gridResult.grid.indexOf(maxConc);
     const maxJ = Math.floor(maxIdx / gridResult.nx);
@@ -982,10 +1033,8 @@ function handleManualRun() {
     // 5. Build History Item
     const runId = Date.now();
 
-    // Hide previous run
-    if (aerscreenHistory.length > 0) {
-        aerscreenHistory[0].visible = false;
-    }
+    // 4. Render on map
+    renderContoursOnMap(runId, geojson, sourceLon, sourceLat);
 
     aerscreenHistory.unshift({
         runId: runId,
@@ -1061,20 +1110,14 @@ function toggleVisibility(runId) {
 
     item.visible = !item.visible;
 
-    // Hide all layers first
-    clearMapLayers();
-
-    // In our simplified screening visualization, we only ever show one map layer at a time
-    // If they turned THIS one on, turn others off in state.
     if (item.visible) {
-        aerscreenHistory.forEach(h => {
-            if (h.runId !== runId) h.visible = false;
-        });
         if (item.type === "contour") {
-            renderContoursOnMap(item.geojson, item.params.lon, item.params.lat);
+            renderContoursOnMap(runId, item.geojson, item.params.lon, item.params.lat);
         } else if (item.peakPoint) {
-            AerscreenTool.markPeakOnMap(item.peakPoint, item.params);
+            markPeakOnMap(runId, item.peakPoint, item.params);
         }
+    } else {
+        clearMapLayers(runId);
     }
 
     saveToStorage();
@@ -1082,19 +1125,8 @@ function toggleVisibility(runId) {
 }
 
 function removeRun(runId) {
+    clearMapLayers(runId);
     aerscreenHistory = aerscreenHistory.filter(h => h.runId !== runId);
-    clearMapLayers();
-
-    // Check if there is still a visible item
-    const visibleItem = aerscreenHistory.find(h => h.visible);
-    if (visibleItem) {
-        if (visibleItem.type === "contour") {
-            renderContoursOnMap(visibleItem.geojson, visibleItem.params.lon, visibleItem.params.lat);
-        } else if (visibleItem.peakPoint) {
-            AerscreenTool.markPeakOnMap(visibleItem.peakPoint, visibleItem.params);
-        }
-    }
-
     saveToStorage();
     updateAerscreenDrawerList();
 }
@@ -1120,11 +1152,18 @@ export function openDispersionAt(lon, lat) {
 }
 
 /** Clean up everything */
-export function destroyDispersion() {
+export function destroyDispersion(deleteHistory = true) {
     clearMapLayers();
-    aerscreenHistory = [];
+
+    if (deleteHistory) {
+        aerscreenHistory = [];
+        saveToStorage();
+    } else {
+        aerscreenHistory.forEach(h => h.visible = false);
+    }
+
     updateAerscreenDrawerList();
-    
+
     // Close result panel if open
     const panel = document.getElementById("AerscreenResultOverlay");
     if (panel) panel.style.display = "none";
@@ -1183,8 +1222,9 @@ document.body.addEventListener("click", (e) => {
 });
 
 // Listen for reset events from ui-reset.js (Decoupled Reset)
-document.addEventListener("smokelyze-reset-aerscreen", () => {
-    destroyDispersion();
+document.addEventListener("smokelyze-reset-aerscreen", (e) => {
+    AerscreenTool.abortAnalysis();
+    destroyDispersion(e.detail?.deleteHistory ?? false);
 });
 
 // Global exposure for everything
