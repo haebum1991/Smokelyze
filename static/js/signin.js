@@ -311,8 +311,12 @@ function renderGroupList(group) {
         span.textContent = `${member.email} (${member.nickname || "No Nickname"})`;
 
         const btn = document.createElement("button");
-        btn.className = "group-remove-btn";
-        btn.innerHTML = "&times;"; // Safe static symbol
+        btn.className = "group-remove-btn ui-btn-close";
+        btn.innerHTML = `
+            <svg width="20" height="20">
+                <use xlink:href="#icon-close" />
+            </svg>
+        `;
         btn.addEventListener("click", () => removeGroupMember(member));
 
         li.appendChild(span);

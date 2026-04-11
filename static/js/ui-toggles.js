@@ -136,7 +136,8 @@ export function closeAllExcept(activeId, onlyIds = null) {
         { id: "news", drawer: "WFnewsDrawer", btn: "WFnewsToggle", cls: "WFnews-drawer-open" },
         { id: "MapPost", drawer: "MapPostDrawer", btn: "MapPostToggle", cls: "MapPost-drawer-open" },
         { id: "hysplit", drawer: "HysplitDrawer", btn: "HysplitToggle", cls: "Hysplit-drawer-open" },
-        { id: "legend", drawer: "LegendDrawer", btn: "LegendToggle", cls: "Legend-drawer-open" }
+        { id: "legend", drawer: "LegendDrawer", btn: "LegendToggle", cls: "Legend-drawer-open" },
+        { id: "aerscreen", drawer: "AerscreenDrawer", btn: "AerscreenToggle", cls: "Aerscreen-drawer-open" }
     ];
 
     drawers.forEach(({ id, drawer, btn, cls }) => {
@@ -647,7 +648,7 @@ const injectKeyTipCSS = () => {
         .key-tip-badge {
             position: fixed;
             background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(2px);
+            backdrop-filter: blur(0.2rem);
             color: #fff;
             display: flex;
             align-items: center;
@@ -660,7 +661,7 @@ const injectKeyTipCSS = () => {
             text-transform: uppercase;
             animation: keyTipOverlayIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             line-height: 1;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            border: 0.2rem solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 0 1.5rem rgba(0,0,0,0.4);
         }
 

@@ -178,7 +178,7 @@ function renderLikeButton(id, likes, isSmall = false) {
     // Inline styles for small/big version
     const boxStyle = isSmall
         ? "background: none; border: none; padding: 0; margin-right: 1.5rem; display: flex; align-items: center; cursor: pointer; color: var(--text-main);"
-        : "text-align: center; cursor: pointer; min-width: 40px;";
+        : "text-align: center; cursor: pointer; min-width: 4rem;";
 
     const svgFill = isLiked ? "var(--btn-minus)" : "none";
     const svgStroke = isLiked ? "var(--btn-minus)" : "currentColor";

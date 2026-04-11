@@ -815,7 +815,7 @@ title: ""
       <div class="MapPost-form-group">
         <label>Location (lon, lat):</label>
         <div id="InputHysplitLocation"
-          style="padding: 0.8rem; background: var(--color-bg-alt); border-radius: 0.4rem; font-family: monospace;">
+          style="padding: 0.8rem; background: var(--color-bg-alt); border-radius: var(--border-radius-0p8rem); font-family: monospace;">
         </div>
       </div>
 
@@ -896,7 +896,7 @@ title: ""
       
       <!-- Dispersion specific settings (hidden by default) -->
       <div id="HysplitDispersionGroup"
-        style="display: none; padding: 1rem; background: var(--color-bg-alt); border-radius: 0.8rem; margin-top: 1rem; border: 0.1rem solid var(--border-main);">
+        style="display: none; padding: 1rem; background: var(--color-bg-alt); border-radius: var(--border-radius-0p8rem); margin-top: 1rem; border: 0.1rem solid var(--border-main);">
         <h4 style="margin: 0 0 1rem 0; font-size: 1.4rem;">Dispersion Parameters</h4>
 
         <div class="MapPost-form-group-row">
@@ -965,9 +965,15 @@ title: ""
 
     <div class="MapPost-modal-body">
       <div class="MapPost-form-group">
-        <label>Location (lon, lat):</label>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <label style="margin-bottom: 0;">Location (lon, lat):</label>
+          <button id="AerscreenBtnViewResult" class="reply-btn-submit" style="display: none;">
+            Results
+          </button>
+        </div>
+        
         <div id="InputAerscreenLocation"
-          style="padding: 0.8rem; background: var(--color-bg-alt); border-radius: 0.4rem; font-family: monospace;">
+          style="padding: 0.8rem; background: var(--color-bg-alt); border-radius: var(--border-radius-0p8rem); font-family: monospace;">
         </div>
         <input type="hidden" id="AerscreenSourceLon">
         <input type="hidden" id="AerscreenSourceLat">
@@ -1334,7 +1340,7 @@ title: ""
       <div class="MapPost-form-group">
         <label for="TimelapseFormSpeed">Playback Speed</label>
         <select id="TimelapseFormSpeed"
-          style="width: 100%; padding: 0.8rem; border-radius: 0.4rem; border: 0.1rem solid var(--card-shadow); font-size: 1.4rem;">
+          style="width: 100%; padding: 0.8rem; border-radius: var(--border-radius-0p8rem); border: 0.1rem solid var(--card-shadow); font-size: 1.4rem;">
           <option value="1000">Slow (1 sec / frame)</option>
           <option value="500" selected>Normal (0.5 sec / frame)</option>
           <option value="200">Fast (0.2 sec / frame)</option>

@@ -1121,7 +1121,11 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
         </select></div>
         <div class="gm-input-group-sm"><span class="gm-mobile-label">k:</span><select id="k_${id}" class="gm-input">${kOpts}</select></div>
         <div id="echo_${id}" class="gm-echo"></div>
-        <button class="remove-trigger gm-btn gm-btn-remove"><span>&times;</span></button>
+        <button class="remove-trigger gm-btn gm-btn-remove ui-btn-close">
+          <svg width="20" height="20">
+            <use xlink:href="#icon-close" />
+          </svg>
+        </button>
       `;
 
       row.querySelector(".remove-trigger").onclick = () => {
@@ -1250,7 +1254,11 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
         <div class="gm-input-group-sm"><span class="gm-mobile-label">k2:</span><select id="ik2_${id}" class="gm-input">${kOpts}</select></div>
       </div>
       <div id="echo_int_${id}" class="gm-echo"></div>
-      <button class="remove-trigger gm-btn gm-btn-remove"><span>&times;</span></button>
+      <button class="remove-trigger gm-btn gm-btn-remove ui-btn-close">
+        <svg width="20" height="20">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
     `;
 
       row.querySelector(".remove-trigger").onclick = () => {

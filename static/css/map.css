@@ -2209,7 +2209,7 @@ body.FigurePage-drawer-open .Aerscreen-drawer.open {
   background: var(--color-bg);
   color: var(--text-main);
   border: 0.1rem solid var(--card-shadow);
-  border-radius: 1.5rem;
+  border-radius: calc(var(--border-radius-0p8rem) * 2);
   padding: 0.8rem 1.4rem;
   font-size: 1.3rem;
   cursor: pointer;
@@ -2226,7 +2226,7 @@ body.FigurePage-drawer-open .Aerscreen-drawer.open {
   font-size: 1.2rem;
   font-weight: bold;
   padding: 0.4rem 0.8rem;
-  border-radius: 0.4rem;
+  border-radius: var(--border-radius-0p8rem);
   background: rgba(0, 0, 0, 0.1);
   width: auto;
   height: auto;
@@ -2560,7 +2560,7 @@ body.FigurePage-drawer-open .Aerscreen-drawer.open {
   backdrop-filter: blur(2rem) !important;
   -webkit-backdrop-filter: blur(2rem) !important;
   border: 0.1rem solid var(--card-shadow) !important;
-  border-radius: 1.6rem !important;
+  border-radius: calc(var(--border-radius-0p8rem) * 2) !important;
   color: var(--text-main) !important;
   box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.5) !important;
   padding: 2.22rem !important;
@@ -2587,7 +2587,7 @@ body.FigurePage-drawer-open .Aerscreen-drawer.open {
   justify-content: center;
   width: 2.8rem;
   height: 2.8rem;
-  border-radius: 0.6rem;
+  border-radius: var(--border-radius-0p8rem);
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -2868,7 +2868,7 @@ body.map-tut-active .maplibregl-ctrl-bottom-left {
 .base-map-item {
   position: relative;
   cursor: pointer;
-  border-radius: 0.6rem;
+  border-radius: var(--border-radius-0p8rem);
   overflow: hidden;
   border: 0.2rem solid transparent;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);

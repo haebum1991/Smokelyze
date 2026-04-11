@@ -96,7 +96,12 @@ title: ""
   </ul>
   
   <div id="imgModal" class="modal" onclick="closeModal(event)">
-    <span class="close" onclick="closeModal(event)">&times;</span>
+    <button class="ui-btn-close" onclick="closeModal(event)" 
+      style="position: absolute; right: 2rem; top: 1.5rem; color: var(--color-bg); background: var(--card-shadow);">
+      <svg width="20" height="20">
+        <use xlink:href="#icon-close" />
+      </svg>
+    </button>
     <img class="modal-content" id="modalImg" onclick="toggleZoom(event)">
   </div>
 </div>

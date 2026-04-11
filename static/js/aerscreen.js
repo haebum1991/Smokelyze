@@ -5,7 +5,7 @@
  */
 import { auth } from "./fb-init.js";
 import { map } from "./map-init.js";
-import { showErrorToast } from "./loader-ui.js";
+import { showErrorToast, showTaskNotification } from "./loader-ui.js";
 import * as utils from "./utils.js";
 import { setAerscreenDrawer } from "./ui-toggles.js";
 
@@ -16,13 +16,38 @@ const AERSCREEN_CONFIG = {
 export const AerscreenTool = {
     isRunning: false,
     abortController: null,
+    lastResult: null,
+
+    /**
+     * Unified visibility logic for AERSCREEN UI
+     */
+    updateVisibility() {
+        const modeSelect = document.getElementById("AerscreenMode");
+        const simplifiedParams = document.getElementById("AerscreenSimplifiedParams");
+        const aerscreenParams = document.getElementById("AerscreenParams");
+        const viewBtn = document.getElementById("AerscreenBtnViewResult");
+
+        if (modeSelect && modeSelect.value === "aerscreen") {
+            if (simplifiedParams) simplifiedParams.style.display = "none";
+            if (aerscreenParams) aerscreenParams.style.display = "block";
+            // Show result button only for EPA Aerscreen type that has data
+            const hasAerscreenRes = this.lastResult && this.lastResult.isAerscreen;
+            if (viewBtn) viewBtn.style.display = hasAerscreenRes ? "block" : "none";
+        } else {
+            if (simplifiedParams) simplifiedParams.style.display = "block";
+            if (aerscreenParams) aerscreenParams.style.display = "none";
+            // Always hide result button for Simplified Gaussian
+            if (viewBtn) viewBtn.style.display = "none";
+        }
+    },
+
     /**
      * Calls the backend AERSCREEN API
      * @param {Object} params - Emission parameters from the UI
      */
     async runAnalysis(params) {
         if (this.isRunning) {
-            if (showErrorToast) showErrorToast("AERSCREEN is already running.", "warning");
+            if (showErrorToast) showErrorToast("AERSCREEN is currently running... please wait.", "warning");
             return;
         }
 
@@ -30,6 +55,8 @@ export const AerscreenTool = {
         this.isRunning = true;
         this.abortController = new AbortController();
         this.showLoading(true);
+
+        const task = showTaskNotification("AERSCREEN Analysis", "Requesting dispersion from EPA engine...");
 
         try {
             // Map the internal params to the API request format
@@ -73,7 +100,7 @@ export const AerscreenTool = {
                 scaling_factor: params.scaling_factor,
                 use_discrete_rec: params.use_discrete_rec,
                 ambient_distance: params.ambient_distance,
-                
+
                 // NO2 Chemistry (NEW)
                 no2_option: params.no2_option,
                 no2_stack_ratio: params.no2_stack_ratio,
@@ -114,17 +141,23 @@ export const AerscreenTool = {
                 body: JSON.stringify(apiParams)
             });
 
-            if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+            if (!response.ok) {
+                task.update(`Failed: ${response.statusText}`, "error");
+                throw new Error(`API Error: ${response.statusText}`);
+            }
 
             const result = await response.json();
             console.log("AERSCREEN Result:", result);
 
+            task.update("Simulation complete!", "success");
             this.handleSuccess(result, params);
         } catch (error) {
             if (error.name === "AbortError") {
                 console.log("AERSCREEN: Analysis aborted by user.");
+                task.update("Analysis aborted", "error");
             } else {
                 console.error("AERSCREEN Failed:", error);
+                task.update(`Failed: ${error.message}`, "error");
                 if (showErrorToast) {
                     showErrorToast(`AERSCREEN Failed: ${error.message}`, "error");
                 } else {
@@ -167,6 +200,10 @@ export const AerscreenTool = {
         }
 
         // 1. Show results in a popup or panel
+        result.isAerscreen = true;
+        this.lastResult = result;
+        const viewBtn = document.getElementById("AerscreenBtnViewResult");
+        if (viewBtn) viewBtn.style.display = "block";
         this.displayResultPanel(result);
 
         // 2. Add to history
@@ -184,6 +221,13 @@ export const AerscreenTool = {
         if (aerscreenHistory.length > 10) aerscreenHistory.pop();
         saveToStorage();
         updateAerscreenDrawerList();
+
+        // [INITIAL FOCUS] Automatically jump to the emission source location ONLY upon first creation
+        const sourceLon = params.lon;
+        const sourceLat = params.lat;
+        if (map && sourceLon && sourceLat) {
+            map.flyTo({ center: [sourceLon, sourceLat], zoom: 11, speed: 1.5 });
+        }
 
         // 3. Add visual marker on the map for the Peak Concentration point
         try {
@@ -204,48 +248,52 @@ export const AerscreenTool = {
             panel = document.createElement("div");
             panel.id = panelId;
             panel.className = "MapPost-modal-overlay";
-            panel.style.zIndex = "9999";
+            panel.style.zIndex = "calc(var(--z-highest) + 1)";
             document.body.appendChild(panel);
         }
 
         panel.style.display = "flex";
 
         panel.innerHTML = `
-            <div class="MapPost-modal" style="max-width: 75rem; padding: 0;">
-                <div class="MapPost-modal-header" style="background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff; padding: 1.5rem 2rem;">
-                    <h3 style="margin: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 8px;">
-                        EPA AERSCREEN Result
+            <div class="MapPost-modal">
+                <div class="MapPost-modal-header">
+                    <h3>
+                        ${result.execution_time_sec < 0.1 ? 'Simplified Gaussian Results' : 'EPA AERSCREEN Results'}
                     </h3>
-                    <button onclick="document.getElementById('${panelId}').style.display = 'none';" style="background: none; border: none; color: #fff; font-size: 2.4rem; cursor: pointer; padding: 0;">&times;</button>
+                    <button class="ui-btn-close" onclick="document.getElementById('${panelId}').style.display = 'none';">
+                        <svg width="20" height="20">
+                            <use xlink:href="#icon-close" />
+                        </svg>
+                    </button>
                 </div>
-                <div class="MapPost-modal-body" style="padding: 2rem; background: var(--color-bg);">
+                <div class="MapPost-modal-body">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                        <div style="padding: 1.5rem; background: rgba(255,100,0,0.05); border-radius: 10px; border-left: 5px solid #ff6600; display: flex; flex-direction: column; justify-content: center;">
-                            <div style="color: var(--text-soft); font-size: 1.1rem; text-transform: uppercase; font-weight: 700; margin-bottom: 5px;">Max ground concentration</div>
-                            <div style="font-size: 2.8rem; font-weight: 800; color: #ff4400;">
-                                ${result.max_concentration.toFixed(2)} <span style="font-size: 1.4rem; font-weight: 400; color: var(--text-soft);">ug m-3</span>
+                        <div style="padding: 1.5rem; border-radius: var(--border-radius-0p8rem); display: flex; flex-direction: column; justify-content: center;">
+                            <div style="color: var(--text-main); font-size: 1.1rem; text-transform: uppercase; font-weight: bold; margin-bottom: 0.5rem;">Max ground concentration</div>
+                            <div style="font-size: 2.2rem; font-weight: bold; color: var(--card-shadow);">
+                                ${result.max_concentration.toFixed(2)} <span style="font-size: 1.3rem; font-weight: bold; color: var(--text-main);">ug m-3</span>
                             </div>
                         </div>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                            <div style="padding: 1.5rem; background: var(--sidebar-widget-bg); border-radius: 8px; border: 1px solid var(--border-main); display: flex; flex-direction: column; justify-content: center;">
-                                <div style="color: var(--text-soft); font-size: 1.1rem; font-weight: 600;">Distance to Max</div>
-                                <div style="font-size: 2rem; font-weight: 700; margin-top: 5px;">${(result.distance_to_max / 1000).toFixed(2)} km</div>
+                            <div style="padding: 1.5rem; background: var(--sidebar-widget-bg); border-radius: var(--border-radius-0p8rem); border: 0.1rem solid var(--border-main); display: flex; flex-direction: column; justify-content: center;">
+                                <div style="color: var(--text-main); font-size: 1.1rem; font-weight: bold;">Distance to Max</div>
+                                <div style="color: var(--card-shadow); font-size: 1.8rem; font-weight: bold; margin-top: 0.5rem;">${(result.distance_to_max / 1000).toFixed(2)} km</div>
                             </div>
-                            <div style="padding: 1.5rem; background: var(--sidebar-widget-bg); border-radius: 8px; border: 1px solid var(--border-main); display: flex; flex-direction: column; justify-content: center;">
-                                <div style="color: var(--text-soft); font-size: 1.1rem; font-weight: 600;">Execution Time</div>
-                                <div style="font-size: 2rem; font-weight: 700; margin-top: 5px;">${result.execution_time_sec.toFixed(2)}s</div>
+                            <div style="padding: 1.5rem; background: var(--sidebar-widget-bg); border-radius: var(--border-radius-0p8rem); border: 0.1rem solid var(--border-main); display: flex; flex-direction: column; justify-content: center;">
+                                <div style="color: var(--text-main); font-size: 1.1rem; font-weight: bold;">Execution Time</div>
+                                <div style="color: var(--card-shadow); font-size: 1.8rem; font-weight: bold; margin-top: 0.5rem;">${result.execution_time_sec.toFixed(2)}s</div>
                             </div>
                         </div>
                     </div>
                     
                     <div style="margin-top: 2rem;">
-                        <div style="color: var(--text-heading); font-size: 1.2rem; font-weight: 700; margin-bottom: 0.8rem; text-transform: uppercase;">AERSCREEN.OUT Summary</div>
-                        <pre style="background: var(--sidebar-widget-bg); color: var(--text-main); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-main); font-size: 1.1rem; height: 35rem; overflow-y: auto; overflow-x: auto; font-family: 'Courier New', Courier, monospace; line-height: 1.4; white-space: pre;">${result.output_summary ? result.output_summary : 'No explicit engine output was returned.'}</pre>
+                        <div style="color: var(--text-main); font-size: 1.1rem; font-weight: bold; margin-bottom: 0.8rem; text-transform: uppercase;">AERSCREEN.OUT Summary</div>
+                        <pre style="background: var(--sidebar-widget-bg); color: var(--text-main); padding: 1.5rem; border-radius: var(--border-radius-0p8rem); border: 0.1rem solid var(--border-main); font-size: 1.1rem; height: 35rem; overflow-y: auto; overflow-x: auto; font-family: monospace; font-weight: bold; line-height: 1.4; white-space: pre;">${result.output_summary ? result.output_summary : 'No explicit engine output was returned.'}</pre>
                     </div>
 
-                    <div style="margin-top: 1.5rem; font-size: 1.1rem; color: var(--text-main); padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; line-height: 1.6; border: 1px solid var(--border-main);">
-                        <div style="font-weight: 700; color: #ffab40; margin-bottom: 0.8rem; font-size: 1.3rem;">How to interpret this result:</div>
+                    <div style="margin-top: 1.5rem; font-size: 1.1rem; color: var(--text-main); padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: var(--border-radius-0p8rem); line-height: 1.6; border: 0.1rem solid var(--border-main);">
+                        <div style="font-weight: bold; color: var(--card-shadow); margin-bottom: 0.8rem; font-size: 1.2rem;">How to interpret this result:</div>
                         <ul style="margin: 0; padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;">
                             <li><strong>Worst-Case Scenario:</strong> AERSCREEN is a conservative screening model. It artificially tests every possible bad weather condition (stagnant air, poor dispersion) to find the absolute worst-case impact.</li>
                             <li><strong>Safety Threshold:</strong> If the <strong>Max ground concentration (${result.max_concentration.toFixed(1)} ug m-3)</strong> is well below regulatory limits (e.g., NAAQS PM2.5 daily standard of 35 ug m-3), you can confidently conclude the emissions source is safe without needing a costly, full-year meteorology AERMOD run.</li>
@@ -253,7 +301,7 @@ export const AerscreenTool = {
                         </ul>
                     </div>
 
-                    <div style="margin-top: 1.5rem; font-size: 1.1rem; color: var(--text-soft); padding: 1.2rem; background: rgba(0,0,0,0.03); border-radius: 6px; line-height: 1.5;">
+                    <div style="margin-top: 1.5rem; font-size: 1.1rem; color: var(--text-main); padding: 1.2rem; background: rgba(0,0,0,0.03); border-radius: var(--border-radius-0p8rem); line-height: 1.5; font-weight: bold;">
                         <strong>Engine Details:</strong> Calculated by official EPA AERMOD (v24142) wrapped in AERSCREEN (v21112) running on Alpine Linux.
                     </div>
                 </div>
@@ -266,7 +314,8 @@ export const AerscreenTool = {
         if (!btn) return;
 
         if (show) {
-            btn.disabled = true;
+            // Keep enabled so we can show "Already running" toast if user clicks again
+            btn.disabled = false;
             btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Simulating...`;
             btn.style.opacity = "0.7";
         } else {
@@ -660,9 +709,9 @@ let activeMarkers = {}; // Store MapLibre markers by runId
 function markPeakOnMap(runId, result, params) {
     if (!map) return;
 
-    // Calculate the peak point location
+    const windDir = (params && params.wind_direction !== undefined) ? params.wind_direction : 270;
     const distKm = result.distance_to_max / 1000;
-    const bearing = (params.wind_direction + 180) % 360;
+    const bearing = (windDir + 180) % 360;
 
     const sourceLon = params.lon;
     const sourceLat = params.lat;
@@ -672,6 +721,11 @@ function markPeakOnMap(runId, result, params) {
 
     const peakLon = sourceLon + dLon;
     const peakLat = sourceLat + dLat;
+
+    if (isNaN(peakLon) || isNaN(peakLat)) {
+        console.warn("AERSCREEN: Calculated peak coordinates are NaN. Skipping marker.", { peakLon, peakLat, distKm, windDir });
+        return;
+    }
 
     // Remove old marker for this run if exists
     if (activeMarkers[runId]) {
@@ -685,7 +739,6 @@ function markPeakOnMap(runId, result, params) {
         .addTo(map);
 
     activeMarkers[runId] = marker;
-    map.flyTo({ center: [peakLon, peakLat], zoom: 11, speed: 1.5 });
 }
 
 /**
@@ -852,6 +905,14 @@ function loadFromStorage() {
             item.visible = false;
         });
         aerscreenHistory = history;
+
+        const lastAerscreen = aerscreenHistory.find(h => h.type === "aerscreen");
+        if (lastAerscreen && lastAerscreen.peakPoint) {
+            AerscreenTool.lastResult = lastAerscreen.peakPoint;
+            const viewBtn = document.getElementById("AerscreenBtnViewResult");
+            if (viewBtn) viewBtn.style.display = "block";
+        }
+
         updateAerscreenDrawerList();
     } catch (e) {
         console.error("AERSCREEN: Error loading from storage", e);
@@ -930,8 +991,18 @@ function bindEvents() {
         handleAerscreenModeToggle(false);
     });
 
+    const btnViewRes = document.getElementById("AerscreenBtnViewResult");
+    if (btnViewRes) btnViewRes.addEventListener("click", () => {
+        if (AerscreenTool.lastResult) {
+            AerscreenTool.displayResultPanel(AerscreenTool.lastResult);
+        }
+    });
+
     const btnRunMain = document.getElementById("AerscreenBtnRun");
     if (btnRunMain) btnRunMain.addEventListener("click", () => {
+        // Hide the modal immediately on run
+        hideModal();
+
         const mode = document.getElementById("AerscreenMode")?.value || "simplified";
         const params = getInputs();
 
@@ -942,7 +1013,6 @@ function bindEvents() {
             const drawer = document.getElementById("AerscreenDrawer");
             if (drawer) drawer.classList.add("open");
         }
-        hideModal();
     });
 
     const modeSelect = document.getElementById("AerscreenMode");
@@ -950,17 +1020,8 @@ function bindEvents() {
     const aerscreenParams = document.getElementById("AerscreenParams");
 
     if (modeSelect) {
-        const updateVisibility = () => {
-            if (modeSelect.value === "aerscreen") {
-                if (simplifiedParams) simplifiedParams.style.display = "none";
-                if (aerscreenParams) aerscreenParams.style.display = "block";
-            } else {
-                if (simplifiedParams) simplifiedParams.style.display = "block";
-                if (aerscreenParams) aerscreenParams.style.display = "none";
-            }
-        };
-        modeSelect.addEventListener("change", updateVisibility);
-        updateVisibility(); // Initialize state
+        modeSelect.addEventListener("change", () => AerscreenTool.updateVisibility());
+        AerscreenTool.updateVisibility(); // Initialize state
     }
 
     const aerscreenTerrainSelect = document.getElementById("AerscreenTerrain");
@@ -978,14 +1039,14 @@ function bindEvents() {
             no2Details.style.display = e.target.value !== "1" ? "block" : "none";
         });
     }
-    
+
     const bldDownwashSelect = document.getElementById("AerscreenBldDownwash");
     const bldDetails = document.getElementById("AerscreenBldDetails");
     if (bldDownwashSelect && bldDetails) {
         bldDownwashSelect.addEventListener("change", (e) => {
             const isY = e.target.value === "Y";
             bldDetails.style.display = isY ? "block" : "none";
-            
+
             // Inject safe defaults if turned on, reset to 0 if turned off
             if (isY) {
                 if (document.getElementById("AerscreenBldHeight").value <= 0) document.getElementById("AerscreenBldHeight").value = 10.0;
@@ -1000,7 +1061,7 @@ function bindEvents() {
             }
         });
     }
-    
+
     // Preset selector
     const presetSelect = document.getElementById("AerscreenPreset");
 
@@ -1100,6 +1161,17 @@ function bindEvents() {
                         if (document.getElementById("AerscreenStability")) document.getElementById("AerscreenStability").value = item.params.stability_class;
                     }
 
+                    // [FIX] Update specific result data for history recall
+                    if (item.type === "aerscreen" && item.peakPoint) {
+                        AerscreenTool.lastResult = item.peakPoint;
+                        AerscreenTool.lastResult.isAerscreen = true;
+                    } else {
+                        AerscreenTool.lastResult = null; // Hide modal link for simplified
+                    }
+
+                    // [FIX] Sync button visibility immediately using the tool method
+                    AerscreenTool.updateVisibility();
+
                     // Open the modal exactly at that historical location
                     openDispersionAt(item.params.lon, item.params.lat);
                 }
@@ -1186,63 +1258,87 @@ function getInputs() {
  * Main aerscreen execution ??reads inputs, computes, renders results + map.
  */
 function handleManualRun() {
+    if (AerscreenTool.isRunning) {
+        if (showErrorToast) showErrorToast("AERSCREEN is currently running... please wait.", "warning");
+        return;
+    }
+
     console.log("Starting aerscreen Manual Run...");
     const params = getInputs();
     if (!params) return;
 
-    // Read inputs
-    const emissionRate = params.emission_rate;
-    const effectiveHeight = params.effective_height;
-    const windSpeed = params.wind_speed;
-    const windDirection = params.wind_direction;
-    const stabilityClass = params.stability_class;
-    const terrain = params.terrain;
-    const sourceLat = params.lat;
-    const sourceLon = params.lon;
+    AerscreenTool.isRunning = true;
+    AerscreenTool.showLoading(true);
 
-    // 1. Compute concentration grid
-    const gridResult = computeConcentrationGrid({
-        emissionRate, effectiveHeight, windSpeed, windDirection, stabilityClass, terrain,
-        gridExtent: 50,        // 50 km half-extent
-        gridResolution: 150    // 150??50 grid
-    });
+    const task = showTaskNotification("Dispersion Screening", "Computing local concentration grid...");
 
-    // 2. Generate contour GeoJSON
-    const contourLevels = [0.1, 0.5, 1, 5, 10, 25, 50, 100, 250, 500];
-    const geojson = generateContourGeoJSON(gridResult, sourceLon, sourceLat, contourLevels);
+    try {
+        // Read inputs
+        const emissionRate = params.emission_rate;
+        const effectiveHeight = params.effective_height;
+        const windSpeed = params.wind_speed;
+        const windDirection = params.wind_direction;
+        const stabilityClass = params.stability_class;
+        const terrain = params.terrain;
+        const sourceLat = params.lat;
+        const sourceLon = params.lon;
 
-    // 3. Find max concentration
-    const maxConc = Math.max(...gridResult.grid);
-    const maxIdx = gridResult.grid.indexOf(maxConc);
-    const maxJ = Math.floor(maxIdx / gridResult.nx);
-    const maxI = maxIdx % gridResult.nx;
-    const maxDistX = gridResult.xMin + (gridResult.xMax - gridResult.xMin) * maxI / (gridResult.nx - 1);
-    const maxDistY = gridResult.yMin + (gridResult.yMax - gridResult.yMin) * maxJ / (gridResult.ny - 1);
-    const maxDistKm = Math.sqrt(maxDistX * maxDistX + maxDistY * maxDistY) / 1000;
+        // 1. Compute concentration grid
+        const gridResult = computeConcentrationGrid({
+            emissionRate, effectiveHeight, windSpeed, windDirection, stabilityClass, terrain,
+            gridExtent: 50,        // 50 km half-extent
+            gridResolution: 150    // 150??50 grid
+        });
 
-    // 5. Build History Item
-    const runId = Date.now();
+        // 2. Generate contour GeoJSON
+        const contourLevels = [0.1, 0.5, 1, 5, 10, 25, 50, 100, 250, 500];
+        const geojson = generateContourGeoJSON(gridResult, sourceLon, sourceLat, contourLevels);
 
-    // 4. Render on map
-    renderContoursOnMap(runId, geojson, sourceLon, sourceLat);
+        // 3. Find max concentration
+        const maxConc = Math.max(...gridResult.grid);
+        const maxIdx = gridResult.grid.indexOf(maxConc);
+        const maxJ = Math.floor(maxIdx / gridResult.nx);
+        const maxI = maxIdx % gridResult.nx;
+        const maxDistX = gridResult.xMin + (gridResult.xMax - gridResult.xMin) * maxI / (gridResult.nx - 1);
+        const maxDistY = gridResult.yMin + (gridResult.yMax - gridResult.yMin) * maxJ / (gridResult.ny - 1);
+        const maxDistKm = Math.sqrt(maxDistX * maxDistX + maxDistY * maxDistY) / 1000;
 
-    aerscreenHistory.unshift({
-        runId: runId,
-        params: params,
-        geojson: geojson,
-        maxConc: maxConc,
-        maxDistKm: maxDistKm,
-        visible: true,
-        type: "contour"
-    });
+        // 5. Build History Item
+        const runId = Date.now();
 
-    if (aerscreenHistory.length > 10) aerscreenHistory.pop();
-    saveToStorage();
-    updateAerscreenDrawerList();
+        // 4. Render on map
+        renderContoursOnMap(runId, geojson, sourceLon, sourceLat);
 
-    // Fly to source location
-    if (map) {
-        map.flyTo({ center: [sourceLon, sourceLat], zoom: 8, speed: 2 });
+        aerscreenHistory.unshift({
+            runId: runId,
+            params: params,
+            geojson: geojson,
+            maxConc: maxConc,
+            maxDistKm: maxDistKm,
+            visible: true,
+            type: "contour"
+        });
+
+        if (aerscreenHistory.length > 10) aerscreenHistory.pop();
+        saveToStorage();
+        updateAerscreenDrawerList();
+
+        // [INITIAL FOCUS] Automatically jump to the emission source location
+        if (map) {
+            map.flyTo({ center: [sourceLon, sourceLat], zoom: 8, speed: 2 });
+        }
+
+        // Clear current EPA results pointer since Simplified has no results window
+        AerscreenTool.lastResult = null;
+        AerscreenTool.updateVisibility();
+
+        task.update("Simulation complete!", "success");
+    } catch (err) {
+        console.error("Dispersion Screening failed:", err);
+        task.update(`Failed: ${err.message}`, "error");
+    } finally {
+        AerscreenTool.isRunning = false;
+        AerscreenTool.showLoading(false);
     }
 }
 
@@ -1262,13 +1358,12 @@ function updateAerscreenDrawerList() {
             : `<svg width="18" height="18"><use xlink:href="#icon-eye-closed" /></svg>`;
 
         const typeLabel = item.type === "aerscreen" ? "EPA" : "Local";
-        const typeColor = item.type === "aerscreen" ? "#ffab40" : "#ff6b00";
 
         return `
-            <div class="Hysplit-item" data-run-id="${item.runId}" style="border-left: 5px solid ${typeColor}; cursor: pointer;">
+            <div class="Hysplit-item" data-run-id="${item.runId}" style="cursor: pointer;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
                     <div style="font-size: 1.3rem; font-weight: bold; color: var(--text-heading);">
-                        ${typeLabel} Max: <span style="color:${typeColor};">${fmtConc(item.maxConc)}</span> ug m-3
+                        ${typeLabel} Max: <span style="color:var(--card-shadow);">${fmtConc(item.maxConc)}</span> ug m-3
                     </div>
                     <div style="display: flex; gap: 0.5rem;">
                         <button class="Aerscreen-item-focus ui-btn-close" data-run-id="${item.runId}" title="Emission Location">

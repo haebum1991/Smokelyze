@@ -221,17 +221,24 @@ export function initHysplit() {
                         showDispersionDrawer(runId);
                     }
                 } else {
-                    const willTurnOn = !state.showFlowStream;
-                    if (!item.visible) {
+                    const willTurnOn = !item.animActive;
+                    item.animActive = willTurnOn;
+
+                    if (willTurnOn && !item.visible) {
                         toggleTrajectoryVisibility(runId);
                     }
+
                     if (willTurnOn && utils.highlightLocation && item.data && item.data.length > 0) {
                         const pt = item.data[0];
                         const props = { ...pt, color: item.color, run_type: "trajectory" };
                         utils.highlightLocation([pt.lon, pt.lat], props, "hysplit", 8);
                     }
-                    state.showFlowStream = willTurnOn;
-                    toggleFlowAnimation(state.showFlowStream);
+
+                    // If any animation is active, ensure the core animator is running
+                    if (willTurnOn) {
+                        state.showFlowStream = true;
+                        toggleFlowAnimation(true);
+                    }
                 }
                 updateHysplitDrawerList();
             }
@@ -399,7 +406,7 @@ function initFlowAnimation() {
 function animate(timestamp) {
     // Check if animation should keep running
     const hasVisible = state.showFlowStream && state.history.some(
-        item => item.visible && item.flowCoords && item.flowCoords.length >= 2
+        item => item.visible && item.animActive && item.flowCoords && item.flowCoords.length >= 2
     );
 
     if (!hasVisible) {
@@ -424,7 +431,7 @@ function animate(timestamp) {
 
     const features = [];
     state.history.forEach(item => {
-        if (!item.visible || !item.flowCoords || item.flowCoords.length < 2) return;
+        if (!item.visible || !item.animActive || !item.flowCoords || item.flowCoords.length < 2) return;
 
         const c = item.flowCoords;
         const streakCount = 8; // Increased for a longer, denser stream
@@ -713,6 +720,12 @@ async function clickOnSubmitHysplit() {
         submitBtn.innerText = "Running...";
     }
     
+    // [LEAK GUARD] Abort previous pending request if any
+    if (state.abortController) {
+        state.abortController.abort();
+    }
+    state.abortController = new AbortController();
+    
     state.isRunning = true;
     
     // Close modal immediately so user can continue
@@ -764,7 +777,8 @@ async function clickOnSubmitHysplit() {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(Object.fromEntries(params))
+            body: JSON.stringify(Object.fromEntries(params)),
+            signal: state.abortController.signal
         });
 
         if (!response.ok) throw new Error(`API initiation failed: ${response.status}`);
@@ -786,7 +800,18 @@ async function clickOnSubmitHysplit() {
         task.update("Rendering trajectory...", "running");
         renderHysplitTrajectory(finalData, direction, null, false, currentParams);
         task.update("Simulation complete!", "success");
-
+        
+        // [INITIAL FOCUS] Automatically fit map to the new trajectory ONLY on creation
+        if (map && finalData && finalData.length > 0) {
+            try {
+                const first = finalData[0];
+                const bounds = finalData.reduce((acc, pt) => acc.extend([pt.lon, pt.lat]), new maplibregl.LngLatBounds([first.lon, first.lat], [first.lon, first.lat]));
+                map.fitBounds(bounds, { padding: 100, duration: 1500 });
+            } catch (e) {
+                console.warn("[HYSPLIT] Map focus failed:", e);
+            }
+        }
+        
         // Automatically open drawer if hidden
         const drawer = document.getElementById("HysplitDrawer");
         if (drawer && !drawer.classList.contains("open")) {
@@ -854,7 +879,7 @@ function updateHysplitDrawerList() {
         const isDispersion = (p.run_type === "dispersion");
         const animActive = isDispersion 
             ? (DispersionDrawerState.runId === item.runId)
-            : state.showFlowStream;
+            : !!item.animActive;
         const animActiveCls = animActive ? "active" : "";
 
         const animIcon = animActive ? "icon-hysplit-anim" : "icon-hysplit-anim-off";
@@ -863,7 +888,7 @@ function updateHysplitDrawerList() {
                            </button>`;
 
         return `
-            <div class="Hysplit-item" data-run-id="${item.runId}" style="border-left-color: ${utils.ESML(item.color)}; border-left-width: 5px;">
+            <div class="Hysplit-item" data-run-id="${item.runId}" style="border-left-color: ${utils.ESML(item.color)}; border-left-width: 0.5rem;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
                     <div style="font-size: 1.3rem; font-weight: bold; color: var(--text-heading);">
                         ${utils.ESML(p.date)} ${utils.ESML(p.time)}:00 UTC
@@ -885,7 +910,7 @@ function updateHysplitDrawerList() {
                 </div>
                 <div style="font-size: 1.1rem; color: var(--text-main); display: flex; justify-content: space-between; align-items: flex-end;">
                     <div>
-                        <b>Mode: ${utils.ESML(p.run_type || "trajectory")}</b><br>
+                        <b style="color: var(--card-shadow);">Mode: ${utils.ESML(p.run_type || "trajectory")}</b><br>
                         Dir: ${utils.ESML(p.direction)} | Dur: ${utils.ESML(p.duration)}h | AGL: ${utils.ESML(p.height)}m <br>
                         Loc: ${parseFloat(p.lon).toFixed(3)}, ${parseFloat(p.lat).toFixed(3)}
                     </div>
@@ -1076,7 +1101,15 @@ function renderHysplitTrajectory(data, direction, existingRunId = null, isRestor
         height: data[0].height?.toFixed(1) || 0
     };
 
-    state.history.unshift({ runId, color, params, data, flowCoords, visible: !isRestoring });
+    state.history.unshift({
+        runId,
+        color,
+        params,
+        data,
+        flowCoords,
+        visible: !isRestoring,
+        animActive: !isRestoring // Enable animation by default on first run
+    });
 
     // Enforce 10-item limit: remove oldest if exceeded
     if (state.history.length > 10) {
@@ -1086,7 +1119,7 @@ function renderHysplitTrajectory(data, direction, existingRunId = null, isRestor
 
     if (!isRestoring) saveToStorage();
     updateHysplitDrawerList();
-    if (state._startFlowAnim) state._startFlowAnim();
+    if (state._startFlowAnim && !isRestoring) state._startFlowAnim();
     
     // Participate in global stacking order
     moveLayerToTop("hysplit");
@@ -1369,11 +1402,6 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
     // Ensure flow animation stays on top of newly added static layers
     if (map.getLayer("trajflow-layer-glow")) map.moveLayer("trajflow-layer-glow");
     if (map.getLayer("trajflow-layer-core")) map.moveLayer("trajflow-layer-core");
-    
-    if (!isRestoring) {
-        const bounds = coords3D.reduce((acc, c) => acc.extend([c[0], c[1]]), new maplibregl.LngLatBounds(coords3D[0], coords3D[0]));
-        map.fitBounds(bounds, { padding: 80, pitch: 65, duration: 1500 });
-    }
 }
 
 /**
@@ -1523,11 +1551,6 @@ function drawDispersionLayers(runId, data, color, isRestoring = false) {
         { type: "mouseleave", layer: hoverLayer, fn: onMouseLeave },
         { type: "click", layer: hoverLayer, fn: onClick }
     );
-    
-    if (!isRestoring) {
-        const bounds = data.reduce((acc, pt) => acc.extend([pt.lon, pt.lat]), new maplibregl.LngLatBounds([data[0].lon, data[0].lat], [data[0].lon, data[0].lat]));
-        map.fitBounds(bounds, { padding: 100, duration: 2000 });
-    }
 }
 
 /**
@@ -1629,7 +1652,7 @@ function showDispersionDrawer(runId) {
         
         // Apply color indicator (matching history item style)
         const accordion = modal.querySelector(".accordion");
-        if (accordion) accordion.style.borderLeft = `5px solid ${utils.ESML(item.color)}`;
+        if (accordion) accordion.style.borderLeft = `0.5rem solid ${utils.ESML(item.color)}`;
     }
     
     const meta = document.getElementById("DispersionDrawerMeta");

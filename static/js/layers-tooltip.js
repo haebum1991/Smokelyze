@@ -150,7 +150,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
         </div>` : "";
 
         return `
-        <div style="padding: 0.5rem; font-size: 1.6rem; max-width: 300px; padding-right: 2.8rem;">
+        <div style="padding: 0.5rem; font-size: 1.6rem; max-width: 30rem; padding-right: 2.8rem;">
           ${isLocked ? closeBtn : ""}
           ${(isLocked && isAuthor) ? `
               <div class="reply-btn-wrapper">

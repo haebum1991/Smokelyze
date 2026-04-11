@@ -72,9 +72,9 @@ function drawBrandingAndLicense(ctx, canvas) {
 
     // --- BOTTOM-LEFT BRANDING (Original Glass Style) ---
     ctx.save();
-    ctx.font = "bold 20px sans-serif";
+    ctx.font = "bold 2rem sans-serif";
     const titleW = ctx.measureText(brandTitle).width;
-    ctx.font = "12px sans-serif";
+    ctx.font = "1.2rem sans-serif";
     const subW = ctx.measureText(brandSub).width;
     const maxW = Math.max(titleW, subW);
     const boxH = 50;
@@ -83,7 +83,7 @@ function drawBrandingAndLicense(ctx, canvas) {
     ctx.beginPath();
     ctx.rect(0, canvas.height - boxH, boxW, boxH);
     ctx.clip();
-    ctx.filter = "blur(10px)";
+    ctx.filter = "blur(1rem)";
     ctx.drawImage(canvas, 0, 0);
     ctx.filter = "none";
     ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
@@ -96,16 +96,16 @@ function drawBrandingAndLicense(ctx, canvas) {
     ctx.shadowBlur = 2;
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
-    ctx.font = "12px sans-serif";
+    ctx.font = "1.2rem sans-serif";
     ctx.fillText(brandSub, 10, canvas.height - 8);
-    ctx.font = "bold 22px sans-serif";
+    ctx.font = "bold 2.2rem sans-serif";
     ctx.shadowBlur = 3; 
     ctx.fillText(brandTitle, 10, canvas.height - 25);
     ctx.restore();
 
     // --- BOTTOM-RIGHT LICENSE (Original Glass Style) ---
     ctx.save();
-    ctx.font = "12px sans-serif";
+    ctx.font = "1.2rem sans-serif";
     const licW = ctx.measureText(licenseText).width;
     const licBoxW = licW + 16;
     const licBoxH = 24;
@@ -113,7 +113,7 @@ function drawBrandingAndLicense(ctx, canvas) {
     ctx.beginPath();
     ctx.rect(canvas.width - licBoxW, canvas.height - licBoxH, licBoxW, licBoxH);
     ctx.clip();
-    ctx.filter = "blur(10px)";
+    ctx.filter = "blur(1rem)";
     ctx.drawImage(canvas, 0, 0);
     ctx.filter = "none";
     ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
@@ -126,7 +126,7 @@ function drawBrandingAndLicense(ctx, canvas) {
     ctx.textBaseline = "middle";
     ctx.shadowColor = "rgba(0,0,0,0.8)";
     ctx.shadowBlur = 6;
-    ctx.font = "12px sans-serif";
+    ctx.font = "1.2rem sans-serif";
     ctx.fillText(licenseText, canvas.width - 8, canvas.height - 12);
     ctx.restore();
 }
