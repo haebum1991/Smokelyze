@@ -36,11 +36,58 @@ export const AerscreenTool = {
             const apiParams = {
                 emission_rate: params.emission_rate || 500.0,
                 stack_height: params.effective_height || 10.0,
-                stack_diameter: 5.0,  // Wildfire plume approximation
-                stack_temp: 500.0,    // Typical fire temp (K)
-                stack_velocity: 5.0,   // Estimated buoyant lift (m/s)
-                ambient_temp: 293.15,
-                terrain_type: (params.terrain || "rural").toUpperCase()
+                stack_diameter: params.stack_diameter || 5.0,
+                stack_temp: params.stack_temp || 500.0,
+                stack_velocity: params.stack_velocity || 5.0,
+                ambient_temp: params.ambient_temp || 293.15,
+                terrain_type: (params.terrain || "rural").toUpperCase(),
+
+                // Allow overriding any of the newly added AERSCREEN parameters (Building, Makemet, Terrain, etc.)
+                bld_downwash: params.bld_downwash,
+                bld_height: params.bld_height,
+                bld_min_dim: params.bld_min_dim,
+                bld_max_dim: params.bld_max_dim,
+                bld_angle: params.bld_angle,
+                bld_x: params.bld_x,
+                bld_y: params.bld_y,
+
+                min_ambient_temp: params.min_ambient_temp,
+                max_ambient_temp: params.max_ambient_temp,
+                min_wind_speed: params.min_wind_speed,
+                anemometer_ht: params.anemometer_ht,
+                surface_albedo: params.surface_albedo,
+                surface_bowen: params.surface_bowen,
+                surface_roughness: params.surface_roughness,
+
+                use_terrain: params.use_terrain,
+                source_elevation: params.source_elevation,
+                prof_base: params.prof_base,
+                terrain_type_num: params.terrain_type_num,
+                utm_zone_num: params.utm_zone_num,
+                probe_distance: params.probe_distance,
+                flagpole_height: params.flagpole_height,
+                run_aermap: params.run_aermap,
+
+                metric: params.metric,
+                population: params.population,
+                scaling_factor: params.scaling_factor,
+                use_discrete_rec: params.use_discrete_rec,
+                ambient_distance: params.ambient_distance,
+                
+                // NO2 Chemistry (NEW)
+                no2_option: params.no2_option,
+                no2_stack_ratio: params.no2_stack_ratio,
+                ozone_units: params.ozone_units,
+                ozone_value: params.ozone_value,
+
+                use_fumigation: params.use_fumigation,
+                shoreline: params.shoreline,
+                shoreline_dist: params.shoreline_dist,
+                shoreline_dir: params.shoreline_dir,
+                fumigation_y: params.fumigation_y,
+                debug_option: params.debug_option,
+                lat: params.lat,
+                lon: params.lon
             };
 
             // ----------------------------------------------------
@@ -176,7 +223,7 @@ export const AerscreenTool = {
                         <div style="padding: 1.5rem; background: rgba(255,100,0,0.05); border-radius: 10px; border-left: 5px solid #ff6600; display: flex; flex-direction: column; justify-content: center;">
                             <div style="color: var(--text-soft); font-size: 1.1rem; text-transform: uppercase; font-weight: 700; margin-bottom: 5px;">Max ground concentration</div>
                             <div style="font-size: 2.8rem; font-weight: 800; color: #ff4400;">
-                                ${result.max_concentration.toFixed(2)} <span style="font-size: 1.4rem; font-weight: 400; color: var(--text-soft);">µg/m³</span>
+                                ${result.max_concentration.toFixed(2)} <span style="font-size: 1.4rem; font-weight: 400; color: var(--text-soft);">ug m-3</span>
                             </div>
                         </div>
                         
@@ -201,7 +248,7 @@ export const AerscreenTool = {
                         <div style="font-weight: 700; color: #ffab40; margin-bottom: 0.8rem; font-size: 1.3rem;">How to interpret this result:</div>
                         <ul style="margin: 0; padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;">
                             <li><strong>Worst-Case Scenario:</strong> AERSCREEN is a conservative screening model. It artificially tests every possible bad weather condition (stagnant air, poor dispersion) to find the absolute worst-case impact.</li>
-                            <li><strong>Safety Threshold:</strong> If the <strong>Max ground concentration (${result.max_concentration.toFixed(1)} µg/m³)</strong> is well below regulatory limits (e.g., NAAQS PM2.5 daily standard of 35 µg/m³), you can confidently conclude the emissions source is safe without needing a costly, full-year meteorology AERMOD run.</li>
+                            <li><strong>Safety Threshold:</strong> If the <strong>Max ground concentration (${result.max_concentration.toFixed(1)} ug m-3)</strong> is well below regulatory limits (e.g., NAAQS PM2.5 daily standard of 35 ug m-3), you can confidently conclude the emissions source is safe without needing a costly, full-year meteorology AERMOD run.</li>
                             <li><strong>Plume Touchdown:</strong> The pollutant plume doesn't hit the ground immediately. Due to stack height and velocity, the worst air quality occurs exactly <strong>${(result.distance_to_max / 1000).toFixed(2)} km</strong> away from the source coordinate.</li>
                         </ul>
                     </div>
@@ -333,7 +380,7 @@ function getDispersionCoeffs(x, stabilityClass, terrain = "rural") {
  * ΔH = 2.6 · (Fb / (u·s))^(1/3) (stable)
  * 
  * @param {number} heatRelease_MW - Heat release rate in MW
- * @param {number} windSpeed - Wind speed in m/s
+ * @param {number} windSpeed - Wind speed in m s-1
  * @param {string} stabilityClass - Pasquill stability class
  * @returns {number} Plume rise in meters
  */
@@ -369,17 +416,17 @@ function estimatePlumeRise(heatRelease_MW, windSpeed, stabilityClass) {
  * C(x,y,0) = Q / (π·u·σy·σz) · exp(-y²/2σy²) · exp(-H²/2σz²)
  * 
  * @param {number} Q - Emission rate (µg/s)
- * @param {number} u - Wind speed (m/s)
+ * @param {number} u - Wind speed (m s-1)
  * @param {number} x - Downwind distance (m)
  * @param {number} y - Crosswind distance (m)
  * @param {number} H - Effective stack height (m)
  * @param {string} stabilityClass
  * @param {string} terrain
- * @returns {number} Concentration in µg/m³
+ * @returns {number} Concentration in ug m-3
  */
 function gaussianPlumeConc(Q, u, x, y, H, stabilityClass, terrain) {
     if (x <= 0) return 0;
-    const uEff = Math.max(u, 1); // minimum 1 m/s to avoid division by zero
+    const uEff = Math.max(u, 1); // minimum 1 m s-1 to avoid division by zero
 
     const { sigmaY, sigmaZ } = getDispersionCoeffs(x, stabilityClass, terrain);
 
@@ -403,7 +450,7 @@ function gaussianPlumeConc(Q, u, x, y, H, stabilityClass, terrain) {
  * @param {Object} params
  * @param {number} params.emissionRate - g/s (converted to µg/s internally)
  * @param {number} params.effectiveHeight - m (total: stack + plume rise)
- * @param {number} params.windSpeed - m/s
+ * @param {number} params.windSpeed - m s-1
  * @param {number} params.windDirection - degrees (meteorological, from)
  * @param {string} params.stabilityClass
  * @param {string} params.terrain
@@ -464,7 +511,7 @@ function computeConcentrationGrid(params) {
  * @param {Object} gridResult - Output from computeConcentrationGrid
  * @param {number} sourceLon - Source longitude
  * @param {number} sourceLat - Source latitude
- * @param {number[]} levels - Concentration levels for contours (µg/m³)
+ * @param {number[]} levels - Concentration levels for contours (ug m-3)
  * @returns {Object} GeoJSON FeatureCollection
  */
 function generateContourGeoJSON(gridResult, sourceLon, sourceLat, levels) {
@@ -508,7 +555,7 @@ function generateContourGeoJSON(gridResult, sourceLon, sourceLat, levels) {
             type: "Feature",
             properties: {
                 concentration: level,
-                label: `${level} µg/m³`
+                label: `${level} ug m-3`
             },
             geometry: {
                 type: "Polygon",
@@ -634,7 +681,7 @@ function markPeakOnMap(runId, result, params) {
     // Add a marker and fly to it
     const marker = new maplibregl.Marker({ color: "#ff0000", scale: 1.2 })
         .setLngLat([peakLon, peakLat])
-        .setPopup(new maplibregl.Popup().setHTML(`<b>Peak Impact</b><br>${result.max_concentration.toFixed(1)} µg/m³`))
+        .setPopup(new maplibregl.Popup().setHTML(`<b>Peak Impact</b><br>${result.max_concentration.toFixed(1)} ug m-3`))
         .addTo(map);
 
     activeMarkers[runId] = marker;
@@ -898,17 +945,71 @@ function bindEvents() {
         hideModal();
     });
 
+    const modeSelect = document.getElementById("AerscreenMode");
+    const simplifiedParams = document.getElementById("AerscreenSimplifiedParams");
+    const aerscreenParams = document.getElementById("AerscreenParams");
+
+    if (modeSelect) {
+        const updateVisibility = () => {
+            if (modeSelect.value === "aerscreen") {
+                if (simplifiedParams) simplifiedParams.style.display = "none";
+                if (aerscreenParams) aerscreenParams.style.display = "block";
+            } else {
+                if (simplifiedParams) simplifiedParams.style.display = "block";
+                if (aerscreenParams) aerscreenParams.style.display = "none";
+            }
+        };
+        modeSelect.addEventListener("change", updateVisibility);
+        updateVisibility(); // Initialize state
+    }
+
+    const aerscreenTerrainSelect = document.getElementById("AerscreenTerrain");
+    const aerscreenPopulationGroup = document.getElementById("AerscreenPopulationGroup");
+    if (aerscreenTerrainSelect && aerscreenPopulationGroup) {
+        aerscreenTerrainSelect.addEventListener("change", (e) => {
+            aerscreenPopulationGroup.style.display = e.target.value === "urban" ? "block" : "none";
+        });
+    }
+
+    const no2OptionSelect = document.getElementById("AerscreenNo2Option");
+    const no2Details = document.getElementById("AerscreenNo2Details");
+    if (no2OptionSelect && no2Details) {
+        no2OptionSelect.addEventListener("change", (e) => {
+            no2Details.style.display = e.target.value !== "1" ? "block" : "none";
+        });
+    }
+    
+    const bldDownwashSelect = document.getElementById("AerscreenBldDownwash");
+    const bldDetails = document.getElementById("AerscreenBldDetails");
+    if (bldDownwashSelect && bldDetails) {
+        bldDownwashSelect.addEventListener("change", (e) => {
+            const isY = e.target.value === "Y";
+            bldDetails.style.display = isY ? "block" : "none";
+            
+            // Inject safe defaults if turned on, reset to 0 if turned off
+            if (isY) {
+                if (document.getElementById("AerscreenBldHeight").value <= 0) document.getElementById("AerscreenBldHeight").value = 10.0;
+                if (document.getElementById("AerscreenBldMinDim").value <= 0) document.getElementById("AerscreenBldMinDim").value = 10.0;
+                if (document.getElementById("AerscreenBldMaxDim").value <= 0) document.getElementById("AerscreenBldMaxDim").value = 20.0;
+                if (document.getElementById("AerscreenBldAngle").value === "") document.getElementById("AerscreenBldAngle").value = 0.0;
+            } else {
+                document.getElementById("AerscreenBldHeight").value = 0.0;
+                document.getElementById("AerscreenBldMinDim").value = 0.0;
+                document.getElementById("AerscreenBldMaxDim").value = 0.0;
+                document.getElementById("AerscreenBldAngle").value = 0.0;
+            }
+        });
+    }
+    
     // Preset selector
     const presetSelect = document.getElementById("AerscreenPreset");
-    const emissionInput = document.getElementById("AerscreenEmissionRate");
-    const heightInput = document.getElementById("AerscreenEffHeight");
 
     if (presetSelect) {
         presetSelect.addEventListener("change", () => {
             const preset = EMISSION_PRESETS[presetSelect.value];
             if (preset && preset.emissionRate !== null) {
-                emissionInput.value = preset.emissionRate;
-                heightInput.value = preset.effectiveHeight;
+                if (document.getElementById("AerscreenEmissionRate")) document.getElementById("AerscreenEmissionRate").value = preset.emissionRate;
+                if (document.getElementById("AerscreenEffHeight")) document.getElementById("AerscreenEffHeight").value = preset.effectiveHeight;
             }
         });
     }
@@ -955,13 +1056,49 @@ function bindEvents() {
                 const item = aerscreenHistory.find(h => h.runId === runId);
                 if (item) {
                     // Populate historical modal parameters
-                    if (document.getElementById("AerscreenMode")) document.getElementById("AerscreenMode").value = item.type === "aerscreen" ? "aerscreen" : "simplified";
+                    if (document.getElementById("AerscreenMode")) {
+                        const modeEl = document.getElementById("AerscreenMode");
+                        modeEl.value = item.type === "aerscreen" ? "aerscreen" : "simplified";
+                        modeEl.dispatchEvent(new Event("change"));
+                    }
                     if (document.getElementById("AerscreenEmissionRate")) document.getElementById("AerscreenEmissionRate").value = (item.params.emission_rate * 3.6).toFixed(0);
                     if (document.getElementById("AerscreenEffHeight")) document.getElementById("AerscreenEffHeight").value = item.params.effective_height;
-                    if (document.getElementById("AerscreenWindSpeed")) document.getElementById("AerscreenWindSpeed").value = item.params.wind_speed;
-                    if (document.getElementById("AerscreenWindDir")) document.getElementById("AerscreenWindDir").value = item.params.wind_direction;
-                    if (document.getElementById("AerscreenStability")) document.getElementById("AerscreenStability").value = item.params.stability_class;
-                    if (document.getElementById("AerscreenTerrain")) document.getElementById("AerscreenTerrain").value = item.params.terrain;
+                    if (document.getElementById("AerscreenTerrain")) {
+                        const terrEl = document.getElementById("AerscreenTerrain");
+                        terrEl.value = item.params.terrain || "rural";
+                        terrEl.dispatchEvent(new Event("change"));
+                    }
+                    if (document.getElementById("AerscreenPopulation")) document.getElementById("AerscreenPopulation").value = item.params.population || 2000000;
+
+                    if (item.type === "aerscreen") {
+                        if (document.getElementById("AerscreenStackDiameter")) document.getElementById("AerscreenStackDiameter").value = item.params.stack_diameter || 5.0;
+                        if (document.getElementById("AerscreenStackTemp")) document.getElementById("AerscreenStackTemp").value = item.params.stack_temp || 500.0;
+                        if (document.getElementById("AerscreenStackVelocity")) document.getElementById("AerscreenStackVelocity").value = item.params.stack_velocity || 5.0;
+                        if (document.getElementById("AerscreenAmbientDistance")) document.getElementById("AerscreenAmbientDistance").value = item.params.ambient_distance || 1.0;
+
+                        if (document.getElementById("AerscreenNo2Option")) {
+                            const no2El = document.getElementById("AerscreenNo2Option");
+                            no2El.value = item.params.no2_option || "1";
+                            no2El.dispatchEvent(new Event("change"));
+                        }
+                        if (document.getElementById("AerscreenNo2StackRatio")) document.getElementById("AerscreenNo2StackRatio").value = item.params.no2_stack_ratio || 0.1;
+                        if (document.getElementById("AerscreenOzoneUnits")) document.getElementById("AerscreenOzoneUnits").value = item.params.ozone_units || "3";
+                        if (document.getElementById("AerscreenOzoneValue")) document.getElementById("AerscreenOzoneValue").value = item.params.ozone_value || 40;
+
+                        if (document.getElementById("AerscreenBldDownwash")) {
+                            const bldEl = document.getElementById("AerscreenBldDownwash");
+                            bldEl.value = item.params.bld_downwash || "N";
+                            bldEl.dispatchEvent(new Event("change"));
+                        }
+                        if (document.getElementById("AerscreenBldHeight")) document.getElementById("AerscreenBldHeight").value = item.params.bld_height || 0;
+                        if (document.getElementById("AerscreenBldMinDim")) document.getElementById("AerscreenBldMinDim").value = item.params.bld_min_dim || 0;
+                        if (document.getElementById("AerscreenBldMaxDim")) document.getElementById("AerscreenBldMaxDim").value = item.params.bld_max_dim || 0;
+                        if (document.getElementById("AerscreenBldAngle")) document.getElementById("AerscreenBldAngle").value = item.params.bld_angle || 0;
+                    } else {
+                        if (document.getElementById("AerscreenWindSpeed")) document.getElementById("AerscreenWindSpeed").value = item.params.wind_speed;
+                        if (document.getElementById("AerscreenWindDir")) document.getElementById("AerscreenWindDir").value = item.params.wind_direction;
+                        if (document.getElementById("AerscreenStability")) document.getElementById("AerscreenStability").value = item.params.stability_class;
+                    }
 
                     // Open the modal exactly at that historical location
                     openDispersionAt(item.params.lon, item.params.lat);
@@ -980,20 +1117,73 @@ function hideModal() {
  * Extract all parameters from the UI modal.
  */
 function getInputs() {
-    return {
-        emission_rate: (parseFloat(document.getElementById("AerscreenEmissionRate").value) || 1800) / 3.6,
-        effective_height: parseFloat(document.getElementById("AerscreenEffHeight").value) || 800,
-        wind_speed: parseFloat(document.getElementById("AerscreenWindSpeed").value) || 5,
-        wind_direction: parseFloat(document.getElementById("AerscreenWindDir").value) || 270,
-        stability_class: document.getElementById("AerscreenStability").value,
-        terrain: document.getElementById("AerscreenTerrain").value,
-        lat: parseFloat(document.getElementById("AerscreenSourceLat").value) || 39.8,
-        lon: parseFloat(document.getElementById("AerscreenSourceLon").value) || -98.5
+    const mode = document.getElementById("AerscreenMode")?.value || "simplified";
+    const lat = parseFloat(document.getElementById("AerscreenSourceLat")?.value) || 39.8;
+    const lon = parseFloat(document.getElementById("AerscreenSourceLon")?.value) || -98.5;
+
+    // 1. Collect Shared Parameters
+    const baseParams = {
+        lat: lat,
+        lon: lon,
+        emission_rate: (parseFloat(document.getElementById("AerscreenEmissionRate")?.value) || 1800) / 3.6,
+        effective_height: parseFloat(document.getElementById("AerscreenEffHeight")?.value) || 10.0,
+        terrain: document.getElementById("AerscreenTerrain")?.value || "rural",
+        population: parseFloat(document.getElementById("AerscreenPopulation")?.value) || 0,
     };
+
+    if (mode === "aerscreen") {
+        return {
+            ...baseParams,
+            mode: "aerscreen",
+            // Advanced Stack Data
+            stack_diameter: parseFloat(document.getElementById("AerscreenStackDiameter")?.value) || 5.0,
+            stack_temp: parseFloat(document.getElementById("AerscreenStackTemp")?.value) || 500.0,
+            stack_velocity: parseFloat(document.getElementById("AerscreenStackVelocity")?.value) || 5.0,
+
+            // Building Data
+            bld_downwash: document.getElementById("AerscreenBldDownwash")?.value || "N",
+            bld_height: parseFloat(document.getElementById("AerscreenBldHeight")?.value) || 0,
+            bld_min_dim: parseFloat(document.getElementById("AerscreenBldMinDim")?.value) || 0,
+            bld_max_dim: parseFloat(document.getElementById("AerscreenBldMaxDim")?.value) || 0,
+
+            // Makemet Data
+            min_ambient_temp: parseFloat(document.getElementById("AerscreenMinAmbTemp")?.value) || 250,
+            max_ambient_temp: parseFloat(document.getElementById("AerscreenMaxAmbTemp")?.value) || 315,
+            min_wind_speed: parseFloat(document.getElementById("AerscreenMinWindSpeed")?.value) || 0.5,
+            surface_albedo: parseFloat(document.getElementById("AerscreenAlbedo")?.value) || 0.20,
+            surface_bowen: parseFloat(document.getElementById("AerscreenBowen")?.value) || 1.0,
+
+            // Terrain/Survey Options
+            use_terrain: document.getElementById("AerscreenUseTerrain")?.value || "N",
+            run_aermap: document.getElementById("AerscreenRunAermap")?.value || "N",
+            probe_distance: parseFloat(document.getElementById("AerscreenProbeDistance")?.value) || 5000,
+            ambient_distance: parseFloat(document.getElementById("AerscreenAmbientDistance")?.value) || 1.0,
+
+            // NO2 Chemistry
+            no2_option: document.getElementById("AerscreenNo2Option")?.value || "1",
+            no2_stack_ratio: parseFloat(document.getElementById("AerscreenNo2StackRatio")?.value) || 0.1,
+            ozone_units: document.getElementById("AerscreenOzoneUnits")?.value || "3",
+            ozone_value: parseFloat(document.getElementById("AerscreenOzoneValue")?.value) || 40
+        };
+    } else {
+        return {
+            ...baseParams,
+            mode: "simplified",
+            wind_speed: parseFloat(document.getElementById("AerscreenWindSpeed")?.value) || 5.0,
+            wind_direction: parseFloat(document.getElementById("AerscreenWindDir")?.value) || 270.0,
+            stability_class: document.getElementById("AerscreenStability")?.value || "D",
+
+            // Defaults for simplified mode compatibility
+            stack_diameter: 5.0,
+            stack_temp: 500.0,
+            stack_velocity: 5.0,
+            ambient_distance: 1.0
+        };
+    }
 }
 
 /**
- * Main aerscreen execution — reads inputs, computes, renders results + map.
+ * Main aerscreen execution ??reads inputs, computes, renders results + map.
  */
 function handleManualRun() {
     console.log("Starting aerscreen Manual Run...");
@@ -1014,7 +1204,7 @@ function handleManualRun() {
     const gridResult = computeConcentrationGrid({
         emissionRate, effectiveHeight, windSpeed, windDirection, stabilityClass, terrain,
         gridExtent: 50,        // 50 km half-extent
-        gridResolution: 150    // 150×150 grid
+        gridResolution: 150    // 150??50 grid
     });
 
     // 2. Generate contour GeoJSON
@@ -1078,7 +1268,7 @@ function updateAerscreenDrawerList() {
             <div class="Hysplit-item" data-run-id="${item.runId}" style="border-left: 5px solid ${typeColor}; cursor: pointer;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
                     <div style="font-size: 1.3rem; font-weight: bold; color: var(--text-heading);">
-                        ${typeLabel} Max: <span style="color:${typeColor};">${fmtConc(item.maxConc)}</span> µg/m³
+                        ${typeLabel} Max: <span style="color:${typeColor};">${fmtConc(item.maxConc)}</span> ug m-3
                     </div>
                     <div style="display: flex; gap: 0.5rem;">
                         <button class="Aerscreen-item-focus ui-btn-close" data-run-id="${item.runId}" title="Emission Location">
@@ -1096,7 +1286,7 @@ function updateAerscreenDrawerList() {
                 </div>
                 <div style="font-size: 1.1rem; color: var(--text-main);">
                     <strong>Source:</strong> ${(item.params.emission_rate * 3.6).toFixed(0)} kg hr-1, Eff. Height: ${item.params.effective_height}m<br>
-                    <strong>Wind:</strong> ${item.params.wind_speed}m/s from ${item.params.wind_direction}°<br>
+                    ${item.params.wind_speed !== undefined ? `<strong>Wind:</strong> ${item.params.wind_speed}m s-1 from ${item.params.wind_direction}°<br>` : "<strong>Wind:</strong> AERSCREEN Matched<br>"}
                     <strong>Loc:</strong> ${item.params.lon.toFixed(3)}, ${item.params.lat.toFixed(3)}
                 </div>
             </div>
