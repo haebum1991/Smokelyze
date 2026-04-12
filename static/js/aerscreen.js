@@ -33,12 +33,29 @@ export const AerscreenTool = {
             // Show result button only for EPA Aerscreen type that has data
             const hasAerscreenRes = this.lastResult && this.lastResult.isAerscreen;
             if (viewBtn) viewBtn.style.display = hasAerscreenRes ? "block" : "none";
+            this.syncTerrainVisibility(); // Fixed reference
         } else {
             if (simplifiedParams) simplifiedParams.style.display = "block";
             if (aerscreenParams) aerscreenParams.style.display = "none";
             // Always hide result button for Simplified Gaussian
             if (viewBtn) viewBtn.style.display = "none";
         }
+    },
+    
+    /**
+     * Conditional visibility for terrain sub-options
+     */
+    syncTerrainVisibility() {
+        const useTerrain = document.getElementById("AerscreenUseTerrain")?.value === "Y";
+        const runAermap = document.getElementById("AerscreenRunAermap")?.value === "Y";
+        
+        const runAermapRow = document.getElementById("AerscreenRunAermapRow");
+        const manualElevRow = document.getElementById("AerscreenManualElevRow");
+        const utmRow = document.getElementById("AerscreenUtmRow");
+        
+        if (runAermapRow) runAermapRow.style.display = useTerrain ? "block" : "none";
+        if (utmRow) utmRow.style.display = useTerrain ? "grid" : "none";
+        if (manualElevRow) manualElevRow.style.display = (useTerrain && !runAermap) ? "grid" : "none";
     },
 
     /**
@@ -252,7 +269,7 @@ export const AerscreenTool = {
             document.body.appendChild(panel);
         }
 
-        panel.style.display = "flex";
+        panel.style.display = "grid";
 
         panel.innerHTML = `
             <div class="MapPost-modal">
@@ -1031,6 +1048,16 @@ function bindEvents() {
             aerscreenPopulationGroup.style.display = e.target.value === "urban" ? "block" : "none";
         });
     }
+    
+    // Terrain sub-logic bindings
+    const useTerrainSelect = document.getElementById("AerscreenUseTerrain");
+    const runAermapSelect = document.getElementById("AerscreenRunAermap");
+    if (useTerrainSelect) {
+        useTerrainSelect.addEventListener("change", () => AerscreenTool.syncTerrainVisibility());
+    }
+    if (runAermapSelect) {
+        runAermapSelect.addEventListener("change", () => AerscreenTool.syncTerrainVisibility());
+    }
 
     const no2OptionSelect = document.getElementById("AerscreenNo2Option");
     const no2Details = document.getElementById("AerscreenNo2Details");
@@ -1155,6 +1182,18 @@ function bindEvents() {
                         if (document.getElementById("AerscreenBldMinDim")) document.getElementById("AerscreenBldMinDim").value = item.params.bld_min_dim || 0;
                         if (document.getElementById("AerscreenBldMaxDim")) document.getElementById("AerscreenBldMaxDim").value = item.params.bld_max_dim || 0;
                         if (document.getElementById("AerscreenBldAngle")) document.getElementById("AerscreenBldAngle").value = item.params.bld_angle || 0;
+                        
+                        if (document.getElementById("AerscreenSourceElevation")) document.getElementById("AerscreenSourceElevation").value = item.params.source_elevation || 0;
+                        if (document.getElementById("AerscreenProfBase")) document.getElementById("AerscreenProfBase").value = item.params.prof_base || 0;
+                        if (document.getElementById("AerscreenUtmZone")) document.getElementById("AerscreenUtmZone").value = item.params.utm_zone_num || 0;
+
+                        if (document.getElementById("AerscreenUseTerrain")) {
+                            document.getElementById("AerscreenUseTerrain").value = item.params.use_terrain || "N";
+                        }
+                        if (document.getElementById("AerscreenRunAermap")) {
+                            document.getElementById("AerscreenRunAermap").value = item.params.run_aermap || "N";
+                        }
+                        AerscreenTool.syncTerrainVisibility();
                     } else {
                         if (document.getElementById("AerscreenWindSpeed")) document.getElementById("AerscreenWindSpeed").value = item.params.wind_speed;
                         if (document.getElementById("AerscreenWindDir")) document.getElementById("AerscreenWindDir").value = item.params.wind_direction;
@@ -1228,8 +1267,14 @@ function getInputs() {
             // Terrain/Survey Options
             use_terrain: document.getElementById("AerscreenUseTerrain")?.value || "N",
             run_aermap: document.getElementById("AerscreenRunAermap")?.value || "N",
+            source_elevation: parseFloat(document.getElementById("AerscreenSourceElevation")?.value) || 0.0,
+            prof_base: parseFloat(document.getElementById("AerscreenProfBase")?.value) || 0.0,
+            utm_zone_num: parseInt(document.getElementById("AerscreenUtmZone")?.value) || (Math.floor((lon + 180) / 6) + 1),
             probe_distance: parseFloat(document.getElementById("AerscreenProbeDistance")?.value) || 5000,
-            ambient_distance: parseFloat(document.getElementById("AerscreenAmbientDistance")?.value) || 1.0,
+            ambient_distance: Math.max(
+                parseFloat(document.getElementById("AerscreenAmbientDistance")?.value) || 1.0,
+                (parseFloat(document.getElementById("AerscreenStackDiameter")?.value) || 5.0) / 2 + 1.0
+            ),
 
             // NO2 Chemistry
             no2_option: document.getElementById("AerscreenNo2Option")?.value || "1",
@@ -1434,6 +1479,9 @@ export function openDispersionAt(lon, lat) {
     if (locLabel) locLabel.innerText = `${lon.toFixed(4)}, ${lat.toFixed(4)}`;
     if (lonInput) lonInput.value = lon;
     if (latInput) latInput.value = lat;
+    
+    const utmInput = document.getElementById("AerscreenUtmZone");
+    if (utmInput) utmInput.value = 0; // Reset to auto-calculation for new location
 }
 
 /** Clean up everything */

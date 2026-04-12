@@ -1016,21 +1016,15 @@ title: ""
 
         <div class="MapPost-form-group-row">
           <div class="MapPost-form-group">
-            <div style="display: flex; gap: 0.5rem; width: 100%;">
-              <div style="flex: 1;">
-                <label for="AerscreenTerrain">Terrain</label>
-                <select id="AerscreenTerrain" class="MapPost-select" style="width: 100%;">
-                  <option value="rural" selected>Rural</option>
-                  <option value="urban">Urban</option>
-                </select>
-              </div>
-              <div id="AerscreenPopulationGroup" style="flex: 1; display: none;">
-                <label>Urban Population</label>
-                <input type="number" id="AerscreenPopulation" value="2000000" min="0" step="10000" style="width: 100%;">
-              </div>
-            </div>
+            <label for="AerscreenTerrain">Terrain</label>
+            <select id="AerscreenTerrain" class="MapPost-select" style="width: 100%;">
+              <option value="rural" selected>Rural</option>
+              <option value="urban">Urban</option>
+            </select>
           </div>
-          <div class="MapPost-form-group">
+          <div class="MapPost-form-group" id="AerscreenPopulationGroup" style="display: none;">
+            <label>Urban Population</label>
+            <input type="number" id="AerscreenPopulation" value="2000000" min="0" step="10000" style="width: 100%;">
           </div>
         </div>
       </div>
@@ -1211,7 +1205,7 @@ title: ""
               <option value="Y">Yes</option>
             </select>
           </div>
-          <div class="MapPost-form-group">
+          <div class="MapPost-form-group" id="AerscreenRunAermapRow" style="display: none;">
             <label>Run AERMAP</label>
             <select id="AerscreenRunAermap" class="MapPost-select">
               <option value="N" selected>No</option>
@@ -1220,12 +1214,25 @@ title: ""
           </div>
         </div>
 
-        <div class="MapPost-form-group-row">
+        <div class="MapPost-form-group-row" id="AerscreenUtmRow" style="display: none;">
+          <div class="MapPost-form-group">
+            <label>UTM Zone (0=Auto)</label>
+            <input type="number" id="AerscreenUtmZone" value="0" min="0" max="60">
+          </div>
           <div class="MapPost-form-group">
             <label>Probe Dist (m)</label>
             <input type="number" id="AerscreenProbeDistance" value="5000" step="100">
           </div>
+        </div>
+
+        <div class="MapPost-form-group-row" id="AerscreenManualElevRow" style="display: none;">
           <div class="MapPost-form-group">
+            <label>Source Elev (m)</label>
+            <input type="number" id="AerscreenSourceElevation" value="0.0" step="0.1">
+          </div>
+          <div class="MapPost-form-group">
+            <label>Profile Base (m)</label>
+            <input type="number" id="AerscreenProfBase" value="0.0" step="0.1">
           </div>
         </div>
       </div>
