@@ -1151,7 +1151,18 @@ function bindEvents() {
 
     const useFlagpoleSelect = document.getElementById("AerscreenUseFlagpole");
     if (useFlagpoleSelect) {
-        useFlagpoleSelect.addEventListener("change", () => AerscreenTool.updateVisibility());
+        useFlagpoleSelect.addEventListener("change", (e) => {
+            const isY = e.target.value === "Y";
+            AerscreenTool.updateVisibility();
+
+            if (isY) {
+                const fpInput = document.getElementById("AerscreenFlagpoleHeight");
+                if (fpInput && (fpInput.value <= 0)) fpInput.value = 10.0;
+            } else {
+                const fpInput = document.getElementById("AerscreenFlagpoleHeight");
+                if (fpInput) fpInput.value = 0.0;
+            }
+        });
     }
 
     const useDiscreteRecSelect = document.getElementById("AerscreenUseDiscreteRec");
@@ -1343,14 +1354,14 @@ function getInputs() {
             stack_temp: parseFloat(document.getElementById("AerscreenStackTemp")?.value) || 500.0,
             stack_velocity: parseFloat(document.getElementById("AerscreenStackVelocity")?.value) || 5.0,
 
-            // Building Data
+            // Building Data - Zero out if N
             bld_downwash: document.getElementById("AerscreenBldDownwash")?.value || "N",
-            bld_height: parseFloat(document.getElementById("AerscreenBldHeight")?.value) || 0,
-            bld_min_dim: parseFloat(document.getElementById("AerscreenBldMinDim")?.value) || 0,
-            bld_max_dim: parseFloat(document.getElementById("AerscreenBldMaxDim")?.value) || 0,
-            bld_angle: parseFloat(document.getElementById("AerscreenBldAngle")?.value) || 0,
-            bld_sangle: parseFloat(document.getElementById("AerscreenBldSangle")?.value) || 0,
-            bld_sdist: parseFloat(document.getElementById("AerscreenBldSdist")?.value) || 0,
+            bld_height: (document.getElementById("AerscreenBldDownwash")?.value === "Y") ? (parseFloat(document.getElementById("AerscreenBldHeight")?.value) || 0) : 0,
+            bld_min_dim: (document.getElementById("AerscreenBldDownwash")?.value === "Y") ? (parseFloat(document.getElementById("AerscreenBldMinDim")?.value) || 0) : 0,
+            bld_max_dim: (document.getElementById("AerscreenBldDownwash")?.value === "Y") ? (parseFloat(document.getElementById("AerscreenBldMaxDim")?.value) || 0) : 0,
+            bld_angle: (document.getElementById("AerscreenBldDownwash")?.value === "Y") ? (parseFloat(document.getElementById("AerscreenBldAngle")?.value) || 0) : 0,
+            bld_sangle: (document.getElementById("AerscreenBldDownwash")?.value === "Y") ? (parseFloat(document.getElementById("AerscreenBldSangle")?.value) || 0) : 0,
+            bld_sdist: (document.getElementById("AerscreenBldDownwash")?.value === "Y") ? (parseFloat(document.getElementById("AerscreenBldSdist")?.value) || 0) : 0,
 
             // Makemet Data
             min_ambient_temp: parseFloat(document.getElementById("AerscreenMinAmbTemp")?.value) || 250,
@@ -1364,34 +1375,37 @@ function getInputs() {
             // Terrain/Survey Options
             use_terrain: document.getElementById("AerscreenUseTerrain")?.value || "N",
             run_aermap: document.getElementById("AerscreenRunAermap")?.value || "N",
-            source_elevation: parseFloat(document.getElementById("AerscreenSourceElevation")?.value) || 0.0,
-            prof_base: parseFloat(document.getElementById("AerscreenProfBase")?.value) || 0.0,
+            source_elevation: (document.getElementById("AerscreenUseTerrain")?.value === "Y") ? (parseFloat(document.getElementById("AerscreenSourceElevation")?.value) || 0.0) : 0,
+            prof_base: (document.getElementById("AerscreenUseTerrain")?.value === "Y") ? (parseFloat(document.getElementById("AerscreenProfBase")?.value) || 0.0) : 0,
             utm_zone_num: parseInt(document.getElementById("AerscreenUtmZone")?.value) || (Math.floor((lon + 180) / 6) + 1),
             probe_distance: parseFloat(document.getElementById("AerscreenProbeDistance")?.value) || 5000,
 
-            flagpole_height: parseFloat(document.getElementById("AerscreenFlagpoleHeight")?.value) || 0,
+            flagpole_height: (document.getElementById("AerscreenUseFlagpole")?.value === "Y")
+                ? (parseFloat(document.getElementById("AerscreenFlagpoleHeight")?.value) || 0)
+                : 0.0,
 
             use_discrete_rec: document.getElementById("AerscreenUseDiscreteRec")?.value || "N",
-            discrete_distances: (document.getElementById("AerscreenDiscreteDistances")?.value || "")
-                .split(",")
-                .map(s => parseFloat(s.trim()))
-                .filter(n => !isNaN(n)),
+            discrete_distances: (document.getElementById("AerscreenUseDiscreteRec")?.value === "Y")
+                ? (document.getElementById("AerscreenDiscreteDistances")?.value || "")
+                    .split(",")
+                    .map(s => parseFloat(s.trim()))
+                    .filter(n => !isNaN(n))
+                : [],
 
             use_fumigation: document.getElementById("AerscreenUseFumigation")?.value || "N",
-            shoreline_dist: parseFloat(document.getElementById("AerscreenShorelineDist")?.value) || 0,
-            shoreline_dir: parseFloat(document.getElementById("AerscreenShorelineDir")?.value) || 0,
+            shoreline_dist: (document.getElementById("AerscreenUseFumigation")?.value === "Y") ? (parseFloat(document.getElementById("AerscreenShorelineDist")?.value) || 0) : 0,
+            shoreline_dir: (document.getElementById("AerscreenUseFumigation")?.value === "Y") ? (parseFloat(document.getElementById("AerscreenShorelineDir")?.value) || 0) : 0,
 
             ambient_distance: Math.max(
-
                 parseFloat(document.getElementById("AerscreenAmbientDistance")?.value) || 1.0,
                 (parseFloat(document.getElementById("AerscreenStackDiameter")?.value) || 5.0) / 2 + 1.0
             ),
 
             // NO2 Chemistry
             no2_option: document.getElementById("AerscreenNo2Option")?.value || "1",
-            no2_stack_ratio: parseFloat(document.getElementById("AerscreenNo2StackRatio")?.value) || 0.1,
+            no2_stack_ratio: (document.getElementById("AerscreenNo2Option")?.value !== "1") ? (parseFloat(document.getElementById("AerscreenNo2StackRatio")?.value) || 0.1) : 0,
             ozone_units: document.getElementById("AerscreenOzoneUnits")?.value || "3",
-            ozone_value: parseFloat(document.getElementById("AerscreenOzoneValue")?.value) || 40
+            ozone_value: (document.getElementById("AerscreenNo2Option")?.value !== "1") ? (parseFloat(document.getElementById("AerscreenOzoneValue")?.value) || 40) : 0
         };
 
     } else {
