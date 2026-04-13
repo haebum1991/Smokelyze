@@ -1,5 +1,5 @@
 
-baseurl = "/"
+baseurl = "https://smokelyze.org"
 languageCode = "en-US"
 title = "Smokelyze"
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
