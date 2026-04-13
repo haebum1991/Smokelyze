@@ -8,6 +8,7 @@ import { map } from "./map-init.js";
 import { showErrorToast, showTaskNotification } from "./loader-ui.js";
 import * as utils from "./utils.js";
 import { setAerscreenDrawer } from "./ui-toggles.js";
+import { updateAuthButton } from "./signin.js";
 
 const AERSCREEN_CONFIG = {
     API_URL: "https://fetch-aerscreen-go-service-1068523865415.us-central1.run.app/api/dispersion/aerscreen"
@@ -19,9 +20,11 @@ export const AerscreenTool = {
     lastResult: null,
 
     /**
-     * Unified visibility logic for AERSCREEN UI
+     * Comprehensive visibility logic for AERSCREEN UI
+     * Handles mode switching AND all sub-section toggles (Yes/No logic)
      */
     updateVisibility() {
+        // 1. Basic Mode Switch (Simplified vs EPA)
         const modeSelect = document.getElementById("AerscreenMode");
         const simplifiedParams = document.getElementById("AerscreenSimplifiedParams");
         const aerscreenParams = document.getElementById("AerscreenParams");
@@ -30,32 +33,45 @@ export const AerscreenTool = {
         if (modeSelect && modeSelect.value === "aerscreen") {
             if (simplifiedParams) simplifiedParams.style.display = "none";
             if (aerscreenParams) aerscreenParams.style.display = "block";
-            // Show result button only for EPA Aerscreen type that has data
             const hasAerscreenRes = this.lastResult && this.lastResult.isAerscreen;
             if (viewBtn) viewBtn.style.display = hasAerscreenRes ? "block" : "none";
-            this.syncTerrainVisibility(); // Fixed reference
         } else {
             if (simplifiedParams) simplifiedParams.style.display = "block";
             if (aerscreenParams) aerscreenParams.style.display = "none";
-            // Always hide result button for Simplified Gaussian
             if (viewBtn) viewBtn.style.display = "none";
         }
-    },
-    
-    /**
-     * Conditional visibility for terrain sub-options
-     */
-    syncTerrainVisibility() {
+
+        // Helper for local use
+        const setVisible = (id, show, displayType = "flex") => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = show ? displayType : "none";
+        };
+
+        // a. Terrain (Run Type & AERMAP)
         const useTerrain = document.getElementById("AerscreenUseTerrain")?.value === "Y";
         const runAermap = document.getElementById("AerscreenRunAermap")?.value === "Y";
-        
-        const runAermapRow = document.getElementById("AerscreenRunAermapRow");
-        const manualElevRow = document.getElementById("AerscreenManualElevRow");
-        const utmRow = document.getElementById("AerscreenUtmRow");
-        
-        if (runAermapRow) runAermapRow.style.display = useTerrain ? "block" : "none";
-        if (utmRow) utmRow.style.display = useTerrain ? "grid" : "none";
-        if (manualElevRow) manualElevRow.style.display = (useTerrain && !runAermap) ? "grid" : "none";
+        setVisible("AerscreenRunAermapRow", useTerrain, "flex"); // Normal group
+        setVisible("AerscreenUtmRow", useTerrain, "grid"); // Row group
+        setVisible("AerscreenManualElevRow", (useTerrain && !runAermap), "grid"); // Row group
+
+        // b. Downwash / Building (Container, can be block)
+        setVisible("AerscreenBldDetails", document.getElementById("AerscreenBldDownwash")?.value === "Y", "block");
+
+        // c. NO2 Chemistry (Value [1] means No Chemistry)
+        const no2Option = document.getElementById("AerscreenNo2Option")?.value;
+        setVisible("AerscreenNo2Details", (no2Option && no2Option !== "1"), "block");
+
+        // d. Flagpole
+        setVisible("AerscreenFlagpoleGroup", document.getElementById("AerscreenUseFlagpole")?.value === "Y");
+
+        // e. Discrete Receptors
+        setVisible("AerscreenDiscreteGroup", document.getElementById("AerscreenUseDiscreteRec")?.value === "Y");
+
+        // f. Fumigation (Container, can be block)
+        setVisible("AerscreenShorelineGroup", document.getElementById("AerscreenUseFumigation")?.value === "Y", "block");
+
+        // g. Terrain (Urban/Rural Switch - Shared)
+        setVisible("AerscreenPopulationGroup", document.getElementById("AerscreenTerrain")?.value === "urban");
     },
 
     /**
@@ -92,8 +108,6 @@ export const AerscreenTool = {
                 bld_min_dim: params.bld_min_dim,
                 bld_max_dim: params.bld_max_dim,
                 bld_angle: params.bld_angle,
-                bld_x: params.bld_x,
-                bld_y: params.bld_y,
 
                 min_ambient_temp: params.min_ambient_temp,
                 max_ambient_temp: params.max_ambient_temp,
@@ -116,6 +130,7 @@ export const AerscreenTool = {
                 population: params.population,
                 scaling_factor: params.scaling_factor,
                 use_discrete_rec: params.use_discrete_rec,
+                discrete_distances: params.discrete_distances, // <--- 누락되었던 핵심 데이터 추가!
                 ambient_distance: params.ambient_distance,
 
                 // NO2 Chemistry (NEW)
@@ -305,8 +320,11 @@ export const AerscreenTool = {
                     </div>
                     
                     <div style="margin-top: 2rem;">
-                        <div style="color: var(--text-main); font-size: 1.1rem; font-weight: bold; margin-bottom: 0.8rem; text-transform: uppercase;">AERSCREEN.OUT Summary</div>
-                        <pre style="background: var(--sidebar-widget-bg); color: var(--text-main); padding: 1.5rem; border-radius: var(--border-radius-0p8rem); border: 0.1rem solid var(--border-main); font-size: 1.1rem; height: 35rem; overflow-y: auto; overflow-x: auto; font-family: monospace; font-weight: bold; line-height: 1.4; white-space: pre;">${result.output_summary ? result.output_summary : 'No explicit engine output was returned.'}</pre>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                            <div style="color: var(--text-main); font-size: 1.1rem; font-weight: bold; text-transform: uppercase;">AERSCREEN.OUT Summary</div>
+                            <button class="export-btn-csv" id="AerscreenBtnDownloadOut">⬇ .TXT</button>
+                        </div>
+                        <pre style="background: var(--sidebar-widget-bg); color: var(--text-main); padding: 1.5rem; border-radius: var(--border-radius-0p8rem); border: 0.1rem solid var(--border-main); font-size: 1.1rem; height: 35rem; overflow-y: auto; overflow-x: auto; font-family: monospace; font-weight: bold; line-height: 1.4; white-space: pre;">${result.output_summary ? result.output_summary : "No explicit engine output was returned."}</pre>
                     </div>
 
                     <div style="margin-top: 1.5rem; font-size: 1.1rem; color: var(--text-main); padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: var(--border-radius-0p8rem); line-height: 1.6; border: 0.1rem solid var(--border-main);">
@@ -324,6 +342,42 @@ export const AerscreenTool = {
                 </div>
             </div>
         `;
+        
+        // 4. Attach Download logic
+        const downloadBtn = document.getElementById("AerscreenBtnDownloadOut");
+        if (downloadBtn && result.output_summary) {
+            // Apply visual auth state (disabled if not logged in)
+            updateAuthButton(downloadBtn, auth.currentUser, "⬇ .TXT");
+
+            downloadBtn.onclick = () => {
+                // [AUTH CHECK] Reuse existing pattern
+                if (!auth.currentUser) {
+                    utils.showAuthOverlay();
+                    return;
+                }
+                const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+                this.downloadTextFile(`AERSCREEN_OUT_${timestamp}.txt`, result.output_summary);
+            };
+        } else if (downloadBtn) {
+            downloadBtn.style.display = "none";
+        }
+    },
+
+    /**
+     * Helper to download text content as a file
+     */
+    downloadTextFile(filename, content) {
+        const blob = new Blob([content], { type: "text/plain;charset=utf-8;" });
+        const link = document.createElement("a");
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            link.style.visibility = "hidden";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     },
 
     showLoading(show) {
@@ -886,10 +940,6 @@ function clearMapLayers(runId) {
 
 
 // ============================================================
-// Section 6: UI Module
-// ============================================================
-
-// ============================================================
 // Section 6: UI Module & State
 // ============================================================
 
@@ -1042,49 +1092,46 @@ function bindEvents() {
     }
 
     const aerscreenTerrainSelect = document.getElementById("AerscreenTerrain");
-    const aerscreenPopulationGroup = document.getElementById("AerscreenPopulationGroup");
-    if (aerscreenTerrainSelect && aerscreenPopulationGroup) {
-        aerscreenTerrainSelect.addEventListener("change", (e) => {
-            aerscreenPopulationGroup.style.display = e.target.value === "urban" ? "block" : "none";
-        });
+    if (aerscreenTerrainSelect) {
+        aerscreenTerrainSelect.addEventListener("change", () => AerscreenTool.updateVisibility());
     }
-    
+
     // Terrain sub-logic bindings
     const useTerrainSelect = document.getElementById("AerscreenUseTerrain");
     const runAermapSelect = document.getElementById("AerscreenRunAermap");
     if (useTerrainSelect) {
-        useTerrainSelect.addEventListener("change", () => AerscreenTool.syncTerrainVisibility());
+        useTerrainSelect.addEventListener("change", () => AerscreenTool.updateVisibility());
     }
     if (runAermapSelect) {
-        runAermapSelect.addEventListener("change", () => AerscreenTool.syncTerrainVisibility());
+        runAermapSelect.addEventListener("change", () => AerscreenTool.updateVisibility());
     }
 
     const no2OptionSelect = document.getElementById("AerscreenNo2Option");
-    const no2Details = document.getElementById("AerscreenNo2Details");
-    if (no2OptionSelect && no2Details) {
-        no2OptionSelect.addEventListener("change", (e) => {
-            no2Details.style.display = e.target.value !== "1" ? "block" : "none";
-        });
+    if (no2OptionSelect) {
+        no2OptionSelect.addEventListener("change", () => AerscreenTool.updateVisibility());
     }
 
     const bldDownwashSelect = document.getElementById("AerscreenBldDownwash");
-    const bldDetails = document.getElementById("AerscreenBldDetails");
-    if (bldDownwashSelect && bldDetails) {
+    if (bldDownwashSelect) {
         bldDownwashSelect.addEventListener("change", (e) => {
             const isY = e.target.value === "Y";
-            bldDetails.style.display = isY ? "block" : "none";
+            AerscreenTool.updateVisibility();
 
             // Inject safe defaults if turned on, reset to 0 if turned off
             if (isY) {
                 if (document.getElementById("AerscreenBldHeight").value <= 0) document.getElementById("AerscreenBldHeight").value = 10.0;
                 if (document.getElementById("AerscreenBldMinDim").value <= 0) document.getElementById("AerscreenBldMinDim").value = 10.0;
-                if (document.getElementById("AerscreenBldMaxDim").value <= 0) document.getElementById("AerscreenBldMaxDim").value = 20.0;
+                if (document.getElementById("AerscreenBldMaxDim").value <= 10.0) document.getElementById("AerscreenBldMaxDim").value = 20.0;
                 if (document.getElementById("AerscreenBldAngle").value === "") document.getElementById("AerscreenBldAngle").value = 0.0;
+                if (document.getElementById("AerscreenBldSangle").value === "") document.getElementById("AerscreenBldSangle").value = 0.0;
+                if (document.getElementById("AerscreenBldSdist").value === "") document.getElementById("AerscreenBldSdist").value = 0.0;
             } else {
                 document.getElementById("AerscreenBldHeight").value = 0.0;
                 document.getElementById("AerscreenBldMinDim").value = 0.0;
                 document.getElementById("AerscreenBldMaxDim").value = 0.0;
                 document.getElementById("AerscreenBldAngle").value = 0.0;
+                document.getElementById("AerscreenBldSangle").value = 0.0;
+                document.getElementById("AerscreenBldSdist").value = 0.0;
             }
         });
     }
@@ -1100,6 +1147,21 @@ function bindEvents() {
                 if (document.getElementById("AerscreenEffHeight")) document.getElementById("AerscreenEffHeight").value = preset.effectiveHeight;
             }
         });
+    }
+
+    const useFlagpoleSelect = document.getElementById("AerscreenUseFlagpole");
+    if (useFlagpoleSelect) {
+        useFlagpoleSelect.addEventListener("change", () => AerscreenTool.updateVisibility());
+    }
+
+    const useDiscreteRecSelect = document.getElementById("AerscreenUseDiscreteRec");
+    if (useDiscreteRecSelect) {
+        useDiscreteRecSelect.addEventListener("change", () => AerscreenTool.updateVisibility());
+    }
+
+    const useFumigationSelect = document.getElementById("AerscreenUseFumigation");
+    if (useFumigationSelect) {
+        useFumigationSelect.addEventListener("change", () => AerscreenTool.updateVisibility());
     }
 
     // Delegation for drawer list items
@@ -1182,10 +1244,39 @@ function bindEvents() {
                         if (document.getElementById("AerscreenBldMinDim")) document.getElementById("AerscreenBldMinDim").value = item.params.bld_min_dim || 0;
                         if (document.getElementById("AerscreenBldMaxDim")) document.getElementById("AerscreenBldMaxDim").value = item.params.bld_max_dim || 0;
                         if (document.getElementById("AerscreenBldAngle")) document.getElementById("AerscreenBldAngle").value = item.params.bld_angle || 0;
-                        
+                        if (document.getElementById("AerscreenBldSangle")) document.getElementById("AerscreenBldSangle").value = item.params.bld_sangle || 0;
+                        if (document.getElementById("AerscreenBldSdist")) document.getElementById("AerscreenBldSdist").value = item.params.bld_sdist || 0;
+
                         if (document.getElementById("AerscreenSourceElevation")) document.getElementById("AerscreenSourceElevation").value = item.params.source_elevation || 0;
                         if (document.getElementById("AerscreenProfBase")) document.getElementById("AerscreenProfBase").value = item.params.prof_base || 0;
                         if (document.getElementById("AerscreenUtmZone")) document.getElementById("AerscreenUtmZone").value = item.params.utm_zone_num || 0;
+                        if (document.getElementById("AerscreenFlagpoleHeight")) document.getElementById("AerscreenFlagpoleHeight").value = item.params.flagpole_height || 0;
+                        if (document.getElementById("AerscreenUseFlagpole")) {
+                            const fpEl = document.getElementById("AerscreenUseFlagpole");
+                            fpEl.value = (item.params.flagpole_height > 0 || item.params.use_flagpole === "Y") ? "Y" : "N";
+                            fpEl.dispatchEvent(new Event("change"));
+                        }
+
+                        if (document.getElementById("AerscreenUseDiscreteRec")) {
+                            const discEl = document.getElementById("AerscreenUseDiscreteRec");
+                            discEl.value = item.params.use_discrete_rec || "N";
+                            discEl.dispatchEvent(new Event("change"));
+                        }
+                        if (document.getElementById("AerscreenDiscreteDistances") && item.params.discrete_distances) {
+                            document.getElementById("AerscreenDiscreteDistances").value = item.params.discrete_distances.join(", ");
+                        }
+
+                        if (document.getElementById("AerscreenUseFumigation")) {
+                            const fumEl = document.getElementById("AerscreenUseFumigation");
+                            fumEl.value = item.params.use_fumigation || "N";
+                            fumEl.dispatchEvent(new Event("change"));
+                        }
+                        if (document.getElementById("AerscreenShorelineDist")) document.getElementById("AerscreenShorelineDist").value = item.params.shoreline_dist || 1000;
+                        if (document.getElementById("AerscreenShorelineDir")) document.getElementById("AerscreenShorelineDir").value = item.params.shoreline_dir || 0;
+
+                        if (document.getElementById("AerscreenAnemometerHt")) document.getElementById("AerscreenAnemometerHt").value = item.params.anemometer_ht || 10.0;
+
+                        if (document.getElementById("AerscreenRoughness")) document.getElementById("AerscreenRoughness").value = item.params.surface_roughness || 0.1;
 
                         if (document.getElementById("AerscreenUseTerrain")) {
                             document.getElementById("AerscreenUseTerrain").value = item.params.use_terrain || "N";
@@ -1193,7 +1284,8 @@ function bindEvents() {
                         if (document.getElementById("AerscreenRunAermap")) {
                             document.getElementById("AerscreenRunAermap").value = item.params.run_aermap || "N";
                         }
-                        AerscreenTool.syncTerrainVisibility();
+
+
                     } else {
                         if (document.getElementById("AerscreenWindSpeed")) document.getElementById("AerscreenWindSpeed").value = item.params.wind_speed;
                         if (document.getElementById("AerscreenWindDir")) document.getElementById("AerscreenWindDir").value = item.params.wind_direction;
@@ -1256,13 +1348,18 @@ function getInputs() {
             bld_height: parseFloat(document.getElementById("AerscreenBldHeight")?.value) || 0,
             bld_min_dim: parseFloat(document.getElementById("AerscreenBldMinDim")?.value) || 0,
             bld_max_dim: parseFloat(document.getElementById("AerscreenBldMaxDim")?.value) || 0,
+            bld_angle: parseFloat(document.getElementById("AerscreenBldAngle")?.value) || 0,
+            bld_sangle: parseFloat(document.getElementById("AerscreenBldSangle")?.value) || 0,
+            bld_sdist: parseFloat(document.getElementById("AerscreenBldSdist")?.value) || 0,
 
             // Makemet Data
             min_ambient_temp: parseFloat(document.getElementById("AerscreenMinAmbTemp")?.value) || 250,
             max_ambient_temp: parseFloat(document.getElementById("AerscreenMaxAmbTemp")?.value) || 315,
             min_wind_speed: parseFloat(document.getElementById("AerscreenMinWindSpeed")?.value) || 0.5,
+            anemometer_ht: parseFloat(document.getElementById("AerscreenAnemometerHt")?.value) || 10.0,
             surface_albedo: parseFloat(document.getElementById("AerscreenAlbedo")?.value) || 0.20,
             surface_bowen: parseFloat(document.getElementById("AerscreenBowen")?.value) || 1.0,
+            surface_roughness: parseFloat(document.getElementById("AerscreenRoughness")?.value) || 0.1,
 
             // Terrain/Survey Options
             use_terrain: document.getElementById("AerscreenUseTerrain")?.value || "N",
@@ -1271,7 +1368,21 @@ function getInputs() {
             prof_base: parseFloat(document.getElementById("AerscreenProfBase")?.value) || 0.0,
             utm_zone_num: parseInt(document.getElementById("AerscreenUtmZone")?.value) || (Math.floor((lon + 180) / 6) + 1),
             probe_distance: parseFloat(document.getElementById("AerscreenProbeDistance")?.value) || 5000,
+
+            flagpole_height: parseFloat(document.getElementById("AerscreenFlagpoleHeight")?.value) || 0,
+
+            use_discrete_rec: document.getElementById("AerscreenUseDiscreteRec")?.value || "N",
+            discrete_distances: (document.getElementById("AerscreenDiscreteDistances")?.value || "")
+                .split(",")
+                .map(s => parseFloat(s.trim()))
+                .filter(n => !isNaN(n)),
+
+            use_fumigation: document.getElementById("AerscreenUseFumigation")?.value || "N",
+            shoreline_dist: parseFloat(document.getElementById("AerscreenShorelineDist")?.value) || 0,
+            shoreline_dir: parseFloat(document.getElementById("AerscreenShorelineDir")?.value) || 0,
+
             ambient_distance: Math.max(
+
                 parseFloat(document.getElementById("AerscreenAmbientDistance")?.value) || 1.0,
                 (parseFloat(document.getElementById("AerscreenStackDiameter")?.value) || 5.0) / 2 + 1.0
             ),
@@ -1282,6 +1393,7 @@ function getInputs() {
             ozone_units: document.getElementById("AerscreenOzoneUnits")?.value || "3",
             ozone_value: parseFloat(document.getElementById("AerscreenOzoneValue")?.value) || 40
         };
+
     } else {
         return {
             ...baseParams,
@@ -1479,7 +1591,7 @@ export function openDispersionAt(lon, lat) {
     if (locLabel) locLabel.innerText = `${lon.toFixed(4)}, ${lat.toFixed(4)}`;
     if (lonInput) lonInput.value = lon;
     if (latInput) latInput.value = lat;
-    
+
     const utmInput = document.getElementById("AerscreenUtmZone");
     if (utmInput) utmInput.value = 0; // Reset to auto-calculation for new location
 }

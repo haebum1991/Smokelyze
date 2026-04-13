@@ -1083,8 +1083,7 @@ title: ""
           </div>
           <div class="MapPost-form-group">
             <label>Ambient Dist (m):</label>
-            <input type="number" id="AerscreenAmbientDistance" value="1.0" step="1"
-              title="Minimum Distance to Ambient Air">
+            <input type="number" id="AerscreenAmbientDistance" value="1.0" step="1">
           </div>
         </div>
 
@@ -1127,43 +1126,7 @@ title: ""
         </div>
 
         <hr style="margin-top: 0; margin-bottom: 0;">
-        <h4 style="color: var(--card-shadow);">Building Data:</h4>
-        <div class="MapPost-form-group-row">
-          <div class="MapPost-form-group">
-            <label>Downwash:</label>
-            <select id="AerscreenBldDownwash" class="MapPost-select">
-              <option value="N" selected>No</option>
-              <option value="Y">Yes</option>
-            </select>
-          </div>
-          <div class="MapPost-form-group"></div>
-        </div>
-
-        <div id="AerscreenBldDetails" style="display: none;">
-          <div class="MapPost-form-group-row">
-            <div class="MapPost-form-group">
-              <label>Height (m):</label>
-              <input type="number" id="AerscreenBldHeight" value="10.0" step="0.1">
-            </div>
-            <div class="MapPost-form-group">
-              <label>Min Dimension (m):</label>
-              <input type="number" id="AerscreenBldMinDim" value="10.0" step="0.1">
-            </div>
-          </div>
-          <div class="MapPost-form-group-row">
-            <div class="MapPost-form-group">
-              <label>Max Dimension (m):</label>
-              <input type="number" id="AerscreenBldMaxDim" value="20.0" step="0.1">
-            </div>
-            <div class="MapPost-form-group">
-              <label>Bld Orientation (deg):</label>
-              <input type="number" id="AerscreenBldAngle" value="0.0" step="1">
-            </div>
-          </div>
-        </div>
-
-        <hr style="margin-top: 0; margin-bottom: 0;">
-        <h4 style="color: var(--card-shadow);">Makemet Data:</h4>
+        <h4 style="color: var(--card-shadow);">MAKEMET Data:</h4>
         <div class="MapPost-form-group-row">
           <div class="MapPost-form-group">
             <label>Min Amb Temp (K):</label>
@@ -1192,6 +1155,124 @@ title: ""
             <input type="number" id="AerscreenBowen" value="1.0" step="0.1">
           </div>
           <div class="MapPost-form-group">
+            <label>Roughness (m):</label>
+            <input type="number" id="AerscreenRoughness" value="0.10" step="0.01">
+          </div>
+        </div>
+
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Anemometer Ht (m):</label>
+            <input type="number" id="AerscreenAnemometerHt" value="10.0" step="0.1">
+          </div>
+          <div class="MapPost-form-group">
+          </div>
+        </div>
+        
+        <hr style="margin-top: 0; margin-bottom: 0;">
+        <h4 style="color: var(--card-shadow);">Building Data:</h4>
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Downwash:</label>
+            <select id="AerscreenBldDownwash" class="MapPost-select">
+              <option value="N" selected>No</option>
+              <option value="Y">Yes</option>
+            </select>
+          </div>
+          <div class="MapPost-form-group"></div>
+        </div>
+
+        <div id="AerscreenBldDetails" style="display: none;">
+        
+          <div class="MapPost-form-group-row">
+            <div class="MapPost-form-group">
+              <label>Height (m):</label>
+              <input type="number" id="AerscreenBldHeight" value="10.0" step="0.1">
+            </div>
+            <div class="MapPost-form-group">
+              <label>Min Dimension (m):</label>
+              <input type="number" id="AerscreenBldMinDim" value="10.0" step="0.1">
+            </div>
+          </div>
+          
+          <div class="MapPost-form-group-row">
+            <div class="MapPost-form-group">
+              <label>Max Dimension (m):</label>
+              <input type="number" id="AerscreenBldMaxDim" value="20.0" step="0.1">
+            </div>
+            <div class="MapPost-form-group">
+              <label>Bld Orientation (0-360°):</label>
+              <input type="number" id="AerscreenBldAngle" value="0.0" step="1">
+            </div>
+          </div>
+          
+          <div class="MapPost-form-group-row">
+            <div class="MapPost-form-group">
+              <label>Stack Dir. (0-360°):</label>
+              <input type="number" id="AerscreenBldSangle" value="0.0" step="1">
+            </div>
+            <div class="MapPost-form-group">
+              <label>Stack Dist. (m):</label>
+              <input type="number" id="AerscreenBldSdist" value="0.0" step="0.1">
+            </div>
+          </div>
+          
+        </div>
+
+        <hr style="margin-top: 0; margin-bottom: 0;">
+        <h4 style="color: var(--card-shadow);">Receptor Data:</h4>
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Use Flagpole:</label>
+            <select id="AerscreenUseFlagpole" class="MapPost-select">
+              <option value="N" selected>No</option>
+              <option value="Y">Yes</option>
+            </select>
+          </div>
+          <div class="MapPost-form-group" id="AerscreenFlagpoleGroup" style="display: none;">
+            <label>Flagpole Height (m):</label>
+            <input type="number" id="AerscreenFlagpoleHeight" value="10" step="0.1">
+          </div>
+        </div>
+
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Discrete Rec.:</label>
+            <select id="AerscreenUseDiscreteRec" class="MapPost-select">
+              <option value="N" selected>No</option>
+              <option value="Y">Yes</option>
+            </select>
+          </div>
+          <div class="MapPost-form-group" id="AerscreenDiscreteGroup" style="display: none;">
+            <label>Distances (m, max 10):</label>
+            <input type="text" id="AerscreenDiscreteDistances" placeholder="e.g. 100, 250, 500">
+          </div>
+        </div>
+
+        <hr style="margin-top: 0; margin-bottom: 0;">
+        <h4 style="color: var(--card-shadow);">Fumigation Data:</h4>
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Fumigation:</label>
+            <select id="AerscreenUseFumigation" class="MapPost-select">
+              <option value="N" selected>No</option>
+              <option value="Y">Yes (Shoreline)</option>
+            </select>
+          </div>
+          <div class="MapPost-form-group"></div>
+        </div>
+
+        <!-- Building Data와 동일한 정석 구조: 컨테이너 안에 Row 배치 -->
+        <div id="AerscreenShorelineGroup" style="display: none;">
+          <div class="MapPost-form-group-row">
+            <div class="MapPost-form-group">
+              <label>Dist to Shore (m):</label>
+              <input type="number" id="AerscreenShorelineDist" value="1000" step="100" style="width: 100%;">
+            </div>
+            <div class="MapPost-form-group">
+              <label>Shore Dir. (0-360°):</label>
+              <input type="number" id="AerscreenShorelineDir" value="0" step="1" style="width: 100%;">
+            </div>
           </div>
         </div>
 
