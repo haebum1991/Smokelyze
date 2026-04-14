@@ -74,10 +74,10 @@ export const DescData = {
                   "Since precise incident coordinates are rarely available in news feeds, articles are assigned to <b style='color: var(--card-shadow);'>representative state-level locations</b>. " +
                   "To ensure visibility when multiple articles share the same state, a <b style='color: var(--card-shadow);'>small random jitter</b> is applied to prevent markers from overlapping. " +
                   "All collected articles are consolidated in the <b style='color: var(--card-shadow);'>side drawer</b> for easy browsing, ensuring that news across all regions can be accessed regardless of map localization." +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Every 6 hours</b></li>" +
+                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Every 6 hours</b> (at 0, 6, 12, 18 UTC)</li>" +
                   "<li>In our app, <b style='color: var(--card-shadow);'>" +
                   "this data is available starting from 2018-01-01. </b>" +
-                  "It is updated daily, and the data is collected every 6 hours. </li>" +
+                  "The data is collected every 6 hours and the map is updated accordingly. </li>" +
                   "<li>Depending on the keywords used for collection, irrelevant news articles may be included in the results.</li></ul>"
         },
         {
@@ -153,10 +153,10 @@ export const DescData = {
                   "including <em>incident name</em>, <em>fire cause</em>, and <em>burn area (acres)</em>. " +
                   "This data includes <b style='color: var(--card-shadow);'>precise discovery coordinates</b> as reported by fire management agencies via the Integrated Reporting of Wildland-Fire Information (IRWIN). " +
                   "The system captures a wide range of incident types and categories, ensuring a comprehensive overview of fire events across the region." +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Every 6 hours</b></li>" +
+                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Every 6 hours</b> (at 0, 6, 12, 18 UTC)</li>" +
                   "<li>In our app, <b style='color: var(--card-shadow);'>" +
                   "this data is available starting from 2018-01-01. </b>" +
-                  "It is updated daily, and the data is collected every 6 hours. </li></ul>"
+                  "The data is collected every 6 hours and the map is updated accordingly. </li></ul>"
         }
     ],
     "desc-airnow": [
@@ -165,7 +165,7 @@ export const DescData = {
             title: "Obs MDA8",
             desc: "<b>Obs MDA8</b> provides the maximum daily 8-hour average ozone concentrations from the US EPA AirNow network. " +
                   "MDA8 is the primary metric used for ozone air quality standards and health assessments. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b></li>" +
+                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 9 UTC)</li>" +
                   "<li>In our app, <b style='color: var(--card-shadow);'>" +
                   "this data is available starting from 2018-07-18. </b></li>" +
                   "<li>Typically has a <b style='color: var(--card-shadow);'>1-day reporting delay</b> from the current date.</li></ul>"
@@ -175,7 +175,7 @@ export const DescData = {
             title: "Obs PM2.5",
             desc: "<b>Obs PM2.5</b> provides 24-hour averaged fine particulate matter concentrations from the US EPA AirNow network. " +
                   "This daily data is useful for assessing longer-term air quality trends and compliance with daily air quality standards. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b></li>" +
+                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 9 UTC)</li>" +
                   "<li>In our app, <b style='color: var(--card-shadow);'>" +
                   "this data is available starting from 2018-07-18. </b></li>" +
                   "<li>Typically has a <b style='color: var(--card-shadow);'>1-day reporting delay</b> from the current date.</li></ul>"
@@ -185,24 +185,30 @@ export const DescData = {
             title: "Obs O3 (hourly)",
             desc: "<b>Obs O3 (hourly)</b> provides real-time hourly ground-level ozone (O3) concentrations from the US EPA AirNow network. " +
                   "Ground-level ozone is formed by chemical reactions between pollutants and sunlight, often exacerbated by wildfire emissions. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Hourly</b></li>" +
-                  "<li>Typically has a <b style='color: var(--card-shadow);'>1-2 hour reporting delay</b> from the current local time.</li></ul>"
+                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Every 6 hours</b> (at 3, 9, 15, 21 UTC)</li>" +
+                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "this data is available starting from 2019-07-01. </b></li>" +
+                  "<li>Typically has up to a <b style='color: var(--card-shadow);'>6-hr reporting delay</b> from the current local time.</li></ul>"
         },
         {
             id: "airnow-hourly-pm25",
             title: "Obs PM2.5 (hourly)",
             desc: "<b>Obs PM2.5 (hourly)</b> provides real-time hourly fine particulate matter (PM2.5) concentrations from the US EPA AirNow network. " +
                   "This data is crucial for identifying immediate smoke impacts and tracking air quality trends as they happen. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Hourly</b></li>" +
-                  "<li>Typically has a <b style='color: var(--card-shadow);'>1-2 hour reporting delay</b> from the current local time.</li></ul>"
+                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Every 6 hours</b> (at 3, 9, 15, 21 UTC)</li>" +
+                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "this data is available starting from 2019-07-01. </b></li>" +
+                  "<li>Typically has up to a <b style='color: var(--card-shadow);'>6-hr reporting delay</b> from the current local time.</li></ul>"
         },
         {
             id: "airnow-hourly-no2",
             title: "Obs NO2 (hourly)",
             desc: "<b>Obs NO2 (hourly)</b> provides real-time hourly nitrogen dioxide (NO2) concentrations from the US EPA AirNow network. " +
                   "NO2 is a primary pollutant from combustion sources and is a key precursor to ozone and secondary particulate matter formation. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Hourly</b></li>" +
-                  "<li>Typically has a <b style='color: var(--card-shadow);'>1-2 hour reporting delay</b> from the current local time.</li></ul>"
+                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Every 6 hours</b> (at 3, 9, 15, 21 UTC)</li>" +
+                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "this data is available starting from 2019-07-01. </b></li>" +
+                  "<li>Typically has up to a <b style='color: var(--card-shadow);'>6-hr reporting delay</b> from the current local time.</li></ul>"
         }
     ],
     "desc-satellite": [
@@ -211,7 +217,7 @@ export const DescData = {
           title: "HMS-smoke",
           desc: "<b>NOAA-HMS Smoke Plumes</b> are satellite-derived products highlighting areas of overhead smoke. " +
                 "Statistical summaries represent the coverage area (km²) within administrative boundaries. " +
-                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b></li>" +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Twice Daily</b> (at 13, 18 UTC)</li>" +
                 "<li>In our app, <b style='color: var(--card-shadow);'>" +
                 "this data is available starting from 2018-01-01. </b>" +
                 "Due to the NOAA HMS processing cycle, " +
@@ -223,8 +229,8 @@ export const DescData = {
           title: "HMS-fire",
           desc: "<b>NOAA-HMS Fire Points</b> represent thermal anomalies and Fire Radiative Power (FRP). " +
                 "The points are <b style='color: var(--card-shadow);'>spatially aggregated at 0.001 degree (~ 0.1 km) resolution</b> to ensure clarity and prevent overlapping markers. " +
-                "And then. the <b style='color: var(--card-shadow);'>regional statistics</b> (fire points and FRP) are computed. " +
-                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b></li>" +
+                "And then, the <b style='color: var(--card-shadow);'>regional statistics</b> (fire points and FRP) are computed. " +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Twice Daily</b> (at 13, 18 UTC)</li>" +
                 "<li>In our app, <b style='color: var(--card-shadow);'>" +
                 "this data is available starting from 2018-01-01. </b>" + 
                 "Due to the NOAA HMS processing cycle, " +
@@ -247,7 +253,7 @@ export const DescData = {
             desc: "<b>TEMPO NO2VCD L3 (hourly)</b> provides high-resolution tropospheric vertical column density (VCD) of nitrogen dioxide (NO<sub>2</sub>) from NASA's geostationary TEMPO satellite. " +
                   "Data is strictly filtered using the official <em>Main Quality Flag (0)</em> and a <em>Cloud Fraction threshold (< 10%)</em> to ensure high-accuracy, clear-sky observations. " +
                   "It allows for near real-time tracking of nitrogen dioxide levels over North America in unit of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b></li>" +
+                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 9 UTC)</li>" +
                   "<li>In our app, <b style='color: var(--card-shadow);'>" +
                   "this data is available starting from 2023-08-02, </b>" + 
                   "and, <b style='color: var(--card-shadow);'>spatially aggregated to 0.04&deg; (~ 4.4 km)</b> for visualization performance.</li>" +
@@ -259,7 +265,7 @@ export const DescData = {
             desc: "<b>TEMPO HCHOVCD L3 (hourly)</b> provides high-resolution vertical column density (VCD) of formaldehyde (HCHO) from NASA's geostationary TEMPO satellite. " +
                   "Data is strictly filtered using the official <em>Main Quality Flag (0)</em> and a <em>Cloud Fraction threshold (< 10%)</em> to ensure high-accuracy, clear-sky observations. " +
                   "It allows for near real-time tracking of formaldehyde levels over North America in unit of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b></li>" +
+                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 9 UTC)</li>" +
                   "<li>In our app, <b style='color: var(--card-shadow);'>" +
                   "this data is available starting from 2023-08-02, </b>" + 
                   "and, <b style='color: var(--card-shadow);'>spatially aggregated to 0.04&deg; (~ 4.4 km)</b> for visualization performance.</li>" +
@@ -271,7 +277,7 @@ export const DescData = {
             desc: "<b>TROPOMI NO2VCD L3</b> maps are based on <b>Collection 3 of the Sentinel-5P Nitrogen Dioxide Level-2 products</b> (L2__NO2___) from the Copernicus Data Space Ecosystem. " +
                   "Data is strictly filtered according to the official recommendation (<b>QA value > 0.75</b>) to ensure high-accuracy, clear-sky observations. " +
                   "The measurements are mapped on a fixed grid and processed into Level-3 data by <b>S5P-PAL</b>, providing tropospheric vertical column density (VCD) in units of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b></li>" +
+                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 9 UTC)</li>" +
                   "<li>In our app, <b style='color: var(--card-shadow);'>" +
                   "this data is available starting from 2018-05-01. </b>" +
                   "and, <b style='color: var(--card-shadow);'>spatially aggregated to 0.044&deg; (~ 5 km)</b> for visualization performance.</li>" +
@@ -284,7 +290,7 @@ export const DescData = {
             desc: "<b>TROPOMI HCHOVCD L3</b> maps are based on <b>Collection 3 of the Sentinel-5P Formaldehyde Level-2 products</b> (L2__HCHO__) from the Copernicus Dataspace Browser. " +
                   "Data is strictly filtered according to the official recommendation (<b>QA Value > 0.5</b>) to ensure high-accuracy, clear-sky observations. " +
                   "The measurements are mapped on a fixed grid and processed into Level-3 data by <b>S5P-PAL</b>, tracking formaldehyde levels over North America in units of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b></li>" +
+                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 9 UTC)</li>" +
                   "<li>In our app, <b style='color: var(--card-shadow);'>" +
                   "this data is available starting from 2018-05-07. </b>" +
                   "and, <b style='color: var(--card-shadow);'>spatially aggregated to 0.044&deg; (~ 5 km)</b> for visualization performance.</li>" +
@@ -437,8 +443,8 @@ export const DescData = {
         { id: "pm25-smoke-m1p0m", title: "Smoke PM2.5 m1p0m", desc: "Smoke contribution to PM2.5 (Smoke PM2.5) (PM2.5 - PM2.5-criteria (m1p0m))" },
         { id: "smokeday-m0p5m", title: "Smoke day (SMD) m0p5m", desc: "Identified smoke day using HMS and PM2.5-criteria (m0p5m)" },
         { id: "smokeday-m1p0m", title: "Smoke day (SMD) m1p0m", desc: "Identified smoke day using HMS and PM2.5-criteria (m1p0m)" },
-        { id: "ExcDays-m0p5m", title: "Exc. day m0p5m", desc: "Exceedance days (> 9 ug m⁻³): <br> - with minimal SMO = not caused by smoke <br> - with significant smoke PM2.5 (m0p5m) (case with smoke PM2.5 > 0) = caused by smoke" },
-        { id: "ExcDays-m1p0m", title: "Exc. day m1p0m", desc: "Exceedance days (> 9 ug m⁻³): <br> - with minimal SMO = not caused by smoke <br> - with significant smoke PM2.5 (m0p5m) (case with smoke PM2.5 > 0) = caused by smoke" }
+        { id: "ExcDays-m0p5m", title: "Exc. day m0p5m", desc: "Exceedance days (> 9 ug m⁻³): <br> - with minimal smoke PM2.5 = not caused by smoke <br> - with significant smoke PM2.5 (m0p5m) (case with smoke PM2.5 > 0) = caused by smoke" },
+        { id: "ExcDays-m1p0m", title: "Exc. day m1p0m", desc: "Exceedance days (> 9 ug m⁻³): <br> - with minimal smoke PM2.5 = not caused by smoke <br> - with significant smoke PM2.5 (m1p0m) (case with smoke PM2.5 > 0) = caused by smoke" }
     ],
     "desc-published-epa-ember": [
         {
