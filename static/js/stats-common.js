@@ -631,13 +631,6 @@ export function setupPlotTabs() {
                 transform: scale(1.5) !important; /* 50% Larger */
                 margin: 0 0.5rem !important;
             }
-            /* Sidebar buttons visibility and size */
-            .layer-dl-btn, .layer-help-btn {
-                opacity: 1 !important;
-                visibility: visible !important;
-                transform: scale(1.2);
-                margin-right: 0.5rem;
-            }
         `;
         document.head.appendChild(style);
     }
