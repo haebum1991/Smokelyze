@@ -75,6 +75,13 @@
       });
   
       function handleWaitingWorker(worker) {
+      
+        // [보완] 방금 새로고침을 통해 업데이트했다면 알림을 띄우지 않음 (1분간 보호)
+        if (sessionStorage.getItem("sw-just-updated")) {
+          console.log("[SW Client] Update toast suppressed to prevent loop.");
+          return;
+        }
+      
         // 이미 업데이트 알림이 떠 있다면 중복 실행 방지
         const toast = document.getElementById("UpdateToast");
         if (toast && toast.classList.contains("show")) return;
@@ -93,6 +100,13 @@
   
         refreshBtn.onclick = () => {
           console.log("[SW Client] User confirmed update.");
+          
+          // [추가] 새로고침 후 다시 토스트가 뜨지 않도록 세션 저장소에 기록
+          sessionStorage.setItem("sw-just-updated", "true");
+          
+          // 1분 뒤에는 다시 정상적으로 업데이트 체크 가능하도록 설정 (보호 해제)
+          setTimeout(() => sessionStorage.removeItem("sw-just-updated"), 60000);
+        
           refreshBtn.disabled = true;
           refreshBtn.textContent = "Applying...";
   
@@ -106,6 +120,12 @@
         };
       }
     }
+    
+    // [추가] 페이지 로드 시 [sw-just-updated] 플래그가 남아있다면 1분 뒤 자동 제거
+    if (sessionStorage.getItem("sw-just-updated")) {
+      setTimeout(() => sessionStorage.removeItem("sw-just-updated"), 60000);
+    }
+  
   </script>
 </html>
 

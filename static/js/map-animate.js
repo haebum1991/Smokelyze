@@ -1,6 +1,7 @@
 
+import { auth } from "./fb-init.js";
 import { map } from "./map-init.js";
-import { currentDate } from "./utils.js";
+import { currentDate, showAuthOverlay } from "./utils.js";
 import { toggleSpinner } from "./loader-ui.js";
 import { getMapCaptureDataUrl } from "./map-capture.js";
 
@@ -75,6 +76,12 @@ export function initMapAnimate() {
     });
 
     btnOpener.addEventListener("click", () => {
+
+        if (!auth.currentUser) {
+            showAuthOverlay();
+            return;
+        }
+        
         if (!window.GIF) {
             alert("GIF library not loaded.");
             return;

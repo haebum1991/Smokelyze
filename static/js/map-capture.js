@@ -1,6 +1,7 @@
 
+import { auth } from "./fb-init.js";
 import { map } from "./map-init.js";
-import { currentDate } from "./utils.js";
+import { currentDate, showAuthOverlay } from "./utils.js";
 import { toggleSpinner } from "./loader-ui.js";
 
 /**
@@ -146,6 +147,12 @@ export function initMapCapture() {
     if (!btn) return;
 
     btn.addEventListener("click", async function () {
+        
+        if (!auth.currentUser) {
+            showAuthOverlay();
+            return;
+        }
+        
         let backdrop = document.getElementById("MapCaptureBackdrop");
         if (!backdrop) {
             backdrop = document.createElement("div");

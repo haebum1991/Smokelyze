@@ -10,6 +10,7 @@ import { updateAuthButton } from "./signin.js";
 import { renderAQSPlots as drawAQSPlots } from "./data-query-plots.js";
 import { logUserAction } from "./fb-logging.js";
 import { toggleSpinner } from "./loader-ui.js";
+import { downloadFile } from "./ui-download.js";
 
 /**
  * Local utility: Same as ESML but specifically allows <br> tags for line breaks
@@ -830,17 +831,8 @@ function downloadCSV() {
         }).join(","))
     ].join("\n");
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
     const fileName = `aqs_${currentAqs}_${currentDatasetId}.csv`;
-
-    link.setAttribute("href", url);
-    link.setAttribute("download", fileName);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadFile(fileName, csvContent);
     
     // [Report to Brain]
     logUserAction("download", {
@@ -914,7 +906,6 @@ function initQueryBuilder() {
     
     onAuthStateChanged(auth, (user) => {
         updateAuthButton("DatadbDataTableBtnImport", user, "Import data");
-        updateAuthButton("DatadbDataTableBtnDownload", user, "Download CSV");
         updateAuthButton("DatadbDataTableBtnDateDefault", user, "Default date");
         updateAuthButton("DatadbDataTableBtnDateSetRange", user, "Set range");
     });

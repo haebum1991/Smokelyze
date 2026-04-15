@@ -188,7 +188,6 @@
 @media (hover: hover) {
   .datadb-annual-table-card:hover {
     border-color: var(--card-shadow);
-    transform: translateY(-0.2rem);
     box-shadow: 0 0.5rem 1.5rem rgba(163, 102, 255, 0.1);
   }
 }
@@ -202,31 +201,6 @@
 .datadb-annual-table-date {
     font-size: 1.2rem;
     color: var(--text-muted);
-}
-
-.datadb-annual-table-download-btn {
-    background: var(--card-shadow);
-    color: var(--color-bg);
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: var(--border-radius-0p8rem);
-    font-size: 1.2rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: opacity 0.3s;
-    margin-top: 0;
-}
-
-@media (hover: hover) {
-  .datadb-annual-table-download-btn:hover {
-      opacity: 0.9;
-  }
-}
-
-@media (max-width: 1024px) and (pointer: coarse) {
-    .datadb-annual-table-download-btn {
-        display: none;
-    }
 }
 
 .datadb-annual-table-empty-cell {

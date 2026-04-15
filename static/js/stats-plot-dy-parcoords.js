@@ -15,6 +15,7 @@ import {
     attachResizeObserver,
     caStates,
     usStates,
+    getCleanLabel,
     resetPlotContainer
 } from "./stats-common.js";
 
@@ -152,7 +153,7 @@ export function renderParCoords(containerId) {
         const lbl = cb.closest("label") || cb.parentElement;
         if (!lbl || lbl.style.display === "none") return;
 
-        const userLabel = lbl.textContent.trim() || getLabel(layerId);
+        const userLabel = getCleanLabel(lbl) || getLabel(layerId);
 
         // Find all matching templates (to handle split layers like smoke/fire)
         const matches = templates.filter(t => t.id === layerId);
@@ -230,7 +231,7 @@ export function renderParCoords(containerId) {
             color: theme.axisText
         },
         height: 600,
-        margin: { l: 130, r: 50, b: 50, t: 50 }
+        margin: { l: 130, r: 50, b: 50, t: 80 }
     };
 
     const filename = `parcoords_${isDetailMode ? currentDailyDetailStateParcoords : "allstate"}_${currentDate()}`;

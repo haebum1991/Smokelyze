@@ -10,6 +10,7 @@ import { setHysplitDrawer, addSwipeClose } from "./ui-toggles.js";
 import { logUserAction } from "./fb-logging.js";
 import { state as globalState } from "./ui-state.js";
 import { appendGenericHelpIcon } from "./ui-param-desc.js";
+import { convertToCSV, downloadFile } from "./ui-download.js";
 
 // --- Configuration & State ---
 const HYSPLIT_API_URL = "https://tiwczmnrwbmsonuap4r2fzpnsm0fqnyp.lambda-url.us-east-1.on.aws/hysplit";
@@ -246,6 +247,12 @@ export function initHysplit() {
         }
 
         if (csvBtn) {
+            
+            if (!auth.currentUser) {
+                utils.showAuthOverlay();
+                return;
+            }
+            
             const runId = parseInt(csvBtn.dataset.runId);
             downloadTrajectoryAsCSV(runId);
             return;
@@ -914,7 +921,7 @@ function updateHysplitDrawerList() {
                         Dir: ${utils.ESML(p.direction)} | Dur: ${utils.ESML(p.duration)}h | AGL: ${utils.ESML(p.height)}m <br>
                         Loc: ${parseFloat(p.lon).toFixed(3)}, ${parseFloat(p.lat).toFixed(3)}
                     </div>
-                    <button class="export-btn-csv" data-run-id="${item.runId}">
+                    <button class="export-btn-csv" data-run-id="${item.runId}" data-original-label="⬇ .CSV">
                         ⬇ .CSV
                     </button>
                 </div>
@@ -1036,36 +1043,11 @@ function downloadTrajectoryAsCSV(runId) {
     const item = state.history.find(h => h.runId === runId);
     if (!item || !item.data) return;
 
-    const data = item.data;
-    const keys = [...new Set(data.flatMap(pt => Object.keys(pt)))];
-    const csvRows = [keys.join(",")];
-
-    data.forEach(pt => {
-        const row = keys.map(k => {
-            let val = pt[k];
-            if (val === undefined || val === null) return "";
-            // Wrap in quotes if value contains a comma
-            if (typeof val === "string" && val.includes(",")) {
-                return `"${val}"`;
-            }
-            return val;
-        });
-        csvRows.push(row.join(","));
-    });
-
-    const csvContent = csvRows.join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    const csvContent = convertToCSV(item.data);
+    if (!csvContent) return;
 
     const filename = `hysplit_${item.params.date}_${item.params.time}_${item.runId}.csv`;
-
-    link.setAttribute("href", url);
-    link.setAttribute("download", filename);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadFile(filename, csvContent);
 }
 
 function renderHysplitTrajectory(data, direction, existingRunId = null, isRestoring = false, forcedParams = null) {

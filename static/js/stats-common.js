@@ -3,8 +3,8 @@ import { ExcludeLayerGroups, LAYER_TEMPLATES, DATASET_SOURCE_MAP } from "./layer
 import { resetUIAndData, resetAccordionDetails, resetMapViewToDefault } from "./ui-reset.js";
 import * as utils from "./utils.js";
 import { auth } from "./fb-init.js";
-import { updateAuthButton } from "./signin.js";
 import { showHelpModal } from "./ui-param-desc.js";
+import { downloadFile } from "./ui-download.js";
 
 export let onCurrentPlotHide = null;
 export function setOnCurrentPlotHide(fn) { onCurrentPlotHide = fn; }
@@ -130,6 +130,27 @@ export function setupPlotClickHandlers(tbody, scopeKey) {
 /**
  * Get all active layers for the Model Stats table, grouped by their category (e.g., Dataset or AirNow).
  */
+export function getCleanLabel(el) {
+    if (!el) return "";
+    let text = "";
+    // Iterate through child nodes to extract text only from relevant parts
+    Array.from(el.childNodes).forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE) {
+            text += node.textContent;
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+            // Ignore inputs, help icons, and download buttons
+            if (node.tagName === "INPUT" || 
+                node.classList.contains("drawer-help-btn") || 
+                node.classList.contains("layer-dl-btn") ||
+                node.classList.contains("layer-help-btn")) {
+                return;
+            }
+            text += getCleanLabel(node);
+        }
+    });
+    return text.trim();
+}
+
 export function getActiveModelLayers() {
     const layers = [];
     const templates = LAYER_TEMPLATES || [];
@@ -152,7 +173,7 @@ export function getActiveModelLayers() {
         if (EXCLUDED.includes(shortId)) return;
 
         if (tmpl) {
-            const rawLabel = (lbl.innerText || lbl.textContent || shortId).trim();
+            const rawLabel = getCleanLabel(lbl) || shortId;
             let group = currentDatasetLabel;
             if (shortId.startsWith("airnow-") || tmpl.hourly) {
                 group = "AirNow";
@@ -271,11 +292,7 @@ export function getModelStatsCells(regionID, modelStats, activeLayers) {
             const all = (c1 || 0) + (c2 || 0);
 
             if (c1 !== undefined || c2 !== undefined) {
-                formattedValue = `
-                      <span style="font-weight:bold;">${utils.ESML(String(all))}</span> | 
-                      <span style="color:green; font-weight:bold;">${utils.ESML(String(c1 || 0))}</span> | 
-                      <span style="color:red; font-weight:bold;">${utils.ESML(String(c2 || 0))}</span>
-                    `;
+                formattedValue = `<span style="font-weight:bold;">${utils.ESML(String(all))}</span> | <span style="color:green; font-weight:bold;">${utils.ESML(String(c1 || 0))}</span> | <span style="color:red; font-weight:bold;">${utils.ESML(String(c2 || 0))}</span>`;
             }
         }
 
@@ -598,6 +615,33 @@ export function setupPlotTabs() {
         });
     });
     
+    // [New] Add Global CSS for always-visible and LARGER Icons
+    const styleId = "stats-global-overrides";
+    if (!document.getElementById(styleId)) {
+        const style = document.createElement("style");
+        style.id = styleId;
+        style.innerHTML = `
+            /* Force Plotly ModeBar to be always visible and larger */
+            .js-plotly-plot .plotly .modebar {
+                opacity: 1 !important;
+                visibility: visible !important;
+                background: none !important;
+            }
+            .js-plotly-plot .plotly .modebar-btn svg {
+                transform: scale(1.5) !important; /* 50% Larger */
+                margin: 0 0.5rem !important;
+            }
+            /* Sidebar buttons visibility and size */
+            .layer-dl-btn, .layer-help-btn {
+                opacity: 1 !important;
+                visibility: visible !important;
+                transform: scale(1.2);
+                margin-right: 0.5rem;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
     // [New] Add Help Icons to each container (Plot Body) systematically
     const helpMap = {
         "stats-plot-for-table-date": "fig-table",
@@ -830,29 +874,39 @@ export function getSpikeLayout(theme) {
 export function getPlotlyConfig(filename) {
     const isMobile = window.innerWidth <= 1024;
     const buttonsToRemove = [
+        "toImage", // Replace default with legacy-friendly custom button
         "zoom2d", "pan2d", "select2d", "lasso2d", "zoomIn2d", "zoomOut2d",
         "hoverClosestCartesian", "hoverCompareCartesian", "autoscale"
     ];
 
-    // Hide download button on mobile
-    if (isMobile) {
-        buttonsToRemove.push("toImage");
-    }
+    // Custom Download Button with Auth Check
+    const customDownloadButton = {
+        name: "Download plot as a png",
+        icon: {
+            width: 1000,
+            height: 1000,
+            path: "M853,248 L710,248 L659,150 L341,150 L290,248 L147,248 C94,248 50,292 50,345 L50,752 C50,805 94,850 147,850 L853,850 C906,850 950,805 950,752 L950,345 C950,292 906,248 853,248 Z M500,741 C386,741 294,649 294,535 C294,421 386,329 500,329 C614,329 706,421 706,535 C706,649 614,741 500,741 Z M500,400 C425,400 365,460 365,535 C365,610 425,670 500,670 C575,670 635,610 635,535 C635,460 575,400 500,400 Z"
+        },
+        click: function (gd) {
+            if (!auth || !auth.currentUser) {
+                if (utils.showAuthOverlay) utils.showAuthOverlay();
+                return;
+            }
+            Plotly.downloadImage(gd, {
+                format: "png",
+                filename: filename || "smokelyze_plot",
+                scale: 2
+            });
+        }
+    };
 
     const conf = {
         responsive: true,
         displaylogo: false,
+        displayModeBar: true,
         modeBarButtonsToRemove: buttonsToRemove,
-        // Optional: displayModeBar: isMobile ? false : "hover"
+        modeBarButtonsToAdd: isMobile ? [] : [customDownloadButton]
     };
-
-    if (filename && !isMobile) {
-        conf.toImageButtonOptions = {
-            format: "png",
-            filename: filename,
-            scale: 2 // Higher resolution
-        };
-    }
 
     return conf;
 }
@@ -1019,11 +1073,6 @@ function init() {
     updateStickyHeaderOffsets();
     setupPlotTabs();
     bindEventsStats();
-
-    window.addEventListener("authStateChanged", (e) => {
-        const user = e.detail?.user || null;
-        updateAuthButton("BtnExportCsvDate", user, "⬇ .CSV");
-    });
 }
 
 if (document.readyState === "loading") {
@@ -1053,7 +1102,7 @@ export function exportTableToCSV(tableSelector, filename) {
         colIndex++;
       }
 
-      let data = cell.innerText.replace(/\r?\n|\r/g, " ").trim();
+      let data = cell.innerText.replace(/\s+/g, " ").trim();
       data = data.replace(/↓|↑/g, "").trim();
       
       // [Fix] CSV 내보내기 시 슬래시(/)를 파이프(|)로 변경하여 엑셀 날짜 변환 방지
@@ -1086,13 +1135,7 @@ export function exportTableToCSV(tableSelector, filename) {
     .join("\n");
 
   const BOM = "\uFEFF";
-  const csvFile = new Blob([BOM + csv], { type: "text/csv;charset=utf-8;" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(csvFile);
-  a.download = filename || "export.csv";
-  a.style.display = "none";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  
+  downloadFile(filename || "export.csv", BOM + csv, "text/csv;charset=utf-8;");
 }
 

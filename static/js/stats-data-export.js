@@ -1,174 +1,115 @@
 
-
-import * as utils from "./utils.js";
-import { auth, onAuthStateChanged } from "./fb-init.js";
-import { loadedGeoJSON, loadSourceData } from "./loader.js";
+import { loadedGeoJSON, loadSourceData, toggleSpinner } from "./loader.js";
 import { DATASET_SOURCE_MAP } from "./layers-def.js";
-import { updateAuthButton } from "./signin.js";
 import { logUserAction } from "./fb-logging.js";
+import { airnowBuildURL, airnowFetchData, airnowActivateHour, airnowGetCurrentTime } from "./airnow.js";
+import { convertToCSV, downloadFile, createExportButton } from "./ui-download.js";
 
-function convertToCSV(geoJSON) {
-    if (!geoJSON || !geoJSON.features || geoJSON.features.length === 0) {
-        return null;
-    }
-
-    const f = geoJSON.features;
-    const p = f.map(function (fi) {
-        const props = Object.assign({}, fi.properties);
-        // Add longitude and latitude from coordinates if available (for Point features)
-        if (fi.geometry && fi.geometry.type === "Point" && Array.isArray(fi.geometry.coordinates)) {
-            props.lon = fi.geometry.coordinates[0];
-            props.lat = fi.geometry.coordinates[1];
-        }
-        return props;
-    });
-
-    // Collect all unique keys
-    const keySet = new Set();
-    p.forEach(function (i) {
-        Object.keys(i).forEach(function (k) { keySet.add(k); });
-    });
-
-    const keys = Array.from(keySet);
-
-    // Reorder keys: Put lon and lat after site_name
-    const header = [];
-    const added = new Set();
-
-    // Find site_name and insert lon, lat right after it
-    keys.forEach(function (k) {
-        if (!added.has(k)) {
-            header.push(k);
-            added.add(k);
-            if (k === "site_name") {
-                if (keySet.has("lon") && !added.has("lon")) { header.push("lon"); added.add("lon"); }
-                if (keySet.has("lat") && !added.has("lat")) { header.push("lat"); added.add("lat"); }
-            }
-        }
-    });
-
-    keys.forEach(function (k) {
-        if (!added.has(k)) {
-            header.push(k);
-            added.add(k);
-        }
-    });
-
-    // Characters for safety
-    const COMMA = String.fromCharCode(44); // ,
-    const NEWLINE = String.fromCharCode(10); // 
-
-
-    const QUOTE = String.fromCharCode(34); // "
-    const CR = String.fromCharCode(13); // 
-
-
-    // Create CSV content
-    const csvRows = [];
-    csvRows.push(header.join(COMMA)); // Header row
-
-    p.forEach(function (i) {
-        const row = header.map(function (key) {
-            let val = i[key];
-            if (val === undefined || val === null) {
-                val = "";
-            } else {
-                const strVal = String(val);
-
-                // Check for special characters using indexOf
-                let needsQuotes = false;
-                if (strVal.indexOf(COMMA) !== -1) needsQuotes = true;
-                if (strVal.indexOf(QUOTE) !== -1) needsQuotes = true;
-                if (strVal.indexOf(NEWLINE) !== -1) needsQuotes = true;
-                if (strVal.indexOf(CR) !== -1) needsQuotes = true;
-
-                if (needsQuotes) {
-                    // Replace quotes with double quotes: strVal.split('"').join('""')
-                    const escaped = strVal.split(QUOTE).join(QUOTE + QUOTE);
-                    val = QUOTE + escaped + QUOTE;
-                }
-            }
-            return val;
-        });
-        csvRows.push(row.join(COMMA));
-    });
-
-    return csvRows.join(NEWLINE);
-}
-
-function downloadCSV(filename, csvContent) {
-    const mimeType = "text/csv;charset=utf-8;";
-    const blob = new Blob([csvContent], { type: mimeType });
-    const link = document.createElement("a");
-    if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", filename);
-        link.style.visibility = "hidden";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-}
-
-export async function handleDownload() {
-
-    if (!auth.currentUser) {
-        utils.showAuthOverlay();
-        return;
-    }
-
-    const select = document.getElementById("MapDataSelect");
-    if (!select) return;
-
-    const dataset = select.value;
-    if (!dataset) return;
-
+/**
+ * Generic dataset download with fetch-on-demand
+ * Exported for use in ui-param-desc.js (Layer Description UI)
+ */
+export async function handleDownloadForLayer(dataset, options = {}) {
+    const title = options.title || dataset;
     const dateInput = document.getElementById("datePicker");
     const date = dateInput ? dateInput.value : "data";
-    const sourceKey = DATASET_SOURCE_MAP[dataset] || dataset;
-    let loadedData = loadedGeoJSON ? loadedGeoJSON[sourceKey] : null;
 
-    // [Added] Fetch on demand logic
-    if (loadSourceData) {
-        const btn = document.getElementById("ExportBtnDaily");
-        let originalText = "";
-        if (btn) {
-            originalText = btn.textContent;
-            btn.textContent = "...";
-            btn.disabled = true;
-        }
+    toggleSpinner(true, `Preparing ${title} data...`);
+    try {
+        let geoJSONData = null;
 
-        try {
+        if (dataset.startsWith("airnow-hourly-")) {
+            // Hourly data is managed via daily bundles
+            const url = airnowBuildURL(null, date);
+            geoJSONData = await airnowFetchData(url);
+        } else {
+            // Standard daily data
+            const sourceKey = DATASET_SOURCE_MAP[dataset] || dataset;
             await loadSourceData(sourceKey, date);
-            loadedData = loadedGeoJSON ? loadedGeoJSON[sourceKey] : null;
-
-        } catch (e) {
-            console.error(e);
-        } finally {
-            if (btn) {
-                btn.textContent = originalText;
-                btn.disabled = false;
-            }
+            geoJSONData = loadedGeoJSON[sourceKey];
         }
-    }
 
-    if (!loadedData) {
-        alert("No data available to download for " + dataset + " (" + sourceKey + ") on " + date);
-        return;
-    }
+        if (!geoJSONData || !geoJSONData.features || geoJSONData.features.length === 0) {
+            alert(`No data available for ${title} on ${date}`);
+            return;
+        }
 
-    const csv = convertToCSV(loadedData);
-    if (csv) {
-        const filename = dataset + "_" + date + ".csv";
-        downloadCSV(filename, csv);
+        // Deep clone data to avoid modifying the original source in memory (since we use delete p[k])
+        geoJSONData = JSON.parse(JSON.stringify(geoJSONData));
 
-        // [Report to Brain]
-        logUserAction("download", { dataset, date, filename });
-    } else {
-        alert("Failed to convert data to CSV.");
+        // Flexible Filtering Logic: Remove specific undesired columns instead of whitelisting
+        if (dataset === "airnow-daily-mda8") {
+            geoJSONData.features.forEach(f => {
+                delete f.properties["PM2.5"]; // User only wants MDA8
+            });
+        } else if (dataset === "airnow-daily-pm25") {
+            geoJSONData.features.forEach(f => {
+                delete f.properties["MDA8O3"]; // User only wants PM2.5
+            });
+        } else if (dataset.startsWith("airnow-hourly-")) {
+            const utcHour = airnowGetCurrentTime();
+            airnowActivateHour(geoJSONData, utcHour);
+
+            const isO3 = dataset === "airnow-hourly-ozone";
+            const isPM = dataset === "airnow-hourly-pm25";
+            const isNO2 = dataset === "airnow-hourly-no2";
+
+            const hourStr = utcHour.toString().padStart(2, "0");
+
+            geoJSONData.features.forEach(f => {
+                const p = f.properties;
+                // Identify the actual suffix format used in the source data (e.g., _T01 or _01T)
+                let suffix = `_T${hourStr}`; 
+                if (Object.keys(p).some(k => k.endsWith(`_${hourStr}T`))) suffix = `_${hourStr}T`;
+
+                const targetVal = isO3 ? p["ozone(ppb)"] : isPM ? p["pm25(ug/m3)"] : p["no2(ppb)"];
+                const targetHeader = isO3 ? "O3" : isPM ? "PM2.5" : "NO2";
+
+                // 1. Update date to be specific (includes hour) and clean up undesired columns
+                p.date = p["current_hour_str"] || p.date;
+
+                Object.keys(p).forEach(k => {
+                    if (/_([0-2]\dT|T[0-2]\d)$/.test(k)) delete p[k];
+                    if (k === "pm25(ug/m3)" || k === "ozone(ppb)" || k === "no2(ppb)" || k === "current_hour_str") delete p[k];
+                });
+
+                // 2. Add back the selected measurement with a clean header
+                if (targetVal !== undefined && targetVal !== null) {
+                    p[targetHeader] = targetVal;
+                }
+            });
+        }
+
+        const csv = convertToCSV(geoJSONData);
+        if (csv) {
+            let filename = `${dataset}_${date}.csv`;
+            if (dataset.startsWith("airnow-hourly-")) {
+                const hourStr = airnowGetCurrentTime().toString().padStart(2, "0");
+                filename = `${dataset}_${date}-${hourStr}.csv`;
+            }
+            downloadFile(filename, csv);
+            logUserAction("download_unified", { dataset, date, filename });
+        } else {
+            alert("Failed to convert data to CSV.");
+        }
+    } catch (err) {
+        console.error("Download failed:", err);
+        alert("Download failed. Please check if data exists for this date.");
+    } finally {
+        toggleSpinner(false);
     }
 }
+
+// Local helper specifically for the main UI daily export
+async function handleDownloadForPublished(e, btn) {
+    const select = document.getElementById("MapDataSelect");
+    if (!select || !select.value) return;
+
+    const dataset = select.value;
+    const title = select.options[select.selectedIndex]?.text || dataset;
+    await handleDownloadForLayer(dataset, { title });
+}
+
 
 export function initExportButton() {
     if (document.getElementById("ExportBtnDaily")) return;
@@ -186,12 +127,11 @@ export function initExportButton() {
         return;
     }
 
-    const btn = document.createElement("button");
-    btn.id = "ExportBtnDaily";
-    btn.textContent = "⬇ .CSV";
-    btn.type = "button";
-    btn.className = "export-btn-csv";
-    btn.addEventListener("click", handleDownload);
+    const btn = createExportButton({
+        id: "ExportBtnDaily",
+        label: "⬇ .CSV",
+        onClick: handleDownloadForPublished
+    });
 
     const parent = select.parentNode;
 
@@ -222,9 +162,6 @@ export function initExportButton() {
     btn.style.flex = "0 0 auto";
     btn.style.whiteSpace = "nowrap";
     btn.style.marginLeft = "0";
-
-    // Initial check
-    updateAuthButton(btn, auth.currentUser, "⬇ .CSV");
 }
 
 // Auto-init
@@ -233,8 +170,4 @@ if (document.readyState === "loading") {
 } else {
     initExportButton();
 }
-
-onAuthStateChanged(auth, (user) => {
-    updateAuthButton("ExportBtnDaily", user, "⬇ .CSV");
-});
 

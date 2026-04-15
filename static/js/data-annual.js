@@ -144,7 +144,7 @@ function renderDownloadCell(record, type, year) {
         }
         return `<div class="datadb-annual-table-empty-cell">${msg}</div>`;
     }
-
+    
     const authClass = auth.currentUser ? "" : "disabled-auth";
     const authTitle = auth.currentUser ? "" : "Please login to download";
 
@@ -152,7 +152,10 @@ function renderDownloadCell(record, type, year) {
         <div class="datadb-annual-table-card">
             <span class="datadb-annual-table-name">${record.title}</span>
             <span class="datadb-annual-table-date">(as of ${record.asOfDate})</span>
-            <button class="datadb-annual-table-download-btn ${authClass}" title="${authTitle}" onclick="downloadReport('${record.filename}')">
+            <button class="export-btn-csv ${authClass}" 
+                    title="${authTitle}" 
+                    data-original-label="Download"
+                    onclick="downloadReport('${record.filename}')">
                 Download
             </button>
         </div>

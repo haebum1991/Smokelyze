@@ -293,8 +293,10 @@ title: ""
           </div>
 
           <div class="gm-desktop-only" style="display: flex; gap: 1rem; justify-content: flex-end;">
-            <button id="BtnDownloadCSVResults" class="gm-btn">Export Table (.csv)</button>
-            <button id="BtnDownloadRDS" class="gm-btn">Export Results (.rds)</button>
+            <button class="export-btn-csv" id="GAMBtnDownloadCSV"
+              data-original-label="Export Table (.csv)">Export Table (.csv)</button>
+            <button class="export-btn-csv" id="GAMBtnDownloadRDS"
+              data-original-label="Export Results (.rds)">Export Results (.rds)</button>
           </div>
 
           <br class="gm-desktop-only">
@@ -1421,11 +1423,13 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
       reader.readAsText(file);
     };
 
-    document.getElementById("BtnDownloadCSVResults").onclick = () => {
+    document.getElementById("GAMBtnDownloadCSV").onclick = () => {
+    
       if (!auth.currentUser) {
           showAuthOverlay();
           return;
       }
+      
       if (!predictionData || predictionData.length === 0) return;
       const headers = Object.keys(predictionData[0]);
       const csvContent = [
@@ -1445,7 +1449,8 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
       URL.revokeObjectURL(url);
     };
 
-    document.getElementById("BtnDownloadRDS").onclick = () => {
+    document.getElementById("GAMBtnDownloadRDS").onclick = () => {
+    
       if (!auth.currentUser) {
           showAuthOverlay();
           return;
@@ -1487,8 +1492,6 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
     // Initialize & Sync Auth UI
     const syncAuth = (user) => {
       updateAuthButton(refs.runBtn, user, "Run GAM");
-      updateAuthButton("BtnDownloadCSVResults", user, "Export Table (.csv)");
-      updateAuthButton("BtnDownloadRDS", user, "Export Results (.rds)");
     };
     window.addEventListener("authStateChanged", (e) => syncAuth(e.detail.user));
     syncAuth(auth.currentUser);

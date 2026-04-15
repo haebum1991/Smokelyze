@@ -3,11 +3,12 @@
  * Smokelyze AERSCREEN Integration Module
  * Handles communication with the Go-based EPA AERSCREEN API.
  */
-import { auth } from "./fb-init.js";
+import { auth, db, doc, getDoc, onAuthStateChanged } from "./fb-init.js";
 import { map } from "./map-init.js";
 import { showErrorToast, showTaskNotification } from "./loader-ui.js";
 import * as utils from "./utils.js";
 import { setAerscreenDrawer } from "./ui-toggles.js";
+import { downloadFile } from "./ui-download.js";
 import { updateAuthButton } from "./signin.js";
 
 const AERSCREEN_CONFIG = {
@@ -322,7 +323,7 @@ export const AerscreenTool = {
                     <div style="margin-top: 2rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
                             <div style="color: var(--text-main); font-size: 1.1rem; font-weight: bold; text-transform: uppercase;">AERSCREEN.OUT Summary</div>
-                            <button class="export-btn-csv" id="AerscreenBtnDownloadOut">⬇ .TXT</button>
+                            <button class="export-btn-csv" id="AerscreenBtnDownloadOut" data-original-label="⬇ .TXT">⬇ .TXT</button>
                         </div>
                         <pre style="background: var(--sidebar-widget-bg); color: var(--text-main); padding: 1.5rem; border-radius: var(--border-radius-0p8rem); border: 0.1rem solid var(--border-main); font-size: 1.1rem; height: 35rem; overflow-y: auto; overflow-x: auto; font-family: monospace; font-weight: bold; line-height: 1.4; white-space: pre;">${result.output_summary ? result.output_summary : "No explicit engine output was returned."}</pre>
                     </div>
@@ -367,17 +368,7 @@ export const AerscreenTool = {
      * Helper to download text content as a file
      */
     downloadTextFile(filename, content) {
-        const blob = new Blob([content], { type: "text/plain;charset=utf-8;" });
-        const link = document.createElement("a");
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", filename);
-            link.style.visibility = "hidden";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+        downloadFile(filename, content, "text/plain;charset=utf-8;");
     },
 
     showLoading(show) {
@@ -1704,9 +1695,6 @@ if (map) {
         if (typeof init === "function") init();
     });
 }
-
-// Admin-only Visibility Logic
-import { db, doc, getDoc, onAuthStateChanged } from "./fb-init.js";
 
 onAuthStateChanged(auth, async (user) => {
     const toggleBtn = document.getElementById("AerscreenToggle");

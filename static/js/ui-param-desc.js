@@ -1,6 +1,8 @@
 
 import { ESML } from "./utils.js";
 import { initUIPulsingIcons } from "./layers-icon.js";
+import { createExportButton } from "./ui-download.js";
+import { handleDownloadForLayer } from "./stats-data-export.js";
 
 export const DescData = {
     "desc-toggle-only": [
@@ -713,7 +715,37 @@ export function appendAllLayerHelpIcons() {
 
         // Skip if already attached
         if (parentLabel.querySelector(".layer-help-btn")) return;
+          
+        // 4. Add Download Button for AirNow layers
+        if (descId.startsWith("airnow-")) {
+            const dlBtn = createExportButton({
+                label: "⬇ .CSV",
+                className: "layer-dl-btn",
+                style: {
+                    position: "absolute",
+                    right: "3.5rem",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    padding: "2px 6px",
+                    fontSize: "10px",
+                    lineHeight: "1",
+                    height: "22px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    whiteSpace: "nowrap"
+                },
+                onClick: (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDownloadForLayer(descId, { title: foundItem.title });
+                }
+            });
 
+            parentLabel.style.paddingRight = "6.5rem";
+            parentLabel.appendChild(dlBtn);
+        }
+        
         const helpBtn = document.createElement("span");
         helpBtn.className = "layer-help-btn drawer-help-btn";
         helpBtn.title = `? ${foundItem.title}`;

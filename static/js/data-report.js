@@ -3,13 +3,13 @@
  * Annual Report Generator Logic
  * Ported from test.R to JavaScript
  */
-
-import { fetchGeoJSON } from "./loader-fetch.js";
 import { auth, onAuthStateChanged } from "./fb-init.js";
-import { ESML, showAuthOverlay } from "./utils.js";
 import { updateAuthButton } from "./signin.js";
+import { fetchGeoJSON } from "./loader-fetch.js";
+import { ESML, showAuthOverlay } from "./utils.js";
 import { logUserAction } from "./fb-logging.js";
 import { toggleSpinner } from "./loader-ui.js";
+import { downloadFile } from "./ui-download.js";
 
 // --- Configuration ---
 // --- Report Type Definitions (Shared) ---
@@ -597,6 +597,14 @@ function downloadReportCSV() {
     
     if (!reportResults) return;
 
+    const datasetId = document.getElementById("DatadbReportTableDataset").value;
+    const state = document.getElementById("DatadbReportTableState").value;
+    const reportType = document.getElementById("DatadbReportTableType").value;
+
+    const safeSource = datasetId.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+    const safeState = state.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+    const safeType = reportType.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+
     const baseCols = ["AQS", "site_name", "lon", "lat"];
     const allCols = baseCols.concat(reportResults.columns);
 
@@ -609,23 +617,8 @@ function downloadReportCSV() {
         }).join(","))
     ].join("\n");
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    const datasetId = document.getElementById("DatadbReportTableDataset").value;
-    const state = document.getElementById("DatadbReportTableState").value;
-    const reportType = document.getElementById("DatadbReportTableType").value;
-    const sourceMain = REPORT_CONFIG[datasetId]?.sources.main || datasetId;
-    const safeState = state.replace(/ /g, "_");
-    const safeSource = sourceMain.replace(/ /g, "_");
-    const safeType = reportType.replace(/ /g, "_").replace(/\./g, "");
     const fileName = `state_report_${safeSource}_${safeState}_${safeType}.csv`;
-
-    link.setAttribute("href", url);
-    link.setAttribute("download", fileName);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadFile(fileName, csvContent);
     
     // [Report to Brain]
     logUserAction("download", {
@@ -730,19 +723,10 @@ async function downloadAllReportsCSV() {
             }).join(","))
         ].join("\n");
 
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        const sourceMain = REPORT_CONFIG[datasetId]?.sources.main || datasetId;
-        const safeState = state.replace(/ /g, "_");
-        const safeSource = sourceMain.replace(/ /g, "_");
+        const safeSource = datasetId.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+        const safeState = state.replace(/[^a-z0-9]/gi, "_").toLowerCase();
         const fileName = `state_report_all_${safeSource}_${safeState}_${period}.csv`;
-
-        link.setAttribute("href", url);
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        downloadFile(fileName, csvContent);
 
         logUserAction("download_all", {
             dataset: datasetId,
@@ -797,8 +781,6 @@ function initReport() {
     
     onAuthStateChanged(auth, (user) => {
         updateAuthButton("DatadbReportTableBtnGenerate", user, "Generate Report");
-        updateAuthButton("DatadbReportTableBtnDownload", user, "Download CSV");
-        updateAuthButton("DatadbReportTableBtnDownloadAll", user, "Download all types of reports");
     });
 }
 

@@ -409,7 +409,7 @@ export function renderDailyBarLine(containerId) {
       mirror: true,
       type: "category"
     },
-    margin: { t: 50, r: 50, b: 100, l: 50 },
+    margin: { t: 70, r: 50, b: 100, l: 50 },
     legend: {
       orientation: "h",
       yanchor: "bottom",
