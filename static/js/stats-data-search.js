@@ -256,7 +256,16 @@ function getSearchableDataAirNow() {
         const sourceKey = DATASET_SOURCE_MAP[datasetKey] || datasetKey;
         const actualKey = Object.keys(loadedGeoJSON).find(key => key.startsWith(sourceKey));
         const geoData = actualKey ? loadedGeoJSON[actualKey] : null;
-        const label = checkbox.parentElement?.textContent?.trim() || null;
+        
+        // [수정] 다운로드 버튼과 도움말 버튼 텍스트를 제거하고 순수 레이어 이름만 추출
+        let label = null;
+        const parent = checkbox.parentElement;
+        if (parent) {
+            const clone = parent.cloneNode(true);
+            clone.querySelectorAll(".layer-dl-btn, .layer-help-btn").forEach(el => el.remove());
+            label = clone.textContent.trim();
+        }
+        
         if (geoData && geoData.features) {
             geoData.features.forEach(f => {
                 allFeatures.push({ ...f, _layerLabel: label, _sourceKey: sourceKey });
