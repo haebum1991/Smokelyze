@@ -1,14 +1,87 @@
-const CACHE_NAME = "v-20260415-1423"; // R에서 자동으로 생성된 버전
+const CACHE_NAME = "v-20260415-1518"; // R에서 자동으로 생성된 버전
 const OFFLINE_URL = "/offline/";
 
 const requiredFiles = [
     "/",
     "/index.html",
+    "/about/",
+    "/map/",
+    "/resrc/",
     "/manifest.json",
-    "/css/main.css",
+    "/images/smokelyze_logo.webp",
+    
+    // --- CSS Files ---
+    "/css/board.css",
     "/css/color-dark.css",
+    "/css/color-purple.css",
+    "/css/data.css",
+    "/css/main.css",
+    "/css/map.css",
+    
+    // --- JS Files ---
+    "/js/aerscreen.js",
+    "/js/ai-api.js",
+    "/js/ai-chat.js",
+    "/js/ai-config.js",
+    "/js/ai-tools.js",
+    "/js/airnow-loader.js",
+    "/js/airnow.js",
+    "/js/aws-hysplit.js",
+    "/js/data-annual.js",
+    "/js/data-query-plots.js",
+    
+    "/js/data-query.js",
+    "/js/data-report.js",
+    "/js/fb-MapPost-handler.js",
+    "/js/fb-MapPost.js",
+    "/js/fb-announcements.js",
+    "/js/fb-init.js",
+    "/js/fb-logging.js",
+    "/js/geo-boundary.js",
+    "/js/geo-utils.js",
+    "/js/layers-colors.js",
+    
+    "/js/layers-constants.js",
+    "/js/layers-def.js",
+    "/js/layers-handler.js",
+    "/js/layers-icon.js",
+    "/js/layers-state.js",
+    "/js/layers-tooltip.js",
+    "/js/layers.js",
+    "/js/loader-fetch.js",
+    "/js/loader-handler.js",
+    "/js/loader-state.js",
+    
+    "/js/loader-ui.js",
+    "/js/loader.js",
+    "/js/map-animate.js",
+    "/js/map-capture.js",
+    "/js/map-init.js",
+    "/js/raster-loader.js",
+    "/js/signin.js",
+    "/js/stats-common.js",
+    "/js/stats-daily.js",
+    "/js/stats-data-export.js",
+    
+    "/js/stats-data-search.js",
+    "/js/stats-plot-dy-barline.js",
+    "/js/stats-plot-dy-parcoords.js",
+    "/js/stats-plot-dy-scatter.js",
+    "/js/stats-plot-yr-heat.js",
+    "/js/stats-plot-yr-line.js",
+    "/js/stats-yearly.js",
+    "/js/ui-btn-tooltip.js",
+    "/js/ui-date.js",
+    "/js/ui-download.js",
+    
     "/js/ui-init.js",
-    "/images/smokelyze_logo.webp"
+    "/js/ui-param-desc.js",
+    "/js/ui-reset.js",
+    "/js/ui-state.js",
+    "/js/ui-time.js",
+    "/js/ui-toggles.js",
+    "/js/ui-tutorial.js",
+    "/js/utils.js"
 ];
 
 self.addEventListener("install", event => {
