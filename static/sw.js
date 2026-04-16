@@ -1,4 +1,4 @@
-const CACHE_NAME = "v-20260415-1752"; // R에서 자동으로 생성된 버전
+const CACHE_NAME = "v-20260415-1843"; // R에서 자동으로 생성된 버전
 const OFFLINE_URL = "/offline/";
 
 const requiredFiles = [
@@ -89,11 +89,30 @@ self.addEventListener("install", event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
-                console.log("[SW] Caching App Shell files...");
-                return cache.addAll(requiredFiles);
-            })
-            .catch(error => {
-                console.error("[SW] Failed to pre-cache:", error);
+                const timestamp = Date.now();
+                console.log("[SW] Aggressive Caching App Shell (Bust: " + timestamp + ")...");
+
+                const fetchPromises = requiredFiles.map(url => {
+                    const bustUrl = url.includes("?") ? `${url}&v=${timestamp}` : `${url}?v=${timestamp}`;
+
+                    return fetch(bustUrl, { cache: "reload" })
+                        .then(async response => {
+                            if (!response.ok) throw new Error(`[SW] Failed to fetch ${url}`);
+
+                            // [최종 병기] 가져온 내용물에서 껍데기(URL 정보)를 완전히 버리고,
+                            // 내용(body)만 쏙 빼서 [깨끗한 이름]의 새 응답 객체를 만듭니다.
+                            const blob = await response.blob();
+                            const cleanResponse = new Response(blob, {
+                                status: response.status,
+                                statusText: response.statusText,
+                                headers: response.headers
+                            });
+
+                            return cache.put(url, cleanResponse);
+                        })
+                        .catch(err => console.error(err));
+                });
+                return Promise.all(fetchPromises);
             })
     );
 });
