@@ -77,7 +77,9 @@ export function convertToCSV(data, columns = null) {
  * Core Utility: Trigger Browser Download
  */
 export function downloadFile(filename, content, mimeType = "text/csv;charset=utf-8;") {
-    const blob = new Blob([content], { type: mimeType });
+    // Add UTF-8 BOM to ensure Excel recognizes the encoding
+    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+    const blob = new Blob([bom, content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);

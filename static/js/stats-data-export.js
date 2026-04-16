@@ -88,7 +88,7 @@ export async function handleDownloadForLayer(dataset, options = {}) {
                 filename = `${dataset}_${date}-${hourStr}.csv`;
             }
             downloadFile(filename, csv);
-            logUserAction("download_unified", { dataset, date, filename });
+            logUserAction("download", { dataset, date, filename });
         } else {
             alert("Failed to convert data to CSV.");
         }

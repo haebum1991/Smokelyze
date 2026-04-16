@@ -728,7 +728,7 @@ async function downloadAllReportsCSV() {
         const fileName = `state_report_all_${safeSource}_${safeState}_${period}.csv`;
         downloadFile(fileName, csvContent);
 
-        logUserAction("download_all", {
+        logUserAction("download", {
             dataset: datasetId,
             state: state,
             period: period,

@@ -4,6 +4,7 @@ import { map } from "./map-init.js";
 import { currentDate, showAuthOverlay } from "./utils.js";
 import { toggleSpinner } from "./loader-ui.js";
 import { getMapCaptureDataUrl } from "./map-capture.js";
+import { logUserAction } from "./fb-logging.js";
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -279,6 +280,14 @@ export function initMapAnimate() {
                 link.download = `smokelyze_timelapse_${startDateInput.value}_to_${endDateInput.value}.gif`;
                 link.href = url;
                 link.click();
+                
+                logUserAction("download", { 
+                    dataset: "map_animate", 
+                    date: startDateInput.value,
+                    key_date_end: endDateInput.value,
+                    filename: `smokelyze_timelapse_${startDateInput.value}_to_${endDateInput.value}.gif`
+                });
+                
                 cleanup();
             });
 

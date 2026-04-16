@@ -6,6 +6,7 @@ import { auth } from "./fb-init.js";
 import { showAuthOverlay } from "./utils.js";
 import { addSwipeClose } from "./ui-toggles.js";
 import { regionStats } from "./layers-state.js";
+import { logUserAction } from "./fb-logging.js";
 
 // Expose regionStats and generateContext for AI tools/API to access summary/UI data
 window.getRegionStats = () => regionStats;
@@ -176,6 +177,11 @@ async function handleChatSubmit() {
     // Append visually immediately
     appendMessage("user", text);
     aiChatInput.value = "";
+    
+    logUserAction("chat", { 
+        dataset: "ai_assistant", 
+        filename: text.substring(0, 50) // Store a snippet of the query for context
+    });
 
     // Create loading element
     const loadingId = "loader-" + Date.now();

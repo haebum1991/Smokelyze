@@ -73,15 +73,6 @@ export async function airnowLoadData(isoDate, localHour) {
             try {
                 dailyGeoJSON = await airnowFetchData(url);
                 loadedGeoJSON[dailyCacheKey] = dailyGeoJSON;
-                
-                // --- Log the download/view action ---
-                logUserAction("view", {
-                    dataset: "airnow_hourly_geojson",
-                    layer: "airnow_hourly",
-                    date: utcIsoDate,
-                    filename: url
-                });
-                
             } catch (err) {
                 console.error("AirNow bundle load failed:", err);
                 dailyGeoJSON = EMPTY_FC;
@@ -113,6 +104,15 @@ export async function airnowLoadData(isoDate, localHour) {
                 loadedSources[sourceId] = searchFriendlyKey;
                 loadedGeoJSON[searchFriendlyKey] = dailyGeoJSON;
             }
+        });
+        
+        // --- [Log the View Action] ---
+        // Every hour change/view is recorded, even if data is from cache
+        logUserAction("view", {
+            dataset: "airnow_hourly",
+            layer: activeCoverages.join(", "),
+            date: isoDate,
+            key_hour: utcHour
         });
 
         // 4. Refresh global state shading

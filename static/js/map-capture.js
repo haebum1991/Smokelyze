@@ -3,6 +3,7 @@ import { auth } from "./fb-init.js";
 import { map } from "./map-init.js";
 import { currentDate, showAuthOverlay } from "./utils.js";
 import { toggleSpinner } from "./loader-ui.js";
+import { logUserAction } from "./fb-logging.js";
 
 /**
  * Shared capture process for both manual download and AI analysis
@@ -174,6 +175,11 @@ export function initMapCapture() {
                 link.download = `map_capture_${currentDate()}.png`;
                 link.href = dataUrl;
                 link.click();
+                
+                logUserAction("download", { 
+                    dataset: "map_capture", 
+                    filename: `map_capture_${currentDate()}.png` 
+                });
             }
         } catch (err) {
             console.error("Capture Error:", err);
