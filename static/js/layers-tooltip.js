@@ -132,7 +132,9 @@ export function generatePopupHTML(p, dataSource, isLocked) {
         <div style="${rowStyle}"><b>County:</b> ${ESML(p.POOCounty)}</div>
         <div style="${rowStyle}"><b>Type:</b> ${ESML(p.IncidentTypeCategory)}</div>
         <div style="${rowStyle}"><b>Cause:</b> ${ESML(p.FireCause)}</div>
-        <div style="${rowStyle}"><b>Acres:</b> ${ESML(p.DiscoveryAcres)}</div>`;
+        <div style="${rowStyle}"><b>Acres:</b> ${ESML(p.DiscoveryAcres)}</div>
+        <div style="${rowStyle}"><b>Latitude:</b> ${ESML(smartFmt(p.lat, "lat", dataSource, 3))}</div>
+        <div style="${rowStyle}"><b>Longitude:</b> ${ESML(smartFmt(p.lon, "lon", dataSource, 3))}</div>`;
     }
     
     if (dataSource === "MapPost") {
@@ -289,6 +291,8 @@ export function generatePopupHTML(p, dataSource, isLocked) {
         <div style="${rowStyle}"><b>Method:</b> ${ESML(p["Method"])}</div>
         <div style="${rowStyle}"><b>Satellite:</b> ${ESML(p["Satellite"])}</div>
         <div style="${rowStyle}"><b>Ecosystem:</b> ${ESML(p["Ecosystem"])}</div>
+        <div style="${rowStyle}"><b>Latitude:</b> ${ESML(smartFmt(p.lat, "lat", dataSource, 3))}</div>
+        <div style="${rowStyle}"><b>Longitude:</b> ${ESML(smartFmt(p.lon, "lon", dataSource, 3))}</div>
         <div style="${rowStyle}"><b>Scan time (UTC):</b> ${ESML((p["ScanTimes"] || "").replace(" UTC", ""))}</div>`;
     }
     

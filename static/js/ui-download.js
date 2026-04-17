@@ -39,11 +39,21 @@ export function convertToCSV(data, columns = null) {
     const header = [];
     const added = new Set();
 
-    // Sort logic: site_name -> lon -> lat -> others
+    // Sort logic: 
+    // - For AirNow: site_name -> lon -> lat
+    // - For HMS-fire: lon -> lat -> ScanTimes
     keys.forEach(k => {
         if (!added.has(k)) {
+            // HMS-fire priority: lon, lat before ScanTimes
+            if (k === "ScanTimes") {
+                if (keySet.has("lon") && !added.has("lon")) { header.push("lon"); added.add("lon"); }
+                if (keySet.has("lat") && !added.has("lat")) { header.push("lat"); added.add("lat"); }
+            }
+
             header.push(k);
             added.add(k);
+
+            // AirNow priority: lon, lat after site_name
             if (k === "site_name") {
                 if (keySet.has("lon") && !added.has("lon")) { header.push("lon"); added.add("lon"); }
                 if (keySet.has("lat") && !added.has("lat")) { header.push("lat"); added.add("lat"); }
@@ -60,8 +70,19 @@ export function convertToCSV(data, columns = null) {
     features.forEach(item => {
         const row = header.map(key => {
             let val = item[key];
-            if (val === undefined || val === null) return "";
-            const strVal = String(val);
+            let strVal;
+            if (val === undefined || val === null) {
+                strVal = "";
+            } else if (typeof val === "object") {
+                if (Object.keys(val).length === 0) {
+                    strVal = "";
+                } else {
+                    strVal = JSON.stringify(val);
+                }
+            } else {
+                strVal = String(val);
+            }
+
             if (strVal.includes(COMMA) || strVal.includes(QUOTE) || strVal.includes(NEWLINE)) {
                 return QUOTE + strVal.replace(/"/g, '""') + QUOTE;
             }

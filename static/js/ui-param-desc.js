@@ -716,8 +716,12 @@ export function appendAllLayerHelpIcons() {
         // Skip if already attached
         if (parentLabel.querySelector(".layer-help-btn")) return;
           
-        // 4. Add Download Button for AirNow layers
-        if (descId.startsWith("airnow-")) {
+        // 4. Add Download Button for specific layers (AirNow, NIFC, HMS-fire)
+        const isAirNow = descId.startsWith("airnow-");
+        const isNIFC = descId === "wildfire-nifc";
+        const isFire = descId === "fire";
+
+        if (isAirNow || isNIFC || isFire) {
             const dlBtn = createExportButton({
                 label: "⬇ .CSV",
                 className: "layer-dl-btn",
