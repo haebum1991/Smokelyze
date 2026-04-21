@@ -155,7 +155,9 @@
   for = "/*"
   [headers.values]
   # Force HTTPS
-  Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+  # HSTS is now managed exclusively via Cloudflare Dashboard (Edge Certificates > HSTS)
+  # to avoid dual-layer conflicts between Cloudflare proxy and Netlify origin.
+  # Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
   # Prevent MIME-type sniffing
   X-Content-Type-Options = "nosniff"
   # Prevent Clickjacking
