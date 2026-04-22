@@ -932,8 +932,10 @@ title: ""
       
       <div
         style="margin-top: 1.5rem; font-size: 1.4rem; color: var(--text-main); border-top: 0.1rem solid var(--border-main); padding-top: 0.8rem;">
-        * Note: Simulations are performed using <b style="color: var(--card-shadow);">NAM 12km</b> meteorological data.
-        Dispersion modeling in this app is conducted with <b style="color: var(--card-shadow);">minimal physical
+        * Note: Simulations use <b style="color: var(--card-shadow);">NAM 12km</b> meteorological data by default.
+        For locations outside the NAM12 domain (e.g., Alaska, Hawaii), the model automatically switches to <b style="color: var(--card-shadow);">GDAS1 (1°)</b>.
+        For NAM12 trajectories exceeding 72 hours, GDAS1 data is additionally used as backup to prevent domain boundary truncation.
+        Dispersion modeling is conducted with <b style="color: var(--card-shadow);">minimal physical
           parameters</b> due to server
         resource constraints. <b style="color: var(--card-shadow);"> Use results for reference only</b>. For detailed
         scientific analysis, please visit the

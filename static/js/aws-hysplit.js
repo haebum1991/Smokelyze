@@ -721,7 +721,31 @@ async function clickOnSubmitHysplit() {
     }
     
     if (!lngLat || !date) return alert("Missing location or date.");
+    
+    // Date Guard: Met data availability depends on location (NAM12 vs GDAS1)
+    const lon = lngLat.lng;
+    const lat = lngLat.lat;
+    const isGDAS = lon < -152 || lon > -49 || lat > 61 || lat < 12;
+    const requiredLag = isGDAS ? 8 : 2;
+    const metLabel = isGDAS ? "GDAS1" : "NAM12";
 
+    const selectedDate = new Date(date + "T00:00:00");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const daysDiff = Math.floor((today - selectedDate) / (1000 * 60 * 60 * 24));
+    if (daysDiff < requiredLag) {
+        const safeDateObj = new Date(today);
+        safeDateObj.setDate(safeDateObj.getDate() - requiredLag);
+        const safeDate = safeDateObj.toISOString().split("T")[0];
+        if (showErrorToast) {
+            showErrorToast(
+                `${metLabel} meteorological data may not be available for this date.<br>Please set the date to <b>${safeDate}</b> or earlier.`,
+                "warning"
+            );
+        }
+        return;
+    }
+    
     if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.innerText = "Running...";
