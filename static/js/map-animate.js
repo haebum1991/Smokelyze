@@ -256,6 +256,10 @@ export function initMapAnimate() {
             cancelBtn.disabled = true;
             cancelBtn.style.opacity = "0.5";
             cancelBtn.style.cursor = "not-allowed";
+            
+            // Minimal fix for immediate cancel: wake up any pending waits artificially
+            window.dispatchEvent(new Event("map-data-loaded"));
+            if (map) map.fire("idle");
         };
 
         if (mapLoadingOverlay) {
@@ -297,7 +301,9 @@ export function initMapAnimate() {
             if (dateChanged) {
                 if (mapLoadingText) mapLoadingText.innerText = "Loading starting frame...";
                 await waitForDataLoaded();
+                if (isCancelled) throw new Error("Cancelled_by_user");
                 await waitForMapIdle();
+                if (isCancelled) throw new Error("Cancelled_by_user");
             }
 
             if (isCancelled) throw new Error("Cancelled_by_user");
@@ -343,7 +349,9 @@ export function initMapAnimate() {
                     // Wait for loader-handler.js to finish ALL data loading
                     // (debounce + fetch + render for GeoJSON, Canvas, raster)
                     await waitForDataLoaded();
+                    if (isCancelled) throw new Error("Cancelled_by_user");
                     await waitForMapIdle();
+                    if (isCancelled) throw new Error("Cancelled_by_user");
                 }
             }
 
