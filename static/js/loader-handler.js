@@ -572,14 +572,12 @@ export async function updateAllActiveSources() {
 
         if (hasHourly) {
             if (typeof showTimeControls === "function") showTimeControls();
-            
-            // 1. AirNow is fully detached, non-blocking asynchronous
-            airnowLoadData(isoDate).catch(e => console.error("Detached AirNow load failed:", e));
 
-            // 2. TEMPO and TROPOMI remain blocking with center spinner
+            // Load all hourly data in parallel, properly awaited
             toggleSpinner(true);
             try {
                 await Promise.all([
+                    airnowLoadData(isoDate),
                     tempoLoadData(isoDate),
                     tropomiLoadData(isoDate)
                 ]);
@@ -591,13 +589,10 @@ export async function updateAllActiveSources() {
         } else {
             if (typeof hideTimeControls === "function") hideTimeControls();
 
-            // Explicitly clear hourly data to avoid stale rasters/shading
-            // AirNow is fully detached, non-blocking asynchronous
-            airnowLoadData(isoDate).catch(e => console.error("Detached AirNow clear failed:", e));
-            
+            // Clear hourly data (AirNow + raster layers)
             try {
-                // These functions clear their sources/stats when their layers are unchecked/inactive
                 await Promise.all([
+                    airnowLoadData(isoDate),
                     tempoLoadData(isoDate),
                     tropomiLoadData(isoDate)
                 ]);
@@ -619,6 +614,7 @@ export async function updateAllActiveSources() {
         console.error("updateAllActiveSources failed", e);
     } finally {
         toggleSpinner(false);
+        window.dispatchEvent(new Event("map-data-loaded"));
     }
 }
 
@@ -704,24 +700,25 @@ function bindEventsLoaderHandler() {
     if (timePicker) {
         timePicker.addEventListener("change", utils.debounce(async () => {
             const hasTempo = document.getElementById("layer-tempo-no2")?.checked || document.getElementById("layer-tempo-hcho")?.checked;
-            
-            // 1. AirNow fetches in the background non-blocking
+            const isoDate = utils.currentDate();
+
+            // Load all hourly data in parallel, properly awaited.
+            // Each loader manages its own spinner internally.
+            const promises = [];
+
             if (airnowHasActiveLayers()) {
-                airnowLoadData(utils.currentDate()).catch(e => console.error("Detached AirNow load failed:", e));
+                promises.push(airnowLoadData(isoDate));
             }
 
-            // 2. TEMPO blocks the UI specifically
             if (hasTempo) {
-                toggleSpinner(true);
-                try {
-                    await tempoLoadData(utils.currentDate());
-                } finally {
-                    toggleSpinner(false);
-                }
+                promises.push(tempoLoadData(isoDate));
             }
-            
-            // 3. Keep Statistical Tools date and charts completely in sync with the new time
+
+            await Promise.all(promises);
+
+            // Keep Statistical Tools date and charts completely in sync with the new time
             triggerRefresh();
+            window.dispatchEvent(new Event("map-data-loaded"));
         }, 500));
     }
     // ---- [External data] AirNow ----

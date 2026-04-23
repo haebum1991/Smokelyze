@@ -8,6 +8,63 @@ import { logUserAction } from "./fb-logging.js";
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
+/**
+ * Wait for the map to reach "idle" state (all sources loaded, all tiles rendered).
+ * Falls back after maxWaitMs to prevent infinite hangs (e.g. if tab is hidden
+ * and rAF is paused, "idle" will never fire until the tab is visible again).
+ */
+function waitForMapIdle(maxWaitMs = 15000) {
+    return new Promise(resolve => {
+        let settled = false;
+        const done = () => {
+            if (settled) return;
+            settled = true;
+            map.off("idle", done);
+            resolve();
+        };
+        map.on("idle", done);
+        setTimeout(done, maxWaitMs);
+    });
+}
+
+/**
+ * Wait for loader-handler.js to signal that ALL data loading is complete.
+ * This covers GeoJSON sources, Canvas Sources (TEMPO), and raster layers —
+ * unlike waitForMapIdle() which only tracks MapLibre internal tile state.
+ * Safety timeout prevents infinite hangs if the event never fires.
+ */
+function waitForDataLoaded(maxWaitMs = 20000) {
+    return new Promise(resolve => {
+        let settled = false;
+        const done = () => {
+            if (settled) return;
+            settled = true;
+            window.removeEventListener("map-data-loaded", done);
+            resolve();
+        };
+        window.addEventListener("map-data-loaded", done);
+        setTimeout(done, maxWaitMs);
+    });
+}
+
+/**
+ * Ensure the tab is visible before proceeding.
+ * If the tab is hidden, pause here until the user comes back.
+ * This prevents capturing stale/unrendered frames in the background.
+ */
+function waitForTabVisible() {
+    if (document.visibilityState === "visible") return Promise.resolve();
+    return new Promise(resolve => {
+        const handler = () => {
+            if (document.visibilityState === "visible") {
+                document.removeEventListener("visibilitychange", handler);
+                resolve();
+            }
+        };
+        document.addEventListener("visibilitychange", handler);
+    });
+}
+
 function getGifWorkerUrl() {
     const workerStr = `importScripts("https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js");`;
     const workerBlob = new Blob([workerStr], { type: "application/javascript" });
@@ -219,21 +276,29 @@ export function initMapAnimate() {
         };
 
         try {
-            // Navigate to Start Date
+            
+            // Navigate to Start Date (only triggers data reload if date/time differs)
+            let dateChanged = false;
             if (mapDatePicker && mapDatePicker.value !== startDateInput.value) {
                 mapDatePicker.value = startDateInput.value;
                 mapDatePicker.dispatchEvent(new Event("change", { bubbles: true }));
+                dateChanged = true;
             }
             if (stepType === "h") {
                 if (mapTimePicker && mapTimePicker.value !== startTimeInput.value) {
                     mapTimePicker.value = startTimeInput.value;
                     mapTimePicker.dispatchEvent(new Event("change", { bubbles: true }));
+                    dateChanged = true;
                 }
             }
 
-            // Wait heavily for the initial jump
-            if (mapLoadingText) mapLoadingText.innerText = "Loading starting frame...";
-            await sleep(3500);
+            // Only wait for debounce + idle if we actually changed the date/time.
+            // If already on the correct date, the map is already loaded — skip.
+            if (dateChanged) {
+                if (mapLoadingText) mapLoadingText.innerText = "Loading starting frame...";
+                await waitForDataLoaded();
+                await waitForMapIdle();
+            }
 
             if (isCancelled) throw new Error("Cancelled_by_user");
 
@@ -248,9 +313,19 @@ export function initMapAnimate() {
             // Capture loop
             for (let i = 0; i < numSteps; i++) {
                 if (isCancelled) throw new Error("Cancelled_by_user");
-                if (mapLoadingText) mapLoadingText.innerText = `Capturing Frame ${i + 1} of ${numSteps}...`;
 
-                await sleep(1500);
+                // If the user switched away, pause until they come back.
+                // Capturing in a hidden tab produces stale/blank frames because
+                // the browser pauses requestAnimationFrame (MapLibre rendering).
+                await waitForTabVisible();
+
+                // After returning from a hidden tab, MapLibre render loop (rAF)
+                // needs to catch up. Trigger a repaint and wait for idle to ensure
+                // all pending data is actually rendered to the canvas.
+                map.triggerRepaint();
+                await waitForMapIdle();
+
+                if (mapLoadingText) mapLoadingText.innerHTML = `Capturing Frame ${i + 1} of ${numSteps}...<br><span>Please keep this page open and visible.</span>`;
 
                 if (isCancelled) throw new Error("Cancelled_by_user");
 
@@ -265,7 +340,10 @@ export function initMapAnimate() {
                 // Click next step (except last frame)
                 if (i < numSteps - 1) {
                     btnNext.click();
-                    await sleep(1000);
+                    // Wait for loader-handler.js to finish ALL data loading
+                    // (debounce + fetch + render for GeoJSON, Canvas, raster)
+                    await waitForDataLoaded();
+                    await waitForMapIdle();
                 }
             }
 
