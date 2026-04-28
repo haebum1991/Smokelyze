@@ -34,15 +34,26 @@ export const PALETTE_JET = [
 ];
 
 // [TEMPO Palette] High-contrast ramp matching NASA's official standard (Vivid version)
-  export const PALETTE_TEMPO = [
-    "#3a57ff", // 1: Bright Blue
-    "#3ad9ff", // 25: Electric Cyan
-    "#3aff53", // 50: Neon Green
-    "#f6ff3a", // 75: Vivid Yellow
-    "#ff893a", // 100: Vibrant Orange
-    "#ff3a3a", // 125: Pure Red
-    "#31004a"  // 150: Deep Purple
-  ];
+export const PALETTE_TEMPO = [
+  "#3a57ff", // 1: Bright Blue
+  "#3ad9ff", // 25: Electric Cyan
+  "#3aff53", // 50: Neon Green
+  "#f6ff3a", // 75: Vivid Yellow
+  "#ff893a", // 100: Vibrant Orange
+  "#ff3a3a", // 125: Pure Red
+  "#31004a"  // 150: Deep Purple
+];
+  
+// [HRRR Palette] Custom smoke color ramp (Gray -> Pale Yellow -> Orange -> Dark Brown)
+export const PALETTE_HRRR_SMOKE = [
+    "#dcdcdc", // Light Gray
+    "#f5e7c8", // Pale Yellow/Cream
+    "#f4b455", // Yellow Orange
+    "#ec8e30", // Orange
+    "#d05c18", // Dark Orange
+    "#a4380a", // Reddish Brown
+    "#501000"  // Dark Brown
+];
   
 // [Burn Palette]
 export const PALETTE_BURN = [
@@ -105,6 +116,8 @@ export const BREAKS_FRP = [10, 50, 150, 350];
 export const BREAKS_SMOKE = [1000, 5000, 20000, 50000, 100000];
 export const BREAKS_BURN = [10, 50, 100, 500, 1000];
 export const BREAKS_TEMPO = [1, 25, 50, 75, 100, 125, 150]; // NASA Standard 7-step linear scale
+export const BREAKS_HRRR_ugm2 = [250, 1000, 5000, 10000, 20000, 40000, 60000];
+export const BREAKS_HRRR_ugm3 = [1, 5, 10, 20, 30, 40, 50];
 
 // --------------------------------------------------------
 // Label definitions

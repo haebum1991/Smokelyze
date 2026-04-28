@@ -5,7 +5,13 @@
  * and updating the MapLibre Canvas Source.
  */
 import { map } from "./map-init.js";
-import { BREAKS_TEMPO, PALETTE_TEMPO } from "./layers-constants.js";
+import { 
+  BREAKS_TEMPO, 
+  PALETTE_TEMPO, 
+  BREAKS_HRRR_ugm2, 
+  BREAKS_HRRR_ugm3,
+  PALETTE_HRRR_SMOKE
+} from "./layers-constants.js";
 import * as utils from "./utils.js";
 import { showErrorToast } from "./loader-ui.js";
 import { logUserAction } from "./fb-logging.js";
@@ -40,15 +46,32 @@ const TROPOMI_CONFIG = {
         mapLayerId: "tropomi-hcho-raster"
     }
 };
+
+const HRRR_CONFIG = {
+    "colmd": {
+        productId: "COLMD_entire",
+        sourceId: "hrrr-colmd",
+        layerId: "layer-hrrr-colmd",
+        mapLayerId: "hrrr-colmd-raster"
+    },
+    "massden": {
+        productId: "MASSDEN_8m",
+        sourceId: "hrrr-massden",
+        layerId: "layer-hrrr-massden",
+        mapLayerId: "hrrr-massden-raster"
+    }
+};
     
 /**
  * Stores raw pixel data and metadata for hover value sampling
  */
-const tempoDataStore = {
+const rasterDataStore = {
     "tempo-no2": { grayscale: null, metadata: null, coordinates: null },
     "tempo-hcho": { grayscale: null, metadata: null, coordinates: null },
     "tropomi-no2": { grayscale: null, metadata: null, coordinates: null },
-    "tropomi-hcho": { grayscale: null, metadata: null, coordinates: null }
+    "tropomi-hcho": { grayscale: null, metadata: null, coordinates: null },
+    "hrrr-colmd": { grayscale: null, metadata: null, coordinates: null },
+    "hrrr-massden": { grayscale: null, metadata: null, coordinates: null }
 };
 
 function hexToRgb(hex) {
@@ -63,7 +86,7 @@ function hexToRgb(hex) {
 /**
  * Colorizes a grayscale PNG based on metadata and a global value scale.
  */
-function colorizeTempoImage(imgUrl, metadata, source, sourceId) {
+function colorizeRasterImage(imgUrl, metadata, source, sourceId) {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.crossOrigin = "Anonymous";
@@ -92,14 +115,20 @@ function colorizeTempoImage(imgUrl, metadata, source, sourceId) {
 
                 // Pre-calculate Mercator constants to avoid Math.log/Math.tan on every mouse move
                 const latToMercY = (l) => Math.log(Math.tan((Math.PI / 4) + (l * Math.PI / 360)));
-                const { extent_raw, extent, min_val, max_val } = metadata;
-                const targetExtent = extent_raw || extent;
-                const [xmin, xmax, ymin, ymax] = targetExtent;
+                const { min_val, max_val } = metadata;
+                
+                // Retrieve the correct WGS84 bounds that were already calculated by the loader
+                const coordinates = rasterDataStore[sourceId].coordinates;
+                const xmin = coordinates[0][0]; // top-left lng
+                const xmax = coordinates[1][0]; // top-right lng
+                const ymax = coordinates[0][1]; // top-left lat
+                const ymin = coordinates[3][1]; // bottom-left lat
 
                 const mercYMin = latToMercY(ymin);
                 const mercYMax = latToMercY(ymax);
 
-                tempoDataStore[sourceId] = {
+                rasterDataStore[sourceId] = {
+                    ...rasterDataStore[sourceId],
                     grayscale,
                     imgW,
                     imgH,
@@ -110,10 +139,21 @@ function colorizeTempoImage(imgUrl, metadata, source, sourceId) {
                     lngRange: xmax - xmin
                 };
 
-                const breaks = BREAKS_TEMPO;
-                const colors = PALETTE_TEMPO.map(hexToRgb);
+                let breaks = BREAKS_TEMPO;
+                let colorsHex = PALETTE_TEMPO;
 
-                const getTempoColor = (v) => {
+                if (sourceId === "hrrr-colmd") {
+                    breaks = BREAKS_HRRR_ugm2;
+                    colorsHex = PALETTE_HRRR_SMOKE;
+                }
+                if (sourceId === "hrrr-massden") {
+                    breaks = BREAKS_HRRR_ugm3;
+                    colorsHex = PALETTE_HRRR_SMOKE;
+                }
+                
+                const colors = colorsHex.map(hexToRgb);
+
+                const getRasterColor = (v) => {
                     if (v <= breaks[0]) return colors[0];
                     if (v >= breaks[breaks.length - 1]) return colors[colors.length - 1];
                     for (let i = 0; i < breaks.length - 1; i++) {
@@ -140,9 +180,17 @@ function colorizeTempoImage(imgUrl, metadata, source, sourceId) {
                         rawData[i + 3] = 0;
                     } else {
                         const realValue = min_val + (px / 255) * (max_val - min_val);
-                        const displayValue = realValue / 1e14;
+                        const isHrrr = sourceId.includes("hrrr");
+                        const displayValue = isHrrr ? realValue : realValue / 1e14;
 
-                        const rgb = getTempoColor(displayValue);
+                        // For HRRR-smoke, make values below the lowest break transparent 
+                        // to prevent painting a solid blue box over the entire map.
+                        if (isHrrr && displayValue < breaks[0]) {
+                            rawData[i + 3] = 0;
+                            continue;
+                        }
+
+                        const rgb = getRasterColor(displayValue);
                         rawData[i] = rgb[0];
                         rawData[i + 1] = rgb[1];
                         rawData[i + 2] = rgb[2];
@@ -166,11 +214,11 @@ function colorizeTempoImage(imgUrl, metadata, source, sourceId) {
     });
 }
 
-function clearTempoSource(source, sourceId) {
+function clearRasterSource(source, sourceId) {
     if (!source) return;
     
     // Skip if already cleared to prevent WebGL memory leak
-    if (tempoDataStore[sourceId] && tempoDataStore[sourceId].cleared === true) {
+    if (rasterDataStore[sourceId] && rasterDataStore[sourceId].cleared === true) {
         return;
     }
 
@@ -182,10 +230,10 @@ function clearTempoSource(source, sourceId) {
         if (source.play) source.play();
         if (source.pause) source.pause();
         
-        if (!tempoDataStore[sourceId]) {
-            tempoDataStore[sourceId] = {};
+        if (!rasterDataStore[sourceId]) {
+            rasterDataStore[sourceId] = {};
         }
-        tempoDataStore[sourceId].cleared = true;
+        rasterDataStore[sourceId].cleared = true;
         
     } catch (e) {
         console.warn("TEMPO clear failed:", e);
@@ -196,10 +244,10 @@ function clearTempoSource(source, sourceId) {
  * Resets all Raster sources (clears canvases and moves them out of view)
  */
 export function clearAllRaster() {
-    for (const cfg of [...Object.values(TEMPO_CONFIG), ...Object.values(TROPOMI_CONFIG)]) {
+    for (const cfg of [...Object.values(TEMPO_CONFIG), ...Object.values(TROPOMI_CONFIG), ...Object.values(HRRR_CONFIG)]) {
         const source = map?.getSource(cfg.sourceId);
-        if (source) clearTempoSource(source, cfg.sourceId);
-        tempoDataStore[cfg.sourceId] = { grayscale: null, metadata: null, coordinates: null, cleared: true };
+        if (source) clearRasterSource(source, cfg.sourceId);
+        rasterDataStore[cfg.sourceId] = { grayscale: null, metadata: null, coordinates: null, cleared: true };
     }
 }
 
@@ -207,7 +255,7 @@ export function clearAllRaster() {
  * Global mousemove handler for TEMPO layers
  */
 let tempoHoverBound = false;
-function initTempoHover() {
+function initRasterHover() {
     if (tempoHoverBound || !map) return;
 
     const tooltip = document.getElementById("MapTooltip");
@@ -233,13 +281,13 @@ function initTempoHover() {
             return;
         }
         
-        // Find visible TEMPO or TROPOMI layers
-        const activeTempoLayer = [...Object.values(TEMPO_CONFIG), ...Object.values(TROPOMI_CONFIG)].find(cfg => {
+        // Find visible TEMPO or TROPOMI or HRRR layers
+        const activeRasterLayer = [...Object.values(TEMPO_CONFIG), ...Object.values(TROPOMI_CONFIG), ...Object.values(HRRR_CONFIG)].find(cfg => {
             if (!map.getLayer(cfg.mapLayerId)) return false;
             return map.getLayoutProperty(cfg.mapLayerId, "visibility") === "visible";
         });
 
-        if (!activeTempoLayer) {
+        if (!activeRasterLayer) {
             if (!tempoHoverBound.isShowing) return;
             tooltip.style.display = "none";
             map.getCanvas().style.cursor = "";
@@ -247,8 +295,8 @@ function initTempoHover() {
             return;
         }
 
-        const sourceId = activeTempoLayer.sourceId;
-        const store = tempoDataStore[sourceId];
+        const sourceId = activeRasterLayer.sourceId;
+        const store = rasterDataStore[sourceId];
         if (!store || !store.grayscale) return;
 
         const wrapped = e.lngLat.wrap();
@@ -271,19 +319,36 @@ function initTempoHover() {
                 const gray = store.grayscale[pxY * store.imgW + pxX];
 
                 if (!gray) {
-                    hideTempoTooltip();
+                    hideRasterTooltip();
                     return;
                 }
 
                 // Restoration logic: Map 0-255 back to [min_val, max_val]
                 const { metadata } = store;
                 const realValue = metadata.min_val + (gray / 255) * (metadata.max_val - metadata.min_val);
-                const displayValue = realValue / 1e14; // unit: 10^14 molecules/cm2
-
-                const isTempo = activeTempoLayer.productId.includes("TEMPO");
-                const layerTitle = activeTempoLayer.productId.includes("NO2") ? 
-                    (isTempo ? "TEMPO NO2VCD" : "TROPOMI NO2VCD") : 
-                    (isTempo ? "TEMPO HCHOVCD" : "TROPOMI HCHOVCD");
+                
+                const isHrrr = sourceId.includes("hrrr");
+                const displayValue = isHrrr ? realValue : realValue / 1e14; // unit: 10^14 molecules/cm2 for tempo
+                
+                const isTempo = activeRasterLayer.productId.includes("TEMPO");
+                
+                let layerTitle = "";
+                let unitHtml = "";
+                
+                if (isHrrr) {
+                    if (sourceId === "hrrr-colmd") {
+                        layerTitle = "HRRR-smokeVCD (hourly)";
+                        unitHtml = `<span style="color: var(--text-main);">&micro;g m<sup>-2</sup></span>`;
+                    } else {
+                        layerTitle = "HRRR-smoke8m (hourly)";
+                        unitHtml = `<span style="color: var(--text-main);">&micro;g m<sup>-3</sup></span>`;
+                    }
+                } else {
+                    layerTitle = activeRasterLayer.productId.includes("NO2") ?
+                        (isTempo ? "TEMPO-NO2VCD (hourly)" : "TROPOMI-NO2VCD") :
+                        (isTempo ? "TEMPO-HCHOVCD (hourly)" : "TROPOMI-HCHOVCD");
+                    unitHtml = `<span style="color: var(--text-main);">&times 10<sup>14</sup> molec. cm<sup>-2</sup></span>`;
+                }
 
                 let metaHtml = "";
                 if (isTempo) {
@@ -294,6 +359,19 @@ function initTempoHover() {
                             <span>Version: <b>${utils.ESML(metadata.version) || "NA"}</b></span>
                         </div>
                     `;
+                } else if (isHrrr) {
+                    let hrrrTimestamp = utils.ESML(metadata.datetime) || "NA";
+                    if (metadata.id) {
+                        const match = metadata.id.match(/t(\d{2})z/);
+                        if (match) hrrrTimestamp += ` ${match[1]}:00:00`;
+                    }
+                    
+                    metaHtml = `
+                        <div style="display: flex; flex-direction: column;">
+                            <span>Timestamp: <b>${hrrrTimestamp} UTC</b></span>
+                            <span>Dataset: <b>${utils.ESML(metadata.id) || "NA"}</b></span>
+                        </div>
+                    `;
                 }
 
                 tooltip.innerHTML = `
@@ -301,8 +379,8 @@ function initTempoHover() {
                         <strong style="color: var(--card-shadow);">${layerTitle}</strong>
                     </div>
                     <div>
-                        <div>Value: <b style="font-size: 1.6rem; color: var(--card-shadow);">${displayValue.toFixed(2)}</b> 
-                        <span style="color: var(--text-main);">&times 10<sup>14</sup> molec. cm<sup>-2</sup></span></div>
+                        <div>Value: <b style="font-size: 1.6rem; color: var(--card-shadow);">${displayValue.toFixed(isHrrr ? 1 : 2)}</b> 
+                        ${unitHtml}</div>
                         ${metaHtml}
                     </div>
                 `;
@@ -319,14 +397,14 @@ function initTempoHover() {
                 tooltip.style.left = `${x / 10}rem`;
                 tooltip.style.top = `${y / 10}rem`;
             } else {
-                hideTempoTooltip();
+                hideRasterTooltip();
             }
         } else {
-            hideTempoTooltip();
+            hideRasterTooltip();
         }
     });
 
-    function hideTempoTooltip() {
+    function hideRasterTooltip() {
         if (!tempoHoverBound.isShowing) return;
         tooltip.style.display = "none";
         map.getCanvas().style.cursor = "";
@@ -355,7 +433,7 @@ export async function tempoLoadData(isoDate) {
 
         const cb = document.getElementById(cfg.layerId);
         // Always clear first to prevent old data from sticking around while loading
-        clearTempoSource(source, cfg.sourceId);
+        clearRasterSource(source, cfg.sourceId);
 
         if (!cb || !cb.checked) {
             continue;
@@ -379,13 +457,13 @@ export async function tempoLoadData(isoDate) {
                     [xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin]
                 ];
                 
-                if (!tempoDataStore[cfg.sourceId]) {
-                    tempoDataStore[cfg.sourceId] = { grayscale: null, metadata: null, coordinates: null };
+                if (!rasterDataStore[cfg.sourceId]) {
+                    rasterDataStore[cfg.sourceId] = { grayscale: null, metadata: null, coordinates: null };
                 }
                 
-                tempoDataStore[cfg.sourceId].coordinates = coordinates;
-                tempoDataStore[cfg.sourceId].cleared = false;
-                await colorizeTempoImage(pngUrl, metadata, source, cfg.sourceId);
+                rasterDataStore[cfg.sourceId].coordinates = coordinates;
+                rasterDataStore[cfg.sourceId].cleared = false;
+                await colorizeRasterImage(pngUrl, metadata, source, cfg.sourceId);
                 source.setCoordinates(coordinates);
                 
                 logUserAction("view", {
@@ -395,15 +473,15 @@ export async function tempoLoadData(isoDate) {
                     filename: pngUrl
                 });
 
-                initTempoHover();
+                initRasterHover();
             } else {
                 throw new Error("No data");
             }
         } catch (e) {
             console.error(`TEMPO ${key} load error:`, e);
             
-            if (tempoDataStore[cfg.sourceId]) tempoDataStore[cfg.sourceId].cleared = false;
-            clearTempoSource(source, cfg.sourceId);
+            if (rasterDataStore[cfg.sourceId]) rasterDataStore[cfg.sourceId].cleared = false;
+            clearRasterSource(source, cfg.sourceId);
             
             // 데이터가 없는 경우 (404 등) 사용자에게 알림
             if (cb && cb.checked) {
@@ -421,7 +499,7 @@ export async function tropomiLoadData(isoDate) {
 
         const cb = document.getElementById(cfg.layerId);
         // Always clear first to prevent old data from sticking around while loading
-        clearTempoSource(source, cfg.sourceId);
+        clearRasterSource(source, cfg.sourceId);
 
         if (!cb || !cb.checked) {
             continue;
@@ -445,13 +523,13 @@ export async function tropomiLoadData(isoDate) {
                     [xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin]
                 ];
                 
-                if (!tempoDataStore[cfg.sourceId]) {
-                    tempoDataStore[cfg.sourceId] = { grayscale: null, metadata: null, coordinates: null };
+                if (!rasterDataStore[cfg.sourceId]) {
+                    rasterDataStore[cfg.sourceId] = { grayscale: null, metadata: null, coordinates: null };
                 }
                 
-                tempoDataStore[cfg.sourceId].coordinates = coordinates;
-                tempoDataStore[cfg.sourceId].cleared = false;
-                await colorizeTempoImage(pngUrl, metadata, source, cfg.sourceId);
+                rasterDataStore[cfg.sourceId].coordinates = coordinates;
+                rasterDataStore[cfg.sourceId].cleared = false;
+                await colorizeRasterImage(pngUrl, metadata, source, cfg.sourceId);
                 source.setCoordinates(coordinates);
                 
                 logUserAction("view", {
@@ -461,19 +539,90 @@ export async function tropomiLoadData(isoDate) {
                     filename: pngUrl
                 });
 
-                initTempoHover();
+                initRasterHover();
             } else {
                 throw new Error("No data");
             }
         } catch (e) {
             console.error(`TROPOMI ${key} load error:`, e);
-            if (tempoDataStore[cfg.sourceId]) tempoDataStore[cfg.sourceId].cleared = false;
-            clearTempoSource(source, cfg.sourceId);
+            if (rasterDataStore[cfg.sourceId]) rasterDataStore[cfg.sourceId].cleared = false;
+            clearRasterSource(source, cfg.sourceId);
             
             // Alert user if no data
             if (cb && cb.checked) {
                 const label = key.toUpperCase();
                 showErrorToast(`No ${label} TROPOMI data available for this date.`, "error");
+            }
+        }
+    }
+}
+
+export async function hrrrLoadData(isoDate) {
+    const timePicker = document.getElementById("timePicker");
+    if (!timePicker) return;
+
+    const localHour = parseInt(timePicker.value);
+    const [y, m, d] = isoDate.split("-").map(Number);
+    const localDate = new Date(y, m - 1, d, localHour);
+    const utcHour = localDate.getUTCHours();
+    const utcIsoDate = `${localDate.getUTCFullYear()}-${String(localDate.getUTCMonth() + 1).padStart(2, "0")}-${String(localDate.getUTCDate()).padStart(2, "0")}`;
+
+    for (const [key, cfg] of Object.entries(HRRR_CONFIG)) {
+        const source = map?.getSource(cfg.sourceId);
+        if (!source) continue;
+
+        const cb = document.getElementById(cfg.layerId);
+        clearRasterSource(source, cfg.sourceId);
+
+        if (!cb || !cb.checked) {
+            continue;
+        }
+
+        const { jsonUrl: baseJson, pngUrl: basePng } = utils.urlPngHRRR(utcIsoDate, utcHour, cfg.productId);
+        const buster = utils.getCacheBuster(utcIsoDate);
+        const jsonUrl = baseJson + buster;
+        const pngUrl = basePng + buster;
+
+        try {
+            const metadata = await utils.fetchJson(jsonUrl, null);
+            if (metadata) {
+                // HRRR data is always EPSG:3857 — convert to WGS84 degrees
+                const [lonMin, latMin] = utils.mercatorToLngLat(metadata.extent_file[0], metadata.extent_file[2]);
+                const [lonMax, latMax] = utils.mercatorToLngLat(metadata.extent_file[1], metadata.extent_file[3]);
+                const xmin = lonMin, xmax = lonMax, ymin = latMin, ymax = latMax;
+
+                const coordinates = [
+                    [xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin]
+                ];
+                
+                if (!rasterDataStore[cfg.sourceId]) {
+                    rasterDataStore[cfg.sourceId] = { grayscale: null, metadata: null, coordinates: null };
+                }
+
+                rasterDataStore[cfg.sourceId].coordinates = coordinates;
+                rasterDataStore[cfg.sourceId].cleared = false;
+                await colorizeRasterImage(pngUrl, metadata, source, cfg.sourceId);
+                source.setCoordinates(coordinates);
+
+                logUserAction("view", {
+                    dataset: cfg.sourceId,
+                    layer: cfg.sourceId,
+                    date: isoDate,
+                    filename: pngUrl
+                });
+
+                initRasterHover();
+            } else {
+                throw new Error("No data");
+            }
+        } catch (e) {
+            console.error(`HRRR ${key} load error:`, e);
+            if (rasterDataStore[cfg.sourceId]) rasterDataStore[cfg.sourceId].cleared = false;
+            clearRasterSource(source, cfg.sourceId);
+
+            if (cb && cb.checked) {
+                const label = key.toUpperCase();
+                showErrorToast(`No ${label} HRRR data available for this date and hour.`, "error");
             }
         }
     }

@@ -44,7 +44,8 @@ const PUBLIC_PREFIXES = [
   "airnow_hourly_geojson",
   "smokeday",
   "tempo_date_png",
-  "tropomi_date_png"
+  "tropomi_date_png",
+  "hrrr_date_png"
 ];
 
 function dlog(...args) { if (DEBUG) console.log.apply(console, args); }
@@ -127,7 +128,8 @@ function extractGcsPath(event) {
     "airnow_hourly_geojson",
     "smokeday",
     "tempo_date_png",
-    "tropomi_date_png"
+    "tropomi_date_png",
+    "hrrr_date_png"
   ];
 
   let rawPath = "";

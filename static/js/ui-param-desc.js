@@ -251,8 +251,8 @@ export const DescData = {
         },
         {
             id: "tempo-no2",
-            title: "TEMPO-NO2-L3 (hourly)",
-            desc: "<b>TEMPO NO2VCD L3 (hourly)</b> provides high-resolution tropospheric vertical column density (VCD) of nitrogen dioxide (NO<sub>2</sub>) from NASA's geostationary TEMPO satellite. " +
+            title: "TEMPO-NO2VCD (hourly)",
+            desc: "<b>TEMPO-NO2VCD (hourly) (L3)</b> provides high-resolution tropospheric vertical column density (VCD) of nitrogen dioxide (NO<sub>2</sub>) from NASA's geostationary TEMPO satellite. " +
                   "Data is strictly filtered using the official <em>Main Quality Flag (0)</em> and a <em>Cloud Fraction threshold (< 10%)</em> to ensure high-accuracy, clear-sky observations. " +
                   "It allows for near real-time tracking of nitrogen dioxide levels over North America in unit of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
                   "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 9 UTC)</li>" +
@@ -263,8 +263,8 @@ export const DescData = {
         },
         {
             id: "tempo-hcho",
-            title: "TEMPO-HCHO-L3 (hourly)",
-            desc: "<b>TEMPO HCHOVCD L3 (hourly)</b> provides high-resolution vertical column density (VCD) of formaldehyde (HCHO) from NASA's geostationary TEMPO satellite. " +
+            title: "TEMPO-HCHOVCD (hourly)",
+            desc: "<b>TEMPO-HCHOVCD (hourly) (L3)</b> provides high-resolution vertical column density (VCD) of formaldehyde (HCHO) from NASA's geostationary TEMPO satellite. " +
                   "Data is strictly filtered using the official <em>Main Quality Flag (0)</em> and a <em>Cloud Fraction threshold (< 10%)</em> to ensure high-accuracy, clear-sky observations. " +
                   "It allows for near real-time tracking of formaldehyde levels over North America in unit of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
                   "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 9 UTC)</li>" +
@@ -275,8 +275,8 @@ export const DescData = {
         },
         {
             id: "tropomi-no2",
-            title: "TROPOMI-NO2-L3",
-            desc: "<b>TROPOMI NO2VCD L3</b> maps are based on <b>Collection 3 of the Sentinel-5P Nitrogen Dioxide Level-2 products</b> (L2__NO2___) from the Copernicus Data Space Ecosystem. " +
+            title: "TROPOMI-NO2VCD",
+            desc: "<b>TROPOMI-NO2VCD (L3)</b> maps are based on Collection 3 of the Sentinel-5P Nitrogen Dioxide Level-2 products (L2__NO2___) from the Copernicus Data Space Ecosystem. " +
                   "Data is strictly filtered according to the official recommendation (<b>QA value > 0.75</b>) to ensure high-accuracy, clear-sky observations. " +
                   "The measurements are mapped on a fixed grid and processed into Level-3 data by <b>S5P-PAL</b>, providing tropospheric vertical column density (VCD) in units of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
                   "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 9 UTC)</li>" +
@@ -288,8 +288,8 @@ export const DescData = {
         },
         {
             id: "tropomi-hcho",
-            title: "TROPOMI-HCHO-L3",
-            desc: "<b>TROPOMI HCHOVCD L3</b> maps are based on <b>Collection 3 of the Sentinel-5P Formaldehyde Level-2 products</b> (L2__HCHO__) from the Copernicus Dataspace Browser. " +
+            title: "TROPOMI-HCHOVCD",
+            desc: "<b>TROPOMI-HCHOVCD (L3)</b> maps are based on Collection 3 of the Sentinel-5P Formaldehyde Level-2 products (L2__HCHO__) from the Copernicus Dataspace Browser. " +
                   "Data is strictly filtered according to the official recommendation (<b>QA Value > 0.5</b>) to ensure high-accuracy, clear-sky observations. " +
                   "The measurements are mapped on a fixed grid and processed into Level-3 data by <b>S5P-PAL</b>, tracking formaldehyde levels over North America in units of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
                   "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 9 UTC)</li>" +
@@ -298,6 +298,30 @@ export const DescData = {
                   "and, <b style='color: var(--card-shadow);'>spatially aggregated to 0.044&deg; (~ 5 km)</b> for visualization performance.</li>" +
                   "<li>Map Portal: <a href='https://maps.s5p-pal.com/hcho/' target='_blank'>S5P-PAL HCHO Map</a></li>" +
                   "<li>Due to the S5P-PAL data processing cycle, the most recent dataset is available with <b style='color: var(--card-shadow);'>approximately 2-week latency</b>.</li></ul>"
+        },
+        {
+            id: "hrrr-colmd",
+            title: "HRRR-smokeVCD (hourly)",
+            desc: "<b>HRRR-smokeVCD (Smoke Vertically Integrated)</b> provides column-integrated smoke mass density from the NOAA High-Resolution Rapid Refresh (HRRR) model. " +
+                  "This dataset represents the total mass of smoke in the atmospheric column from the surface to the top of the atmosphere, measured in units of <b>&micro;g m<sup>-2</sup></b>. " +
+                  "It is particularly useful for understanding the total overhead smoke load and long-range transport of smoke plumes. " +
+                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 9 UTC)</li>" +
+                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "this data is available starting from 2021-01-01, </b>" + 
+                  "and <b style='color: var(--card-shadow);'>spatially aggregated to 6-7 km</b> for visualization performance. (Original HRRR resolution is 3 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li></ul>"
+        },
+        {
+            id: "hrrr-massden",
+            title: "HRRR-smoke8m (hourly)",
+            desc: "<b>HRRR-smoke8m (Smoke 8-m above ground)</b> provides near-surface (8 m) smoke mass concentration from the NOAA High-Resolution Rapid Refresh (HRRR) model. " +
+                  "This dataset estimates the concentration of smoke particles at 8 meters above ground level, measured in units of <b>&micro;g m<sup>-3</sup></b>. " +
+                  "It is highly relevant for assessing ground-level air quality impacts and potential health risks associated with wildfire smoke. " +
+                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 9 UTC)</li>" +
+                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "this data is available starting from 2021-01-01, </b>" + 
+                  "and <b style='color: var(--card-shadow);'>spatially aggregated to 6-7 km</b> for visualization performance. (Original HRRR resolution is 3 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li></ul>"
         }
     ],
     "desc-published-intro": [

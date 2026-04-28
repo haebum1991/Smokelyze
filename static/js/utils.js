@@ -160,6 +160,27 @@ export function urlPngTropomi(isoDate, productId) {
   };
 }
 
+// url generator for png of HRRR
+export function urlPngHRRR(isoDate, hour, productId) {
+  const [y, m, d] = isoDate.split("-");
+  const formattedHour = String(hour).padStart(2, "0");
+  const folder = `/hrrr_date_png/${productId}/${y}/${m}/${d}`;
+  const baseName = `${productId}_${isoDate}_${formattedHour}T`;
+
+  return {
+    jsonUrl: `${folder}/${baseName}.json`,
+    pngUrl: `${folder}/${baseName}.png`
+  };
+}
+
+// Convert EPSG:3857 (Web Mercator meters) to EPSG:4326 (LngLat degrees)
+export function mercatorToLngLat(x, y) {
+  const lon = (x / 20037508.34) * 180;
+  const lat = (Math.atan(Math.exp((y / 20037508.34) * Math.PI)) * 360 / Math.PI) - 90;
+  return [lon, lat];
+}
+
+
 const NEGATIVE_CACHE_TTL = 15 * 60 * 1000; // 15 minutes
 export const failedUrls = new Map();
 

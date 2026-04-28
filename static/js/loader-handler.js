@@ -28,7 +28,7 @@ import { showTimeControls, hideTimeControls } from "./ui-time.js";
 import { airnowHasActiveLayers } from "./airnow.js";
 // ---- [External data] AirNow ----
 
-import { tempoLoadData, tropomiLoadData } from "./raster-loader.js";
+import { tempoLoadData, tropomiLoadData, hrrrLoadData } from "./raster-loader.js";
 
 
 export async function loadSourceData(sourceKey, isoDate) {
@@ -579,7 +579,8 @@ export async function updateAllActiveSources() {
                 await Promise.all([
                     airnowLoadData(isoDate),
                     tempoLoadData(isoDate),
-                    tropomiLoadData(isoDate)
+                    tropomiLoadData(isoDate),
+                    hrrrLoadData(isoDate)
                 ]);
             } catch (e) {
                 console.error("Hourly background load failed:", e);
@@ -594,7 +595,8 @@ export async function updateAllActiveSources() {
                 await Promise.all([
                     airnowLoadData(isoDate),
                     tempoLoadData(isoDate),
-                    tropomiLoadData(isoDate)
+                    tropomiLoadData(isoDate),
+                    hrrrLoadData(isoDate)
                 ]);
             } catch (e) {
                 console.error("Hourly clear failed:", e);
@@ -699,7 +701,8 @@ function bindEventsLoaderHandler() {
     const timePicker = document.getElementById("timePicker");
     if (timePicker) {
         timePicker.addEventListener("change", utils.debounce(async () => {
-            const hasTempo = document.getElementById("layer-tempo-no2")?.checked || document.getElementById("layer-tempo-hcho")?.checked;
+            const hasTempo = !!document.querySelector("input[id^='layer-tempo-']:checked");
+            const hasHrrr = !!document.querySelector("input[id^='layer-hrrr-']:checked");
             const isoDate = utils.currentDate();
 
             // Load all hourly data in parallel, properly awaited.
@@ -712,6 +715,10 @@ function bindEventsLoaderHandler() {
 
             if (hasTempo) {
                 promises.push(tempoLoadData(isoDate));
+            }
+            
+            if (hasHrrr) {
+                promises.push(hrrrLoadData(isoDate));
             }
 
             await Promise.all(promises);

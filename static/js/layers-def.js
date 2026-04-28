@@ -5,31 +5,31 @@
 export const ExcludeLayerGroups = {
   
   // ========= Common Groups =========
-  satelliteLayers: ["burn", "smoke", "fire", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
-    
+  satelliteLayers: ["burn", "smoke", "fire", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hrrr-colmd", "hrrr-massden"],
+
   // [layers-handler.js] > [addSourceIfMissing]
-  pngLayers: ["tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
-    
-  
+  pngLayers: ["tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hrrr-colmd", "hrrr-massden"],
+
+
   // ========= Find by [key] =========
   // [layers-handler.js] > [applyLayerToggles] > [EXCLUDED]
   liveUpdateLayers: ["wildfire-news", "wildfire-nifc", "MapPost"],
 
   // [layers-colors.js] > [updateStateShading] > [EXCLUDED]
-  stateShading: ["smoke", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit"],
+  stateShading: ["smoke", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit", "hrrr-colmd", "hrrr-massden"],
 
   // [layers-tooltip.js] > [stateHoverHTML] > [EXCLUDED]
-  stateHover: ["wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit"],
+  stateHover: ["wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit", "hrrr-colmd", "hrrr-massden"],
 
   // [stats-common.js] > [getActiveModelLayers] > [EXCLUDED]
-  modelTable: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit"],
+  modelTable: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit", "hrrr-colmd", "hrrr-massden"],
 
   // [stats-data-search.js] > [updateVisibility] > [EXCLUDED]
   // [loader.js] > [updateAllActiveSources] > [EXCLUDED]
-  searchSite: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2", "airnow-daily-pm25", "airnow-daily-mda8", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit"],
+  searchSite: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2", "airnow-daily-pm25", "airnow-daily-mda8", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit", "hrrr-colmd", "hrrr-massden"],
 
   // [stats-plot-dy-scatter.js] > [getActiveModelLayers] > [EXCLUDED]
-  plotScatter: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit"],
+  plotScatter: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit", "hrrr-colmd", "hrrr-massden"],
 
 
   // ========= Find by [source] =========
@@ -46,10 +46,10 @@ export const ExcludeLayerGroups = {
 
 import { generatePopupHTML } from "./layers-tooltip.js";
 import {
-    PALETTE_EPA, PALETTE_JET, PALETTE_TEMPO, PALETTE_BIN_1, PALETTE_BIN_2, PALETTE_BIN_3, PALETTE_TRI, PALETTE_BURN, PALETTE_SMOKE,
+    PALETTE_EPA, PALETTE_JET, PALETTE_TEMPO, PALETTE_HRRR_SMOKE, PALETTE_BIN_1, PALETTE_BIN_2, PALETTE_BIN_3, PALETTE_TRI, PALETTE_BURN, PALETTE_SMOKE,
     BREAKS_O3, BREAKS_RESI, BREAKS_SMO_EMBER, BREAKS_PM, BREAKS_PM_CRIT,
     BREAKS_TMAX, BREAKS_T2MAX, BREAKS_SRAD, BREAKS_QUANT, BREAKS_R2,
-    BREAKS_BIN, BREAKS_TRI, BREAKS_NO2, BREAKS_FIRE, BREAKS_SMOKE, BREAKS_BURN, BREAKS_FRP, BREAKS_TEMPO,
+    BREAKS_BIN, BREAKS_TRI, BREAKS_NO2, BREAKS_FIRE, BREAKS_SMOKE, BREAKS_BURN, BREAKS_FRP, BREAKS_TEMPO, BREAKS_HRRR_ugm2, BREAKS_HRRR_ugm3,
     LABEL_SMOKE, LABEL_BIN, LABEL_SMO, LABEL_SMP
 } from "./layers-constants.js";
 
@@ -130,6 +130,20 @@ export const DATA_IMPORT_METHOD = {
       statsBaseUrlYear: "/modis_burn_area_year_json"
   },
 
+  "tropomi-no2": {
+      key: "tropomi-no2",
+      source: "tropomi-no2",
+      duration: "daily",
+      hourly: false
+  },
+  
+  "tropomi-hcho": {
+      key: "tropomi-hcho",
+      source: "tropomi-hcho",
+      duration: "daily",
+      hourly: false
+  },
+  
   "tempo-no2": {
       key: "tempo-no2",
       source: "tempo-no2",
@@ -143,19 +157,19 @@ export const DATA_IMPORT_METHOD = {
       duration: "hourly",
       hourly: true
   },
-
-  "tropomi-no2": {
-      key: "tropomi-no2",
-      source: "tropomi-no2",
-      duration: "daily",
-      hourly: false
-  },
   
-  "tropomi-hcho": {
-      key: "tropomi-hcho",
-      source: "tropomi-hcho",
-      duration: "daily",
-      hourly: false
+  "hrrr-colmd": {
+      key: "hrrr-colmd",
+      source: "hrrr-colmd",
+      duration: "hourly",
+      hourly: true
+  },
+
+  "hrrr-massden": {
+      key: "hrrr-massden",
+      source: "hrrr-massden",
+      duration: "hourly",
+      hourly: true
   },
   
   "gam_v2": {
@@ -314,7 +328,10 @@ export const DATASET_SOURCE_MAP = {
     "tempo-hcho": "tempo-hcho",
     
     "tropomi-no2": "tropomi-no2",
-    "tropomi-hcho": "tropomi-hcho"
+    "tropomi-hcho": "tropomi-hcho",
+
+    "hrrr-colmd": "hrrr-colmd",
+    "hrrr-massden": "hrrr-massden"
 };
 
 export function makeStepExpr(valueField, breaks, colors, nullVal) {
@@ -475,7 +492,7 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "ExcDays-m0p5m", field: "exceedance_m0p5m", breaks: BREAKS_TRI, colors: PALETTE_TRI, title: "Exc. day (m0p5m) (> 9 µg m⁻³)", labelParams: LABEL_SMP, decimals: 0, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
     { duration: "daily", id: "ExcDays-m1p0m", field: "exceedance_m1p0m", breaks: BREAKS_TRI, colors: PALETTE_TRI, title: "Exc. day (m1p0m) (> 9 µg m⁻³)", labelParams: LABEL_SMP, decimals: 0, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
 
-    // --- Satellite data ---
+    // --- Satellite & Model data ---
     { duration: "daily", id: "burn", field: "burn", title: "Area burned (km²)", breaks: BREAKS_BURN, colors: PALETTE_BURN, decimals: 1, manualLayer: true },
     { duration: "daily", id: "smoke", field: "smokeLight", category: "light", title: "Smoke area (light) (km²)", breaks: BREAKS_SMOKE, colors: PALETTE_SMOKE, labelParams: LABEL_SMOKE, decimals: 0, manualLayer: true },
     { duration: "daily", id: "smoke", field: "smokeMedium", category: "medium", title: "Smoke area (medium) (km²)", breaks: BREAKS_SMOKE, colors: PALETTE_SMOKE, labelParams: LABEL_SMOKE, decimals: 0, manualLayer: true },
@@ -483,10 +500,14 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "fire", field: "fireCount", title: "Fire points (Shading)", breaks: BREAKS_FIRE, colors: PALETTE_JET, decimals: 0, manualLayer: true },
     { duration: "daily", id: "fire", field: "fireFrp", title: "FRP (MW) (Point)", breaks: BREAKS_FRP, colors: "#fd8d3c", decimals: 1, manualLayer: true },
 
-    { duration: "hourly", id: "tempo-no2", field: "tempo", title: "TEMPO NO2 VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true, hourly: true },
-    { duration: "hourly", id: "tempo-hcho", field: "tempo", title: "TEMPO HCHO VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true, hourly: true },
-    { duration: "daily", id: "tropomi-no2", field: "tropomi", title: "TROPOMI NO2 VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true },
-    { duration: "daily", id: "tropomi-hcho", field: "tropomi", title: "TROPOMI HCHO VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true }
+    { duration: "hourly", id: "tempo-no2", field: "tempo", title: "TEMPO-NO2VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true, hourly: true },
+    { duration: "hourly", id: "tempo-hcho", field: "tempo", title: "TEMPO-HCHOVCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true, hourly: true },
+    
+    { duration: "daily", id: "tropomi-no2", field: "tropomi", title: "TROPOMI-NO2VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true },
+    { duration: "daily", id: "tropomi-hcho", field: "tropomi", title: "TROPOMI-HCHOVCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true },
+    
+    { duration: "hourly", id: "hrrr-colmd", field: "hrrr", title: "HRRR-smokeVCD", breaks: BREAKS_HRRR_ugm2, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "µg m⁻²" },
+    { duration: "hourly", id: "hrrr-massden", field: "hrrr", title: "HRRR-smoke8m", breaks: BREAKS_HRRR_ugm3, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "µg m⁻³" }
 ];
 
 export const LAYER_DEFS = (() => {
@@ -525,7 +546,7 @@ export const LAYER_DEFS = (() => {
         });
     });
 
-    // Satellite data
+    // Satellite & Model data
     const smokeTmpl = LAYER_TEMPLATES.find(t => t.id === "smoke");
     if (smokeTmpl) {
         defs.smoke = {
@@ -708,6 +729,54 @@ export const LAYER_DEFS = (() => {
                 colors: tropomiHchoTmpl.colors,
                 continuous: true,
                 unit: "10¹⁴ molecules cm⁻²"
+            }
+        };
+    }
+    
+    const hrrrColmdTmpl = LAYER_TEMPLATES.find(t => t.id === "hrrr-colmd");
+    if (hrrrColmdTmpl) {
+        defs["hrrr-colmd"] = {
+            layers: [
+                {
+                    id: "hrrr-colmd-raster",
+                    type: "raster",
+                    source: "hrrr-colmd",
+                    paint: {
+                        "raster-opacity": 0.9,
+                        "raster-resampling": "nearest"
+                    }
+                }
+            ],
+            legend: {
+                title: hrrrColmdTmpl.title,
+                breaks: hrrrColmdTmpl.breaks,
+                colors: hrrrColmdTmpl.colors,
+                continuous: true,
+                unit: hrrrColmdTmpl.unit
+            }
+        };
+    }
+
+    const hrrrMassdenTmpl = LAYER_TEMPLATES.find(t => t.id === "hrrr-massden");
+    if (hrrrMassdenTmpl) {
+        defs["hrrr-massden"] = {
+            layers: [
+                {
+                    id: "hrrr-massden-raster",
+                    type: "raster",
+                    source: "hrrr-massden",
+                    paint: {
+                        "raster-opacity": 0.9,
+                        "raster-resampling": "nearest"
+                    }
+                }
+            ],
+            legend: {
+                title: hrrrMassdenTmpl.title,
+                breaks: hrrrMassdenTmpl.breaks,
+                colors: hrrrMassdenTmpl.colors,
+                continuous: true,
+                unit: hrrrMassdenTmpl.unit
             }
         };
     }
