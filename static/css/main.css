@@ -712,7 +712,7 @@ body.page-about .sidebar {
 
 .auth-card {
   background: var(--color-bg);
-  padding: 3rem 3rem 3rem 3rem;
+  padding: 3rem; /* Restore the pretty original padding */
   border-radius: calc(var(--border-radius-0p8rem) * 2);
   box-shadow: 0 2rem 6rem rgba(0, 0, 0, 0.5);
   max-width: 45rem;
@@ -720,6 +720,8 @@ body.page-about .sidebar {
   text-align: center;
   border: 0.1rem solid var(--card-shadow);
   animation: modalScaleAuthOverlay 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  position: relative;
 }
 
 @keyframes modalScaleAuthOverlay {
@@ -742,6 +744,10 @@ body.page-about .sidebar {
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.auth-card-body {
+  padding: 0;
 }
 
 .auth-card-body p {
@@ -1038,6 +1044,20 @@ body.page-about .sidebar {
   background: var(--color-bg);
   border-bottom: 0.1rem solid var(--card-shadow);
   z-index: 10;
+  margin-top: -0.1rem; /* Tiny overlap to prevent pixel gaps */
+}
+
+/* Magic Shield to cover the top padding area during scroll */
+.profile-card .auth-card-header::before,
+.settings-card .auth-card-header::before {
+  content: "";
+  position: absolute;
+  top: -3.5rem; /* Cover the 3rem padding plus a bit more */
+  left: -3rem;
+  right: -3rem;
+  height: 3.5rem;
+  background: var(--color-bg);
+  z-index: -1;
 }
 
 .auth-card-header {
@@ -1478,8 +1498,13 @@ body.page-about .sidebar {
   color: white;
 }
 
-.role-option.selected .role-label { color: white; }
-.role-option.selected .role-desc { color: rgba(255, 255, 255, 0.8); }
+.role-option.selected .role-label {
+  color: white;
+}
+
+.role-option.selected .role-desc {
+  color: rgba(255, 255, 255, 0.8);
+}
 
 .role-icon {
   width: 3.8rem;
@@ -1493,7 +1518,10 @@ body.page-about .sidebar {
   transition: all 0.3s;
 }
 
-.role-icon svg { width: 2rem; height: 2rem; }
+.role-icon svg {
+  width: 2rem;
+  height: 2rem;
+}
 
 .role-label {
   font-size: 1.4rem;

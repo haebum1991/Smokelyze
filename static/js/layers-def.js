@@ -38,7 +38,10 @@ export const ExcludeLayerGroups = {
 
   // [loader.js] > [loadSourceData] > Authentication required (Published data)
   // [loader.js] > [updateAllActiveSources] > Clear on logout
-  restrictedSources: ["gam_v2", "gam_v1", "pm_cbsa", "epa_ember", "gam_v2_pred", "pm_cbsa_pred"],
+  restrictedSources: [
+      "gam_v2", "gam_v1", "pm_cbsa", "epa_ember", "gam_v2_pred", "pm_cbsa_pred",
+      "smoke", "fire", "burn", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hrrr-colmd", "hrrr-massden"
+  ],
 
   // [loader.js] > [loadSourceData] > Calculate state-level statistics (Public data)
   publicStatsSources: ["airnow_daily", "gam_v2_pred", "pm_cbsa_pred"]

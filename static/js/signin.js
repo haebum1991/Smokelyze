@@ -1,6 +1,7 @@
 
 import * as fb from "./fb-init.js";
 import * as utils from "./utils.js";
+import { convertToCSV, downloadFile } from "./ui-download.js";
 
 const {
     auth, db, onAuthStateChanged, signInWithPopup, signOut, googleProvider,
@@ -104,6 +105,26 @@ onAuthStateChanged(auth, async (user) => {
     // Set flag for other modules to know auth is initialized
     window.fbAuthReady = true;
     window.dispatchEvent(new CustomEvent("authStateChanged", { detail: { user } }));
+    
+    // Admin UI Check
+    const adminSection = document.getElementById("AdminSettingsSection");
+    if (adminSection) {
+        if (user) {
+            try {
+                const snap = await getDoc(doc(db, "smokelyze_users", user.uid));
+                if (snap.exists() && snap.data().role === "admin") {
+                    adminSection.style.display = "block";
+                } else {
+                    adminSection.style.display = "none";
+                }
+            } catch (e) {
+                console.warn("Admin check failed:", e);
+                adminSection.style.display = "none";
+            }
+        } else {
+            adminSection.style.display = "none";
+        }
+    }
 });
 
 function getInitials(name) {
@@ -145,7 +166,9 @@ async function recordUserHistory(user) {
             email: user.email,
             photoURL: user.photoURL,
             nickname: currentNickname,
-            lastLogin: serverTimestamp()
+            lastLogin: serverTimestamp(),
+            // Auth의 메타데이터에서 실제 가입 시간을 가져와 DB에 보관 (없을 때만 저장)
+            ...(!userSnap.exists() ? { createdAt: user.metadata.creationTime } : {})
         }, { merge: true });
 
         // Login logging is now handled by Firebase Analytics (BigQuery export enabled, as of 2026-03-04)
@@ -657,4 +680,70 @@ function resetIdleTimer() {
 }
 ["mousemove", "keydown", "mousedown", "touchstart", "scroll"].forEach(e => window.addEventListener(e, resetIdleTimer, true));
 resetIdleTimer();
+
+// --- Admin Features ---
+const adminExportBtn = document.getElementById("AdminBtnExportUsers");
+if (adminExportBtn) {
+    adminExportBtn.addEventListener("click", async () => {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        adminExportBtn.disabled = true;
+        const originalText = adminExportBtn.innerText;
+        adminExportBtn.innerText = "Fetching Data...";
+
+        try {
+            // Check admin status again for security (though rules should also protect this)
+            const adminSnap = await getDoc(doc(db, "smokelyze_users", user.uid));
+            if (!adminSnap.exists() || adminSnap.data().role !== "admin") {
+                alert("Unauthorized access.");
+                return;
+            }
+
+            const usersSnap = await getDocs(collection(db, "smokelyze_users"));
+            const usersData = [];
+
+            usersSnap.forEach(d => {
+                const data = d.data();
+                
+                // Only include requested fields: displayName, email, userRole, affiliation, lastLogin
+                const row = {
+                    displayName: data.displayName || "NA",
+                    email: data.email || "NA",
+                    userRole: data.userRole || "NA",
+                    affiliation: data.affiliation || "NA",
+                    joinDate: data.createdAt || "NA", // 동기화된 가입 날짜 사용
+                    lastLogin: "NA"
+                };
+                
+                // 마지막 접속 시간 및 가입 시간 포맷팅
+                if (data.lastLogin && typeof data.lastLogin.toDate === "function") {
+                    row.lastLogin = data.lastLogin.toDate().toLocaleString();
+                }
+                // createdAt이 문자열(동기화 스크립트 결과)이거나 Timestamp인 경우 모두 대응
+                if (data.createdAt) {
+                    const d = (typeof data.createdAt.toDate === "function") ? data.createdAt.toDate() : new Date(data.createdAt);
+                    row.joinDate = d.toLocaleString();
+                }
+
+                usersData.push(row);
+            });
+
+            // columns 매개변수를 전달하여 순서 고정
+            const csv = convertToCSV(usersData, ["displayName", "email", "userRole", "affiliation", "joinDate", "lastLogin"]);
+            if (csv) {
+                const date = new Date().toISOString().split("T")[0];
+                downloadFile(`smokelyze_users_${date}.csv`, csv);
+            } else {
+                alert("No user data found to export.");
+            }
+        } catch (err) {
+            console.error("Export failed:", err);
+            alert("Export failed: " + err.message);
+        } finally {
+            adminExportBtn.disabled = false;
+            adminExportBtn.innerText = originalText;
+        }
+    });
+}
 
