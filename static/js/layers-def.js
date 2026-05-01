@@ -5,46 +5,103 @@
 export const ExcludeLayerGroups = {
   
   // ========= Common Groups =========
-  satelliteLayers: ["burn", "smoke", "fire", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hrrr-colmd", "hrrr-massden"],
+  satelliteLayers: [
+      "burn", "smoke", "fire", 
+      "tempo-no2", "tempo-hcho", 
+      "tropomi-no2", "tropomi-hcho", 
+      "hrrr-colmd", "hrrr-massden"
+  ],
 
   // [layers-handler.js] > [addSourceIfMissing]
-  pngLayers: ["tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hrrr-colmd", "hrrr-massden"],
-
+  pngLayers: [
+      "tempo-no2", "tempo-hcho", 
+      "tropomi-no2", "tropomi-hcho", 
+      "hrrr-colmd", "hrrr-massden"
+  ],
 
   // ========= Find by [key] =========
   // [layers-handler.js] > [applyLayerToggles] > [EXCLUDED]
-  liveUpdateLayers: ["wildfire-news", "wildfire-nifc", "MapPost"],
+  liveUpdateLayers: [
+      "wildfire-news", "wildfire-nifc", "MapPost"
+  ],
 
   // [layers-colors.js] > [updateStateShading] > [EXCLUDED]
-  stateShading: ["smoke", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit", "hrrr-colmd", "hrrr-massden"],
+  stateShading: [
+      "smoke", 
+      "wildfire-news", "wildfire-nifc", "MapPost", 
+      "tempo-no2", "tempo-hcho", 
+      "tropomi-no2", "tropomi-hcho",
+      "hysplit", 
+      "hrrr-colmd", "hrrr-massden"
+  ],
 
   // [layers-tooltip.js] > [stateHoverHTML] > [EXCLUDED]
-  stateHover: ["wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit", "hrrr-colmd", "hrrr-massden"],
+  stateHover: [
+      "wildfire-news", "wildfire-nifc", "MapPost", 
+      "tempo-no2", "tempo-hcho", 
+      "tropomi-no2", "tropomi-hcho", 
+      "hysplit", 
+      "hrrr-colmd", "hrrr-massden"
+  ],
 
   // [stats-common.js] > [getActiveModelLayers] > [EXCLUDED]
-  modelTable: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit", "hrrr-colmd", "hrrr-massden"],
+  modelTable: [
+      "burn", "smoke", "fire", 
+      "wildfire-news", "wildfire-nifc", "MapPost", 
+      "tempo-no2", "tempo-hcho", 
+      "tropomi-no2", "tropomi-hcho", 
+      "hysplit", 
+      "hrrr-colmd", "hrrr-massden"
+  ],
 
   // [stats-data-search.js] > [updateVisibility] > [EXCLUDED]
   // [loader.js] > [updateAllActiveSources] > [EXCLUDED]
-  searchSite: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2", "airnow-daily-pm25", "airnow-daily-mda8", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit", "hrrr-colmd", "hrrr-massden"],
+  searchSite: [
+      "burn", "smoke", "fire", 
+      "wildfire-news", "wildfire-nifc", "MapPost", 
+      "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2", 
+      "airnow-daily-pm25", "airnow-daily-mda8", 
+      "tempo-no2", "tempo-hcho", 
+      "tropomi-no2", "tropomi-hcho", 
+      "hysplit", 
+      "hrrr-colmd", "hrrr-massden"
+  ],
 
   // [stats-plot-dy-scatter.js] > [getActiveModelLayers] > [EXCLUDED]
-  plotScatter: ["burn", "smoke", "fire", "wildfire-news", "wildfire-nifc", "MapPost", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hysplit", "hrrr-colmd", "hrrr-massden"],
-
+  plotScatter: [
+      "burn", "smoke", "fire", 
+      "wildfire-news", "wildfire-nifc", "MapPost", 
+      "tempo-no2", "tempo-hcho", 
+      "tropomi-no2", "tropomi-hcho",
+      "hysplit", 
+      "hrrr-colmd", "hrrr-massden"
+  ],
 
   // ========= Find by [source] =========
   // [loader.js] > [loadSourceData] > [GZIP_DATASETS]
-  formatGzip: ["gam_v2", "gam_v1", "pm_cbsa", "epa_ember", "wildfire_news", "wildfire_nifc", "smoke", "fire", "airnow_daily", "gam_v2_pred", "pm_cbsa_pred"],
+  formatGzip: [
+      "gam_v2", "gam_v1", "pm_cbsa", "epa_ember", 
+      "wildfire_news", "wildfire_nifc", 
+      "smoke", "fire", 
+      "airnow_daily", 
+      "gam_v2_pred", "pm_cbsa_pred"
+  ],
 
   // [loader.js] > [loadSourceData] > Authentication required (Published data)
   // [loader.js] > [updateAllActiveSources] > Clear on logout
   restrictedSources: [
-      "gam_v2", "gam_v1", "pm_cbsa", "epa_ember", "gam_v2_pred", "pm_cbsa_pred",
-      "smoke", "fire", "burn", "tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho", "hrrr-colmd", "hrrr-massden"
+      "gam_v2", "gam_v1", "pm_cbsa", "epa_ember", 
+      "gam_v2_pred", "pm_cbsa_pred",
+      "smoke", "fire", "burn", 
+      "tempo-no2", "tempo-hcho", 
+      "tropomi-no2", "tropomi-hcho", 
+      "hrrr-colmd", "hrrr-massden"
   ],
 
   // [loader.js] > [loadSourceData] > Calculate state-level statistics (Public data)
-  publicStatsSources: ["airnow_daily", "gam_v2_pred", "pm_cbsa_pred"]
+  publicStatsSources: [
+      "airnow_daily", "gam_v2_pred", "pm_cbsa_pred"
+  ]
 };
 
 import { generatePopupHTML } from "./layers-tooltip.js";
@@ -509,7 +566,7 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "tropomi-no2", field: "tropomi", title: "TROPOMI-NO2VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true },
     { duration: "daily", id: "tropomi-hcho", field: "tropomi", title: "TROPOMI-HCHOVCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true },
     
-    { duration: "hourly", id: "hrrr-colmd", field: "hrrr", title: "HRRR-smokeVCD", breaks: BREAKS_HRRR_ugm2, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "µg m⁻²" },
+    { duration: "hourly", id: "hrrr-colmd", field: "hrrr", title: "HRRR-smokeVCD", breaks: BREAKS_HRRR_ugm2, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "10³ µg m⁻²" },
     { duration: "hourly", id: "hrrr-massden", field: "hrrr", title: "HRRR-smoke8m", breaks: BREAKS_HRRR_ugm3, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "µg m⁻³" }
 ];
 
@@ -752,7 +809,7 @@ export const LAYER_DEFS = (() => {
             ],
             legend: {
                 title: hrrrColmdTmpl.title,
-                breaks: hrrrColmdTmpl.breaks,
+                breaks: hrrrColmdTmpl.breaks.map(v => v / 1000),
                 colors: hrrrColmdTmpl.colors,
                 continuous: true,
                 unit: hrrrColmdTmpl.unit

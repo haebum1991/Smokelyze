@@ -328,7 +328,8 @@ function initRasterHover() {
                 const realValue = metadata.min_val + (gray / 255) * (metadata.max_val - metadata.min_val);
                 
                 const isHrrr = sourceId.includes("hrrr");
-                const displayValue = isHrrr ? realValue : realValue / 1e14; // unit: 10^14 molecules/cm2 for tempo
+                const isHrrrColmd = sourceId === "hrrr-colmd";
+                const displayValue = isHrrr ? (isHrrrColmd ? realValue / 1000 : realValue) : realValue / 1e14;
                 
                 const isTempo = activeRasterLayer.productId.includes("TEMPO");
                 
@@ -338,7 +339,7 @@ function initRasterHover() {
                 if (isHrrr) {
                     if (sourceId === "hrrr-colmd") {
                         layerTitle = "HRRR-smokeVCD (hourly)";
-                        unitHtml = `<span style="color: var(--text-main);">&micro;g m<sup>-2</sup></span>`;
+                        unitHtml = `<span style="color: var(--text-main);">&times; 10&sup3; &micro;g m<sup>-2</sup></span>`;
                     } else {
                         layerTitle = "HRRR-smoke8m (hourly)";
                         unitHtml = `<span style="color: var(--text-main);">&micro;g m<sup>-3</sup></span>`;
@@ -379,7 +380,7 @@ function initRasterHover() {
                         <strong style="color: var(--card-shadow);">${layerTitle}</strong>
                     </div>
                     <div>
-                        <div>Value: <b style="font-size: 1.6rem; color: var(--card-shadow);">${displayValue.toFixed(isHrrr ? 1 : 2)}</b> 
+                        <div>Value: <b style="font-size: 1.6rem; color: var(--card-shadow);">${displayValue.toFixed(isHrrrColmd ? 2 : (isHrrr ? 1 : 2))}</b> 
                         ${unitHtml}</div>
                         ${metaHtml}
                     </div>

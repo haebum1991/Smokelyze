@@ -102,10 +102,8 @@ export async function loadSourceData(sourceKey, isoDate) {
         }
 
         if (sourceKey === "burn" && data.features) {
-            data.features = data.features.filter(
-                f => !ds.excludeIDs.includes(f?.properties?.ID)
-            );
-
+            
+            // Compute stats from ALL features first (including US/US_conus/Canada aggregates)
             const burnStatsByRegion = {};
             data.features.forEach(f => {
                 const p = f.properties;
@@ -117,6 +115,11 @@ export async function loadSourceData(sourceKey, isoDate) {
 
             modelStatsCache.burn = burnStatsByRegion;
             mergeModelStats(burnStatsByRegion);
+
+            // THEN filter out aggregate polygons for map rendering
+            data.features = data.features.filter(
+                f => !ds.excludeIDs.includes(f?.properties?.ID)
+            );
         }
 
         if (sourceKey === "wildfire_nifc" && data.features) {
@@ -363,8 +366,10 @@ export async function loadSourceData(sourceKey, isoDate) {
                 }
             });
 
-            modelStatsCache[sourceKey] = computedStatsByState;
-            mergeModelStats(computedStatsByState);
+            if (resolvedMetrics.length > 0) {
+                modelStatsCache[sourceKey] = computedStatsByState;
+                mergeModelStats(computedStatsByState);
+            }
         }
 
     } catch (e) {
