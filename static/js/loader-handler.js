@@ -726,7 +726,14 @@ function bindEventsLoaderHandler() {
                 promises.push(hrrrLoadData(isoDate));
             }
 
-            await Promise.all(promises);
+            if (promises.length > 0) {
+                toggleSpinner(true);
+                try {
+                    await Promise.all(promises);
+                } finally {
+                    toggleSpinner(false);
+                }
+            }
 
             // Keep Statistical Tools date and charts completely in sync with the new time
             triggerRefresh();
