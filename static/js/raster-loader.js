@@ -16,6 +16,7 @@ import * as utils from "./utils.js";
 import { showErrorToast } from "./loader-ui.js";
 import { logUserAction } from "./fb-logging.js";
 import { state } from "./ui-state.js";
+import { auth } from "./fb-init.js";
 
 const TEMPO_CONFIG = {
     "no2": {
@@ -92,6 +93,10 @@ function colorizeRasterImage(imgUrl, metadata, source, sourceId) {
         img.crossOrigin = "Anonymous";
         img.onload = () => {
             try {
+            
+                // Revoke blob URL to free memory (no-op if not a blob URL)
+                if (imgUrl.startsWith("blob:")) URL.revokeObjectURL(imgUrl);
+                
                 const canvas = source.getCanvas();
                 if (canvas.width !== img.width || canvas.height !== img.height) {
                     canvas.width = img.width;
@@ -209,10 +214,35 @@ function colorizeRasterImage(imgUrl, metadata, source, sourceId) {
                 reject(err);
             }
         };
-        img.onerror = () => reject(new Error("Image load failed"));
+        img.onerror = () => {
+            if (imgUrl.startsWith("blob:")) URL.revokeObjectURL(imgUrl);
+            reject(new Error("Image load failed"));
+        };
         img.src = imgUrl;
     });
 }
+
+
+/**
+ * Fetches a PNG image with Firebase auth headers and returns a Blob URL.
+ * This allows raster images to be served behind authentication.
+ */
+async function fetchAuthenticatedImage(url) {
+    const fetchOptions = {};
+    if (auth?.currentUser) {
+        try {
+            const idToken = await auth.currentUser.getIdToken();
+            fetchOptions.headers = { "Authorization": `Bearer ${idToken}` };
+        } catch (e) {
+            console.warn("Could not get ID token for image:", e);
+        }
+    }
+    const res = await fetch(url, fetchOptions);
+    if (!res.ok) throw new Error(`Image fetch failed: ${res.status}`);
+    const blob = await res.blob();
+    return URL.createObjectURL(blob);
+}
+
 
 function clearRasterSource(source, sourceId) {
     if (!source) return;
@@ -464,7 +494,9 @@ export async function tempoLoadData(isoDate) {
                 
                 rasterDataStore[cfg.sourceId].coordinates = coordinates;
                 rasterDataStore[cfg.sourceId].cleared = false;
-                await colorizeRasterImage(pngUrl, metadata, source, cfg.sourceId);
+                
+                const blobUrl = await fetchAuthenticatedImage(pngUrl);
+                await colorizeRasterImage(blobUrl, metadata, source, cfg.sourceId);
                 source.setCoordinates(coordinates);
                 
                 logUserAction("view", {
@@ -530,7 +562,9 @@ export async function tropomiLoadData(isoDate) {
                 
                 rasterDataStore[cfg.sourceId].coordinates = coordinates;
                 rasterDataStore[cfg.sourceId].cleared = false;
-                await colorizeRasterImage(pngUrl, metadata, source, cfg.sourceId);
+                
+                const blobUrl = await fetchAuthenticatedImage(pngUrl);
+                await colorizeRasterImage(blobUrl, metadata, source, cfg.sourceId);
                 source.setCoordinates(coordinates);
                 
                 logUserAction("view", {
@@ -602,7 +636,9 @@ export async function hrrrLoadData(isoDate) {
 
                 rasterDataStore[cfg.sourceId].coordinates = coordinates;
                 rasterDataStore[cfg.sourceId].cleared = false;
-                await colorizeRasterImage(pngUrl, metadata, source, cfg.sourceId);
+                
+                const blobUrl = await fetchAuthenticatedImage(pngUrl);
+                await colorizeRasterImage(blobUrl, metadata, source, cfg.sourceId);
                 source.setCoordinates(coordinates);
 
                 logUserAction("view", {

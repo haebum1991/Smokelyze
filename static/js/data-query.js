@@ -705,6 +705,9 @@ function refreshLocationMarker() {
  * Reset date range to original min/max
  */
 function resetDateRange() {
+    
+    if (!auth.currentUser) { showAuthOverlay(); return; }
+    
     if (!defaultDateStart || !defaultDateEnd) {
         alert("No default date range available. Please import data first.");
         return;
@@ -729,6 +732,9 @@ function resetDateRange() {
  * Reset PLOT date range to original min/max
  */
 function resetPlotDateRange() {
+
+    if (!auth.currentUser) { showAuthOverlay(); return; }
+    
     if (!defaultDateStart || !defaultDateEnd) return;
 
     const dateStartInput = document.getElementById("DatadbPlotDateStart");
@@ -749,6 +755,9 @@ function resetPlotDateRange() {
  * Apply current date range filter
  */
 function applyDateRange() {
+    
+    if (!auth.currentUser) { showAuthOverlay(); return; }
+    
     if (currentFeatures.length === 0) {
         alert("No data loaded. Please import data first.");
         return;
@@ -771,6 +780,9 @@ function applyDateRange() {
  * Apply current PLOT date range filter
  */
 function applyPlotDateRange() {
+    
+    if (!auth.currentUser) { showAuthOverlay(); return; }
+    
     if (currentFeatures.length === 0) return;
 
     const dateStart = document.getElementById("DatadbPlotDateStart")?.value;
@@ -906,8 +918,10 @@ function initQueryBuilder() {
     
     onAuthStateChanged(auth, (user) => {
         updateAuthButton("DatadbDataTableBtnImport", user, "Import data");
-        updateAuthButton("DatadbDataTableBtnDateDefault", user, "Default date");
+        updateAuthButton("DatadbDataTableBtnDateDefault", user, "Default range");
         updateAuthButton("DatadbDataTableBtnDateSetRange", user, "Set range");
+        updateAuthButton("DatadbPlotBtnDateDefault", user, "Default range");
+        updateAuthButton("DatadbPlotBtnDateSetRange", user, "Set range");
     });
 }
 

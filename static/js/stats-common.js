@@ -755,7 +755,9 @@ export function getPlotTheme() {
                     [Note] <br>
                     In the case of values measured through monitoring,
                     the values in the table are determined entirely 
-                    by the number of AQS sites within each state for the corresponding data.
+                    by the number of AQS sites within each state for the corresponding data.<br>
+                    <br>
+                    This feature is not supported for [NIFC], [TEMPO], [TROPOMI], and [HRRR] raster layers.
                 `.trim(),
             barline: `
                     If you see this message, it could be due to the following reasons: <br>
@@ -770,7 +772,9 @@ export function getPlotTheme() {
                     Nothing will be displayed if there is no data available.
                     Note that the AQS-level does not support the [Satellite] data.<br>
                     <br>
-                    To return to the state-level plot from AQS-level plot, press the active "Back" button in the lower left corner.
+                    To return to the state-level plot from AQS-level plot, press the active "Back" button in the lower left corner.<br>
+                    <br>
+                    This feature is not supported for [NIFC], [TEMPO], [TROPOMI], and [HRRR] raster layers.
                 `.trim(),
             parcoords: `
                     If you see this message, it could be due to the following reasons: <br>
@@ -785,7 +789,9 @@ export function getPlotTheme() {
                     Nothing will be displayed if there is no data available.
                     Note that the AQS-level does not support the [Satellite] data.<br>
                     <br>
-                    To return to the state-level plot from AQS-level plot, press the active "Back" button in the lower left corner.
+                    To return to the state-level plot from AQS-level plot, press the active "Back" button in the lower left corner.<br>
+                    <br>
+                    This feature is not supported for [NIFC], [TEMPO], [TROPOMI], and [HRRR] raster layers.
                 `.trim(),
             scatter: `
                     If you see this message, it could be due to the following reasons: <br>
@@ -795,7 +801,7 @@ export function getPlotTheme() {
                     
                     <br> 
                     [Note] <br>
-                    This plot tab does not work for [NIFC] and [Satellite].
+                    This feature is not supported for [NIFC] and [Satellite & Model] raster layers.
                 `.trim(),
             heatmap: `
                     If you see this message, it could be due to the following reasons: <br>

@@ -31,21 +31,9 @@ const DEBUG = (process.env.DEBUG_LOG || "1") === "1";
 
 // Publicly accessible prefixes (No login required, but Origin check still applies)
 const PUBLIC_PREFIXES = [
-  "realtime", 
-  "noaa_hms_smoke_date_geojson",
-  "noaa_hms_smoke_date_json",
-  "noaa_hms_smoke_year_json",
-  "noaa_hms_fire_date_geojson",
-  "noaa_hms_fire_date_json",
-  "noaa_hms_fire_year_json",
-  "modis_burn_area_date_geojson",
-  "modis_burn_area_year_json",
+  "realtime",
   "airnow_date_geojson",
-  "airnow_hourly_geojson",
-  "smokeday",
-  "tempo_date_png",
-  "tropomi_date_png",
-  "hrrr_date_png"
+  "airnow_hourly_geojson"
 ];
 
 function dlog(...args) { if (DEBUG) console.log.apply(console, args); }
