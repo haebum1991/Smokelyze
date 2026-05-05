@@ -84,6 +84,16 @@ function hexToRgb(hex) {
     ] : [0, 0, 0];
 }
 
+// [GPU Memory Fix] Track pending Blob URLs per source to revoke on rapid switches
+const pendingBlobUrls = {};
+
+// [Architecture Fix] Global offscreen canvas for processing images.
+// This prevents having 6 separate attached DOM canvases and stops WebGL binding crashes.
+const processingCanvas = document.createElement("canvas");
+const processingCtx = processingCanvas.getContext("2d", { willReadFrequently: true });
+const TRANSPARENT_1X1 = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
+
 /**
  * Colorizes a grayscale PNG based on metadata and a global value scale.
  */
@@ -97,17 +107,17 @@ function colorizeRasterImage(imgUrl, metadata, source, sourceId) {
                 // Revoke blob URL to free memory (no-op if not a blob URL)
                 if (imgUrl.startsWith("blob:")) URL.revokeObjectURL(imgUrl);
                 
-                const canvas = source.getCanvas();
-                if (canvas.width !== img.width || canvas.height !== img.height) {
-                    canvas.width = img.width;
-                    canvas.height = img.height;
+                if (pendingBlobUrls[sourceId] === imgUrl) pendingBlobUrls[sourceId] = null;
+                
+                if (processingCanvas.width !== img.width || processingCanvas.height !== img.height) {
+                    processingCanvas.width = img.width;
+                    processingCanvas.height = img.height;
                 }
                 
-                const ctx = canvas.getContext("2d");
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0);
+                processingCtx.clearRect(0, 0, processingCanvas.width, processingCanvas.height);
+                processingCtx.drawImage(img, 0, 0);
 
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const imageData = processingCtx.getImageData(0, 0, processingCanvas.width, processingCanvas.height);
                 const rawData = imageData.data;
                 const imgW = imageData.width;
                 const imgH = imageData.height;
@@ -203,11 +213,16 @@ function colorizeRasterImage(imgUrl, metadata, source, sourceId) {
                     }
                 }
 
-                ctx.putImageData(imageData, 0, 0);
+                processingCtx.putImageData(imageData, 0, 0);
 
-                // Trigger redraw for canvas source
-                if (source.play) source.play();
-                if (source.pause) source.pause();
+                // [Architecture Fix] Update MapLibre ImageSource instead of CanvasSource
+                const dataUrl = processingCanvas.toDataURL("image/png");
+                source.updateImage({
+                    url: dataUrl,
+                    coordinates: [
+                        [xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin]
+                    ]
+                });
 
                 resolve();
             } catch (err) {
@@ -227,7 +242,12 @@ function colorizeRasterImage(imgUrl, metadata, source, sourceId) {
  * Fetches a PNG image with Firebase auth headers and returns a Blob URL.
  * This allows raster images to be served behind authentication.
  */
-async function fetchAuthenticatedImage(url) {
+async function fetchAuthenticatedImage(url, sourceId) {
+    if (pendingBlobUrls[sourceId]) {
+        URL.revokeObjectURL(pendingBlobUrls[sourceId]);
+        pendingBlobUrls[sourceId] = null;
+    }
+
     const fetchOptions = {};
     if (auth?.currentUser) {
         try {
@@ -240,7 +260,9 @@ async function fetchAuthenticatedImage(url) {
     const res = await fetch(url, fetchOptions);
     if (!res.ok) throw new Error(`Image fetch failed: ${res.status}`);
     const blob = await res.blob();
-    return URL.createObjectURL(blob);
+    const blobUrl = URL.createObjectURL(blob);
+    if (sourceId) pendingBlobUrls[sourceId] = blobUrl;
+    return blobUrl;
 }
 
 
@@ -253,17 +275,27 @@ function clearRasterSource(source, sourceId) {
     }
 
     try {
-        const canvas = source.getCanvas();
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        source.setCoordinates([[-1, 1], [-0.9, 1], [-0.9, 0.9], [-1, 0.9]]);
-        if (source.play) source.play();
-        if (source.pause) source.pause();
+        // [Architecture Fix] Clear ImageSource using transparent 1x1 pixel
+        if (source.updateImage) {
+            source.updateImage({
+                url: TRANSPARENT_1X1,
+                coordinates: [[-1, 1], [-0.9, 1], [-0.9, 0.9], [-1, 0.9]]
+            });
+        }
         
         if (!rasterDataStore[sourceId]) {
             rasterDataStore[sourceId] = {};
         }
         rasterDataStore[sourceId].cleared = true;
+        
+        // Free memory explicitly
+        rasterDataStore[sourceId].grayscale = null;
+        rasterDataStore[sourceId].metadata = null;
+        
+        if (pendingBlobUrls[sourceId]) {
+            URL.revokeObjectURL(pendingBlobUrls[sourceId]);
+            pendingBlobUrls[sourceId] = null;
+        }
         
     } catch (e) {
         console.warn("TEMPO clear failed:", e);
@@ -495,9 +527,9 @@ export async function tempoLoadData(isoDate) {
                 rasterDataStore[cfg.sourceId].coordinates = coordinates;
                 rasterDataStore[cfg.sourceId].cleared = false;
                 
-                const blobUrl = await fetchAuthenticatedImage(pngUrl);
+                const blobUrl = await fetchAuthenticatedImage(pngUrl, cfg.sourceId);
                 await colorizeRasterImage(blobUrl, metadata, source, cfg.sourceId);
-                source.setCoordinates(coordinates);
+                // Coordinates updated via ImageSource updateImage
                 
                 logUserAction("view", {
                     dataset: cfg.sourceId,
@@ -563,9 +595,9 @@ export async function tropomiLoadData(isoDate) {
                 rasterDataStore[cfg.sourceId].coordinates = coordinates;
                 rasterDataStore[cfg.sourceId].cleared = false;
                 
-                const blobUrl = await fetchAuthenticatedImage(pngUrl);
+                const blobUrl = await fetchAuthenticatedImage(pngUrl, cfg.sourceId);
                 await colorizeRasterImage(blobUrl, metadata, source, cfg.sourceId);
-                source.setCoordinates(coordinates);
+                // Coordinates updated via ImageSource updateImage
                 
                 logUserAction("view", {
                     dataset: cfg.sourceId,
@@ -637,9 +669,8 @@ export async function hrrrLoadData(isoDate) {
                 rasterDataStore[cfg.sourceId].coordinates = coordinates;
                 rasterDataStore[cfg.sourceId].cleared = false;
                 
-                const blobUrl = await fetchAuthenticatedImage(pngUrl);
+                const blobUrl = await fetchAuthenticatedImage(pngUrl, cfg.sourceId);
                 await colorizeRasterImage(blobUrl, metadata, source, cfg.sourceId);
-                source.setCoordinates(coordinates);
 
                 logUserAction("view", {
                     dataset: cfg.sourceId,

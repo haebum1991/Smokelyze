@@ -24,19 +24,15 @@ import { setLegendDrawer } from "./ui-toggles.js";
 function addSourceIfMissing(sourceId) {
     if (!map.getSource(sourceId)) {
         if (ExcludeLayerGroups.pngLayers.includes(sourceId)) {
-            const tempoCanvas = document.createElement("canvas");
-            tempoCanvas.id = `${sourceId}-canvas`;
-            tempoCanvas.width = 1000;
-            tempoCanvas.height = 1000;
-            
-            map.addSource(sourceId, { 
-                type: "canvas", 
-                canvas: tempoCanvas, 
-                // Use a valid but out-of-view tiny area initially to avoid Infinity errors
+            // [Architecture Fix] Use [image] source instead of [canvas] source.
+            // MapLibre CanvasSource is highly unstable with dynamic resizing and 
+            // WebGL context restorations. ImageSource is much more stable and memory-efficient.
+            map.addSource(sourceId, {
+                type: "image",
+                url: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", // 1x1 transparent
                 coordinates: [
                     [-1, 1], [-0.9, 1], [-0.9, 0.9], [-1, 0.9]
-                ],
-                animate: false
+                ]
             });
         } else {
             map.addSource(sourceId, { type: "geojson", data: EMPTY_FC, generateId: true });
