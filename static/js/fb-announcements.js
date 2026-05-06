@@ -106,7 +106,7 @@ function uiShowModal(mode = "new", editData = null) {
         submitBtn.innerText = "Send Email";
         if (titleText) titleText.innerText = "Bulk Email Announcement";
         if (formTitleLabel) formTitleLabel.innerHTML = 'Email Subject <small id="BoardTitleCounter" style="float: right;">0/100</small>';
-        if (formContentLabel) formContentLabel.innerHTML = 'Email Message <small id="BoardContentCounter" style="float: right;">0/2000</small>';
+        if (formContentLabel) formContentLabel.innerHTML = 'Email Message <small id="BoardContentCounter" style="float: right;">0/3000</small>';
     } else if (editData) {
         state.editingDocId = editData.id;
         document.getElementById("BoardFormTitle").value = editData.title;
@@ -114,7 +114,7 @@ function uiShowModal(mode = "new", editData = null) {
         submitBtn.innerText = "Update";
         if (titleText) titleText.innerText = "Edit Announcement";
         if (formTitleLabel) formTitleLabel.innerHTML = 'Title <small id="BoardTitleCounter" style="float: right;">0/100</small>';
-        if (formContentLabel) formContentLabel.innerHTML = 'Content <small id="BoardContentCounter" style="float: right;">0/2000</small>';
+        if (formContentLabel) formContentLabel.innerHTML = 'Content <small id="BoardContentCounter" style="float: right;">0/3000</small>';
     } else {
         state.editingDocId = null;
         document.getElementById("BoardFormTitle").value = "";
@@ -122,11 +122,11 @@ function uiShowModal(mode = "new", editData = null) {
         submitBtn.innerText = "Submit";
         if (titleText) titleText.innerText = "New Announcement";
         if (formTitleLabel) formTitleLabel.innerHTML = 'Title <small id="BoardTitleCounter" style="float: right;">0/100</small>';
-        if (formContentLabel) formContentLabel.innerHTML = 'Content <small id="BoardContentCounter" style="float: right;">0/2000</small>';
+        if (formContentLabel) formContentLabel.innerHTML = 'Content <small id="BoardContentCounter" style="float: right;">0/3000</small>';
     }
     document.getElementById("BoardFormTitle").focus();
     updateCounter("BoardFormTitle", "BoardTitleCounter", 100);
-    updateCounter("BoardFormContent", "BoardContentCounter", 2000);
+    updateCounter("BoardFormContent", "BoardContentCounter", 3000);
 }
 
 function uiHideModal() {
@@ -270,16 +270,16 @@ function wrapEmailTemplate(subject, bodyText) {
         <meta charset="utf-8">
         <style>
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #444444; margin: 0; padding: 0; background-color: #f8f9fa; }
-            .container { max-width: 60rem; margin: 3rem auto; background: #ffffff; border-radius: var(--border-radius-0p8rem); overflow: hidden; box-shadow: 0 1rem 3rem rgba(0,0,0,0.1); border: 0.1rem solid #eef2f5; }
-            .header { background-color: #2c3e50; padding: 4rem 3rem; text-align: center; color: #ffffff; }
-            .header h1 { font-size: 2.4rem; margin: 0; font-weight: 300; letter-spacing: 0.8rem; color: #ffffff; text-transform: uppercase; }
-            .header p { font-size: 1.4rem; margin: 0.8rem 0 0; color: #bdc3c7; letter-spacing: 0.2rem; }
-            .content { padding: 5rem 4rem; }
-            .content h2 { font-size: 2.2rem; color: #2c3e50; margin-top: 0; border-bottom: 0.2rem solid #f1f3f5; padding-bottom: 2rem; font-weight: 600; }
-            .formatted-body { font-size: 1.6rem; color: #555555; line-height: 1.8; margin-top: 2.5rem; }
-            .footer { background-color: #f8f9fa; padding: 2.5rem; text-align: center; font-size: 1.1rem; color: #95a5a6; border-top: 0.1rem solid #f1f3f5; }
-            .footer p { margin: 0.6rem 0; }
-            .btn { display: inline-block; padding: 1.4rem 3.2rem; background-color: #3498db; color: #ffffff !important; text-decoration: none; border-radius: var(--border-radius-0p8rem); margin-top: 3rem; font-weight: 600; font-size: 1.5rem; box-shadow: 0 0.4rem 1rem rgba(52, 152, 219, 0.3); }
+            .container { max-width: 600px; margin: 30px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eef2f5; }
+            .header { background-color: #2c3e50; padding: 40px 30px; text-align: center; color: #ffffff; }
+            .header h1 { font-size: 24px; margin: 0; font-weight: 300; letter-spacing: 8px; color: #ffffff; text-transform: uppercase; }
+            .header p { font-size: 14px; margin: 8px 0 0; color: #bdc3c7; letter-spacing: 2px; }
+            .content { padding: 50px 40px; }
+            .content h2 { font-size: 22px; color: #2c3e50; margin-top: 0; border-bottom: 2px solid #f1f3f5; padding-bottom: 20px; font-weight: 600; }
+            .formatted-body { font-size: 15px; color: #555555; line-height: 1.8; margin-top: 25px; }
+            .footer { background-color: #f8f9fa; padding: 25px; text-align: center; font-size: 12px; color: #95a5a6; border-top: 1px solid #f1f3f5; }
+            .footer p { margin: 6px 0; }
+            .btn { display: inline-block; padding: 14px 32px; background-color: #3498db; color: #ffffff !important; text-decoration: none; border-radius: 8px; margin-top: 30px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3); }
         </style>
     </head>
     <body>
@@ -436,7 +436,7 @@ function bindEventsAnnouncements() {
     if (titleIn) titleIn.addEventListener("input", () => updateCounter("BoardFormTitle", "BoardTitleCounter", 100));
 
     const contentIn = document.getElementById("BoardFormContent");
-    if (contentIn) contentIn.addEventListener("input", () => updateCounter("BoardFormContent", "BoardContentCounter", 2000));
+    if (contentIn) contentIn.addEventListener("input", () => updateCounter("BoardFormContent", "BoardContentCounter", 3000));
 
     const prevBtn = document.getElementById("BoardBtnPrev");
     if (prevBtn) prevBtn.addEventListener("click", () => loadPage(-1));

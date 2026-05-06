@@ -42,12 +42,14 @@ title: ""
         <div id="BoardModalEditBody" style="display:flex; flex:1; flex-direction:column;">
             <div class="MapPost-modal-body">
                 <div class="MapPost-form-group">
-                    <label for="BoardFormTitle">Title <small id="BoardTitleCounter" style="float: right;">0/100</small></label>
-                    <input type="text" id="BoardFormTitle" placeholder="Enter title...">
+                    <label for="BoardFormTitle">Title <small id="BoardTitleCounter"
+                            style="float: right;">0/100</small></label>
+                    <input type="text" id="BoardFormTitle" placeholder="Enter title..." maxlength="100">
                 </div>
                 <div class="MapPost-form-group">
-                    <label for="BoardFormContent">Content<small id="BoardContentCounter" style="float: right;">0/2000</small></label>
-                    <textarea id="BoardFormContent" placeholder="Enter details..."></textarea>
+                    <label for="BoardFormContent">Content<small id="BoardContentCounter"
+                            style="float: right;">0/3000</small></label>
+                    <textarea id="BoardFormContent" placeholder="Enter details..." maxlength="3000"></textarea>
                 </div>
             </div>
             <div class="MapPost-modal-footer">
