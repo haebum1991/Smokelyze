@@ -254,7 +254,7 @@ function renderDailyTimeSeriesPlot(theme, dsId, aqs, tableData) {
                 Number(d.smoke) === 1 ? "Y" : "N"
             ]),
             hovertemplate:
-                "Ob MDA8: %{y:.1f}<br>" +
+                "Obs MDA8: %{y:.1f}<br>" +
                 "Pred MDA8: %{customdata[0]}<br>" +
                 (dsId === "gam-v2" ? "Pred MDA8 (EDM): %{customdata[1]}<br>" : "") +
                 "SMO: %{customdata[2]}<br>" +

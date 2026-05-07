@@ -140,9 +140,6 @@ export function getAllInteractiveLayerIds() {
 export function ensureLayers() {
     if (!map) return;
 
-    // External data sources
-    ["airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2"].forEach(src => addSourceIfMissing(src));
-
     const backgroundLayers = ExcludeLayerGroups.satelliteLayers;
     const keys = Object.keys(DATA_IMPORT_METHOD).sort((a, b) => {
         const aIsBg = backgroundLayers.includes(a);

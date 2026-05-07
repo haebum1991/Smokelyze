@@ -89,7 +89,7 @@ export function urlByDateGZfile(ds, isoDate) {
   const dd = pad2(d.getUTCDate());
 
   const cb = getCacheBuster(isoDate);
-  if (["smoke", "fire", "airnow_daily"].includes(ds.source)) {
+  if (["smoke", "fire", "airnow_daily", "airnow_hourly"].includes(ds.source)) {
     // /gzfileBaseUrlDate/YYYY/PREFIX_YYYY-MM-DD.geojson
     return `${ds.gzfileBaseUrlDate}/${yyyy}/${ds.prefix}${yyyy}-${mm}-${dd}.geojson.gz${cb}`;
   } else if (["wildfire_news", "wildfire_nifc"].includes(ds.source)) {

@@ -35,7 +35,7 @@ function normalizeAqsId(id) {
  */
 function getAqsKey(source, field) {
     if (source === "airnow_daily") return "AQS";
-    if (source?.startsWith("airnow-hourly")) return "AQS";
+    if (source === "airnow_hourly") return "AQS";
     if (source === "pm_cbsa") return "AQS_PM";
     return (field && (field.includes("PM2.5") || field.includes("PM"))) ? "AQS_PM" : "AQS_O3";
 }

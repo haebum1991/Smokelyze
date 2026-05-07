@@ -202,7 +202,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
         ${p.q_kg !== undefined ? `<div style="${rowStyle}"><b>Mass:</b> ${ESML(smartFmt(p.q_kg, "q_kg", dataSource, 3))} kg</div>` : ""}`;
     }
     
-    if (dataSource.startsWith("airnow-hourly-")) {
+    if (dataSource === "airnow_hourly" || dataSource.startsWith("airnow-hourly-")) {
         return `
               ${closeBtn}
               <div style="${rowStyleHead}"><b>AirNow (Hourly)</b></div>

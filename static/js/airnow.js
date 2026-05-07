@@ -7,16 +7,6 @@
 import { LAYER_TEMPLATES } from "./layers-def.js";
 import { regionStats } from "./layers-state.js";
 import { usStates, caStates } from "./stats-common.js";
-import { getCacheBuster } from "./utils.js";
-
-/**
- * Build local path for AirNow daily GeoJSON bundle
- */
-export function airnowBuildURL(coverage, isoDate) {
-    const year = isoDate.split("-")[0];
-    const cacheBuster = getCacheBuster(isoDate);
-    return `/airnow_hourly_geojson/${year}/airnow_${isoDate}.geojson.gz${cacheBuster}`;
-}
 
 /**
  * Fetch and decompress AirNow daily bundle
@@ -63,8 +53,8 @@ export function airnowActivateHour(geojson, hour) {
         p["no2(ppb)"] = p[no2Field];
         p["current_hour_str"] = `${p["date"] || ""} ${hourStr}:00 UTC`;
 
-        // Use [pm25] as the representative key for the hourly bundle to ensure map sync and tooltips work properly
-        p.dsKeyForFigure = "airnow-hourly-pm25";
+        // Use [airnow_hourly] as the representative key for the hourly bundle to ensure map sync and tooltips work properly
+        p.dsKeyForFigure = "airnow_hourly";
 
         ["pm25(ug/m3)", "ozone(ppb)", "no2(ppb)"].forEach(field => {
             if (p[field] !== undefined && p[field] !== null && p[field] !== "") {
@@ -91,15 +81,8 @@ export function airnowClearStats() {
 /**
  * Update global regionStats for state-level averages
  */
-export function airnowUpdateStatsMap(geojson, coverage) {
+export function airnowUpdateStatsMap(geojson, layerId) {
     if (!geojson || !geojson.features || geojson.features.length === 0) return;
-
-    const coverageMap = {
-        "airnow.pm25": "airnow-hourly-pm25",
-        "airnow.ozone": "airnow-hourly-ozone",
-        "airnow.no2": "airnow-hourly-no2"
-    };
-    const layerId = coverageMap[coverage];
 
     const tmpl = LAYER_TEMPLATES.find(t => t.id === layerId);
     if (!tmpl) return;
@@ -148,14 +131,12 @@ export function airnowHasActiveLayers() {
     return ["layer-airnow-hourly-pm25", "layer-airnow-hourly-ozone", "layer-airnow-hourly-no2"]
         .some(id => document.getElementById(id)?.checked);
 }
-export function airnowGetActiveCoverages() {
-    const AIRNOW_LAYERS = {
-        "layer-airnow-hourly-pm25": "airnow.pm25",
-        "layer-airnow-hourly-ozone": "airnow.ozone",
-        "layer-airnow-hourly-no2": "airnow.no2"
-    };
-    return Object.entries(AIRNOW_LAYERS)
-        .filter(([id]) => document.getElementById(id)?.checked)
-        .map(([_, coverage]) => coverage);
+export function airnowGetActiveLayerIds() {
+    const AIRNOW_LAYERS = [
+        "airnow-hourly-pm25",
+        "airnow-hourly-ozone",
+        "airnow-hourly-no2"
+    ];
+    return AIRNOW_LAYERS.filter(id => document.getElementById(`layer-${id}`)?.checked);
 }
 

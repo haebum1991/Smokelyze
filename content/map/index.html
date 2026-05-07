@@ -1567,8 +1567,11 @@ title: ""
       </button>
     </div>
     
-    <div style="padding: 1rem 2rem; background: var(--sidebar-widget-bg); border-bottom: 0.1rem solid var(--border-main); display: flex; justify-content: space-between; align-items: center;">
+    <div style="padding: 1rem 2rem; background: var(--sidebar-widget-bg); border-bottom: 0.1rem solid var(--border-main); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
       <span style="font-size: 1.4rem; color: var(--card-shadow);" id="AnalyticsLastUpdated">Loading data...</span>
+      <div id="AnalyticsSummaryStats" style="display: flex; gap: 2rem;">
+        <!-- Summary stats injected via JS -->
+      </div>
     </div>
 
     <div class="MapPost-modal-body analytics-grid">
@@ -1583,11 +1586,14 @@ title: ""
         style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
       </div>
 
-      <!-- Row 2: 2 Bar Charts -->
-      <div id="AnalyticsChartLayer" class="chart-span-bar"
+      <!-- Row 2: 3 Bar Charts -->
+      <div id="AnalyticsChartLayer" class="chart-span-pie"
         style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
       </div>
-      <div id="AnalyticsChartState" class="chart-span-bar"
+      <div id="AnalyticsChartState" class="chart-span-pie"
+        style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
+      </div>
+      <div id="AnalyticsChartAqs" class="chart-span-pie"
         style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
       </div>
 

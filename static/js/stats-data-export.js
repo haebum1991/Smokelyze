@@ -1,9 +1,10 @@
 
 import { loadedGeoJSON, loadSourceData, toggleSpinner } from "./loader.js";
-import { DATASET_SOURCE_MAP } from "./layers-def.js";
+import { DATASET_SOURCE_MAP, DATA_IMPORT_METHOD } from "./layers-def.js";
 import { logUserAction } from "./fb-logging.js";
-import { airnowBuildURL, airnowFetchData, airnowActivateHour, airnowGetCurrentTime } from "./airnow.js";
+import { airnowFetchData, airnowActivateHour, airnowGetCurrentTime } from "./airnow.js";
 import { convertToCSV, downloadFile, createExportButton } from "./ui-download.js";
+import { urlByDateGZfile } from "./utils.js";
 
 /**
  * Generic dataset download with fetch-on-demand
@@ -20,7 +21,8 @@ export async function handleDownloadForLayer(dataset, options = {}) {
 
         if (dataset.startsWith("airnow-hourly-")) {
             // Hourly data is managed via daily bundles
-            const url = airnowBuildURL(null, date);
+            const ds = DATA_IMPORT_METHOD["airnow_hourly"];
+            const url = urlByDateGZfile(ds, date);
             geoJSONData = await airnowFetchData(url);
         } else {
             // Standard daily data

@@ -549,13 +549,6 @@ export async function updateAllActiveSources() {
             clearModelStats();
         }
 
-        // previous code before adding AirNow data
-        // const promises = [];
-        // sourcesToLoad.forEach(sourceKey => {
-        //     promises.push(loadSourceData(sourceKey, isoDate));
-        // });
-        // await Promise.all(promises);
-
         // ---- [External data] Hourly vs Daily load synchronization ----
         const promises = [];
         let hasHourly = false;

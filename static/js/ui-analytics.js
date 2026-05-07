@@ -35,62 +35,69 @@ const EVENT_MAPPING = {
 };
 
 const DATASET_MAPPING = {
-    "gam-v2": "UW GAM-v2",
     "gam_v2": "UW GAM-v2",
-    "gam-v1": "UW GAM-v1",
     "gam_v1": "UW GAM-v1",
-    "pm-cbsa": "UW Smoke PM2.5",
     "pm_cbsa": "UW Smoke PM2.5",
-    "epa-ember": "EPA EMBER",
     "epa_ember": "EPA EMBER",
-    "gam-v2-pred": "UW GAM-v2 (+)",
     "gam_v2_pred": "UW GAM-v2 (+)",
-    "pm-cbsa-pred": "UW Smoke PM2.5 (+)",
     "pm_cbsa_pred": "UW Smoke PM2.5 (+)"
 };
 
 
 const LAYER_NAME_MAPPING = {
-    "smoke-o3-gam-v2": "UW GAM-v2",
-    "smoke-o3-gam-v1": "UW GAM-v1",
-    "smoke-pm-cbsa": "UW Smoke PM2.5",
-    "epa-ember": "EPA EMBER",
-    "smoke-o3-gam-v2-add": "UW GAM-v2 (+)",
-    "smoke-pm-cbsa-add": "UW Smoke PM2.5 (+)",
-    "sat-hms-fire": "HMS Fire Points",
-    "sat-hms-smoke": "HMS Smoke Polygons",
-    "modis-fire": "MODIS Fire",
-    "viirs-fire": "VIIRS Fire",
-    "world-noaa-hrrr": "HRRR Smoke",
-    "world-noaa-hrrr-total": "HRRR Total Smoke",
-    "world-noaa-hrrr-sfc": "HRRR Sfc Smoke",
-    "world-noaa-hrrr-700mb": "HRRR 700mb Smoke",
-    "world-noaa-hrrr-top": "HRRR Column Smoke",
-    "aqs-o3": "AQS O3",
-    "aqs-pm": "AQS PM2.5",
-    "aqs-met": "AQS Meteorology",
-    "aqs-all": "AQS All",
-    "aqs-co": "AQS CO",
-    "aqs-no2": "AQS NO2",
-    "aqs-so2": "AQS SO2",
-    "aqs-wind": "AQS Wind",
-    "aqs-temp": "AQS Temp",
-    "aqs-precip": "AQS Precip",
-    "aqs-humid": "AQS Humidity",
-    "smo-o3": "SMO O3",
-    "smo-pm": "SMO PM2.5",
+    // --- Model Layers (GAM, PM-CBSA, EMBER) ---
+    "mda8-obs": "Obs MDA8",
+    "mda8-pred": "Pred MDA8",
+    "mda8-pred-edm": "Pred MDA8 (EDM)",
+    "smo": "SMO",
     "smo-edm": "SMO (EDM)",
-    "resids-edm": "Residual (EDM)",
-    "resids-quant-edm": "Quant residual (EDM)",
-    "smokeday": "Smoke day (SMD)",
+    "resids": "Residuals",
+    "resids-edm": "Residuals (EDM)",
+    "resids-quant": "Residual quantile",
+    "resids-quant-edm": "Residual quantile (EDM)",
+    "pm25-obs": "Obs PM2.5",
+    "pm25-quant": "PM2.5 quantile",
+    "pm25-crit": "PM2.5-crit",
+    "pm25-crit-m0p5m": "PM2.5-crit m0p5m",
+    "pm25-crit-m1p0m": "PM2.5-crit m1p0m",
+    "pm25-smoke-m0p5m": "Smoke PM2.5 m0p5m",
+    "pm25-smoke-m1p0m": "Smoke PM2.5 m1p0m",
+    "tmax": "TMAX",
+    "srad": "SRAD",
+    "smokeday": "Smoke Day (SMD)",
     "smokeday-975": "SMO > 97.5th",
     "smokeday-975-edm": "SMO > 97.5th (EDM)",
-    "smokeday-m0p5m": "Smoke day (SMD) m0p5m",
-    "smokeday-m1p0m": "Smoke day (SMD) m1p0m",
-    "ExcDays": "Exc. day",
-    "ExcDays-edm": "Exc. day (EDM)",
-    "ExcDays-m0p5m": "Exc. day m0p5m",
-    "ExcDays-m1p0m": "Exc. day m1p0m"
+    "smokeday-m0p5m": "Smoke day m0p5m",
+    "smokeday-m1p0m": "Smoke day m1p0m",
+    "ExcDays": "ExcDay",
+    "ExcDays-edm": "Excday (EDM)",
+    "ExcDays-m0p5m": "Excday m0p5m",
+    "ExcDays-m1p0m": "Excday m1p0m",
+
+    // --- Satellite & Model data ---
+    "smoke": "HMS Smoke",
+    "fire": "HMS Fire",
+    "burn": "MODIS Burn Area",
+    "wildfire-nifc": "WF Incidents",
+    "wildfire-news": "WF News",
+    "MapPost": "MapPost",
+    "hysplit": "HYSPLIT Result",
+    "hrrr-colmd": "HRRR-SmokeVCD",
+    "hrrr-massden": "HRRR-Smoke8m",
+    "tempo-no2": "TEMPO-NO2",
+    "tempo-hcho": "TEMPO-HCHO",
+    "tropomi-no2": "TROPOMI-NO2",
+    "tropomi-hcho": "TROPOMI-HCHO",
+
+    // --- AirNow ---
+    "airnow-daily-mda8": "AirNow MDA8",
+    "airnow-daily-pm25": "AirNow PM2.5",
+    "airnow-hourly-ozone": "AirNow O3 (hr)",
+    "airnow-hourly-pm25": "AirNow PM2.5 (hr)",
+    "airnow-hourly-no2": "AirNow NO2 (hr)",
+    
+    "airnow_daily": "AirNow daily"
+    "airnow_hourly": "AirNow hourly"
 };
 
 const ROLE_ORDER = [
@@ -113,6 +120,7 @@ const DATASET_ORDER = [
 
 async function loadAnalytics() {
     const label = document.getElementById("AnalyticsLastUpdated");
+    const summaryDiv = document.getElementById("AnalyticsSummaryStats");
     if (label) label.textContent = "Loading data...";
 
     try {
@@ -127,6 +135,28 @@ async function loadAnalytics() {
         const data = docSnap.data();
         if (label) {
             label.innerHTML = `Data through: <strong>${data.lastProcessedDate || 'Unknown'}</strong> (Last updated: ${data.lastUpdated || 'Unknown'})`;
+        }
+
+        // --- Summary Stats ---
+        if (summaryDiv) {
+            const totalEvents = Object.values(data.event_name || {}).reduce((a, b) => a + b, 0);
+            const totalUsers = Object.values(data.key_userRole || {}).reduce((a, b) => a + b, 0);
+            const totalStates = Object.keys(data.key_state || {}).filter(k => k !== "N/A" && k !== "null").length;
+
+            summaryDiv.innerHTML = `
+                <div class="summary-badge" style="display: flex; flex-direction: column; align-items: center;">
+                    <span style="font-size: 1.8rem; font-weight: 800; color: var(--card-shadow);">${totalEvents.toLocaleString()}</span>
+                    <span style="font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1rem; opacity: 0.8;">Total Events</span>
+                </div>
+                <div class="summary-badge" style="display: flex; flex-direction: column; align-items: center;">
+                    <span style="font-size: 1.8rem; font-weight: 800; color: var(--card-shadow);">${totalUsers.toLocaleString()}</span>
+                    <span style="font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1rem; opacity: 0.8;">Active Users</span>
+                </div>
+                <div class="summary-badge" style="display: flex; flex-direction: column; align-items: center;">
+                    <span style="font-size: 1.8rem; font-weight: 800; color: var(--card-shadow);">${totalStates}</span>
+                    <span style="font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1rem; opacity: 0.8;">States</span>
+                </div>
+            `;
         }
 
         const mappedEvents = {};
@@ -182,6 +212,14 @@ async function loadAnalytics() {
 
         renderBarChart("AnalyticsChartLayer", "Requested Layers", mappedLayers);
         renderBarChart("AnalyticsChartState", "Requested States", cleanStates);
+        // --- AQS Stats (Filtering out [none]) ---
+        const cleanAqs = {};
+        if (data.key_aqs) {
+            for (const [key, val] of Object.entries(data.key_aqs)) {
+                if (key !== "none" && key !== "null" && key !== "undefined") cleanAqs[key] = val;
+            }
+        }
+        renderBarChart("AnalyticsChartAqs", "Clicked AQS", cleanAqs);
         renderBarTsChart("AnalyticsChartDate", "Requested Dates", data.key_date);
 
     } catch (e) {

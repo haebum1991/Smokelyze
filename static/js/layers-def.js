@@ -134,22 +134,11 @@ export const DATA_IMPORT_METHOD = {
   },
   
   // ---- [External data] AirNow ----
-  "airnow-hourly-pm25": {
-      key: "airnow-hourly-pm25",
-      source: "airnow-hourly-pm25",
-      coverage: "airnow.pm25",
-      hourly: true
-  },
-  "airnow-hourly-ozone": {
-      key: "airnow-hourly-ozone",
-      source: "airnow-hourly-ozone",
-      coverage: "airnow.ozone",
-      hourly: true
-  },
-  "airnow-hourly-no2": {
-      key: "airnow-hourly-no2",
-      source: "airnow-hourly-no2",
-      coverage: "airnow.no2",
+  "airnow_hourly": {
+      key: "airnow_hourly",
+      source: "airnow_hourly",
+      prefix: "airnow_",
+      gzfileBaseUrlDate: "/airnow_hourly_geojson",
       hourly: true
   },
   "airnow_daily": {
@@ -157,9 +146,13 @@ export const DATA_IMPORT_METHOD = {
       source: "airnow_daily",
       prefix: "airnow_",
       gzfileBaseUrlDate: "/airnow_date_geojson"
-    },
+  },
   // ---- [External data] AirNow ----
   
+  "airnow-hourly-pm25": { key: "airnow-hourly-pm25", source: "airnow_hourly" },
+  "airnow-hourly-ozone": { key: "airnow-hourly-ozone", source: "airnow_hourly" },
+  "airnow-hourly-no2": { key: "airnow-hourly-no2", source: "airnow_hourly" },
+    
   "airnow-daily-pm25": { key: "airnow-daily-pm25", source: "airnow_daily" },
   "airnow-daily-mda8": { key: "airnow-daily-mda8", source: "airnow_daily" },
     
@@ -373,9 +366,10 @@ export const DATASET_SOURCE_MAP = {
     "pm-cbsa-pred": "pm_cbsa_pred",
     
     // ---- [External data] AirNow ----
-    "airnow-hourly-pm25": "airnow-hourly-pm25",
-    "airnow-hourly-ozone": "airnow-hourly-ozone",
-    "airnow-hourly-no2": "airnow-hourly-no2",
+    "airnow-hourly-pm25": "airnow_hourly",
+    "airnow-hourly-ozone": "airnow_hourly",
+    "airnow-hourly-no2": "airnow_hourly",
+    
     "airnow-daily-pm25": "airnow_daily",
     "airnow-daily-mda8": "airnow_daily",
     // ---- [External data] AirNow ----

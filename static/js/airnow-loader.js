@@ -8,20 +8,20 @@ import { map } from "./map-init.js";
 import { toggleSpinner } from "./loader-ui.js";
 import { updateStateShading } from "./layers-colors.js";
 import {
-    airnowBuildURL,
     airnowFetchData,
     airnowActivateHour,
     airnowUpdateStatsMap,
     airnowClearStats,
     airnowSetCurrentTime,
-    airnowGetActiveCoverages
+    airnowGetActiveLayerIds
 } from "./airnow.js";
 
 import { EMPTY_FC } from "./layers-constants.js";
 import { loadedGeoJSON, loadedSources } from "./loader-state.js";
 import { triggerRefresh } from "./stats-common.js";
 import { logUserAction } from "./fb-logging.js";
-import { refreshHighlight } from "./utils.js";
+import { refreshHighlight, urlByDateGZfile } from "./utils.js";
+import { DATA_IMPORT_METHOD } from "./layers-def.js";
 
 /**
  * Main entry point for loading AirNow hourly data
@@ -33,8 +33,8 @@ export async function airnowLoadData(isoDate, localHour) {
         localHour = timePicker ? parseInt(timePicker.value) : new Date().getHours();
     }
 
-    const activeCoverages = airnowGetActiveCoverages();
-    if (activeCoverages.length === 0) {
+    const activeLayerIds = airnowGetActiveLayerIds();
+    if (activeLayerIds.length === 0) {
         airnowClearStats();
         updateStateShading();
         return;
@@ -69,7 +69,8 @@ export async function airnowLoadData(isoDate, localHour) {
         let dailyGeoJSON = loadedGeoJSON[dailyCacheKey];
 
         if (!dailyGeoJSON) {
-            const url = airnowBuildURL(null, utcIsoDate);
+            const ds = DATA_IMPORT_METHOD["airnow_hourly"];
+            const url = urlByDateGZfile(ds, utcIsoDate);
             try {
                 dailyGeoJSON = await airnowFetchData(url);
                 loadedGeoJSON[dailyCacheKey] = dailyGeoJSON;
@@ -79,38 +80,28 @@ export async function airnowLoadData(isoDate, localHour) {
             }
         }
 
-        // 3. Process and apply data to each active layer
-        // We activate the correct hour once, then update all sources
+        // 3. Process and apply data to the unified source
         airnowActivateHour(dailyGeoJSON, utcHour);
         airnowClearStats();
 
-        const coverageToSource = {
-            "airnow.pm25": "airnow-hourly-pm25",
-            "airnow.ozone": "airnow-hourly-ozone",
-            "airnow.no2": "airnow-hourly-no2"
-        };
+        // Update the unified source once
+        const source = map.getSource("airnow_hourly");
+        if (source) {
+            source.setData(dailyGeoJSON);
+            const searchFriendlyKey = `airnow_hourly_${utcIsoDate}_${utcHour}`;
+            loadedSources["airnow_hourly"] = searchFriendlyKey;
+            loadedGeoJSON[searchFriendlyKey] = dailyGeoJSON;
+        }
 
-        activeCoverages.forEach(coverage => {
-            const sourceId = coverageToSource[coverage];
-            const source = map.getSource(sourceId);
-
-            // Apply statistics
-            airnowUpdateStatsMap(dailyGeoJSON, coverage);
-
-            // Update Mapbox source
-            if (source) {
-                source.setData(dailyGeoJSON);
-                const searchFriendlyKey = `${sourceId}_${utcIsoDate}_${utcHour}`;
-                loadedSources[sourceId] = searchFriendlyKey;
-                loadedGeoJSON[searchFriendlyKey] = dailyGeoJSON;
-            }
+        // Apply statistics for all active pollutants (using Layer IDs)
+        activeLayerIds.forEach(layerId => {
+            airnowUpdateStatsMap(dailyGeoJSON, layerId);
         });
         
         // --- [Log the View Action] ---
-        // Every hour change/view is recorded, even if data is from cache
         logUserAction("view", {
             dataset: "airnow_hourly",
-            layer: activeCoverages.join(", "),
+            layer: activeLayerIds.join(", "),
             date: isoDate,
             key_hour: utcHour
         });
