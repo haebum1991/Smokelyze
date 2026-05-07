@@ -53,10 +53,10 @@ const LAYER_NAME_MAPPING = {
     "smo-edm": "SMO (EDM)",
     "resids": "Residuals",
     "resids-edm": "Residuals (EDM)",
-    "resids-quant": "Residual quantile",
-    "resids-quant-edm": "Residual quantile (EDM)",
+    "resids-quant": "Quant residual",
+    "resids-quant-edm": "Quant residual (EDM)",
     "pm25-obs": "Obs PM2.5",
-    "pm25-quant": "PM2.5 quantile",
+    "pm25-quant": "Quant PM2.5",
     "pm25-crit": "PM2.5-crit",
     "pm25-crit-m0p5m": "PM2.5-crit m0p5m",
     "pm25-crit-m1p0m": "PM2.5-crit m1p0m",
@@ -70,18 +70,18 @@ const LAYER_NAME_MAPPING = {
     "smokeday-m0p5m": "Smoke day m0p5m",
     "smokeday-m1p0m": "Smoke day m1p0m",
     "ExcDays": "ExcDay",
-    "ExcDays-edm": "Excday (EDM)",
-    "ExcDays-m0p5m": "Excday m0p5m",
-    "ExcDays-m1p0m": "Excday m1p0m",
+    "ExcDays-edm": "ExcDay (EDM)",
+    "ExcDays-m0p5m": "ExcDay m0p5m",
+    "ExcDays-m1p0m": "ExcDay m1p0m",
 
     // --- Satellite & Model data ---
-    "smoke": "HMS Smoke",
-    "fire": "HMS Fire",
+    "smoke": "HMS-smoke",
+    "fire": "HMS-fire",
     "burn": "MODIS Burn Area",
-    "wildfire-nifc": "WF Incidents",
-    "wildfire-news": "WF News",
+    "wildfire-nifc": "WF-incidents",
+    "wildfire-news": "WF-news",
     "MapPost": "MapPost",
-    "hysplit": "HYSPLIT Result",
+    "hysplit": "HYSPLIT",
     "hrrr-colmd": "HRRR-SmokeVCD",
     "hrrr-massden": "HRRR-Smoke8m",
     "tempo-no2": "TEMPO-NO2",
@@ -96,7 +96,7 @@ const LAYER_NAME_MAPPING = {
     "airnow-hourly-pm25": "AirNow PM2.5 (hr)",
     "airnow-hourly-no2": "AirNow NO2 (hr)",
     
-    "airnow_daily": "AirNow daily"
+    "airnow_daily": "AirNow daily",
     "airnow_hourly": "AirNow hourly"
 };
 
