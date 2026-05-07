@@ -1687,6 +1687,7 @@ window.Aerscreen = {
     Tool: AerscreenTool // Expose the tool object as well
 };
 
+
 // Auto-initialize when the script is loaded
 if (map) {
     if (typeof init === "function") init();
@@ -1695,30 +1696,4 @@ if (map) {
         if (typeof init === "function") init();
     });
 }
-
-onAuthStateChanged(auth, async (user) => {
-    const toggleBtn = document.getElementById("AerscreenToggle");
-    const ctxBtn = document.getElementById("MapPostBtnAerscreen");
-    const drawer = document.getElementById("AerscreenDrawer");
-
-    let isAdmin = false;
-    if (user) {
-        try {
-            const userSnap = await getDoc(doc(db, "smokelyze_users", user.uid));
-            if (userSnap.exists()) {
-                isAdmin = (userSnap.data().role === "admin");
-            }
-        } catch (e) {
-            console.warn("AERSCREEN: Admin check failed:", e);
-        }
-    }
-
-    if (toggleBtn) toggleBtn.style.display = isAdmin ? "block" : "none";
-    if (ctxBtn) ctxBtn.style.display = isAdmin ? "block" : "none";
-
-    // If not admin and drawer is open, close it
-    if (!isAdmin && drawer) {
-        drawer.classList.remove("open");
-    }
-});
 

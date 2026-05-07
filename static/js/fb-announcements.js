@@ -516,24 +516,19 @@ async function loadPage(direction, forceHome = false) {
     }
 }
 
-// --- 8. Initialization ---
-fb.onAuthStateChanged(fb.auth, async (user) => {
+// --- Check Admin Auth ---
+document.addEventListener("smokelyzeAuthChanged", (e) => {
+    const { user, isAdmin } = e.detail;
     state.currentUser = user;
-    state.isAdmin = false;
-    if (user) {
-        try {
-            const userSnap = await getDoc(doc(db, "smokelyze_users", user.uid));
-            if (userSnap.exists()) {
-                const data = userSnap.data();
-                state.isAdmin = (data.role === "admin");
-            }
-        } catch (e) { console.warn("Failed to fetch user role:", e); }
-    }
-    const writeBtn = document.getElementById("BoardBtnWrite");
-    const emailBtn = document.getElementById("BoardBtnEmail");
-    if (writeBtn) writeBtn.style.display = state.isAdmin ? "block" : "none";
-    if (emailBtn) emailBtn.style.display = state.isAdmin ? "block" : "none";
+    state.isAdmin = isAdmin;
 });
+
+// Immediate sync for late-loading or page refresh
+if (sessionStorage.getItem("smokelyze_is_admin") === "true") {
+    state.isAdmin = true;
+}
+// --- Check Admin Auth ---
+
 
 bindEventsAnnouncements();
 

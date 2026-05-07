@@ -33,7 +33,8 @@ const DEBUG = (process.env.DEBUG_LOG || "1") === "1";
 const PUBLIC_PREFIXES = [
   "realtime",
   "airnow_date_geojson",
-  "airnow_hourly_geojson"
+  "airnow_hourly_geojson",
+  "smokeday"
 ];
 
 function dlog(...args) { if (DEBUG) console.log.apply(console, args); }

@@ -106,6 +106,12 @@ title: ""
           <use xlink:href="#icon-help" />
         </svg>
       </button>
+      
+      <button class="map-btn-control" id="MapBtnAnalytics" title="Dashboard Analytics">
+        <svg width="28" height="28">
+          <use xlink:href="#icon-pie-chart" />
+        </svg>
+      </button>
     </div>
 
   </div>
@@ -737,8 +743,9 @@ title: ""
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/driver.js@1.4.0/dist/driver.js.iife.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script type="module" src="/js/ui-analytics.js"></script>
 
-<!-- Firebase & Discussion -->
 <!-- MapPost Context Menu -->
 <div class="MapPost-context-menu" id="MapPostContextMenu" style="display:none;">
   <div class="MapPost-context-menu-header">Select Action</div>
@@ -1503,6 +1510,90 @@ title: ""
           </svg>
         </button>
         <input type="range" id="DispersionDrawerSlider" min="0" max="0" value="0" step="1">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Analytics Dashboard Modal -->
+<style>
+  .analytics-grid {
+    overflow-y: auto;
+    flex: 1;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2rem;
+    align-content: start;
+  }
+
+  /* Layout Spans */
+  .chart-span-pie {
+    grid-column: span 2;
+  }
+
+  /* 3 per row */
+  .chart-span-bar {
+    grid-column: span 3;
+  }
+
+  /* 2 per row */
+  .chart-span-full {
+    grid-column: span 6;
+  }
+
+  /* 1 per row */
+
+  @media (max-width: 1024px) {
+    .analytics-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .chart-span-pie,
+    .chart-span-bar,
+    .chart-span-full {
+      grid-column: auto;
+    }
+  }
+</style>
+<div class="MapPost-modal-overlay" id="AnalyticsModalOverlay" style="display:none; z-index: 9999;">
+  <div class="MapPost-modal" style="width: 90vw; display: flex; flex-direction: column;">
+    <div class="MapPost-modal-header">
+      <h3 id="AnalyticsModalTitle">Smokelyze Usage Analytics</h3>
+      <button class="ui-btn-close" id="AnalyticsModalClose">
+        <svg width="20" height="20">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
+    </div>
+    
+    <div style="padding: 1rem 2rem; background: var(--sidebar-widget-bg); border-bottom: 0.1rem solid var(--border-main); display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-size: 1.4rem; color: var(--card-shadow);" id="AnalyticsLastUpdated">Loading data...</span>
+    </div>
+
+    <div class="MapPost-modal-body analytics-grid">
+      <!-- Row 1: 3 Pie Charts -->
+      <div id="AnalyticsChartEvent" class="chart-span-pie"
+        style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
+      </div>
+      <div id="AnalyticsChartRole" class="chart-span-pie"
+        style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
+      </div>
+      <div id="AnalyticsChartDataset" class="chart-span-pie"
+        style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
+      </div>
+
+      <!-- Row 2: 2 Bar Charts -->
+      <div id="AnalyticsChartLayer" class="chart-span-bar"
+        style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
+      </div>
+      <div id="AnalyticsChartState" class="chart-span-bar"
+        style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
+      </div>
+
+      <!-- Row 3: 1 Full-width Line Chart -->
+      <div id="AnalyticsChartDate" class="chart-span-full"
+        style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
       </div>
     </div>
   </div>

@@ -94,36 +94,79 @@ onAuthStateChanged(auth, async (user) => {
         sessionStorage.setItem("auth-last-state", "out");
     }
 
-    // Map Overlay logic
-    // if (authOverlay) {
-    //     authOverlay.style.display = (user || sessionStorage.getItem("auth-guest-dismissed")) ? "none" : "flex";
-    // }
+    
     if (authOverlay && user) {
         authOverlay.style.display = "none";
     }
 
     // Set flag for other modules to know auth is initialized
     window.fbAuthReady = true;
-    window.dispatchEvent(new CustomEvent("authStateChanged", { detail: { user } }));
-    
-    // Admin UI Check
-    const adminSection = document.getElementById("AdminSettingsSection");
-    if (adminSection) {
-        if (user) {
-            try {
-                const snap = await getDoc(doc(db, "smokelyze_users", user.uid));
-                if (snap.exists() && snap.data().role === "admin") {
-                    adminSection.style.display = "block";
-                } else {
-                    adminSection.style.display = "none";
+
+    // [Centralized Admin UI Management: --- Check Admin Auth ---]
+    const adminUI = {
+        elements: [
+            "AdminSettingsSection", 
+            "MapBtnAnalytics", 
+            "AerscreenToggle", 
+            "MapPostBtnAerscreen", 
+            "BoardBtnWrite", 
+            "BoardBtnEmail"
+        ],
+        drawers: [
+            { id: "AnalyticsModalOverlay", close: (el) => el.style.display = "none" },
+            { id: "AerscreenDrawer", close: (el) => el.classList.remove("open") }
+        ]
+    };
+
+    if (user) {
+        try {
+            const snap = await getDoc(doc(db, "smokelyze_users", user.uid));
+            const isAdmin = snap.exists() && snap.data().role === "admin";
+            
+            // 1. Persist state for late-loading modules
+            sessionStorage.setItem("smokelyze_is_admin", isAdmin);
+
+            // 2. Control visibility
+            adminUI.elements.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    // Use "" (empty) to revert to original CSS (flex/block as defined) or force "flex" for buttons
+                    if (el.classList.contains("map-btn-control") || el.classList.contains("accordion-toggle")) {
+                        el.style.display = isAdmin ? "flex" : "none";
+                    } else {
+                        el.style.display = isAdmin ? "block" : "none";
+                    }
                 }
-            } catch (e) {
-                console.warn("Admin check failed:", e);
-                adminSection.style.display = "none";
+            });
+
+            // 3. Special Security: Auto-close admin views if unauthorized
+            if (!isAdmin) {
+                adminUI.drawers.forEach(d => {
+                    const el = document.getElementById(d.id);
+                    if (el) d.close(el);
+                });
             }
-        } else {
-            adminSection.style.display = "none";
+
+            // 4. Dispatch global event
+            document.dispatchEvent(new CustomEvent("smokelyzeAuthChanged", { 
+                detail: { user, isAdmin } 
+            }));
+        } catch (e) {
+            console.warn("Centralized Admin Check failed:", e);
         }
+    } else {
+        sessionStorage.setItem("smokelyze_is_admin", "false");
+        adminUI.elements.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = "none";
+        });
+        // Auto-close admin drawers on logout
+        adminUI.drawers.forEach(d => {
+            const el = document.getElementById(d.id);
+            if (el) d.close(el);
+        });
+
+        document.dispatchEvent(new CustomEvent("smokelyzeAuthChanged", { detail: { user: null, isAdmin: false } }));
     }
 });
 
