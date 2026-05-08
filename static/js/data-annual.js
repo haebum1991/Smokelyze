@@ -167,7 +167,7 @@ function downloadReport(filename) {
         showAuthOverlay();
         return;
     }
-    const path = `/smokeday/smoke_id/${filename}`;
+    const path = `/smokeday/smoke_id/${filename}?t=${Date.now()}`;
     window.location.href = path;
     
     // [Report to Brain]
