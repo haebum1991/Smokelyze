@@ -245,21 +245,31 @@ exports.handler = async (event) => {
 
     const etag = generateETag(fileMeta);
     const cacheControl = getCacheControl(path);
+    
+    // Smokeday: Signed URL redirect (file > 6MB Netlify limit)
+    // IMPORTANT: Signed URLs should NOT be cached by ETag/304 because the signed token expires.
+    // We must generate a fresh signed URL for every request if its a redirect.
+    if (path.startsWith("smokeday/")) {
+      const [url] = await file.getSignedUrl({
+        version: "v4",
+        action: "read",
+        expires: Date.now() + 5 * 60 * 1000, // 5 minute validity
+      });
+      return { 
+        statusCode: 302, 
+        headers: { 
+          ...corsHeaders, 
+          "ETag": etag, 
+          "Cache-Control": "no-cache, no-store, must-revalidate", 
+          "Location": url 
+        } 
+      };
+    }
 
     // ETag match → 304 Not Modified (no download needed)
     if (isClientCacheValid(event, etag)) {
       dlog("[304] Cache valid:", path);
       return { statusCode: 304, headers: { ...corsHeaders, "ETag": etag, "Cache-Control": cacheControl }, body: "" };
-    }
-
-    // Smokeday: Signed URL redirect (file > 6MB Netlify limit)
-    if (path.startsWith("smokeday/")) {
-      const [url] = await file.getSignedUrl({
-        version: "v4",
-        action: "read",
-        expires: Date.now() + 5 * 60 * 1000,
-      });
-      return { statusCode: 302, headers: { ...corsHeaders, "ETag": etag, "Cache-Control": cacheControl, "Location": url } };
     }
 
     // Download and serve with ETag
