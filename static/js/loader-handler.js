@@ -193,8 +193,14 @@ export async function loadSourceData(sourceKey, isoDate) {
             const activeLayers = Array.from(document.querySelectorAll("input[type=checkbox][id^='layer-']:checked"))
                 .map(cb => cb.id.replace("layer-", ""))
                 .filter(shortId => {
+                    // 1. Check direct DATA_IMPORT_METHOD mapping
                     const cfg = DATA_IMPORT_METHOD[`${shortId}-${currentDataset}`] || DATA_IMPORT_METHOD[shortId];
-                    return cfg && cfg.source === sourceKey;
+                    if (cfg && cfg.source === sourceKey) return true;
+
+                    // 2. Check DATASET_SOURCE_MAP for consolidated sources (e.g. airnow-hourly-pm25 -> airnow_hourly)
+                    const mapping = DATASET_SOURCE_MAP[shortId];
+                    const mappedSource = (mapping && typeof mapping === "object") ? mapping.source : mapping;
+                    return mappedSource === sourceKey;
                 })
                 .join(", ");
 

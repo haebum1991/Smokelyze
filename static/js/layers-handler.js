@@ -108,7 +108,8 @@ function bindClick(layerId, dataSource) {
                 const fullKey = layerDataMap[topF.layer.id];
                 const def = LAYER_DEFS[fullKey];
                 const dsKey = def?.dsKey || fullKey;
-                const sourceKey = DATASET_SOURCE_MAP[dsKey] || dsKey;
+                const mapping = DATASET_SOURCE_MAP[dsKey];
+                const sourceKey = (mapping && typeof mapping === "object") ? mapping.source : (mapping || dsKey);
 
                 const coords = topF.geometry.coordinates;
                 highlightLocation?.(coords, topF.properties, sourceKey);

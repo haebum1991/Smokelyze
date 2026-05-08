@@ -89,8 +89,18 @@ export async function handleDownloadForLayer(dataset, options = {}) {
                 const hourStr = airnowGetCurrentTime().toString().padStart(2, "0");
                 filename = `${dataset}_${date}-${hourStr}.csv`;
             }
+            
             downloadFile(filename, csv);
-            logUserAction("download", { dataset, date, filename });
+            const mapping = DATASET_SOURCE_MAP[dataset];
+            const sourceKey = (mapping && typeof mapping === "object") ? mapping.source : (mapping || dataset);
+
+            logUserAction("download", { 
+                dataset: sourceKey, 
+                layer: dataset, 
+                date, 
+                filename 
+            });
+            
         } else {
             alert("Failed to convert data to CSV.");
         }
