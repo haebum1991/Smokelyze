@@ -1,4 +1,4 @@
-const CACHE_NAME = "v-20260507-2324"; // R에서 자동으로 생성된 버전
+const CACHE_NAME = "v-20260508-0000"; // R에서 자동으로 생성된 버전
 const OFFLINE_URL = "/offline/";
 
 const requiredFiles = [
@@ -159,6 +159,7 @@ self.addEventListener("fetch", event => {
         path.startsWith("/data_by_state") ||
         path.startsWith("/noaa_hms") ||
         path.startsWith("/modis_burn") ||
+        path.startsWith("/smokeday/") ||
         path.includes("/realtime/")
     ) {
         return;

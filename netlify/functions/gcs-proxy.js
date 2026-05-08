@@ -258,8 +258,7 @@ exports.handler = async (event) => {
       return { 
         statusCode: 302, 
         headers: { 
-          ...corsHeaders, 
-          "ETag": etag, 
+          ...corsHeaders,
           "Cache-Control": "no-cache, no-store, must-revalidate", 
           "Location": url 
         } 
