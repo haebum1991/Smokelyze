@@ -30,8 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
 const EVENT_MAPPING = {
     "view": "Layer Views",
     "click_point": "Point Clicks",
-    "download": "Data Downloads",
-    "hysplit_run": "HYSPLIT Runs"
+    "download": "Data Downloads"
 };
 
 const DATASET_MAPPING = {
@@ -42,6 +41,7 @@ const DATASET_MAPPING = {
     "epa_ember": "EPA EMBER",
     "gam_v2_pred": "UW GAM-v2 (+)",
     "pm_cbsa_pred": "UW Smoke PM2.5 (+)",
+    "hysplit": "HYSPLIT",
     
     // for download naming
     "gam-v2": "UW GAM-v2",
@@ -96,8 +96,10 @@ const LAYER_NAME_MAPPING = {
     "tropomi-no2": "TROPOMI-NO2",
     "tropomi-hcho": "TROPOMI-HCHO",
     
-    "backward": "HYSPLIT-bwd",
-    "forward": "HYSPLIT-fwd",
+    "traj-backward": "HYSPLIT Traj (bwd)",
+    "traj-forward": "HYSPLIT Traj (fwd)",
+    "disp-backward": "HYSPLIT Disp (bwd)",
+    "disp-forward": "HYSPLIT Disp (fwd)",
     
     // --- AirNow ---
     "airnow-daily-mda8": "AirNow MDA8",

@@ -1,4 +1,4 @@
-const CACHE_NAME = "v-20260507-2121"; // R에서 자동으로 생성된 버전
+const CACHE_NAME = "v-20260507-2324"; // R에서 자동으로 생성된 버전
 const OFFLINE_URL = "/offline/";
 
 const requiredFiles = [
@@ -81,6 +81,7 @@ const requiredFiles = [
     "/js/ui-time.js",
     "/js/ui-toggles.js",
     "/js/ui-tutorial.js",
+    "/js/ui-analytics.js",
     "/js/utils.js"
 ];
 

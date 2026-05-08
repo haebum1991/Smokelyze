@@ -691,9 +691,9 @@ async function clickOnSubmitHysplit() {
     const height = parseFloat(document.getElementById("InputHysplitHeight").value);
     const date = document.getElementById("InputHysplitDate").value;
     const lngLat = state.pendingLngLat;
-
-    // Check for identical duplicate submission
     const runType = document.getElementById("InputHysplitType").value;
+    
+    // Check for identical duplicate submission
     if (state.modalBaseParams) {
         const b = state.modalBaseParams;
         let isSame = (
@@ -762,9 +762,11 @@ async function clickOnSubmitHysplit() {
     // Close modal immediately so user can continue
     uiHideHysplitModal();
     
+    const layerType = (runType === "dispersion") ? "disp" : "traj";
+
     logUserAction("view", {
-        dataset: "hysplit_run",
-        layer: direction,
+        dataset: "hysplit",
+        layer: `${layerType}-${direction}`,
         date: date,
         filename: `lon:${lngLat.lng.toFixed(3)}_lat:${lngLat.lat.toFixed(3)}_h:${height}m_d:${duration}h`
     });
@@ -774,8 +776,6 @@ async function clickOnSubmitHysplit() {
     try {
         // Get the ID token for the current user to secure the API call
         const idToken = await auth.currentUser.getIdToken(true);
-
-        const runType = document.getElementById("InputHysplitType").value;
 
         const baseParams = {
             lon: lngLat.lng,
