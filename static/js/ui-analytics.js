@@ -35,14 +35,22 @@ const EVENT_MAPPING = {
 };
 
 const DATASET_MAPPING = {
+    // for view naming 
     "gam_v2": "UW GAM-v2",
     "gam_v1": "UW GAM-v1",
     "pm_cbsa": "UW Smoke PM2.5",
     "epa_ember": "EPA EMBER",
     "gam_v2_pred": "UW GAM-v2 (+)",
-    "pm_cbsa_pred": "UW Smoke PM2.5 (+)"
+    "pm_cbsa_pred": "UW Smoke PM2.5 (+)",
+    
+    // for download naming
+    "gam-v2": "UW GAM-v2",
+    "gam-v1": "UW GAM-v1",
+    "pm-cbsa": "UW Smoke PM2.5",
+    "epa-ember": "EPA EMBER",
+    "gam-v2-pred": "UW GAM-v2 (+)",
+    "pm-cbsa-pred": "UW Smoke PM2.5 (+)"
 };
-
 
 const LAYER_NAME_MAPPING = {
     // --- Model Layers (GAM, PM-CBSA, EMBER) ---
@@ -81,14 +89,16 @@ const LAYER_NAME_MAPPING = {
     "wildfire-nifc": "WF-incidents",
     "wildfire-news": "WF-news",
     "MapPost": "MapPost",
-    "hysplit": "HYSPLIT",
     "hrrr-colmd": "HRRR-SmokeVCD",
     "hrrr-massden": "HRRR-Smoke8m",
     "tempo-no2": "TEMPO-NO2",
     "tempo-hcho": "TEMPO-HCHO",
     "tropomi-no2": "TROPOMI-NO2",
     "tropomi-hcho": "TROPOMI-HCHO",
-
+    
+    "backward": "HYSPLIT-bwd",
+    "forward": "HYSPLIT-fwd",
+    
     // --- AirNow ---
     "airnow-daily-mda8": "AirNow MDA8",
     "airnow-daily-pm25": "AirNow PM2.5",
@@ -97,7 +107,15 @@ const LAYER_NAME_MAPPING = {
     "airnow-hourly-no2": "AirNow NO2 (hr)",
     
     "airnow_daily": "AirNow daily",
-    "airnow_hourly": "AirNow hourly"
+    "airnow_hourly": "AirNow hourly",
+    
+    // --- Download --- 
+    "gam_v2": "UW GAM-v2",
+    "gam_v1": "UW GAM-v1",
+    "pm_cbsa": "UW Smoke PM2.5",
+    "epa_ember": "EPA EMBER",
+    "gam_v2_pred": "UW GAM-v2 (+)",
+    "pm_cbsa_pred": "UW Smoke PM2.5 (+)",
 };
 
 const ROLE_ORDER = [
@@ -139,22 +157,12 @@ async function loadAnalytics() {
 
         // --- Summary Stats ---
         if (summaryDiv) {
-            const totalEvents = Object.values(data.event_name || {}).reduce((a, b) => a + b, 0);
             const totalUsers = Object.values(data.key_userRole || {}).reduce((a, b) => a + b, 0);
-            const totalStates = Object.keys(data.key_state || {}).filter(k => k !== "N/A" && k !== "null").length;
 
             summaryDiv.innerHTML = `
                 <div class="summary-badge" style="display: flex; flex-direction: column; align-items: center;">
-                    <span style="font-size: 1.8rem; font-weight: 800; color: var(--card-shadow);">${totalEvents.toLocaleString()}</span>
-                    <span style="font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1rem; opacity: 0.8;">Total Events</span>
-                </div>
-                <div class="summary-badge" style="display: flex; flex-direction: column; align-items: center;">
-                    <span style="font-size: 1.8rem; font-weight: 800; color: var(--card-shadow);">${totalUsers.toLocaleString()}</span>
-                    <span style="font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1rem; opacity: 0.8;">Active Users</span>
-                </div>
-                <div class="summary-badge" style="display: flex; flex-direction: column; align-items: center;">
-                    <span style="font-size: 1.8rem; font-weight: 800; color: var(--card-shadow);">${totalStates}</span>
-                    <span style="font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1rem; opacity: 0.8;">States</span>
+                    <span style="font-size: 2.2rem; font-weight: 800; color: var(--card-shadow);">${totalUsers.toLocaleString()}</span>
+                    <span style="font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.1rem; opacity: 0.8;">Registered Users</span>
                 </div>
             `;
         }
@@ -423,7 +431,7 @@ function renderBarTsChart(divId, title, mapObj) {
             }
         },
         grid: {
-            left: 60,
+            left: "5%",
             right: "5%",
             bottom: 80,
             top: 50,
@@ -444,7 +452,14 @@ function renderBarTsChart(divId, title, mapObj) {
                     none: "{yyyy}-{MM}-{dd}"
                 }
             },
-            splitLine: { show: false }
+            splitLine: { 
+                show: true,
+                lineStyle: {
+                    color: borderColor,
+                    type: "dashed",
+                    opacity: 0.4
+                }
+            }
         },
         yAxis: {
             type: "value",
@@ -465,10 +480,23 @@ function renderBarTsChart(divId, title, mapObj) {
         series: [{
             name: "Requests",
             type: "bar",
-            barMaxWidth: 10, // [NEW] Ensure bars are visible
+            barMaxWidth: 10,
             large: true,
             data: seriesData,
-            itemStyle: { color: accentColor, borderRadius: [2, 2, 0, 0] }
+            itemStyle: { color: accentColor, borderRadius: [2, 2, 0, 0] },
+            markLine: {
+                silent: true,
+                symbol: "none",
+                label: { show: false },
+                lineStyle: {
+                    color: borderColor,
+                    type: "solid",
+                    width: 1,
+                    opacity: 0.6
+                },
+                data: Array.from(new Set(seriesData.map(d => d[0].substring(0, 4))))
+                    .map(yr => ({ xAxis: `${yr}-01-01` }))
+            }
         }]
     };
     chart.setOption(option);
