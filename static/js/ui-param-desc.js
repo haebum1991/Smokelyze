@@ -371,7 +371,7 @@ export const DescData = {
                   "<li>EPA data for O3 and PM2.5 (pre-generated data) were downloaded as of 2024-11-19.</li>" +
                   "<li>Lee, H. and Jaffe, D. A.: " +
                   "Impact of Wildfires on O3 and Air Quality Across the United States for 2019–2024 Using Generalized Additive Models, " +
-                  "J. Geophys. Res. Atmos., 130, e2025JD044088, 2025. " +
+                  "<em>J. Geophys. Res. Atmos.</em>, 130, e2025JD044088, 2025. " +
                   "<a href='https://doi.org/10.1029/2025JD044088' target='_blank'>https://doi.org/10.1029/2025JD044088</a></li></ul></li>" +
                   
                   "<li><b style='color: var(--card-shadow);'>[UW GAM-v1]</b>, data period: May to Sep, 2018-2023, study area: CONUS<ul>" +
