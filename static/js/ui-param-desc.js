@@ -378,7 +378,7 @@ export const DescData = {
                   "<li>EPA data for O3 and PM2.5 (pre-generated data) were downloaded as of 2023-10-26.</li>" +
                   "<li>Lee, H. and Jaffe, D. A.: " + 
                   "Wildfire impacts on O3 in the continental United States using PM2.5 and a generalized additive model (2018–2023), " +
-                  "Environ. Sci. Technol., 58, 14764–14774, 2024. " +
+                  "<em>Environ. Sci. Technol.</em>, 58, 14764–14774, 2024. " +
                   "<a href='https://doi.org/10.1021/acs.est.4c05870' target='_blank'>https://doi.org/10.1021/acs.est.4c05870</a></li></ul></li></ul>"
         },
         {
@@ -387,9 +387,9 @@ export const DescData = {
             desc: "<ul><li><b style='color: var(--card-shadow);'>[UW Smoke PM2.5]</b>, data period: Jan to Dec, 2019-2024, study area: CONUS + AK + HI<ul>" +
                   "<li>EPA data for O3 and PM2.5 (pre-generated data) were downloaded as of 2024-11-19.</li>" +
                   "<li>Jaffe, D., Lee, H., Magzamen, S., Goldberg, D., and O'Dell, K.: " + 
-                  "Health and Regulatory Impacts of PM2.5 from Wildland Fires for 2019–2024 in the U.S., " +
-                  "GeoHealth, Under review, 2025. " + 
-                  "<a href='' target='_blank'></a></li></ul></li></ul>"
+                  "Health and Regulatory Impacts of PM2.5 from Wildland Fires for 2019–2024 in the US, " +
+                  "<em>GeoHealth</em>, 10, e2025GH001576, 2026. " + 
+                  "<a href='https://doi.org/10.1029/2025GH001576' target='_blank'>https://doi.org/10.1029/2025GH001576</a></li></ul></li></ul>"
         },
         {
             id: "research-o3-ember",
@@ -397,7 +397,7 @@ export const DescData = {
             desc: "<ul><li><b style='color: var(--card-shadow);'>[EPA EMBER]</b>, data period: Apr to Sep, 2023, study area: CONUS<ul>" +
                   "<li>Simon, H. Beidler, J., Baker, K. R., Henderson, B. H., Fox, L., Misenis, C., Campbell, P., Vukovich, J., Possiel, N., and Eyth, A.: " +
                   "Expedited modeling of burn events results (EMBER): A screening-level dataset of 2023 ozone fire impacts in the US, " + 
-                  "Data in Brief, 58, 111208, 2024. " +
+                  "<em>Data in Brief</em>, 58, 111208, 2024. " +
                   "<a href='https://doi.org/10.1016/j.dib.2024.111208' target='_blank'>https://doi.org/10.1016/j.dib.2024.111208</a></li></ul></li></ul>"
         }
     ],
@@ -458,8 +458,9 @@ export const DescData = {
           id: "citation",
           title: "Citation",
           desc: "Jaffe, D., Lee, H., Magzamen, S., Goldberg, D., and O'Dell, K.: " +
-                "Health and Regulatory Impacts of PM2.5 from Wildland Fires for 2019–2024 in the U.S., " +
-                "<em>GeoHealth</em>, Under review, 2025.<br>"
+                "Health and Regulatory Impacts of PM2.5 from Wildland Fires for 2019–2024 in the US, " +
+                "<em>GeoHealth</em>, 10, e2025GH001576, 2026.<br> " +
+                "<a href='https://doi.org/10.1029/2025GH001576' target='_blank'>https://doi.org/10.1029/2025GH001576</a>"
         },
         { id: "pm25-obs", title: "Obs PM2.5", desc: "Daily average PM2.5 concentration observed at AQS monitoring sites" },
         { id: "pm25-quant", title: "Quant PM2.5", desc: "Estimated PM2.5 quantile based on HMS = 0 (non-overhead smoke plume cases) by month" },
