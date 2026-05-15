@@ -129,7 +129,7 @@ const GROUPS = [
   {
     id: "y7",
     axisName: "yaxis7",
-    title: "No. of Exc. days",
+    title: "No. of days",
     metrics: ["ExcDays", "ExcDays-edm", "ExcDays-m0p5m", "ExcDays-m1p0m"],
     side: "right"
   },

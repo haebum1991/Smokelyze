@@ -198,7 +198,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
         <div style="${rowStyle}"><b>Longitude:</b> ${ESML(smartFmt(p.lon, "lon", dataSource, 3))}</div>
         <div style="${rowStyle}"><b>AGL:</b> ${ESML(heightVal)}m</div>
         <div style="${rowStyle}"><b>Pressure:</b> ${ESML(pressVal)} hPa</div>
-        ${p.q_ug_m3 !== undefined ? `<div style="${rowStyle}"><b>Conc:</b> <b style="color: var(--card-shadow);">${ESML(smartFmt(p.q_ug_m3, "q_ug_m3", dataSource, 3))}</b> µg m⁻³</div>` : ""}
+        ${p.q_ug_m3 !== undefined ? `<div style="${rowStyle}"><b>Conc:</b> <b style="color: var(--card-shadow);">${ESML(smartFmt(p.q_ug_m3, "q_ug_m3", dataSource, 3))}</b> ug m⁻³</div>` : ""}
         ${p.q_kg !== undefined ? `<div style="${rowStyle}"><b>Mass:</b> ${ESML(smartFmt(p.q_kg, "q_kg", dataSource, 3))} kg</div>` : ""}`;
     }
     
@@ -208,7 +208,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
               <div style="${rowStyleHead}"><b>AirNow (Hourly)</b></div>
               <hr style="${hrStyle}">
               <div style="${rowStyle}"> 
-                <b>Obs PM2.5 (hourly) (µg m⁻³):</b> 
+                <b>Obs PM2.5 (hourly) (ug m⁻³):</b> 
                 <b style="color: var(--card-shadow);">${ESML(smartFmt(p["pm25(ug/m3)"], "pm25(ug/m3)", dataSource))}</b>
               </div>
               <div style="${rowStyle}"> 

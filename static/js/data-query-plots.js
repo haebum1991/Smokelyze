@@ -181,7 +181,7 @@ function renderDailyTimeSeriesPlot(theme, dsId, aqs, tableData) {
     resetPlotContainer(container);
 
     let traces = [];
-    let yTitle = dsId === "pm-cbsa" ? "Concentration (µg m⁻³)" : "MDA8 and SMO (ppb)";
+    let yTitle = dsId === "pm-cbsa" ? "Concentration (ug m⁻³)" : "MDA8 and SMO (ppb)";
     let plotTitle = dsId === "pm-cbsa" ? `Daily time-series<br>(AQS PM: ${aqs})` : `Daily time-series<br>(AQS O3: ${aqs})`;
 
     const sortedData = [...tableData].sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -581,7 +581,7 @@ function renderAnnualExceedancePlot(theme, dsId, aqs, tableData) {
     resetPlotContainer(container);
 
     const yearlyData = {};
-    const threshold = dsId === "pm-cbsa" ? 9 : 70;
+    const threshold = dsId === "pm-cbsa" ? 35 : 70;
 
     tableData.forEach(d => {
         const year = d.date.substring(0, 4);
@@ -658,47 +658,47 @@ function renderAnnualExceedancePlot(theme, dsId, aqs, tableData) {
 
         traces.push({
             x: years, y: y1_base,
-            name: "ExdDays with minimal SMO", type: "bar", offsetgroup: "std",
+            name: "ExcDays with minimal SMO", type: "bar", offsetgroup: "std",
             marker: { color: "black" },
             customdata: y1_base,
-            hovertemplate: "ExdDays with minimal SMO: %{customdata}<extra></extra>"
+            hovertemplate: "ExcDays with minimal SMO: %{customdata}<extra></extra>"
         });
         traces.push({
             x: years, y: y1_smoke,
-            name: "ExdDays with significant SMO", type: "bar", offsetgroup: "std",
+            name: "ExcDays with significant SMO", type: "bar", offsetgroup: "std",
             base: y1_base,
             marker: { color: "red" },
             customdata: y1_smoke,
-            hovertemplate: "ExdDays with significant SMO: %{customdata}<extra></extra>"
+            hovertemplate: "ExcDays with significant SMO: %{customdata}<extra></extra>"
         });
         traces.push({
             x: years, y: y2_base,
-            name: "ExdDays with minimal SMO (EDM)", type: "bar", offsetgroup: "smo",
+            name: "ExcDays with minimal SMO (EDM)", type: "bar", offsetgroup: "smo",
             marker: { color: "grey" },
             customdata: y2_base,
-            hovertemplate: "ExdDays with minimal SMO: %{customdata}<extra></extra>"
+            hovertemplate: "ExcDays with minimal SMO: %{customdata}<extra></extra>"
         });
         traces.push({
             x: years, y: y2_smoke,
-            name: "ExdDays with significant SMO (EDM)", type: "bar", offsetgroup: "smo",
+            name: "ExcDays with significant SMO (EDM)", type: "bar", offsetgroup: "smo",
             base: y2_base,
             marker: { color: "orange" },
             customdata: y2_smoke,
-            hovertemplate: "ExdDays with significant SMO (EDM): %{customdata}<extra></extra>"
+            hovertemplate: "ExcDays with significant SMO (EDM): %{customdata}<extra></extra>"
         });
     } else if (dsId === "epa-ember") {
         const y_base = years.map(y => yearlyData[y].not_smoke_m0);
         const y_smoke = years.map(y => yearlyData[y].smoke_m0);
         traces.push({
             x: years, y: y_base,
-            name: "ExdDays with SMO=0", type: "bar",
+            name: "ExcDays with SMO=0", type: "bar",
             marker: { color: "black" },
             customdata: y_base,
             hovertemplate: "SMO=0: %{customdata}<extra></extra>"
         });
         traces.push({
             x: years, y: y_smoke,
-            name: "ExdDays with SMO>0", type: "bar",
+            name: "ExcDays with SMO>0", type: "bar",
             marker: { color: "red" },
             customdata: y_smoke,
             hovertemplate: "SMO>0: %{customdata}<extra></extra>"
@@ -708,22 +708,22 @@ function renderAnnualExceedancePlot(theme, dsId, aqs, tableData) {
         const y_smoke = years.map(y => yearlyData[y].smoke_m0);
         traces.push({
             x: years, y: y_base,
-            name: "ExdDays with minimal SMO", type: "bar",
+            name: "ExcDays with minimal SMO", type: "bar",
             marker: { color: "black" },
             customdata: y_base,
-            hovertemplate: "ExdDays with minimal SMO: %{customdata}<extra></extra>"
+            hovertemplate: "ExcDays with minimal SMO: %{customdata}<extra></extra>"
         });
         traces.push({
             x: years, y: y_smoke,
-            name: "ExdDays with significant SMO", type: "bar",
+            name: "ExcDays with significant SMO", type: "bar",
             marker: { color: "red" },
             customdata: y_smoke,
-            hovertemplate: "ExdDays with significant SMO: %{customdata}<extra></extra>"
+            hovertemplate: "ExcDays with significant SMO: %{customdata}<extra></extra>"
         });
     }
 
     const layout = {
-        title: { text: dsId === "pm-cbsa" ? `Annual days with > 9 ug m-3<br>(AQS PM: ${aqs})` : `Annual ExdDays (> 70 ppb)<br>(AQS O3: ${aqs})`, font: { size: theme.fontSize * 0.9, color: theme.axisText }, y: 0.95 },
+        title: { text: dsId === "pm-cbsa" ? `Annual ExcDays (> 35 ug m-3)<br>(AQS PM: ${aqs})` : `Annual ExcDays (> 70 ppb)<br>(AQS O3: ${aqs})`, font: { size: theme.fontSize * 0.9, color: theme.axisText }, y: 0.95 },
         barmode: (dsId === "pm-cbsa" || dsId === "gam-v2") ? "group" : "stack",
         hovermode: "x unified",
         paper_bgcolor: theme.paper_bgcolor, plot_bgcolor: theme.plot_bgcolor,

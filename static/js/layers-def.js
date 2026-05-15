@@ -488,11 +488,11 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "MapPost", field: "title", breaks: [], colors: ["red"], title: "MapPost", datasets: ["MapPost"], type: "symbol", iconImage: "pulsing-alert" },
 
     // ---- [External data] AirNow ----
-    { duration: "hourly", id: "airnow-hourly-pm25", field: "pm25(ug/m3)", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "AirNow Obs PM2.5 (hourly) (µg m⁻³)", decimals: 1, datasets: ["airnow-hourly-pm25"], hourly: true },
+    { duration: "hourly", id: "airnow-hourly-pm25", field: "pm25(ug/m3)", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "AirNow Obs PM2.5 (hourly) (ug m⁻³)", decimals: 1, datasets: ["airnow-hourly-pm25"], hourly: true },
     { duration: "hourly", id: "airnow-hourly-ozone", field: "ozone(ppb)", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "AirNow Obs O3 (hourly) (ppb)", decimals: 1, datasets: ["airnow-hourly-ozone"], hourly: true },
     { duration: "hourly", id: "airnow-hourly-no2", field: "no2(ppb)", breaks: BREAKS_NO2, colors: PALETTE_EPA, title: "AirNow Obs NO2 (hourly) (ppb)", decimals: 1, datasets: ["airnow-hourly-no2"], hourly: true },
 
-    { duration: "daily", id: "airnow-daily-pm25", field: "PM2.5", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "AirNow Obs PM2.5 (µg m⁻³)", decimals: 1, datasets: ["airnow-daily-pm25"] },
+    { duration: "daily", id: "airnow-daily-pm25", field: "PM2.5", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "AirNow Obs PM2.5 (ug m⁻³)", decimals: 1, datasets: ["airnow-daily-pm25"] },
     { duration: "daily", id: "airnow-daily-mda8", field: "MDA8O3", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "AirNow Obs MDA8 (ppb)", decimals: 1, datasets: ["airnow-daily-mda8"] },
 
     // --- MDA8 Ozone ---
@@ -513,18 +513,18 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "resids-quant-edm", field: "edm_Quant_MDA8O3_resids", breaks: BREAKS_QUANT, colors: PALETTE_EPA, title: "Residual quantile (EDM) (%)", decimals: 1, datasets: ["gam-v2", "gam-v2-pred"] },
 
     // --- PM2.5 ---
-    { duration: "daily", id: "pm25-obs", field: "PM2.5", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "Obs PM2.5 (µg m⁻³)", decimals: 1, datasets: ["gam-v2", "gam-v1", "pm-cbsa", "gam-v2-pred", "pm-cbsa-pred"] },
+    { duration: "daily", id: "pm25-obs", field: "PM2.5", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "Obs PM2.5 (ug m⁻³)", decimals: 1, datasets: ["gam-v2", "gam-v1", "pm-cbsa", "gam-v2-pred", "pm-cbsa-pred"] },
 
-    { duration: "daily", id: "pm25-smoke-m0p5m", field: "smoke_PM2.5_m0p5m", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "Smoke PM2.5 m0p5m (µg m⁻³)", decimals: 2, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
-    { duration: "daily", id: "pm25-smoke-m1p0m", field: "smoke_PM2.5_m1p0m", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "Smoke PM2.5 m1p0m (µg m⁻³)", decimals: 2, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
+    { duration: "daily", id: "pm25-smoke-m0p5m", field: "smoke_PM2.5_m0p5m", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "Smoke PM2.5 m0p5m (ug m⁻³)", decimals: 2, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
+    { duration: "daily", id: "pm25-smoke-m1p0m", field: "smoke_PM2.5_m1p0m", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "Smoke PM2.5 m1p0m (ug m⁻³)", decimals: 2, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
 
     // --- PM2.5 Quantiles ---
     { duration: "daily", id: "pm25-quant", field: "Quant_PM2.5", breaks: BREAKS_QUANT, colors: PALETTE_EPA, title: "PM2.5 quantile (%)", decimals: 1, datasets: ["gam-v2", "gam-v1", "pm-cbsa", "gam-v2-pred", "pm-cbsa-pred"] },
 
     // --- PM2.5 Crit ---
-    { duration: "daily", id: "pm25-crit", field: "PM2.5_Crit", breaks: BREAKS_PM_CRIT, colors: PALETTE_EPA, title: "PM2.5-crit (µg m⁻³)", decimals: 2, datasets: ["gam-v2", "gam-v1", "gam-v2-pred"] },
-    { duration: "daily", id: "pm25-crit-m0p5m", field: "PM2.5_Crit_m0p5m", breaks: BREAKS_PM_CRIT, colors: PALETTE_EPA, title: "PM2.5-crit m0p5m (µg m⁻³)", decimals: 2, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
-    { duration: "daily", id: "pm25-crit-m1p0m", field: "PM2.5_Crit_m1p0m", breaks: BREAKS_PM_CRIT, colors: PALETTE_EPA, title: "PM2.5-crit m1p0m (µg m⁻³)", decimals: 2, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
+    { duration: "daily", id: "pm25-crit", field: "PM2.5_Crit", breaks: BREAKS_PM_CRIT, colors: PALETTE_EPA, title: "PM2.5-crit (ug m⁻³)", decimals: 2, datasets: ["gam-v2", "gam-v1", "gam-v2-pred"] },
+    { duration: "daily", id: "pm25-crit-m0p5m", field: "PM2.5_Crit_m0p5m", breaks: BREAKS_PM_CRIT, colors: PALETTE_EPA, title: "PM2.5-crit m0p5m (ug m⁻³)", decimals: 2, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
+    { duration: "daily", id: "pm25-crit-m1p0m", field: "PM2.5_Crit_m1p0m", breaks: BREAKS_PM_CRIT, colors: PALETTE_EPA, title: "PM2.5-crit m1p0m (ug m⁻³)", decimals: 2, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
 
     // --- Meteo (TMAX, SRAD) ---
     { duration: "daily", id: "tmax", field: function (ds) { return ds.startsWith("gam-v2") ? "T2MAX" : "TMAX"; }, breaks: function (ds) { return ds.startsWith("gam-v2") ? BREAKS_T2MAX : BREAKS_TMAX; }, colors: PALETTE_EPA, title: function (ds) { return ds.startsWith("gam-v2") ? "TMAX (K)" : "TMAX (°C)"; }, decimals: 1, datasets: ["gam-v2", "gam-v1", "gam-v2-pred"] },
@@ -539,12 +539,12 @@ export const LAYER_TEMPLATES = [
 
     // --- Exceedance Cause (Combined: 0=None, 1=Not Smoke, 2=Smoke) ---
     // 0: Transparent, 1: Blue (#3399ff), 2: Red (#ff3333)
-    { duration: "daily", id: "ExcDays", field: "exceedance", breaks: BREAKS_TRI, colors: PALETTE_TRI, title: "Exc. day (> 70 ppb)", labelParams: LABEL_SMO, decimals: 0, datasets: ["gam-v2", "gam-v1", "epa-ember", "gam-v2-pred"] },
-    { duration: "daily", id: "ExcDays-edm", field: "edm_exceedance", breaks: BREAKS_TRI, colors: PALETTE_TRI, title: "Exc. day (EDM) (> 70 ppb)", labelParams: LABEL_SMO, decimals: 0, datasets: ["gam-v2", "gam-v2-pred"] },
+    { duration: "daily", id: "ExcDays", field: "exceedance", breaks: BREAKS_TRI, colors: PALETTE_TRI, title: "ExcDay (> 70 ppb)", labelParams: LABEL_SMO, decimals: 0, datasets: ["gam-v2", "gam-v1", "epa-ember", "gam-v2-pred"] },
+    { duration: "daily", id: "ExcDays-edm", field: "edm_exceedance", breaks: BREAKS_TRI, colors: PALETTE_TRI, title: "ExcDay (EDM) (> 70 ppb)", labelParams: LABEL_SMO, decimals: 0, datasets: ["gam-v2", "gam-v2-pred"] },
 
     // --- Exceedance Cause (PM CBSA) ---
-    { duration: "daily", id: "ExcDays-m0p5m", field: "exceedance_m0p5m", breaks: BREAKS_TRI, colors: PALETTE_TRI, title: "Exc. day (m0p5m) (> 9 µg m⁻³)", labelParams: LABEL_SMP, decimals: 0, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
-    { duration: "daily", id: "ExcDays-m1p0m", field: "exceedance_m1p0m", breaks: BREAKS_TRI, colors: PALETTE_TRI, title: "Exc. day (m1p0m) (> 9 µg m⁻³)", labelParams: LABEL_SMP, decimals: 0, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
+    { duration: "daily", id: "ExcDays-m0p5m", field: "exceedance_m0p5m", breaks: BREAKS_TRI, colors: PALETTE_TRI, title: "ExcDay (m0p5m) (> 35 ug m⁻³)", labelParams: LABEL_SMP, decimals: 0, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
+    { duration: "daily", id: "ExcDays-m1p0m", field: "exceedance_m1p0m", breaks: BREAKS_TRI, colors: PALETTE_TRI, title: "ExcDay (m1p0m) (> 35 ug m⁻³)", labelParams: LABEL_SMP, decimals: 0, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
 
     // --- Satellite & Model data ---
     { duration: "daily", id: "burn", field: "burn", title: "Area burned (km²)", breaks: BREAKS_BURN, colors: PALETTE_BURN, decimals: 1, manualLayer: true },
@@ -560,8 +560,8 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "tropomi-no2", field: "tropomi", title: "TROPOMI-NO2VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true },
     { duration: "daily", id: "tropomi-hcho", field: "tropomi", title: "TROPOMI-HCHOVCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true },
     
-    { duration: "hourly", id: "hrrr-colmd", field: "hrrr", title: "HRRR-smokeVCD", breaks: BREAKS_HRRR_ugm2, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "10³ µg m⁻²" },
-    { duration: "hourly", id: "hrrr-massden", field: "hrrr", title: "HRRR-smoke8m", breaks: BREAKS_HRRR_ugm3, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "µg m⁻³" }
+    { duration: "hourly", id: "hrrr-colmd", field: "hrrr", title: "HRRR-smokeVCD", breaks: BREAKS_HRRR_ugm2, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "10³ ug m⁻²" },
+    { duration: "hourly", id: "hrrr-massden", field: "hrrr", title: "HRRR-smoke8m", breaks: BREAKS_HRRR_ugm3, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "ug m⁻³" }
 ];
 
 export const LAYER_DEFS = (() => {

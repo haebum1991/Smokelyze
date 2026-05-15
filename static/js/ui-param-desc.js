@@ -427,8 +427,8 @@ export const DescData = {
         { id: "smokeday", title: "Smoke day (SMD)", desc: "Identified smoke day using HMS and PM2.5-criteria" },
         { id: "smokeday-975", title: "SMO > 97.5th", desc: "[Smoke day] & [SMO > 97.5th percentile residual]" },
         { id: "smokeday-975-edm", title: "SMO > 97.5th (EDM)", desc: "[Smoke day] & [SMO > 97.5th percentile residual] (EDM version)" },
-        { id: "ExcDays", title: "Exc. day", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 97.5th percentile residual) = caused by smoke" },
-        { id: "ExcDays-edm", title: "Exc. day (EDM)", desc: "Exceedance days (> 70 ppb) (EDM version): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 97.5th percentile residual) = caused by smoke" }
+        { id: "ExcDays", title: "ExcDay", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 97.5th percentile residual) = caused by smoke" },
+        { id: "ExcDays-edm", title: "ExcDay (EDM)", desc: "Exceedance days (> 70 ppb) (EDM version): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 97.5th percentile residual) = caused by smoke" }
     ],
     "desc-published-gam-v1": [
         {
@@ -451,7 +451,7 @@ export const DescData = {
         { id: "srad", title: "SRAD", desc: "Daily mean surface shortwave solar flux (W m⁻²) from MERRA-2" },
         { id: "smokeday", title: "Smoke day (SMD)", desc: "Identified smoke day using HMS and PM2.5-criteria" },
         { id: "smokeday-975", title: "SMO > 97.5th", desc: "[Smoke day] & [SMO > 97.5th percentile residual]" },
-        { id: "ExcDays", title: "Exc. day", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 97.5th percentile residual) = caused by smoke" }
+        { id: "ExcDays", title: "ExcDay", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 97.5th percentile residual) = caused by smoke" }
     ],
     "desc-published-pm-cbsa": [
         {
@@ -470,8 +470,8 @@ export const DescData = {
         { id: "pm25-smoke-m1p0m", title: "Smoke PM2.5 m1p0m", desc: "Smoke contribution to PM2.5 (Smoke PM2.5) (PM2.5 - PM2.5-criteria (m1p0m))" },
         { id: "smokeday-m0p5m", title: "Smoke day (SMD) m0p5m", desc: "Identified smoke day using HMS and PM2.5-criteria (m0p5m)" },
         { id: "smokeday-m1p0m", title: "Smoke day (SMD) m1p0m", desc: "Identified smoke day using HMS and PM2.5-criteria (m1p0m)" },
-        { id: "ExcDays-m0p5m", title: "Exc. day m0p5m", desc: "Exceedance days (> 9 ug m⁻³): <br> - with minimal smoke PM2.5 = not caused by smoke <br> - with significant smoke PM2.5 (m0p5m) (case with smoke PM2.5 > 0) = caused by smoke" },
-        { id: "ExcDays-m1p0m", title: "Exc. day m1p0m", desc: "Exceedance days (> 9 ug m⁻³): <br> - with minimal smoke PM2.5 = not caused by smoke <br> - with significant smoke PM2.5 (m1p0m) (case with smoke PM2.5 > 0) = caused by smoke" }
+        { id: "ExcDays-m0p5m", title: "ExcDay m0p5m", desc: "Exceedance days (> 35 ug m⁻³): <br> - with minimal smoke PM2.5 = not caused by smoke <br> - with significant smoke PM2.5 (m0p5m) (case with smoke PM2.5 > 0) = caused by smoke" },
+        { id: "ExcDays-m1p0m", title: "ExcDay m1p0m", desc: "Exceedance days (> 35 ug m⁻³): <br> - with minimal smoke PM2.5 = not caused by smoke <br> - with significant smoke PM2.5 (m1p0m) (case with smoke PM2.5 > 0) = caused by smoke" }
     ],
     "desc-published-epa-ember": [
         {
@@ -486,7 +486,7 @@ export const DescData = {
         { id: "mda8-pred", title: "Pred MDA8", desc: "Predicted MDA8 from the EMBER model" },
         { id: "smo", title: "SMO", desc: "Smoke contribution to O3 (or Smoke O3, SMO)" },
         { id: "resids", title: "Residual", desc: "The difference between observed and predicted MDA8 (Obs MDA8 - Pred MDA8) from EMBER model" },
-        { id: "ExcDays", title: "Exc. day", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 0) = caused by smoke" }
+        { id: "ExcDays", title: "ExcDay", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 0) = caused by smoke" }
     ]
 };
 

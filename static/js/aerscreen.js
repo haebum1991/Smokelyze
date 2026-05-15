@@ -526,7 +526,7 @@ function estimatePlumeRise(heatRelease_MW, windSpeed, stabilityClass) {
  * 
  * C(x,y,0) = Q / (π·u·σy·σz) · exp(-y²/2σy²) · exp(-H²/2σz²)
  * 
- * @param {number} Q - Emission rate (µg/s)
+ * @param {number} Q - Emission rate (ug s-1)
  * @param {number} u - Wind speed (m s-1)
  * @param {number} x - Downwind distance (m)
  * @param {number} y - Crosswind distance (m)
@@ -559,7 +559,7 @@ function gaussianPlumeConc(Q, u, x, y, H, stabilityClass, terrain) {
  * Computes a 2D concentration grid around the source.
  * The grid is oriented with the wind direction.
  * @param {Object} params
- * @param {number} params.emissionRate - g/s (converted to µg/s internally)
+ * @param {number} params.emissionRate - g s-1 (converted to ug s-1 internally)
  * @param {number} params.effectiveHeight - m (total: stack + plume rise)
  * @param {number} params.windSpeed - m s-1
  * @param {number} params.windDirection - degrees (meteorological, from)
@@ -581,7 +581,7 @@ function computeConcentrationGrid(params) {
         gridResolution = 150
     } = params;
 
-    const Q = emissionRate * 1e6; // g/s → µg/s
+    const Q = emissionRate * 1e6; // g s-1 → ug s-1
     const H = effectiveHeight;
     const u = windSpeed;
 
@@ -735,7 +735,7 @@ function calcReceptorConcentration(params) {
         terrain = "rural"
     } = params;
 
-    const Q = emissionRate * 1e6; // g/s → µg/s
+    const Q = emissionRate * 1e6; // g s-1 → ug s-1
     const x = distance_km * 1000;
     const H = effectiveHeight;
     const u = Math.max(windSpeed, 1);
