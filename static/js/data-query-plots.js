@@ -561,7 +561,7 @@ function renderMonthlySmokePlot(theme, dsId, aqs, tableData) {
             automargin: true // Automatically adjust margin for labels
         }),
         yaxis: Object.assign({}, getSpikeLayout(theme), {
-            title: { text: "Count and ppb", font: { color: theme.axisText, size: theme.fontSize * 0.8 } },
+            title: { text: dsId === "pm-cbsa" ? "Count" : "Count and ppb", font: { color: theme.axisText, size: theme.fontSize * 0.8 } },
             tickfont: { color: theme.axisText, size: theme.fontSize * 0.8 },
             gridcolor: theme.grid
         }),
@@ -581,7 +581,6 @@ function renderAnnualExceedancePlot(theme, dsId, aqs, tableData) {
     resetPlotContainer(container);
 
     const yearlyData = {};
-    const threshold = dsId === "pm-cbsa" ? 35 : 70;
 
     tableData.forEach(d => {
         const year = d.date.substring(0, 4);
@@ -591,23 +590,24 @@ function renderAnnualExceedancePlot(theme, dsId, aqs, tableData) {
                 not_smoke_m1: 0, smoke_m1: 0
             };
         }
-        const val = dsId === "pm-cbsa" ? d["PM2.5"] : d["MDA8O3"];
-        if (val > threshold && val != null) {
-            if (dsId === "pm-cbsa") {
-                if (Number(d.smoke_m0p5m) === 1) yearlyData[year].smoke_m0++; else yearlyData[year].not_smoke_m0++;
-                if (Number(d.smoke_m1p0m) === 1) yearlyData[year].smoke_m1++; else yearlyData[year].not_smoke_m1++;
-            } else if (dsId === "gam-v1") {
-                let isSmoke = (Number(d.smoke) === 1 && d.MDA8O3_resids > d.p975);
-                if (isSmoke) yearlyData[year].smoke_m0++; else yearlyData[year].not_smoke_m0++;
-            } else if (dsId === "gam-v2") {
-                let isSmokeStd = (Number(d.smoke) === 1 && d.MDA8O3_resids > d.p975);
-                if (isSmokeStd) yearlyData[year].smoke_m0++; else yearlyData[year].not_smoke_m0++;
-                let isSmokeEDM = (Number(d.smoke) === 1 && d.edm_MDA8O3_resids > d.edm_p975);
-                if (isSmokeEDM) yearlyData[year].smoke_m1++; else yearlyData[year].not_smoke_m1++;
-            } else if (dsId === "epa-ember") {
-                let isSmoke = (Number(d.smoke) === 1 && d.SMO > 0);
-                if (isSmoke) yearlyData[year].smoke_m0++; else yearlyData[year].not_smoke_m0++;
-            }
+
+        // Use pre-calculated exceedance columns if available (0: No, 1: Non-smoke Exceedance, 2: Smoke Exceedance)
+        if (dsId === "pm-cbsa") {
+            if (Number(d.exceedance_m0p5m) === 2) yearlyData[year].smoke_m0++;
+            else if (Number(d.exceedance_m0p5m) === 1) yearlyData[year].not_smoke_m0++;
+            
+            if (Number(d.exceedance_m1p0m) === 2) yearlyData[year].smoke_m1++;
+            else if (Number(d.exceedance_m1p0m) === 1) yearlyData[year].not_smoke_m1++;
+        } else if (dsId === "gam-v2") {
+            if (Number(d.exceedance) === 2) yearlyData[year].smoke_m0++;
+            else if (Number(d.exceedance) === 1) yearlyData[year].not_smoke_m0++;
+            
+            if (Number(d.edm_exceedance) === 2) yearlyData[year].smoke_m1++;
+            else if (Number(d.edm_exceedance) === 1) yearlyData[year].not_smoke_m1++;
+        } else {
+            // gam-v1 or epa-ember
+            if (Number(d.exceedance) === 2) yearlyData[year].smoke_m0++;
+            else if (Number(d.exceedance) === 1) yearlyData[year].not_smoke_m0++;
         }
     });
 
