@@ -96,12 +96,17 @@
 
 <!-- Global Auth Overlay -->
 <div class="auth-overlay" id="AuthOverlay" style="display:none;">
-  <div class="auth-card">
+  <div class="auth-card" style="max-height: 80vh; overflow-y: auto;">
     <div class="auth-card-header">
       <h3>Login Required</h3>
+      <button class="ui-btn-close" id="AuthBtnClose">
+        <svg width="20" height="20">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
     </div>
     <div class="auth-card-body" id="AuthViewMain">
-      <p>Join the Smokelyze community to add your insights and MapPost on the map.</p>
+      <p style="margin-bottom: 1.5rem;">Join the Smokelyze community!</p>
       <button class="auth-btn-login" id="AuthBtnLogin">
         <div class="auth-login-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20">
@@ -122,10 +127,8 @@
       <p style="font-size: 1.2rem; color: var(--text-main); text-align: center; margin-top: 1.5rem; margin-bottom: 0rem;">
         By signing in, you agree to our
         <br>
-        <a href="/about/terms-of-use/" target="_blank" style="text-decoration: underline; color: inherit;">Terms of
-          Use</a> and
-        <a href="/about/privacy-policy/" target="_blank" style="text-decoration: underline; color: inherit;">Privacy
-          Policy</a>.
+        <a href="/about/terms-of-use/" target="_blank" style="text-decoration: underline; color: inherit;">Terms of Use</a> and
+        <a href="/about/privacy-policy/" target="_blank" style="text-decoration: underline; color: inherit;">Privacy Policy</a>.
       </p>
       
       <p style="font-size: 1.3rem; color: var(--card-shadow); text-align: center; margin-top: 1.5rem; margin-bottom: 1.5rem;">
@@ -134,6 +137,82 @@
         In such cases, please use a <strong>personal Google account</strong>.
       </p>
       
+      <!-- === CHANGED START: Email Auth Panel === -->
+      <!-- Divider -->
+      <div class="auth-divider" style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin: 1.5rem 0; color: var(--text-soft); font-size: 1.3rem;">
+        <span style="flex: 1; height: 1px; background: var(--text-main);"></span>
+        <span style="color: var(--card-shadow);">OR</span>
+        <span style="flex: 1; height: 1px; background: var(--text-main);"></span>
+      </div>
+
+      <!-- Email Login/Register Toggle Panel -->
+      <div id="AuthEmailSection" style="text-align: left;">
+        <!-- Switch tabs between Sign In and Register -->
+        <div id="AuthTabsHeader" style="display: flex; border-bottom: 1px solid var(--border-light); margin-bottom: 1.5rem; justify-content: center; gap: 2rem;">
+          <button id="AuthTabSignIn" type="button" style="background: none; border: none; border-bottom: 2px solid var(--btn-action); color: var(--text-strong); font-size: 1.5rem; font-weight: bold; padding: 0.5rem 1rem; cursor: pointer; transition: all 0.3s;">Sign In</button>
+          <button id="AuthTabSignUp" type="button" style="background: none; border: none; border-bottom: 2px solid transparent; color: var(--text-soft); font-size: 1.5rem; font-weight: bold; padding: 0.5rem 1rem; cursor: pointer; transition: all 0.3s;">Register</button>
+        </div>
+
+        <!-- Sign In Form -->
+        <div id="AuthFormSignIn" style="display: block;">
+          <div class="profile-group" style="margin-bottom: 1rem;">
+            <label for="AuthEmailSignIn" style="font-size: 1.2rem; margin-bottom: 0.5rem; display: block;">Email Address</label>
+            <input type="email" id="AuthEmailSignIn" placeholder="Enter your email" class="profile-input" style="padding: 1rem; font-size: 1.4rem;">
+          </div>
+          <div class="profile-group" style="margin-bottom: 1rem;">
+            <label for="AuthPasswordSignIn" style="font-size: 1.2rem; margin-bottom: 0.5rem; display: block;">Password</label>
+            <input type="password" id="AuthPasswordSignIn" placeholder="Enter password" class="profile-input" style="padding: 1rem; font-size: 1.4rem;">
+            <div id="AuthPasswordSignInCaps" style="display: none; color: #ff9800; font-size: 1.1rem; margin-top: 0.3rem; text-align: left;">⚠️ Caps Lock is ON</div>
+            <button id="AuthLinkForgotPassword" type="button" style="background: none; border: none; color: var(--text-main); font-size: 1.1rem; margin-top: 0.6rem; cursor: pointer; text-decoration: underline; text-align: left; display: block; padding: 0;">Forgot Password?</button>
+          </div>
+          <button id="AuthBtnEmailSignIn" class="profile-btn-save" style="margin-top: 0.5rem; padding: 1rem; height: auto;">Sign In</button>
+        </div>
+
+        <!-- Register Form -->
+        <div id="AuthFormSignUp" style="display: none;">
+          <div class="profile-group" style="margin-bottom: 1rem;">
+            <label for="AuthEmailSignUp" style="font-size: 1.2rem; margin-bottom: 0.5rem; display: block;">Email Address</label>
+            <input type="email" id="AuthEmailSignUp" placeholder="Enter your email" class="profile-input" style="padding: 1rem; font-size: 1.4rem;">
+          </div>
+          <div class="profile-group" style="margin-bottom: 1rem;">
+            <label for="AuthPasswordSignUp" style="font-size: 1.2rem; margin-bottom: 0.5rem; display: block;">Create Password</label>
+            <input type="password" id="AuthPasswordSignUp" placeholder="Password (see criteria below)" class="profile-input" style="padding: 1rem; font-size: 1.4rem;">
+            <div id="AuthPasswordSignUpCaps" style="display: none; color: #ff9800; font-size: 1.1rem; margin-top: 0.3rem; text-align: left;">⚠️ Caps Lock is ON</div>
+            
+            <!-- Password Strength Checklist (Premium UI) -->
+            <div id="PasswordRequirements" style="margin-top: 0.6rem; padding: 0.8rem; background: rgba(255, 255, 255, 0.03); border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); font-size: 1.1rem; line-height: 1.5; color: var(--text-soft); text-align: left;">
+              <div style="font-weight: bold; margin-bottom: 0.4rem; color: var(--text-strong);">Password criteria:</div>
+              <div id="ReqLength" style="display: flex; align-items: center; gap: 0.5rem; color: #ff5252;"><span class="req-icon">❌</span> Min. 8 characters</div>
+            </div>
+          </div>
+          <div class="profile-group" style="margin-bottom: 1rem;">
+            <label for="AuthPasswordConfirmSignUp" style="font-size: 1.2rem; margin-bottom: 0.5rem; display: block;">Confirm Password</label>
+            <input type="password" id="AuthPasswordConfirmSignUp" placeholder="Confirm your password" class="profile-input" style="padding: 1rem; font-size: 1.4rem;">
+            <div id="AuthPasswordConfirmSignUpCaps" style="display: none; color: #ff9800; font-size: 1.1rem; margin-top: 0.3rem; text-align: left;">⚠️ Caps Lock is ON</div>
+            <div id="PasswordMatchFeedback" style="display: none; font-size: 1.1rem; margin-top: 0.3rem; text-align: left;"></div>
+          </div>
+          <button id="AuthBtnEmailSignUp" class="profile-btn-save" style="margin-top: 0.5rem; padding: 1rem; height: auto;">Register Account</button>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div id="AuthFormForgotPassword" style="display: none;">
+          <div style="text-align: left; margin-bottom: 1.5rem; font-size: 1.2rem; line-height: 1.4; color: var(--text-soft);">
+            Enter your registered email address below, and we will send you a secure link to reset your password.
+          </div>
+          <div class="profile-group" style="margin-bottom: 1rem;">
+            <label for="AuthEmailForgotPassword" style="font-size: 1.2rem; margin-bottom: 0.5rem; display: block;">Email Address</label>
+            <input type="email" id="AuthEmailForgotPassword" placeholder="Enter your email" class="profile-input" style="padding: 1rem; font-size: 1.4rem;">
+          </div>
+          <button id="AuthBtnSendResetEmail" class="profile-btn-save" style="margin-top: 0.5rem; padding: 1rem; height: auto;">Send Reset Link</button>
+          
+          <button id="AuthBtnBackToSignIn" type="button" style="background: none; border: none; color: var(--text-soft); font-size: 1.2rem; margin-top: 1.5rem; cursor: pointer; text-decoration: underline; display: block; width: 100%; text-align: center;">Back to Sign In</button>
+        </div>
+        
+        <div id="AuthEmailMessage" class="profile-message" style="margin-top: 1rem; font-size: 1.3rem; font-weight: bold; text-align: center;"></div>
+      </div>
+      <!-- === CHANGED END: Email Auth Panel === -->
+      
+      <hr>
       <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
         <button id="AuthBtnBenefits" class="auth-btn-guest" style="text-decoration: underline;">
           View Member Benefits

@@ -6,7 +6,8 @@ import { convertToCSV, downloadFile } from "./ui-download.js";
 const {
     auth, db, onAuthStateChanged, signInWithPopup, signOut, googleProvider,
     doc, setDoc, getDoc, collection, addDoc, serverTimestamp,
-    query, where, getDocs, updateDoc, arrayUnion, arrayRemove, writeBatch
+    query, where, getDocs, updateDoc, arrayUnion, arrayRemove, writeBatch,
+    signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail
 } = fb;
 
 const unauthContainer = document.getElementById("ProfileBoxUnauthenticated");
@@ -30,6 +31,7 @@ const settingsModal = document.getElementById("SettingsPage");
 const settingsCloseBtn = document.getElementById("SettingsBtnClose");
 
 const authOverlay = document.getElementById("AuthOverlay");
+const authCloseBtn = document.getElementById("AuthBtnClose");
 const authLoginBtn = document.getElementById("AuthBtnLogin");
 const authSkipBtn = document.getElementById("AuthBtnSkip");
 const benefitsToggle = document.getElementById("AuthBtnBenefits");
@@ -47,7 +49,17 @@ const roleAffInput = document.getElementById("RoleAffiliation");
 
 onAuthStateChanged(auth, async (user) => {
 
-    if (user) {
+    if (user && !user.emailVerified) {
+        try {
+            await user.reload();
+        } catch (reloadErr) {
+            console.warn("Auto-reload verification status failed:", reloadErr);
+        }
+    }
+
+    const freshUser = auth.currentUser;
+
+    if (freshUser && freshUser.emailVerified) {
         // UI Switch
         if (unauthContainer) unauthContainer.style.display = "none";
         if (authContainer) authContainer.style.display = "flex";
@@ -95,7 +107,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     
-    if (authOverlay && user) {
+    if (authOverlay && user && user.emailVerified) {
         authOverlay.style.display = "none";
     }
 
@@ -118,7 +130,7 @@ onAuthStateChanged(auth, async (user) => {
         ]
     };
 
-    if (user) {
+    if (user && user.emailVerified) {
         try {
             const snap = await getDoc(doc(db, "smokelyze_users", user.uid));
             const isAdmin = snap.exists() && snap.data().role === "admin";
@@ -200,18 +212,18 @@ async function recordUserHistory(user) {
 
         // 2. 닉네임이 없으면 이니셜로 생성
         if (!currentNickname) {
-            currentNickname = getInitials(user.displayName);
+            currentNickname = getInitials(user.displayName) || (user.email ? user.email.split("@")[0].substring(0, 8).toUpperCase() : "USER");
         }
 
         // 3. 데이터 저장
         await setDoc(userRef, {
-            displayName: user.displayName,
+            displayName: user.displayName || (user.email ? user.email.split("@")[0] : "User"),
             email: user.email,
-            photoURL: user.photoURL,
+            photoURL: user.photoURL || null,
             nickname: currentNickname,
             lastLogin: serverTimestamp(),
             // Auth의 메타데이터에서 실제 가입 시간을 가져와 DB에 보관 (없을 때만 저장)
-            ...(!userSnap.exists() ? { createdAt: user.metadata.creationTime } : {})
+            ...(!userSnap.exists() ? { createdAt: user.metadata.creationTime || new Date().toISOString() } : {})
         }, { merge: true });
 
         // Login logging is now handled by Firebase Analytics (BigQuery export enabled, as of 2026-03-04)
@@ -307,6 +319,9 @@ if (profileProfileBtn) {
             const snap = await getDoc(doc(db, "smokelyze_users", user.uid));
             if (snap.exists()) {
                 const data = snap.data();
+                if (nameEl && data.displayName) {
+                    nameEl.value = data.displayName;
+                }
                 const nickEl = document.getElementById("ProfileNickname");
                 const affilEl = document.getElementById("ProfileAffiliation");
                 const roleEl = document.getElementById("ProfileRole");
@@ -531,7 +546,9 @@ if (profileSaveBtn) {
     profileSaveBtn.addEventListener("click", async () => {
         const user = auth.currentUser;
         if (!user) return;
-
+        
+        const nameEl = document.getElementById("ProfileName");
+        const name = nameEl ? nameEl.value.trim() : "";
         const nickEl = document.getElementById("ProfileNickname");
         const affilEl = document.getElementById("ProfileAffiliation");
         const roleEl = document.getElementById("ProfileRole");
@@ -544,6 +561,7 @@ if (profileSaveBtn) {
 
         try {
             const updateData = {
+                displayName: name,
                 nickname: nick,
                 affiliation: affil,
                 userRole: userRole,
@@ -573,6 +591,10 @@ if (profileSaveBtn) {
 
 // Auth Overlay Toggles
 if (authLoginBtn) authLoginBtn.addEventListener("click", doLogin);
+if (authCloseBtn) authCloseBtn.addEventListener("click", () => {
+    if (authOverlay) authOverlay.style.display = "none";
+    sessionStorage.setItem("auth-guest-dismissed", "true");
+});
 if (authSkipBtn) authSkipBtn.addEventListener("click", () => {
     if (authOverlay) authOverlay.style.display = "none";
     sessionStorage.setItem("auth-guest-dismissed", "true");
@@ -717,6 +739,10 @@ function resetIdleTimer() {
             sessionStorage.removeItem("auth-guest-dismissed");
             sessionStorage.removeItem("role-checked");
             sessionStorage.removeItem("userRole");
+            
+            // Clear local AI key (Protection for shared devices on auto-logout)
+            localStorage.removeItem("smokelyze_gemini_key");
+            
             alert("Logged out due to inactivity.");
         }, IDLE_TIMEOUT);
     }
@@ -789,4 +815,345 @@ if (adminExportBtn) {
         }
     });
 }
+
+// === CHANGED START: Email Authentication Logic ===
+const authTabSignIn = document.getElementById("AuthTabSignIn");
+const authTabSignUp = document.getElementById("AuthTabSignUp");
+const authFormSignIn = document.getElementById("AuthFormSignIn");
+const authFormSignUp = document.getElementById("AuthFormSignUp");
+const authBtnEmailSignIn = document.getElementById("AuthBtnEmailSignIn");
+const authBtnEmailSignUp = document.getElementById("AuthBtnEmailSignUp");
+const authEmailSignIn = document.getElementById("AuthEmailSignIn");
+const authPasswordSignIn = document.getElementById("AuthPasswordSignIn");
+const authEmailSignUp = document.getElementById("AuthEmailSignUp");
+const authPasswordSignUp = document.getElementById("AuthPasswordSignUp");
+const authPasswordConfirmSignUp = document.getElementById("AuthPasswordConfirmSignUp");
+const authEmailMessage = document.getElementById("AuthEmailMessage");
+
+// Forgot Password elements
+const authTabsHeader = document.getElementById("AuthTabsHeader");
+const authLinkForgotPassword = document.getElementById("AuthLinkForgotPassword");
+const authFormForgotPassword = document.getElementById("AuthFormForgotPassword");
+const authBtnBackToSignIn = document.getElementById("AuthBtnBackToSignIn");
+const authEmailForgotPassword = document.getElementById("AuthEmailForgotPassword");
+const authBtnSendResetEmail = document.getElementById("AuthBtnSendResetEmail");
+
+// Caps Lock Warning elements
+const authPasswordSignInCaps = document.getElementById("AuthPasswordSignInCaps");
+const authPasswordSignUpCaps = document.getElementById("AuthPasswordSignUpCaps");
+const authPasswordConfirmSignUpCaps = document.getElementById("AuthPasswordConfirmSignUpCaps");
+
+// Password Criteria elements
+const reqLength = document.getElementById("ReqLength");
+const reqUpper = document.getElementById("ReqUpper");
+const reqLower = document.getElementById("ReqLower");
+const reqNum = document.getElementById("ReqNum");
+const reqSpec = document.getElementById("ReqSpec");
+const passwordMatchFeedback = document.getElementById("PasswordMatchFeedback");
+
+// Tab switching
+if (authTabSignIn && authTabSignUp && authFormSignIn && authFormSignUp) {
+    authTabSignIn.addEventListener("click", () => {
+        authTabSignIn.style.borderBottomColor = "var(--btn-action)";
+        authTabSignIn.style.color = "var(--text-strong)";
+        authTabSignUp.style.borderBottomColor = "transparent";
+        authTabSignUp.style.color = "var(--text-soft)";
+        authFormSignIn.style.display = "block";
+        authFormSignUp.style.display = "none";
+        if (authFormForgotPassword) authFormForgotPassword.style.display = "none";
+        if (authTabsHeader) authTabsHeader.style.display = "flex";
+        if (authEmailMessage) authEmailMessage.innerText = "";
+    });
+
+    authTabSignUp.addEventListener("click", () => {
+        authTabSignUp.style.borderBottomColor = "var(--btn-action)";
+        authTabSignUp.style.color = "var(--text-strong)";
+        authTabSignIn.style.borderBottomColor = "transparent";
+        authTabSignIn.style.color = "var(--text-soft)";
+        authFormSignIn.style.display = "none";
+        authFormSignUp.style.display = "block";
+        if (authFormForgotPassword) authFormForgotPassword.style.display = "none";
+        if (authTabsHeader) authTabsHeader.style.display = "flex";
+        if (authEmailMessage) authEmailMessage.innerText = "";
+    });
+}
+
+// Forgot Password Navigation
+if (authLinkForgotPassword && authFormForgotPassword && authFormSignIn && authTabsHeader) {
+    authLinkForgotPassword.addEventListener("click", () => {
+        authFormSignIn.style.display = "none";
+        authFormSignUp.style.display = "none";
+        authFormForgotPassword.style.display = "block";
+        authTabsHeader.style.display = "none";
+        if (authEmailMessage) authEmailMessage.innerText = "";
+        
+        // Pre-fill email from sign-in form if present
+        if (authEmailSignIn && authEmailForgotPassword) {
+            authEmailForgotPassword.value = authEmailSignIn.value;
+        }
+    });
+}
+
+if (authBtnBackToSignIn && authFormForgotPassword && authFormSignIn && authTabsHeader) {
+    authBtnBackToSignIn.addEventListener("click", () => {
+        authFormForgotPassword.style.display = "none";
+        authFormSignIn.style.display = "block";
+        authTabsHeader.style.display = "flex";
+        if (authEmailMessage) authEmailMessage.innerText = "";
+    });
+}
+
+function showEmailAuthMessage(msg, isError = true) {
+    if (!authEmailMessage) return;
+    authEmailMessage.innerText = msg;
+    authEmailMessage.className = isError ? "profile-message error" : "profile-message success";
+}
+
+// Caps Lock Detector Helper
+function setupCapsLockDetector(inputEl, warningEl) {
+    if (!inputEl || !warningEl) return;
+    const checkCaps = (e) => {
+        if (e.getModifierState && e.getModifierState("CapsLock")) {
+            warningEl.style.display = "block";
+        } else {
+            warningEl.style.display = "none";
+        }
+    };
+    inputEl.addEventListener("keyup", checkCaps);
+    inputEl.addEventListener("keydown", checkCaps);
+    inputEl.addEventListener("focus", checkCaps);
+    inputEl.addEventListener("blur", () => {
+        warningEl.style.display = "none";
+    });
+}
+
+// Initialize Caps Lock Detectors
+setupCapsLockDetector(authPasswordSignIn, authPasswordSignInCaps);
+setupCapsLockDetector(authPasswordSignUp, authPasswordSignUpCaps);
+setupCapsLockDetector(authPasswordConfirmSignUp, authPasswordConfirmSignUpCaps);
+
+// Password Criteria Checker
+function validatePasswordCriteria(pwd) {
+    return {
+        hasLength: pwd.length >= 8
+    };
+}
+
+// Update Password strength UI
+function updatePasswordChecklist() {
+    if (!authPasswordSignUp) return false;
+    const pwd = authPasswordSignUp.value;
+    const criteria = validatePasswordCriteria(pwd);
+
+    const updateItem = (el, passed) => {
+        if (!el) return;
+        const icon = el.querySelector(".req-icon");
+        if (passed) {
+            el.style.color = "#4caf50";
+            if (icon) icon.innerText = "✔️";
+        } else {
+            el.style.color = "#ff5252";
+            if (icon) icon.innerText = "❌";
+        }
+    };
+
+    updateItem(reqLength, criteria.hasLength);
+    updateConfirmMatch();
+
+    return criteria.hasLength;
+}
+
+// Update Password Match UI
+function updateConfirmMatch() {
+    if (!authPasswordSignUp || !authPasswordConfirmSignUp || !passwordMatchFeedback) return false;
+    const pwd = authPasswordSignUp.value;
+    const confirmPwd = authPasswordConfirmSignUp.value;
+
+    if (!confirmPwd) {
+        passwordMatchFeedback.style.display = "none";
+        return false;
+    }
+
+    passwordMatchFeedback.style.display = "block";
+    if (pwd === confirmPwd) {
+        passwordMatchFeedback.style.color = "#4caf50";
+        passwordMatchFeedback.innerText = "✔️ Passwords match";
+        return true;
+    } else {
+        passwordMatchFeedback.style.color = "#ff5252";
+        passwordMatchFeedback.innerText = "❌ Passwords do not match";
+        return false;
+    }
+}
+
+// Real-time listeners
+if (authPasswordSignUp) {
+    authPasswordSignUp.addEventListener("input", updatePasswordChecklist);
+}
+if (authPasswordConfirmSignUp) {
+    authPasswordConfirmSignUp.addEventListener("input", updateConfirmMatch);
+}
+
+// Sign In Action
+if (authBtnEmailSignIn) {
+    authBtnEmailSignIn.addEventListener("click", async () => {
+        const email = authEmailSignIn?.value.trim();
+        const password = authPasswordSignIn?.value;
+
+        if (!email || !password) {
+            showEmailAuthMessage("Please enter both email and password.");
+            return;
+        }
+
+        authBtnEmailSignIn.disabled = true;
+        authBtnEmailSignIn.innerText = "Signing In...";
+        showEmailAuthMessage("");
+
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            if (!user.emailVerified) {
+                try {
+                    await sendEmailVerification(user);
+                    showEmailAuthMessage("Email not verified. Verification link re-sent to your inbox.", true);
+                } catch (verifyError) {
+                    console.warn("Verification email send skipped or rate-limited:", verifyError);
+                    if (verifyError.code === "auth/too-many-requests") {
+                        showEmailAuthMessage("Email not verified. A verification link was recently sent. Please check your inbox or try again later.", true);
+                    } else {
+                        showEmailAuthMessage("Email not verified. Please check your inbox.", true);
+                    }
+                }
+                await signOut(auth);
+                authBtnEmailSignIn.disabled = false;
+                authBtnEmailSignIn.innerText = "Sign In";
+                return;
+            }
+
+            // Success will trigger onAuthStateChanged
+        } catch (error) {
+            console.error("Email sign-in failed:", error);
+            let userMsg = "Login failed. Please check your credentials or verification.";
+            if (error.code === "auth/user-not-found" || error.code === "auth/wrong-password" || error.code === "auth/invalid-credential") {
+                userMsg = "Invalid email or password.";
+            } else if (error.code === "auth/invalid-email") {
+                userMsg = "Invalid email address format.";
+            }
+            showEmailAuthMessage(userMsg);
+            authBtnEmailSignIn.disabled = false;
+            authBtnEmailSignIn.innerText = "Sign In";
+        }
+    });
+}
+
+// Sign Up Action
+if (authBtnEmailSignUp) {
+    authBtnEmailSignUp.addEventListener("click", async () => {
+        const email = authEmailSignUp?.value.trim();
+        const password = authPasswordSignUp?.value;
+        const confirmPassword = authPasswordConfirmSignUp?.value;
+
+        if (!email || !password || !confirmPassword) {
+            showEmailAuthMessage("Please fill in all registration fields.");
+            return;
+        }
+
+        // Validate strong password criteria
+        const isStrong = updatePasswordChecklist();
+        if (!isStrong) {
+            showEmailAuthMessage("Password must be at least 8 characters long.");
+            return;
+        }
+
+        // Validate match
+        const matches = password === confirmPassword;
+        if (!matches) {
+            showEmailAuthMessage("Passwords do not match.");
+            return;
+        }
+
+        authBtnEmailSignUp.disabled = true;
+        authBtnEmailSignUp.innerText = "Registering...";
+        showEmailAuthMessage("");
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // Send Verification Email
+            await sendEmailVerification(user);
+            
+            showEmailAuthMessage("Account registered! Check your inbox for the verification email.", false);
+            alert("Registration successful! A verification link has been sent to " + email + ". Please verify your email before logging in.");
+            
+            // Sign out immediately so they must verify first
+            await signOut(auth);
+            
+            // Switch back to Sign In tab
+            if (authTabSignIn) authTabSignIn.click();
+            if (authEmailSignIn) authEmailSignIn.value = email;
+            if (authPasswordSignIn) authPasswordSignIn.value = "";
+            
+            // Clear Register fields
+            if (authEmailSignUp) authEmailSignUp.value = "";
+            if (authPasswordSignUp) authPasswordSignUp.value = "";
+            if (authPasswordConfirmSignUp) authPasswordConfirmSignUp.value = "";
+            updatePasswordChecklist();
+        } catch (error) {
+            console.error("Email sign-up failed:", error);
+            let userMsg = "Registration failed: " + error.message;
+            if (error.code === "auth/email-already-in-use") {
+                userMsg = "This email is already registered.";
+            } else if (error.code === "auth/invalid-email") {
+                userMsg = "Invalid email address format.";
+            } else if (error.code === "auth/weak-password") {
+                userMsg = "Password is too weak. Please choose a stronger password.";
+            }
+            showEmailAuthMessage(userMsg);
+        } finally {
+            authBtnEmailSignUp.disabled = false;
+            authBtnEmailSignUp.innerText = "Register Account";
+        }
+    });
+}
+
+// Forgot Password - Send Reset Email Action
+if (authBtnSendResetEmail) {
+    authBtnSendResetEmail.addEventListener("click", async () => {
+        const email = authEmailForgotPassword?.value.trim();
+
+        if (!email) {
+            showEmailAuthMessage("Please enter your registered email address.");
+            return;
+        }
+
+        authBtnSendResetEmail.disabled = true;
+        authBtnSendResetEmail.innerText = "Sending Link...";
+        showEmailAuthMessage("");
+
+        try {
+            await sendPasswordResetEmail(auth, email);
+            showEmailAuthMessage("Password reset email sent! Check your inbox.", false);
+            alert("A password reset link has been successfully sent to " + email + ". Please follow the link in your email to reset your password.");
+            
+            // Go back to Sign In
+            if (authBtnBackToSignIn) authBtnBackToSignIn.click();
+            if (authEmailSignIn) authEmailSignIn.value = email;
+        } catch (error) {
+            console.error("Password reset request failed:", error);
+            let userMsg = "Failed to send reset link: " + error.message;
+            if (error.code === "auth/user-not-found" || error.code === "auth/invalid-credential") {
+                userMsg = "No account found with this email address.";
+            } else if (error.code === "auth/invalid-email") {
+                userMsg = "Invalid email address format.";
+            }
+            showEmailAuthMessage(userMsg);
+        } finally {
+            authBtnSendResetEmail.disabled = false;
+            authBtnSendResetEmail.innerText = "Send Reset Link";
+        }
+    });
+}
+// === CHANGED END: Email Authentication Logic ===
 
