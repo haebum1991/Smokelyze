@@ -45,7 +45,11 @@ export function renderParCoords(containerId) {
         delete container._clickLabelTimer;
     }
 
-    resetPlotContainer(container, "_parcoordsObserver");
+    clearPlotMessage(container);
+    if (container._parcoordsObserver) {
+        container._parcoordsObserver.disconnect();
+        delete container._parcoordsObserver;
+    }
 
     // Determine mode
     const isDetailMode = !!currentDailyDetailStateParcoords;
