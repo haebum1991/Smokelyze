@@ -15,8 +15,7 @@ import {
     attachResizeObserver,
     caStates,
     usStates,
-    getCleanLabel,
-    resetPlotContainer
+    getCleanLabel
 } from "./stats-common.js";
 
 export let plotAxesStack = [];

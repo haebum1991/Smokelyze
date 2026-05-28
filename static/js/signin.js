@@ -122,7 +122,8 @@ onAuthStateChanged(auth, async (user) => {
             "AerscreenToggle", 
             "MapPostBtnAerscreen", 
             "BoardBtnWrite", 
-            "BoardBtnEmail"
+            "BoardBtnEmail",
+            "TelemetryPanel"
         ],
         drawers: [
             { id: "AnalyticsModalOverlay", close: (el) => el.style.display = "none" },
@@ -142,8 +143,8 @@ onAuthStateChanged(auth, async (user) => {
             adminUI.elements.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
-                    // Use "" (empty) to revert to original CSS (flex/block as defined) or force "flex" for buttons
-                    if (el.classList.contains("map-btn-control") || el.classList.contains("accordion-toggle")) {
+                    // Use "" (empty) to revert to original CSS (flex/block as defined) or force "flex" for buttons/telemetry
+                    if (el.classList.contains("map-btn-control") || el.classList.contains("accordion-toggle") || el.id === "TelemetryPanel") {
                         el.style.display = isAdmin ? "flex" : "none";
                     } else {
                         el.style.display = isAdmin ? "block" : "none";

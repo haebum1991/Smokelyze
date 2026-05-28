@@ -1,4 +1,5 @@
 
+import "./ui-telemetry.js";
 import { restoreUI, bindAccordionAutosave, bindDatasetAutosave, initStateShadingToggle, initNaShadingToggle } from "./ui-state.js";
 import { initDateButtons } from "./ui-date.js";
 import { initUIPulsingIcons } from "./layers-icon.js";
