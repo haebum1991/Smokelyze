@@ -118,12 +118,22 @@ function bindClick(layerId, dataSource) {
                 // [Report to Brain]
                 const props = topF.properties;
                 const cleanLayerId = fullKey.replace(`-${dsKey}`, "");
-                logUserAction("click_point", {
-                    dataset: sourceKey,
-                    layer: cleanLayerId,
-                    aqs: props.AQS || props.AQS_O3 || props.AQS_PM,
-                    state: props.state || "N/A"
-                });
+                
+                if (sourceKey === "wildfire_news") {
+                    logUserAction("view", {
+                        dataset: "wildfire_news",
+                        layer: "news_location",
+                        filename: (props.title || "").substring(0, 100)
+                    });
+                } else {
+                    logUserAction("click_point", {
+                        dataset: sourceKey,
+                        layer: cleanLayerId,
+                        aqs: props.AQS || props.AQS_O3 || props.AQS_PM,
+                        state: props.state || "N/A"
+                    });
+                }
+                
             }
         });
         map._globalInteractionBound = true;

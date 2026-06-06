@@ -169,10 +169,10 @@ async function loadAnalytics() {
             `;
         }
 
-        const mappedEvents = {};
+        const reqEvents = {};
         if (data.event_name) {
             for (const [key, val] of Object.entries(data.event_name)) {
-                mappedEvents[EVENT_MAPPING[key] || key] = val;
+                reqEvents[EVENT_MAPPING[key] || key] = val;
             }
         }
 
@@ -185,12 +185,12 @@ async function loadAnalytics() {
             }
         });
 
-        const mappedLayers = {};
+        const reqLayers = {};
         if (data.key_layer) {
             for (const [key, val] of Object.entries(data.key_layer)) {
                 const cleanKey = key.replace(/^layer-/, "");
                 const newName = LAYER_NAME_MAPPING[cleanKey] || cleanKey;
-                mappedLayers[newName] = (mappedLayers[newName] || 0) + val;
+                reqLayers[newName] = (reqLayers[newName] || 0) + val;
             }
         }
 
@@ -209,27 +209,28 @@ async function loadAnalytics() {
             }
         });
 
-        const cleanStates = {};
+        const reqStates = {};
         if (data.key_state) {
             for (const [key, val] of Object.entries(data.key_state)) {
-                if (key !== "N/A" && key !== "null" && key !== "undefined") cleanStates[key] = val;
+                if (key !== "N/A" && key !== "null" && key !== "undefined") reqStates[key] = val;
+            }
+        }
+        
+        const reqAQS = {};
+        if (data.key_aqs) {
+            for (const [key, val] of Object.entries(data.key_aqs)) {
+                if (key !== "none" && key !== "null" && key !== "undefined") reqAQS[key] = val;
             }
         }
 
-        renderPieChart("AnalyticsChartEvent", "Total Usage by Event", mappedEvents);
+        renderPieChart("AnalyticsChartEvent", "Total Usage by Event", reqEvents);
         renderPieChart("AnalyticsChartRole", "User Demographics", roleLabels.map((l, i) => ({ name: l, value: roleValues[i] })));
         renderPieChart("AnalyticsChartDataset", "Requested Datasets", datasetLabels);
 
-        renderBarChart("AnalyticsChartLayer", "Requested Layers", mappedLayers);
-        renderBarChart("AnalyticsChartState", "Requested States", cleanStates);
-        // --- AQS Stats (Filtering out [none]) ---
-        const cleanAqs = {};
-        if (data.key_aqs) {
-            for (const [key, val] of Object.entries(data.key_aqs)) {
-                if (key !== "none" && key !== "null" && key !== "undefined") cleanAqs[key] = val;
-            }
-        }
-        renderBarChart("AnalyticsChartAqs", "Clicked AQS", cleanAqs);
+        renderBarChart("AnalyticsChartLayer", "Requested Layers", reqLayers);
+        renderBarChart("AnalyticsChartState", "Requested States", reqStates);
+        renderBarChart("AnalyticsChartAqs", "Requested AQS", reqAQS);
+        
         renderBarTsChart("AnalyticsChartDate", "Requested Dates", data.key_date);
 
     } catch (e) {

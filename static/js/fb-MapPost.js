@@ -6,6 +6,7 @@ import { updateAuthButton } from "./signin.js";
 import { resetLoadedSources, updateAllActiveSources, showErrorToast } from "./loader.js";
 import { initHandlers, setupClickHandlers } from "./fb-MapPost-handler.js";
 import { state as ttState } from "./ui-state.js";
+import { logUserAction } from "./fb-logging.js";
 
 // --- 1. Global State (Prefix: state) ---
 const state = {
@@ -617,6 +618,14 @@ async function clickOnSubmitMain() {
             } else {
                 await dbSaveMapPost(state.editingDocId, updateData);
             }
+            
+            logUserAction("view", { 
+                dataset: "MapPost", 
+                layer: isReply ? "edit_reply" : "edit_post",
+                filename: state.editingDocId,
+                date 
+            });
+            
             renderMapPostDetail(isReply ? original.rootId : state.editingDocId);
         } else {
             if (!state.pendingLngLat) throw new Error("No location selected");
@@ -646,6 +655,13 @@ async function clickOnSubmitMain() {
             };
 
             const docRef = await dbSaveMapPost(null, docData);
+            
+            logUserAction("view", { 
+                dataset: "MapPost", 
+                layer: "create_post", 
+                filename: docRef.id,
+                date 
+            });
 
             // Auto-check MapPost checkbox if not already checked
             const layerCb = document.getElementById("layer-MapPost");
@@ -672,7 +688,16 @@ async function clickOnSubmitMain() {
 async function clickOnDelete(id) {
     if (!confirm("Are you sure you want to delete this?")) return;
     try {
+        
+        const item = state.MapPostData[id];
+        const isReply = item?.type === "reply";
         await dbDeleteMapPost(id);
+        
+        logUserAction("view", { 
+            dataset: "MapPost", 
+            layer: isReply ? "delete_reply" : "delete_post", 
+            filename: id 
+        });
         
         // Clear highlight if this MapPost was highlighted
         if (ttState.currentHighlight && ttState.currentHighlight.idVal === id) {

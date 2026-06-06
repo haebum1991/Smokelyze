@@ -10,6 +10,7 @@ import { initGlobalTooltip, stateHoverHTML } from "./layers-tooltip.js";
 import { updateLayerToggleColors, updateStateShading } from "./layers-colors.js";
 import { ensureLayers, applyLayerToggles, getAllInteractiveLayerIds } from "./layers-handler.js";
 import { map, _cachedActiveLayerIds } from "./layers-state.js";
+import { logUserAction } from "./fb-logging.js";
 
 initGlobalTooltip();
 
@@ -173,7 +174,14 @@ if (map) {
     const newsBtn = target.closest(".action-read-news");
     if (newsBtn) {
       e.stopPropagation();
-      const url = newsBtn.getAttribute("data-link");
+      
+      const url = newsBtn.getAttribute("data-link") || "";
+      logUserAction("view", {
+        dataset: "wildfire_news",
+        layer: "news_read",
+        filename: url.substring(0, 100)
+      });
+      
       if (url?.startsWith("http")) {
         window.open(url, "_blank", "noopener,noreferrer");
       } else {
@@ -202,6 +210,13 @@ if (map) {
       const lat = parseFloat(newsLocBtn.getAttribute("data-lat"));
       const idx = parseInt(newsLocBtn.getAttribute("data-idx"));
       const feats = getLoadedNewsFeatures();
+      const featTitle = feats?.[idx]?.properties?.title || "";
+
+      logUserAction("view", {
+        dataset: "wildfire_news",
+        layer: "news_location",
+        filename: featTitle.substring(0, 100)
+      });
 
       if (toggleWasOff) {
         // Wait for the debounced updateAllActiveSources (300ms) to finish clearing the map

@@ -11,6 +11,7 @@ import * as utils from "./utils.js";
 import { setMapPostDrawer } from "./ui-toggles.js";
 import { showErrorToast } from "./loader.js";
 import { map } from "./map-init.js";
+import { logUserAction } from "./fb-logging.js";
 
 // Note: These will be injected from fb-MapPost.js to avoid circular dependencies
 let state = null;
@@ -120,6 +121,13 @@ function handleAddFromDrawer(element) {
 
 function handleShowDetail(element) {
     const id = element.dataset.id;
+    const data = state.MapPostData[id];
+    logUserAction("view", {
+        dataset: "MapPost",
+        layer: "view_post",
+        filename: id,
+        date: data ? data.date : ""
+    });
     renderMapPostDetail(id);
 }
 
@@ -138,11 +146,31 @@ async function handleDeleteDetail(element) {
 
 function handlePostLike(element) {
     const id = element.dataset.id;
+    const data = state.MapPostData[id];
+    if (data) {
+        const isLiked = state.currentUser && (data.likes || []).includes(state.currentUser.uid);
+        logUserAction("view", {
+            dataset: "MapPost",
+            layer: isLiked ? "unlike_post" : "like_post",
+            filename: id,
+            date: data.date || ""
+        });
+    }
     return dbToggleLikeMapPost(id);
 }
 
 function handleReplyLike(element) {
     const id = element.dataset.id;
+    const data = state.MapPostData[id];
+    if (data) {
+        const isLiked = state.currentUser && (data.likes || []).includes(state.currentUser.uid);
+        logUserAction("view", {
+            dataset: "MapPost",
+            layer: isLiked ? "unlike_reply" : "like_reply",
+            filename: id,
+            date: data.date || ""
+        });
+    }
     return dbToggleLikeMapPost(id);
 }
 
@@ -219,7 +247,7 @@ async function handleReplySubmit(element) {
         const rootMapPost = state.MapPostData[rootId];
         const viewers = (rootMapPost && rootMapPost.viewers) ? rootMapPost.viewers : ["public"];
 
-        await dbSaveMapPost(null, {
+        const docRef = await dbSaveMapPost(null, {
             title: "",
             text,
             type: "reply",
@@ -232,6 +260,13 @@ async function handleReplySubmit(element) {
             userName: userName || "Anonymous",
             viewers
         });
+        
+        logUserAction("view", {
+            dataset: "MapPost",
+            layer: "create_reply",
+            filename: docRef?.id || rootId
+        });
+        
     } catch (err) {
         alert("Reply failed.");
     } finally {
@@ -344,6 +379,13 @@ async function handleMapRestore(element) {
     if (!data || !data.mapState) return;
 
     const ms = data.mapState;
+    
+    logUserAction("view", {
+        dataset: "MapPost",
+        layer: "restore_map_state",
+        filename: rid,
+        date: ms ? ms.date : ""
+    });
 
     // 1. Move map
     if (ms.center) {

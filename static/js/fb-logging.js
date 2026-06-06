@@ -46,9 +46,6 @@ export async function logUserAction(type, payload = {}) {
         key_date: String(payload.date || document.getElementById("datePicker")?.value || "")
     };
 
-    const EXCLUDE = ["wildfire_news", "map_post", "wildfire-news", "map-post"];
-    if (EXCLUDE.includes(logEntry.key_dataset)) return;
-
     console.log(`[FB-LOG] ${type}:`, logEntry);
     try {
         logEvent(analytics, type, logEntry);
