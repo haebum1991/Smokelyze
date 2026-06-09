@@ -36,7 +36,7 @@ function normalizeAqsId(id) {
 function getAqsKey(source, field) {
     if (source === "airnow_daily") return "AQS";
     if (source === "airnow_hourly") return "AQS";
-    if (source === "pm_cbsa") return "AQS_PM";
+    if (source === "pm_cbsa" || source === "pm_cbsa_pred") return "AQS_PM";
     return (field && (field.includes("PM2.5") || field.includes("PM"))) ? "AQS_PM" : "AQS_O3";
 }
 
@@ -146,7 +146,10 @@ export function renderDailyScatter(containerId) {
 
         if (smokeRefSource && loadedGeoJSON[smokeRefSource]) {
             const refAqsKey = getAqsKey(smokeRefSource);
-            const refSmokeKey = (smokeRefSource === "pm_cbsa") ? "smoke_m0p5m" : "smoke";
+            const refSmokeKey = (
+                smokeRefSource === "pm_cbsa" ||
+                smokeRefSource === "pm_cbsa_pred"
+            ) ? "smoke_m0p5m" : "smoke";
             loadedGeoJSON[smokeRefSource].features.forEach(f => {
                 const aqsId = normalizeAqsId(f.properties[refAqsKey]);
                 if (aqsId) smokeMap.set(aqsId, Number(f.properties[refSmokeKey] || 0));
@@ -154,7 +157,17 @@ export function renderDailyScatter(containerId) {
         }
     }
 
-    const primarySmokeKey = (primarySource === "pm_cbsa") ? "smoke_m0p5m" : "smoke";
+    const activeModelSource = activeLayers.find(l =>
+        ExcludeLayerGroups.restrictedSources.includes(l.source)
+    )?.source;
+    const isPmCbsaSource = (
+        activeModelSource === "pm_cbsa" ||
+        activeModelSource === "pm_cbsa_pred" ||
+        primarySource === "pm_cbsa" ||
+        primarySource === "pm_cbsa_pred"
+    );
+    const smdLabelSuffix = isPmCbsaSource ? " m0p5m" : "";
+    const primarySmokeKey = isPmCbsaSource ? "smoke_m0p5m" : "smoke";
     const traces = [];
 
     // 5. 데이터 포인트 생성 및 연기 유무 분리
@@ -205,7 +218,7 @@ export function renderDailyScatter(containerId) {
         if (smoke.x.length > 0) {
             traces.push({
                 x: smoke.x, y: smoke.y, mode: "markers", type: "scatter",
-                name: xLayers.length > 1 ? `${xTitle} (SMD)` : "Smoke day (SMD)",  // hasModelLayer가 false면 smoke 데이터 자체가 없어 이 분기에 진입하지 않음
+                name: xLayers.length > 1 ? `${xTitle} (SMD)${smdLabelSuffix}` : `Smoke day (SMD)${smdLabelSuffix}`,
                 text: smoke.text, customdata: smoke.customdata,
                 marker: { color: smokeColor, size: 8, opacity: 0.8, line: { color: theme.axisText, width: 0.5 } },
                 hovertemplate: `${yTitle}: %{y:.${yDec}f}<br>${xTitle}: %{x:.${xDec}f}<br>%{text}<extra></extra>`
