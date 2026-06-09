@@ -1062,8 +1062,7 @@ export function clearPlotMessage(container) {
 }
 
 export function getDatasetInfo() {
-    const el = document.getElementById("MapDataSelect");
-    const val = el ? el.value : "";
+    const val = utils.getEffectiveDataset();
     const key = DATASET_SOURCE_MAP[val] || val;
     return { value: val, key: key };
 }

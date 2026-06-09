@@ -18,7 +18,8 @@ title: ""
         <ul class="doc-toc" id="DocToc">
 
             <li class="doc-sidebar-divider">App Information</li>
-            <li class="doc-toc-h1 active" data-doc="doc-arch"><a href="#">Technical Stack</a></li>
+            <li class="doc-toc-h1 active" data-doc="doc-citation"><a href="#">Citation</a></li>
+            <li class="doc-toc-h1" data-doc="doc-arch"><a href="#">Technical Stack</a></li>
             <li class="doc-toc-h1" data-doc="doc-mappost"><a href="#">MapPost</a></li>
 
             <li class="doc-sidebar-divider">Research Methodology</li>
@@ -461,6 +462,7 @@ title: ""
 
         // Document source mapping - add new docs here
         const docSources = {
+            "doc-citation": "/docs/doc-citation.html",
             "doc-arch": "/docs/doc-architecture.html",
             "doc-mappost": "/docs/doc-mappost.html",
             "doc-pmcrit": "/docs/doc-pmcrit.html",
@@ -627,8 +629,8 @@ title: ""
 
         // URL deep linking support (e.g., /resrc/documents?doc=doc-gam)
         const params = new URLSearchParams(window.location.search);
-        let initialDoc = params.get("doc") || "doc-arch";
-        if (!docSources[initialDoc]) initialDoc = "doc-arch";
+        let initialDoc = params.get("doc") || "doc-citation";
+        if (!docSources[initialDoc]) initialDoc = "doc-citation";
         const initialSection = params.get("section") || null;
 
         showDoc(initialDoc, initialSection);

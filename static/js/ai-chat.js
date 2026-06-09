@@ -320,6 +320,18 @@ function generateContext(userInput = "") {
         const val = dsSelect.value;
         const text = dsSelect.options[dsSelect.selectedIndex]?.text || "Unknown";
         contextLines.push(`Active Model: ID="${val}", Label="${text}"`);
+
+        const datePicker = document.getElementById("datePicker");
+        if (datePicker && datePicker.value) {
+            const year = parseInt(datePicker.value.split("-")[0], 10);
+            if (year >= 2019 && year <= 2024) {
+                if (val === "gam-v2-pred") {
+                    contextLines.push(`Effective Model (Historical Auto-Correction): ID="gam-v2"`);
+                } else if (val === "pm-cbsa-pred") {
+                    contextLines.push(`Effective Model (Historical Auto-Correction): ID="pm-cbsa"`);
+                }
+            }
+        }
     }
 
     // 3. Simple list of visible checkboxes

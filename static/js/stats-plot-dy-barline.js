@@ -330,8 +330,7 @@ export function renderDailyBarLine(containerId) {
       let valBySmoke = [];
 
       if (!isDetailMode) {
-        const dsVal = document.getElementById("MapDataSelect")?.value;
-        const dsKey = DATASET_SOURCE_MAP[dsVal] || dsVal;
+        const { value: dsVal, key: dsKey } = getDatasetInfo();
         const rawData = loadedGeoJSON?.[dsKey];
         const countsByState = {};
         dataStatsX.forEach(st => { countsByState[st] = { c1: 0, c2: 0 }; });

@@ -189,7 +189,7 @@ export async function loadSourceData(sourceKey, isoDate) {
             loadedGeoJSON[sourceKey] = data;
             
             // [Refined] Identify which UI toggles (checkboxes) are using this source
-            const currentDataset = document.getElementById("MapDataSelect")?.value;
+            const currentDataset = utils.getEffectiveDataset(isoDate);
             const activeLayers = Array.from(document.querySelectorAll("input[type=checkbox][id^='layer-']:checked"))
                 .map(cb => cb.id.replace("layer-", ""))
                 .filter(shortId => {
@@ -391,7 +391,7 @@ function handleLoadingError(sourceKey, isoDate, ds = null) {
     // 1. Uncheck the corresponding checkbox
     document.querySelectorAll("input[type=checkbox][id^='layer-']").forEach(cb => {
         const shortId = cb.id.replace("layer-", "");
-        const currentDataset = document.getElementById("MapDataSelect")?.value;
+        const currentDataset = utils.getEffectiveDataset(isoDate);
         const config = DATA_IMPORT_METHOD[`${shortId}-${currentDataset}`] || DATA_IMPORT_METHOD[shortId];
         if (config && config.source === sourceKey) {
             // [User UX Disabled part]: 실패시 체크박스 해제 로직
@@ -479,7 +479,7 @@ export async function updateAllActiveSources() {
     toggleSpinner(true);
     try {
         const isoDate = utils.currentDate();
-        const currentDataset = document.getElementById("MapDataSelect")?.value;
+        const currentDataset = utils.getEffectiveDataset(isoDate);
         console.log(`[DATA-LOAD] Date: ${isoDate}, Dataset: ${currentDataset}`);
         const checkboxes = document.querySelectorAll("input[type=checkbox][id^='layer-']");
         const sourcesToLoad = new Set();
@@ -673,7 +673,7 @@ function bindEventsLoaderHandler() {
             // Published data 체크 시 로그인 확인
             if (cb.checked && !auth.currentUser) {
                 const restrictedSources = ExcludeLayerGroups.restrictedSources;
-                const currentDataset = document.getElementById("MapDataSelect")?.value;
+                const currentDataset = utils.getEffectiveDataset(utils.currentDate());
                 const contextKey = `${shortId}-${currentDataset}`;
                 const globalKey = shortId;
 

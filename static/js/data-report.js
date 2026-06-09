@@ -112,13 +112,21 @@ const REPORT_CONFIG = {
         types: PM_CBSA_TYPES
     },
     "gam-v2-pred": {
-        years: getLaggedYearRange(2025),
-        sources: { main: "gam_v2_pred" },
+        years: [2019, 2020, 2021, 2022, 2023, 2024].concat(getLaggedYearRange(2025)),
+        sources: {
+            main: "gam_v2_pred",
+            historical: "gam_v2",
+            splitYear: 2025
+        },
         types: GAM_V2_TYPES
     },
     "pm-cbsa-pred": {
-        years: getLaggedYearRange(2025),
-        sources: { main: "pm_cbsa_pred" },
+        years: [2019, 2020, 2021, 2022, 2023, 2024].concat(getLaggedYearRange(2025)),
+        sources: {
+            main: "pm_cbsa_pred",
+            historical: "pm_cbsa",
+            splitYear: 2025
+        },
         types: PM_CBSA_TYPES
     }
 };
@@ -273,12 +281,13 @@ async function loadStateData(datasetId, state, config, years) {
     if (stateDataCache[cacheKey]) return stateDataCache[cacheKey];
 
     const safeState = state.replace(/ /g, "_");
-    const { main } = config.sources;
+    const { main, historical, splitYear } = config.sources;
 
-    const fetches = years.map(yr =>
-        fetchGeoJSON(`/data_by_state/${main}/${yr}/data_by_state_${safeState}.geojson.gz`)
-            .catch(() => null)
-    );
+    const fetches = years.map(yr => {
+        const sourceDir = (historical && splitYear && yr < splitYear) ? historical : main;
+        return fetchGeoJSON(`/data_by_state/${sourceDir}/${yr}/data_by_state_${safeState}.geojson.gz`)
+            .catch(() => null);
+    });
     const results = await Promise.all(fetches);
 
     let flatData = [];

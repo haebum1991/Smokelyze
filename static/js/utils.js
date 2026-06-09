@@ -79,6 +79,25 @@ export function currentDate() {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+export function getEffectiveDataset(isoDate) {
+  const el = document.getElementById("MapDataSelect");
+  let val = el ? el.value : "";
+  if (!isoDate) {
+    isoDate = currentDate();
+  }
+  if (isoDate) {
+    const year = parseInt(isoDate.split("-")[0], 10);
+    if (year >= 2019 && year <= 2024) {
+      if (val === "gam-v2-pred") {
+        return "gam-v2";
+      } else if (val === "pm-cbsa-pred") {
+        return "pm-cbsa";
+      }
+    }
+  }
+  return val;
+}
+
 // Data 추가시 로직 추가 필요 부분**
 // url generator for gzfile (published data)
 export function urlByDateGZfile(ds, isoDate) {

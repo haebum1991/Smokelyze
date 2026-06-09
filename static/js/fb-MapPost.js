@@ -543,7 +543,7 @@ async function clickOnSubmitMain() {
     const title = titleInput.value.trim();
     const text = contentInput.value;
     const date = document.getElementById("datePicker").value;
-    let dataSource = document.getElementById("MapDataSelect")?.value || "";
+    let dataSource = utils.getEffectiveDataset();
 
     const publishedLayers = document.querySelectorAll("#MapCheckboxPublished input[type='checkbox']");
     const anyPublishedChecked = Array.from(publishedLayers).some(cb => cb.checked);

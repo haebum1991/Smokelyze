@@ -4,7 +4,7 @@ import { DATASET_SOURCE_MAP, DATA_IMPORT_METHOD } from "./layers-def.js";
 import { logUserAction } from "./fb-logging.js";
 import { airnowFetchData, airnowActivateHour, airnowGetCurrentTime } from "./airnow.js";
 import { convertToCSV, downloadFile, createExportButton } from "./ui-download.js";
-import { urlByDateGZfile } from "./utils.js";
+import { urlByDateGZfile, getEffectiveDataset } from "./utils.js";
 
 /**
  * Generic dataset download with fetch-on-demand
@@ -117,7 +117,7 @@ async function handleDownloadForPublished(e, btn) {
     const select = document.getElementById("MapDataSelect");
     if (!select || !select.value) return;
 
-    const dataset = select.value;
+    const dataset = getEffectiveDataset();
     const title = select.options[select.selectedIndex]?.text || dataset;
     await handleDownloadForLayer(dataset, { title });
 }

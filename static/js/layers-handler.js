@@ -4,7 +4,7 @@
  */
 
 import { DATA_IMPORT_METHOD, ExcludeLayerGroups, DATASET_SOURCE_MAP, LAYER_DEFS, makeStepExpr } from "./layers-def.js";
-import { highlightLocation } from "./utils.js";
+import { highlightLocation, getEffectiveDataset, currentDate } from "./utils.js";
 import { state } from "./ui-state.js";
 import { EMPTY_FC } from "./layers-constants.js";
 import { updateLegend, updateStateShading } from "./layers-colors.js";
@@ -237,7 +237,7 @@ export function applyLayerToggles() {
     });
     setActiveLayerStack(newStack);
 
-    const currentDataset = document.getElementById("MapDataSelect")?.value;
+    const currentDataset = getEffectiveDataset(currentDate());
 
     // Determine all layers that have legends
     const legendLayers = newStack.filter(id => {

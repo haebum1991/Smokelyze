@@ -317,15 +317,24 @@ export async function handleAiToolCall(functionName, args) {
                 let targetDataset = args?.dataset_value;
                 const dataSelect = document.getElementById("MapDataSelect");
 
-                // [Date-Based Auto-Correction] AI가 2025+ 날짜에 구버전 모델을 선택하면 자동으로 pred 버전으로 교체
+                // [Date-Based Auto-Correction] AI가 2025+ 날짜에 구버전 모델을 선택하면 자동으로 pred 버전으로 교체,
+                // 또는 2019-2024 날짜에 pred 버전을 선택하면 구버전(Published)으로 교체
                 if (targetDataset && dataSelect) {
                     const dateInput = document.getElementById("datePicker");
                     const currentYear = dateInput ? parseInt(dateInput.value?.substring(0, 4)) : null;
-                    if (currentYear && currentYear >= 2025) {
-                        const predMap = { "gam-v2": "gam-v2-pred", "pm-cbsa": "pm-cbsa-pred" };
-                        if (predMap[targetDataset]) {
-                            console.log(`[AI Logic] Auto-corrected dataset from "${targetDataset}" to "${predMap[targetDataset]}" for ${currentYear}`);
-                            targetDataset = predMap[targetDataset];
+                    if (currentYear) {
+                        if (currentYear >= 2025) {
+                            const predMap = { "gam-v2": "gam-v2-pred", "pm-cbsa": "pm-cbsa-pred" };
+                            if (predMap[targetDataset]) {
+                                console.log(`[AI Logic] Auto-corrected dataset from "${targetDataset}" to "${predMap[targetDataset]}" for ${currentYear}`);
+                                targetDataset = predMap[targetDataset];
+                            }
+                        } else if (currentYear >= 2019 && currentYear <= 2024) {
+                            const pubMap = { "gam-v2-pred": "gam-v2", "pm-cbsa-pred": "pm-cbsa" };
+                            if (pubMap[targetDataset]) {
+                                console.log(`[AI Logic] Auto-corrected dataset from "${targetDataset}" to "${pubMap[targetDataset]}" for ${currentYear}`);
+                                targetDataset = pubMap[targetDataset];
+                            }
                         }
                     }
                 }

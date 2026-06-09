@@ -3,7 +3,17 @@
   * 색상 및 범례 관리: 데이터 값에 따른 지도 레이어의 색상 스타일(Shading)과 범례(Legend) 생성
   */
 import { ExcludeLayerGroups, LAYER_TEMPLATES, LAYER_DEFS } from "./layers-def.js";
-import { map, activeLayerStack, regionStats, StateShadingEnabled, NaShadingEnabled, PointLayersEnabled, closedLegendIds } from "./layers-state.js";
+import { 
+  map, 
+  activeLayerStack, 
+  regionStats, 
+  StateShadingEnabled, 
+  NaShadingEnabled, 
+  PointLayersEnabled, 
+  closedLegendIds 
+} from "./layers-state.js";
+import { getEffectiveDataset, currentDate } from "./utils.js";
+
 
 /**
  * 범례(Legend) 렌더링 함수 (최종 수정됨)
@@ -17,7 +27,7 @@ export function updateLegend(activeStack = activeLayerStack) {
         return;
     }
 
-    const currentDataset = document.getElementById("MapDataSelect")?.value;
+    const currentDataset = getEffectiveDataset(currentDate());
 
     // Filter layers that have legends
     let legendLayers = [...activeStack].filter(id => {
@@ -206,7 +216,7 @@ export function updateLegend(activeStack = activeLayerStack) {
  * Feature: Layer Color Indicators
  */
 export function updateLayerToggleColors() {
-    const dataset = document.getElementById("MapDataSelect")?.value;
+    const dataset = getEffectiveDataset(currentDate());
     if (!dataset) return;
 
     const getGradientStyle = (colors) => {
@@ -259,7 +269,7 @@ export function updateStateShading() {
     }
     const topId = stack[stack.length - 1];
 
-    const dataset = document.getElementById("MapDataSelect")?.value;
+    const dataset = getEffectiveDataset(currentDate());
     const fullKey = LAYER_DEFS[topId] ? topId : `${topId}-${dataset}`;
     const def = LAYER_DEFS[fullKey];
 

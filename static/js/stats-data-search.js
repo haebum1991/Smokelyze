@@ -1,6 +1,6 @@
 
 import { ExcludeLayerGroups, DATASET_SOURCE_MAP } from "./layers-def.js";
-import { ESML, highlightLocation, clearHighlight } from "./utils.js";
+import { ESML, highlightLocation, clearHighlight, getEffectiveDataset } from "./utils.js";
 import { loadedGeoJSON } from "./loader.js";
 
 const MAX_RESULTS = 50;
@@ -171,7 +171,7 @@ function getSearchableDataPublished() {
     if (!loadedGeoJSON) return [];
     const select = document.getElementById("MapDataSelect");
     if (!select) return [];
-    const dataset = select.value;
+    const dataset = getEffectiveDataset();
     const sourceKey = DATASET_SOURCE_MAP[dataset] || dataset;
     const geoData = loadedGeoJSON[sourceKey];
     if (!geoData || !geoData.features) return [];

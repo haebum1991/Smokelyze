@@ -3,7 +3,7 @@
  * 인터랙션 및 정보창: 지도 위 지점을 클릭하거나 호버(Hover)했을 때 보여줄 팝업 및 툴팁 내용을 생성
  */
  
-import { ESML, formatDate } from "./utils.js";
+import { ESML, formatDate, getEffectiveDataset } from "./utils.js";
 import { auth } from "./fb-init.js";
 import { ExcludeLayerGroups, LAYER_TEMPLATES } from "./layers-def.js";
 import { regionStats, closedLegendIds } from "./layers-state.js";
@@ -421,7 +421,7 @@ export function stateHoverHTML(p, _cachedActiveLayerIds) {
     if (!checkedIds.includes("layer-" + tmpl.id) || EXCLUDED.includes(tmpl.id)) return;
     if (closedLegendIds.has(tmpl.id)) return; // 범례가 닫힌 레이어는 툴팁(Hover) 정보에서도 숨깁니다.
 
-    let label = typeof tmpl.title === "function" ? tmpl.title(document.getElementById("MapDataSelect")?.value) : tmpl.title;
+    let label = typeof tmpl.title === "function" ? tmpl.title(getEffectiveDataset()) : tmpl.title;
     if (tmpl.id === "tmax" && stats.label_display) label = stats.label_display;
 
     if (tmpl.id.startsWith("ExcDays") && tmpl.labelParams) {
