@@ -153,6 +153,25 @@ export function updateLegend(activeStack = activeLayerStack) {
                                         <span class="${swatchClass}" style="background:${colors[0]}"></span>
                                         <span>${conf.title}</span>
                                     </div>`;
+                } else if (id.startsWith("pm25-smoke")) {
+                    sectionHtml += `<div class="legend-item">
+                                        <span class="${swatchClass}" style="background:#CCCCCC; border:0.1rem solid var(--text-main);"></span>
+                                        <span>0</span>
+                                    </div>`;
+                    sectionHtml += `<div class="legend-item">
+                                        <span class="${swatchClass}" style="background:${colors[0]}"></span>
+                                        <span>> 0 to &lt; ${breaks[0]}</span>
+                                    </div>`;
+                    for (let i = 0; i < breaks.length - 1; i++) {
+                        sectionHtml += `<div class="legend-item">
+                                            <span class="${swatchClass}" style="background:${colors[i + 1]}"></span>
+                                            <span>${breaks[i]} to &lt; ${breaks[i + 1]}</span>
+                                        </div>`;
+                    }
+                    sectionHtml += `<div class="legend-item">
+                                        <span class="${swatchClass}" style="background:${colors[colors.length - 1]}"></span>
+                                        <span>&ge; ${breaks[breaks.length - 1]}</span>
+                                    </div>`;
                 } else {
                     sectionHtml += `<div class="legend-item">
                                         <span class="${swatchClass}" style="background:${colors[0]}"></span>
@@ -161,7 +180,7 @@ export function updateLegend(activeStack = activeLayerStack) {
                     for (let i = 0; i < breaks.length - 1; i++) {
                         sectionHtml += `<div class="legend-item">
                                             <span class="${swatchClass}" style="background:${colors[i + 1]}"></span>
-                                            <span>${breaks[i]} to ${breaks[i + 1]}</span>
+                                            <span>${breaks[i]} to &lt; ${breaks[i + 1]}</span>
                                         </div>`;
                     }
                     sectionHtml += `<div class="legend-item">
@@ -285,6 +304,9 @@ export function updateStateShading() {
 
     const getColor = (val) => {
         if (val === null || val === undefined || isNaN(val)) return null;
+        if (topId.startsWith("pm25-smoke") && val <= 0) {
+            return "#CCCCCC";
+        }
         for (let i = 0; i < breaks.length; i++) {
             if (val < breaks[i]) return colors[i];
         }

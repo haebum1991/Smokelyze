@@ -27,7 +27,13 @@ const GAM_V2_TYPES = {
         { name: "Mean residual quantile on smoke days", method: "mean" },
         { name: "Mean residual quantile on smoke days (EDM)", method: "mean" },
         { name: "Mean residual quantile on non-smoke days", method: "mean" },
-        { name: "Mean residual quantile on non-smoke days (EDM)", method: "mean" }
+        { name: "Mean residual quantile on non-smoke days (EDM)", method: "mean" },
+        { name: "No. of ExcDays", method: "count" },
+        { name: "No. of ExcDays (EDM)", method: "count" },
+        { name: "No. of ExcDays with significant SMO", method: "count" },
+        { name: "No. of ExcDays with significant SMO (EDM)", method: "count" },
+        { name: "No. of ExcDays with minimal SMO", method: "count" },
+        { name: "No. of ExcDays with minimal SMO (EDM)", method: "count" }
     ],
     "by_date": [
         { name: "Smoke days (1: Yes, 0: No)", method: "count" },
@@ -39,7 +45,9 @@ const GAM_V2_TYPES = {
         { name: "Residual (ppb) on smoke days (EDM)", method: "mean" },
         { name: "Residual quantile on smoke days", method: "mean" },
         { name: "Residual quantile on smoke days (EDM)", method: "mean" },
-        { name: "Obs PM2.5 (ug m-3)", method: "mean" }
+        { name: "Obs PM2.5 (ug m-3)", method: "mean" },
+        { name: "ExcDay (0: None, 1: Days with minimal SMO, 2: Days with significant SMO)", method: "category" },
+        { name: "ExcDay (0: None, 1: Days with minimal SMO, 2: Days with significant SMO) (EDM)", method: "category" }
     ]
 };
 
@@ -51,7 +59,10 @@ const GAM_V1_TYPES = {
         { name: "Mean residual (ppb) on smoke days", method: "mean" },
         { name: "Mean residual (ppb) on non-smoke days", method: "mean" },
         { name: "Mean residual quantile on smoke days", method: "mean" },
-        { name: "Mean residual quantile on non-smoke days", method: "mean" }
+        { name: "Mean residual quantile on non-smoke days", method: "mean" },
+        { name: "No. of ExcDays", method: "count" },
+        { name: "No. of ExcDays with significant SMO", method: "count" },
+        { name: "No. of ExcDays with minimal SMO", method: "count" }
     ],
     "by_date": [
         { name: "Smoke days (1: Yes, 0: No)", method: "count" },
@@ -59,7 +70,8 @@ const GAM_V1_TYPES = {
         { name: "Smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)", method: "count" },
         { name: "Residual (ppb) on smoke days", method: "mean" },
         { name: "Residual quantile on smoke days", method: "mean" },
-        { name: "Obs PM2.5 (ug m-3)", method: "mean" }
+        { name: "Obs PM2.5 (ug m-3)", method: "mean" },
+        { name: "ExcDay (0: None, 1: Days with minimal SMO, 2: Days with significant SMO)", method: "category" }
     ]
 };
 
@@ -69,14 +81,22 @@ const PM_CBSA_TYPES = {
         { name: "No. of probable smoke days (HMS + PM2.5 > Criteria 1)", method: "count" },
         { name: "No. of highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "count" },
         { name: "Mean smoke PM2.5 (ug m-3) on probable smoke days (HMS + PM2.5 > Criteria 1)", method: "mean" },
-        { name: "Mean smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "mean" }
+        { name: "Mean smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "mean" },
+        { name: "No. of ExcDays (Criteria 1)", method: "count" },
+        { name: "No. of ExcDays (Criteria 2)", method: "count" },
+        { name: "No. of ExcDays with smoke PM2.5>0 (Criteria 1)", method: "count" },
+        { name: "No. of ExcDays with smoke PM2.5>0 (Criteria 2)", method: "count" },
+        { name: "No. of ExcDays with smoke PM2.5=0 (Criteria 1)", method: "count" },
+        { name: "No. of ExcDays with smoke PM2.5=0 (Criteria 2)", method: "count" }
     ],
     "by_date": [
         { name: "Days with overhead HMS (1: Yes, 0: No)", method: "count" },
         { name: "Probable smoke days (HMS + PM2.5 > Criteria 1) (1: Yes, 0: No)", method: "count" },
         { name: "Highly probable smoke days (HMS + PM2.5 > Criteria 2) (1: Yes, 0: No)", method: "count" },
         { name: "Smoke PM2.5 (ug m-3) on probable smoke days (HMS + PM2.5 > Criteria 1)", method: "mean" },
-        { name: "Smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "mean" }
+        { name: "Smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "mean" },
+        { name: "ExcDay (Criteria 1) (0: None, 1: Days with smoke PM2.5=0, 2: Days with smoke PM2.5>0)", method: "category" },
+        { name: "ExcDay (Criteria 2) (0: None, 1: Days with smoke PM2.5=0, 2: Days with smoke PM2.5>0)", method: "category" }
     ]
 };
 
@@ -489,6 +509,23 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
                     isMatch = true;
                     val = d["PM2.5"];
                     break;
+                case "No. of ExcDays":
+                    const excVal1 = isEdmReport ? d.edm_exceedance : d.exceedance;
+                    isMatch = (excVal1 !== null && excVal1 >= 1);
+                    break;
+                case "No. of ExcDays with significant SMO":
+                    const excVal2 = isEdmReport ? d.edm_exceedance : d.exceedance;
+                    isMatch = (excVal2 !== null && excVal2 === 2);
+                    break;
+                case "No. of ExcDays with minimal SMO":
+                    const excVal3 = isEdmReport ? d.edm_exceedance : d.exceedance;
+                    isMatch = (excVal3 !== null && excVal3 === 1);
+                    break;
+                case "ExcDay (0: None, 1: Days with minimal SMO, 2: Days with significant SMO)":
+                    isMatch = true;
+                    val = isEdmReport ? d.edm_exceedance : d.exceedance;
+                    if (val === null || val === undefined) isMatch = false;
+                    break;
             }
         } else if (datasetId.startsWith("pm-cbsa")) {
             const del_0p5 = d.smoke_m0p5m === 1 ? d["PM2.5"] - d["PM2.5_Crit_m0p5m"] : 0;
@@ -515,6 +552,34 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
                 case "Smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)":
                     if (d.smoke_m1p0m === 1) { isMatch = true; val = del_1p0; }
                     break;
+                case "No. of ExcDays (Criteria 1)":
+                    isMatch = (d.exceedance_m0p5m !== null && d.exceedance_m0p5m >= 1);
+                    break;
+                case "No. of ExcDays (Criteria 2)":
+                    isMatch = (d.exceedance_m1p0m !== null && d.exceedance_m1p0m >= 1);
+                    break;
+                case "No. of ExcDays with smoke PM2.5>0 (Criteria 1)":
+                    isMatch = (d.exceedance_m0p5m !== null && d.exceedance_m0p5m === 2);
+                    break;
+                case "No. of ExcDays with smoke PM2.5>0 (Criteria 2)":
+                    isMatch = (d.exceedance_m1p0m !== null && d.exceedance_m1p0m === 2);
+                    break;
+                case "No. of ExcDays with smoke PM2.5=0 (Criteria 1)":
+                    isMatch = (d.exceedance_m0p5m !== null && d.exceedance_m0p5m === 1);
+                    break;
+                case "No. of ExcDays with smoke PM2.5=0 (Criteria 2)":
+                    isMatch = (d.exceedance_m1p0m !== null && d.exceedance_m1p0m === 1);
+                    break;
+                case "ExcDay (Criteria 1) (0: None, 1: Days with smoke PM2.5=0, 2: Days with smoke PM2.5>0)":
+                    isMatch = true;
+                    val = d.exceedance_m0p5m;
+                    if (val === null || val === undefined) isMatch = false;
+                    break;
+                case "ExcDay (Criteria 2) (0: None, 1: Days with smoke PM2.5=0, 2: Days with smoke PM2.5>0)":
+                    isMatch = true;
+                    val = d.exceedance_m1p0m;
+                    if (val === null || val === undefined) isMatch = false;
+                    break;
             }
         }
 
@@ -529,6 +594,8 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
         let finalVal = "NA";
         if (method === "mean") {
             finalVal = g.count > 0 ? (g.sum / g.count).toFixed(1) : "NA";
+        } else if (method === "category") {
+            finalVal = g.count > 0 ? Math.round(g.sum / g.count) : "NA";
         } else {
             finalVal = g.count;
         }

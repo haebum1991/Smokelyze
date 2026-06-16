@@ -106,8 +106,8 @@ export const ExcludeLayerGroups = {
 
 import { generatePopupHTML } from "./layers-tooltip.js";
 import {
-    PALETTE_EPA, PALETTE_JET, PALETTE_TEMPO, PALETTE_HRRR_SMOKE, PALETTE_BIN_1, PALETTE_BIN_2, PALETTE_BIN_3, PALETTE_TRI, PALETTE_BURN, PALETTE_SMOKE,
-    BREAKS_O3, BREAKS_RESI, BREAKS_SMO_EMBER, BREAKS_PM, BREAKS_PM_CRIT,
+    PALETTE_EPA, PALETTE_JET, PALETTE_TEMPO, PALETTE_HRRR_SMOKE, PALETTE_BIN_1, PALETTE_BIN_2, PALETTE_BIN_3, PALETTE_TRI, PALETTE_BURN, PALETTE_SMOKE, PALETTE_SMOKE_PM,
+    BREAKS_O3, BREAKS_RESI, BREAKS_SMO_EMBER, BREAKS_PM, BREAKS_SMOKE_PM, BREAKS_PM_CRIT,
     BREAKS_TMAX, BREAKS_T2MAX, BREAKS_SRAD, BREAKS_QUANT, BREAKS_R2,
     BREAKS_BIN, BREAKS_TRI, BREAKS_NO2, BREAKS_FIRE, BREAKS_SMOKE, BREAKS_BURN, BREAKS_FRP, BREAKS_TEMPO, BREAKS_HRRR_ugm2, BREAKS_HRRR_ugm3,
     LABEL_SMOKE, LABEL_BIN, LABEL_SMO, LABEL_SMP
@@ -397,6 +397,19 @@ export function makeStepExpr(valueField, breaks, colors, nullVal) {
         stepExpr.push(breaks[i]);
         stepExpr.push(colors[i + 1]);
     }
+    
+    const isSmokePM = (typeof valueField === "string" && valueField.startsWith("smoke_PM2.5"));
+
+    if (isSmokePM) {
+        return [
+            "case",
+            ["==", ["get", valueField], null], fallback,
+            ["==", ["get", valueField], "NA"], fallback,
+            ["!", ["has", valueField]], fallback,
+            ["<=", ["to-number", ["get", valueField]], 0], "#CCCCCC",
+            stepExpr
+        ];
+    }
 
     return [
         "case",
@@ -410,7 +423,7 @@ export function makeStepExpr(valueField, breaks, colors, nullVal) {
 export function makeSizeLegendItems(breaks, radii) {
     const items = [{ label: `< ${breaks[0]}`, radius: radii[0] }];
     for (let i = 0; i < breaks.length; i++) {
-        const label = (i === breaks.length - 1) ? `> ${breaks[i]}` : `${breaks[i]} to ${breaks[i + 1]}`;
+        const label = (i === breaks.length - 1) ? `>= ${breaks[i]}` : `${breaks[i]} to < ${breaks[i + 1]}`;
         items.push({ label, radius: radii[i + 1] });
     }
     return items;
@@ -515,8 +528,8 @@ export const LAYER_TEMPLATES = [
     // --- PM2.5 ---
     { duration: "daily", id: "pm25-obs", field: "PM2.5", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "Obs PM2.5 (ug m⁻³)", decimals: 1, datasets: ["gam-v2", "gam-v1", "pm-cbsa", "gam-v2-pred", "pm-cbsa-pred"] },
 
-    { duration: "daily", id: "pm25-smoke-m0p5m", field: "smoke_PM2.5_m0p5m", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "Smoke PM2.5 m0p5m (ug m⁻³)", decimals: 2, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
-    { duration: "daily", id: "pm25-smoke-m1p0m", field: "smoke_PM2.5_m1p0m", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "Smoke PM2.5 m1p0m (ug m⁻³)", decimals: 2, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
+    { duration: "daily", id: "pm25-smoke-m0p5m", field: "smoke_PM2.5_m0p5m", breaks: BREAKS_SMOKE_PM, colors: PALETTE_SMOKE_PM, title: "Smoke PM2.5 m0p5m (ug m⁻³)", decimals: 2, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
+    { duration: "daily", id: "pm25-smoke-m1p0m", field: "smoke_PM2.5_m1p0m", breaks: BREAKS_SMOKE_PM, colors: PALETTE_SMOKE_PM, title: "Smoke PM2.5 m1p0m (ug m⁻³)", decimals: 2, datasets: ["pm-cbsa", "pm-cbsa-pred"] },
 
     // --- PM2.5 Quantiles ---
     { duration: "daily", id: "pm25-quant", field: "Quant_PM2.5", breaks: BREAKS_QUANT, colors: PALETTE_EPA, title: "PM2.5 quantile (%)", decimals: 1, datasets: ["gam-v2", "gam-v1", "pm-cbsa", "gam-v2-pred", "pm-cbsa-pred"] },

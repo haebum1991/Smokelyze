@@ -74,6 +74,15 @@ export const PALETTE_SMOKE = [
     // "#D99052"  // Medium 
 ];
 
+// [Smoke PM2.5 Palette] Warm orange-red scale to differentiate from Obs PM2.5 EPA scale
+export const PALETTE_SMOKE_PM = [
+    "#ffdda6", // 0 to 5: Soft Light Orange/Yellow
+    "#ffb366", // 5 to 12: Light Orange
+    "#ff8000", // 12 to 25: Orange
+    "#e65c00", // 25 to 55: Dark Orange
+    "#b32400", // 55 to 100: Reddish Brown
+    "#730000"  // >= 100: Deep Crimson
+];
 
 // [Binary Palette]
 export const PALETTE_BIN_1 = [
@@ -100,6 +109,7 @@ export const PALETTE_TRI = [
 
 export const BREAKS_O3 = [55, 71, 86, 106, 201];
 export const BREAKS_PM = [9.1, 35.5, 55.5, 125.5, 225.5];
+export const BREAKS_SMOKE_PM = [5, 12, 25, 55, 100];
 export const BREAKS_PM_CRIT = [5, 7.5, 10, 12.5, 15];
 export const BREAKS_NO2 = [10, 20, 30, 40, 50];
 export const BREAKS_RESI = [-10, -5, 0, 5, 10];
@@ -125,5 +135,5 @@ export const BREAKS_HRRR_ugm3 = [1, 5, 10, 20, 30, 40, 50];
 export const LABEL_SMOKE = ["light", "medium", "heavy"];
 export const LABEL_BIN = ["No", "Yes"];
 export const LABEL_SMO = ["No", "with minimal SMO", "with significant SMO"];
-export const LABEL_SMP = ["No", "with minimal smoke PM2.5", "with significant smoke PM2.5"];
+export const LABEL_SMP = ["No", "with smoke PM2.5=0", "with smoke PM2.5>0"];
 

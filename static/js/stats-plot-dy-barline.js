@@ -364,11 +364,11 @@ export function renderDailyBarLine(containerId) {
         l_title_1 = "ExcDays with minimal SMO (EDM)";
         l_title_2 = "ExcDays with significant SMO (EDM)";
       } else if (key === "ExcDays-m0p5m") {
-        l_title_1 = "ExcDays with minimal smoke PM2.5 (m0p5m)";
-        l_title_2 = "ExcDays with significant smoke PM2.5 (m0p5m)";
+        l_title_1 = "ExcDays with smoke PM2.5=0 (m0p5m)";
+        l_title_2 = "ExcDays with smoke PM2.5>0 (m0p5m)";
       } else if (key === "ExcDays-m1p0m") {
-        l_title_1 = "ExcDays with minimal smoke PM2.5 (m1p0m)";
-        l_title_2 = "ExcDays with significant smoke PM2.5 (m1p0m)";
+        l_title_1 = "ExcDays with smoke PM2.5=0 (m1p0m)";
+        l_title_2 = "ExcDays with smoke PM2.5>0 (m1p0m)";
       }
 
       trace.y = valNotBySmoke;

@@ -330,11 +330,11 @@ export const DescData = {
             title: "General information",
             desc: "The detailed information is provided in the tooltip, and please see the [Parameter descriptions] for each dataset. " +
                   "We recommend using the most recent (highest) version for each analysis." +
-                  "<ul><li><b style='color: var(--card-shadow);'>[UW GAM-v2]</b> includes smoke days, smoke PM2.5 and smoke O3 for the ozone season (<b>April-Oct, 2019-2024</b>).</li>" +
-                  "<li><b style='color: var(--card-shadow);'>[UW GAM-v1]</b> includes smoke days, smoke PM2.5 and smoke O3 for the ozone season (<b>May-Sep, 2018-2023</b>).</li>" +
+                  "<ul><li><b style='color: var(--card-shadow);'>[UW GAM-v2]</b> includes smoke days and smoke O3 for the wildfire season (<b>April-October, 2019-2024</b>).</li>" +
+                  "<li><b style='color: var(--card-shadow);'>[UW GAM-v1]</b> includes smoke days and smoke O3 for the wildfire season (<b>May-Sep, 2018-2023</b>).</li>" +
                   "<li><b style='color: var(--card-shadow);'>[UW Smoke PM2.5]</b> includes smoke days and smoke PM2.5 for the full year (<b>2019-2024</b>).</li>" +
                   "<br>" +
-                  "<li><b style='color: var(--card-shadow);'>[UW GAM-v2 (2025+)]</b> includes smoke days, smoke PM2.5 and smoke O3 for the ozone season (<b>April-Oct, 2025+</b>).</li>" +
+                  "<li><b style='color: var(--card-shadow);'>[UW GAM-v2 (2025+)]</b> includes smoke days and smoke O3 for the wildfire season (<b>April-October, 2025+</b>).</li>" +
                   "<li><b style='color: var(--card-shadow);'>[UW Smoke PM2.5 (2025+)]</b> includes smoke days and smoke PM2.5 for the full year (<b>2025+</b>).</li></ul>"
         },
         {
@@ -357,7 +357,7 @@ export const DescData = {
             desc: "The [Latest Analysis & Prediction] section provides continuous monitoring and near real-time predictions of wildfire impacts for the 2025 season and beyond. " +
                   "While the [Published] datasets are based on finalized historical records, these predictions utilize validated model parameters from our research (e.g., <b>UW GAM-v2</b>) but integrate preliminary seasonal data to provide current situational awareness. " +
                   "This allows users to track ongoing smoke impacts as they occur using the same frameworks established in our peer-reviewed research." +
-                  "<br><ul><li><b style='color: var(--card-shadow);'>[UW GAM-v2 (2025+)]</b> includes smoke days, smoke PM2.5 and smoke O3 for the ozone season (April-Oct). " +
+                  "<br><ul><li><b style='color: var(--card-shadow);'>[UW GAM-v2 (2025+)]</b> includes smoke days and smoke O3 for the wildfire season (April-October). " +
                   "Due to the update cycle of predictors used in GAM estimation, the most recent data is approximately <b>8-9 weeks old</b>. " +
                   "Based on the EPA data finalization cycle, a full re-analysis of the previous year (e.g., 2025) is typically conducted during Q3-Q4 of the current year (e.g., 2026), and data may be updated accordingly.</li>" +
                   "<li><b style='color: var(--card-shadow);'>[UW Smoke PM2.5 (2025+)]</b> includes smoke days and smoke PM2.5 for the full year. " +
@@ -427,8 +427,8 @@ export const DescData = {
         { id: "smokeday", title: "Smoke day (SMD)", desc: "Identified smoke day using HMS and PM2.5-criteria" },
         { id: "smokeday-975", title: "SMO > 97.5th", desc: "[Smoke day] & [SMO > 97.5th percentile residual]" },
         { id: "smokeday-975-edm", title: "SMO > 97.5th (EDM)", desc: "[Smoke day] & [SMO > 97.5th percentile residual] (EDM version)" },
-        { id: "ExcDays", title: "ExcDay", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 97.5th percentile residual) = caused by smoke" },
-        { id: "ExcDays-edm", title: "ExcDay (EDM)", desc: "Exceedance days (> 70 ppb) (EDM version): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 97.5th percentile residual) = caused by smoke" }
+        { id: "ExcDays", title: "ExcDay", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO: not caused by smoke <br> - with significant SMO: caused by smoke (case with SMO > 97.5th percentile residual)" },
+        { id: "ExcDays-edm", title: "ExcDay (EDM)", desc: "Exceedance days (> 70 ppb) (EDM version): <br> - with minimal SMO: not caused by smoke <br> - with significant SMO: caused by smoke (case with SMO > 97.5th percentile residual)" }
     ],
     "desc-published-gam-v1": [
         {
@@ -451,7 +451,7 @@ export const DescData = {
         { id: "srad", title: "SRAD", desc: "Daily mean surface shortwave solar flux (W m⁻²) from MERRA-2" },
         { id: "smokeday", title: "Smoke day (SMD)", desc: "Identified smoke day using HMS and PM2.5-criteria" },
         { id: "smokeday-975", title: "SMO > 97.5th", desc: "[Smoke day] & [SMO > 97.5th percentile residual]" },
-        { id: "ExcDays", title: "ExcDay", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 97.5th percentile residual) = caused by smoke" }
+        { id: "ExcDays", title: "ExcDay", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO: not caused by smoke <br> - with significant SMO: caused by smoke (case with SMO > 97.5th percentile residual)" }
     ],
     "desc-published-pm-cbsa": [
         {
@@ -464,14 +464,14 @@ export const DescData = {
         },
         { id: "pm25-obs", title: "Obs PM2.5", desc: "Daily average PM2.5 concentration observed at AQS monitoring sites" },
         { id: "pm25-quant", title: "Quant PM2.5", desc: "Estimated PM2.5 quantile based on HMS = 0 (non-overhead smoke plume cases) by month" },
-        { id: "pm25-crit-m0p5m", title: "PM2.5-crit m0p5m", desc: "PM2.5-criteria using Med + 0.5 MAD method (m0p5m)" },
-        { id: "pm25-crit-m1p0m", title: "PM2.5-crit m1p0m", desc: "PM2.5-criteria using Med + 1.0 MAD method (m1p0m)" },
-        { id: "pm25-smoke-m0p5m", title: "Smoke PM2.5 m0p5m", desc: "Smoke contribution to PM2.5 (Smoke PM2.5) (PM2.5 - PM2.5-criteria (m0p5m))" },
-        { id: "pm25-smoke-m1p0m", title: "Smoke PM2.5 m1p0m", desc: "Smoke contribution to PM2.5 (Smoke PM2.5) (PM2.5 - PM2.5-criteria (m1p0m))" },
-        { id: "smokeday-m0p5m", title: "Smoke day (SMD) m0p5m", desc: "Identified smoke day using HMS and PM2.5-criteria (m0p5m)" },
-        { id: "smokeday-m1p0m", title: "Smoke day (SMD) m1p0m", desc: "Identified smoke day using HMS and PM2.5-criteria (m1p0m)" },
-        { id: "ExcDays-m0p5m", title: "ExcDay m0p5m", desc: "Exceedance days (> 35 ug m⁻³): <br> - with minimal smoke PM2.5 = not caused by smoke <br> - with significant smoke PM2.5 (m0p5m) (case with smoke PM2.5 > 0) = caused by smoke" },
-        { id: "ExcDays-m1p0m", title: "ExcDay m1p0m", desc: "Exceedance days (> 35 ug m⁻³): <br> - with minimal smoke PM2.5 = not caused by smoke <br> - with significant smoke PM2.5 (m1p0m) (case with smoke PM2.5 > 0) = caused by smoke" }
+        { id: "pm25-crit-m0p5m", title: "PM2.5-crit m0p5m", desc: "PM2.5-criteria using Med + 0.5 MAD method (Criteria 1: m0p5m)" },
+        { id: "pm25-crit-m1p0m", title: "PM2.5-crit m1p0m", desc: "PM2.5-criteria using Med + 1.0 MAD method (Criteria 2: m1p0m)" },
+        { id: "pm25-smoke-m0p5m", title: "Smoke PM2.5 m0p5m", desc: "Smoke contribution to PM2.5 (Smoke PM2.5 = PM2.5 - PM2.5-criteria (Criteria 1: m0p5m))" },
+        { id: "pm25-smoke-m1p0m", title: "Smoke PM2.5 m1p0m", desc: "Smoke contribution to PM2.5 (Smoke PM2.5 = PM2.5 - PM2.5-criteria (Criteria 2: m1p0m))" },
+        { id: "smokeday-m0p5m", title: "Smoke day (SMD) m0p5m", desc: "Identified smoke day using HMS and PM2.5-criteria (Criteria 1: m0p5m)" },
+        { id: "smokeday-m1p0m", title: "Smoke day (SMD) m1p0m", desc: "Identified smoke day using HMS and PM2.5-criteria (Criteria 2: m1p0m)" },
+        { id: "ExcDays-m0p5m", title: "ExcDay m0p5m", desc: "Exceedance days (> 35 ug m⁻³) based on Criteria 1 (m0p5m): <br> - with smoke PM2.5=0: not caused by smoke <br> - with smoke PM2.5>0: caused by smoke" },
+        { id: "ExcDays-m1p0m", title: "ExcDay m1p0m", desc: "Exceedance days (> 35 ug m⁻³) based on Criteria 2 (m1p0m): <br> - with smoke PM2.5=0: not caused by smoke <br> - with smoke PM2.5>0: caused by smoke" }
     ],
     "desc-published-epa-ember": [
         {
@@ -486,7 +486,7 @@ export const DescData = {
         { id: "mda8-pred", title: "Pred MDA8", desc: "Predicted MDA8 from the EMBER model" },
         { id: "smo", title: "SMO", desc: "Smoke contribution to O3 (or Smoke O3, SMO)" },
         { id: "resids", title: "Residual", desc: "The difference between observed and predicted MDA8 (Obs MDA8 - Pred MDA8) from EMBER model" },
-        { id: "ExcDays", title: "ExcDay", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO = not caused by smoke <br> - with significant SMO (case with SMO > 0) = caused by smoke" }
+        { id: "ExcDays", title: "ExcDay", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO: not caused by smoke <br> - with significant SMO (case with SMO > 0): caused by smoke" }
     ]
 };
 
