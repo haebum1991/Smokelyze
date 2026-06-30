@@ -135,7 +135,13 @@
   to   = "/.netlify/functions/gcs-proxy/hrrr_date_png/:splat"
   status = 200
   force  = true
-  
+
+[[redirects]]
+  from = "/goes_date_png/*"
+  to   = "/.netlify/functions/gcs-proxy/goes_date_png/:splat"
+  status = 200
+  force  = true
+
 [[redirects]]
   from = "/api/chat"
   to   = "https://fetch-aichat-go-service-1068523865415.us-central1.run.app/api/chat"

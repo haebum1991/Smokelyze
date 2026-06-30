@@ -118,7 +118,8 @@ function extractGcsPath(event) {
     "smokeday",
     "tempo_date_png",
     "tropomi_date_png",
-    "hrrr_date_png"
+    "hrrr_date_png",
+    "goes_date_png"
   ];
 
   let rawPath = "";

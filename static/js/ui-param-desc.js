@@ -322,7 +322,31 @@ export const DescData = {
                   "this data is available starting from 2021-01-01, </b>" + 
                   "and <b style='color: var(--card-shadow);'>spatially aggregated to 6-7 km</b> for visualization performance. (Original HRRR resolution is 3 km)</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li></ul>"
-        }
+        },
+        {
+            id: "goes-aod-east",
+            title: "GOES-East AOD (hourly)",
+            desc: "<b>GOES-East AOD (hourly) (L2)</b> provides hourly Aerosol Optical Depth (AOD) measurements from the GOES-East geostationary satellite (GOES-16 for dates before 2025-01-01; GOES-19 for dates after 2025-01-01) over North America. AOD is a dimensionless measure of light extinction by aerosols (e.g., smoke, dust, haze) in the atmospheric column. " +
+                  "This dataset is processed through a cloud-based automated pipeline that extracts raw sub-hourly netCDF files from NOAA's public Google Cloud Storage bucket. " +
+                  "Due to quality control filtering, only high-quality pixels (<b style='color: var(--card-shadow);'>Data Quality Flag DQF = 0</b>) within the <b style='color: var(--card-shadow);'>valid range (-0.05 to 5.0)</b> are retained. " +
+                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily (at 12 UTC)</b></li>" +
+                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "this data is available starting from 2018-01-01, </b>" + 
+                  "and <b style='color: var(--card-shadow);'>spatially aggregated to 4 km</b> for visualization performance. (Original ABI AOD resolution is 2 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li></ul>"
+        },
+        {
+            id: "goes-aod-west",
+            title: "GOES-West AOD (hourly)",
+            desc: "<b>GOES-West AOD (hourly) (L2)</b> provides hourly Aerosol Optical Depth (AOD) measurements from the GOES-West geostationary satellite (GOES-17 for dates before 2023-01-01; GOES-18 for dates after 2023-01-01) over Western North America. AOD is a dimensionless measure of light extinction by aerosols (e.g., smoke, dust, haze) in the atmospheric column. " +
+                  "This dataset is processed through a cloud-based automated pipeline that extracts raw sub-hourly netCDF files from NOAA's public Google Cloud Storage bucket. " +
+                  "Due to quality control filtering, only high-quality pixels (<b style='color: var(--card-shadow);'>Data Quality Flag DQF = 0</b>) within the <b style='color: var(--card-shadow);'>valid range (-0.05 to 5.0)</b> are retained. " +
+                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily (at 12 UTC)</b></li>" +
+                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "this data is available starting from 2018-01-01, </b>" + 
+                  "and <b style='color: var(--card-shadow);'>spatially aggregated to 4 km</b> for visualization performance. (Original ABI AOD resolution is 2 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li></ul>"
+        },
     ],
     "desc-published-intro": [
         {

@@ -9,14 +9,16 @@ export const ExcludeLayerGroups = {
       "burn", "smoke", "fire", 
       "tempo-no2", "tempo-hcho", 
       "tropomi-no2", "tropomi-hcho", 
-      "hrrr-colmd", "hrrr-massden"
+      "hrrr-colmd", "hrrr-massden",
+      "goes-aod-east", "goes-aod-west"
   ],
 
   // [layers-handler.js] > [addSourceIfMissing]
   pngLayers: [
       "tempo-no2", "tempo-hcho", 
       "tropomi-no2", "tropomi-hcho", 
-      "hrrr-colmd", "hrrr-massden"
+      "hrrr-colmd", "hrrr-massden",
+      "goes-aod-east", "goes-aod-west"
   ],
 
   // ========= Find by [key] =========
@@ -32,7 +34,8 @@ export const ExcludeLayerGroups = {
       "tempo-no2", "tempo-hcho", 
       "tropomi-no2", "tropomi-hcho",
       "hysplit", 
-      "hrrr-colmd", "hrrr-massden"
+      "hrrr-colmd", "hrrr-massden",
+      "goes-aod-east", "goes-aod-west"
   ],
 
   // [layers-tooltip.js] > [stateHoverHTML] > [EXCLUDED]
@@ -41,7 +44,8 @@ export const ExcludeLayerGroups = {
       "tempo-no2", "tempo-hcho", 
       "tropomi-no2", "tropomi-hcho", 
       "hysplit", 
-      "hrrr-colmd", "hrrr-massden"
+      "hrrr-colmd", "hrrr-massden",
+      "goes-aod-east", "goes-aod-west"
   ],
 
   // [stats-common.js] > [getActiveModelLayers] > [EXCLUDED]
@@ -51,7 +55,8 @@ export const ExcludeLayerGroups = {
       "tempo-no2", "tempo-hcho", 
       "tropomi-no2", "tropomi-hcho", 
       "hysplit", 
-      "hrrr-colmd", "hrrr-massden"
+      "hrrr-colmd", "hrrr-massden",
+      "goes-aod-east", "goes-aod-west"
   ],
 
   // [stats-data-search.js] > [updateVisibility] > [EXCLUDED]
@@ -64,7 +69,8 @@ export const ExcludeLayerGroups = {
       "tempo-no2", "tempo-hcho", 
       "tropomi-no2", "tropomi-hcho", 
       "hysplit", 
-      "hrrr-colmd", "hrrr-massden"
+      "hrrr-colmd", "hrrr-massden",
+      "goes-aod-east", "goes-aod-west"
   ],
 
   // [stats-plot-dy-scatter.js] > [getActiveModelLayers] > [EXCLUDED]
@@ -74,7 +80,8 @@ export const ExcludeLayerGroups = {
       "tempo-no2", "tempo-hcho", 
       "tropomi-no2", "tropomi-hcho",
       "hysplit", 
-      "hrrr-colmd", "hrrr-massden"
+      "hrrr-colmd", "hrrr-massden",
+      "goes-aod-east", "goes-aod-west"
   ],
 
   // ========= Find by [source] =========
@@ -95,7 +102,8 @@ export const ExcludeLayerGroups = {
       "smoke", "fire", "burn", 
       "tempo-no2", "tempo-hcho", 
       "tropomi-no2", "tropomi-hcho", 
-      "hrrr-colmd", "hrrr-massden"
+      "hrrr-colmd", "hrrr-massden",
+      "goes-aod-east", "goes-aod-west"
   ],
 
   // [loader.js] > [loadSourceData] > Calculate state-level statistics (Public data)
@@ -106,10 +114,15 @@ export const ExcludeLayerGroups = {
 
 import { generatePopupHTML } from "./layers-tooltip.js";
 import {
-    PALETTE_EPA, PALETTE_JET, PALETTE_TEMPO, PALETTE_HRRR_SMOKE, PALETTE_BIN_1, PALETTE_BIN_2, PALETTE_BIN_3, PALETTE_TRI, PALETTE_BURN, PALETTE_SMOKE, PALETTE_SMOKE_PM,
+    PALETTE_EPA, PALETTE_JET, PALETTE_TEMPO, PALETTE_HRRR_SMOKE, 
+    PALETTE_BIN_1, PALETTE_BIN_2, PALETTE_BIN_3, PALETTE_TRI, 
+    PALETTE_BURN, PALETTE_SMOKE, PALETTE_SMOKE_PM,
+    PALETTE_GOES_AOD,
     BREAKS_O3, BREAKS_RESI, BREAKS_SMO_EMBER, BREAKS_PM, BREAKS_SMOKE_PM, BREAKS_PM_CRIT,
     BREAKS_TMAX, BREAKS_T2MAX, BREAKS_SRAD, BREAKS_QUANT, BREAKS_R2,
-    BREAKS_BIN, BREAKS_TRI, BREAKS_NO2, BREAKS_FIRE, BREAKS_SMOKE, BREAKS_BURN, BREAKS_FRP, BREAKS_TEMPO, BREAKS_HRRR_ugm2, BREAKS_HRRR_ugm3,
+    BREAKS_BIN, BREAKS_TRI, BREAKS_NO2, BREAKS_FIRE, BREAKS_SMOKE, 
+    BREAKS_BURN, BREAKS_FRP, BREAKS_TEMPO, BREAKS_HRRR_ugm2, BREAKS_HRRR_ugm3,
+    BREAKS_GOES_AOD,
     LABEL_SMOKE, LABEL_BIN, LABEL_SMO, LABEL_SMP
 } from "./layers-constants.js";
 
@@ -221,6 +234,20 @@ export const DATA_IMPORT_METHOD = {
   "hrrr-massden": {
       key: "hrrr-massden",
       source: "hrrr-massden",
+      duration: "hourly",
+      hourly: true
+  },
+  
+  "goes-aod-east": {
+      key: "goes-aod-east",
+      source: "goes-aod-east",
+      duration: "hourly",
+      hourly: true
+  },
+  
+  "goes-aod-west": {
+      key: "goes-aod-west",
+      source: "goes-aod-west",
       duration: "hourly",
       hourly: true
   },
@@ -385,7 +412,10 @@ export const DATASET_SOURCE_MAP = {
     "tropomi-hcho": "tropomi-hcho",
 
     "hrrr-colmd": "hrrr-colmd",
-    "hrrr-massden": "hrrr-massden"
+    "hrrr-massden": "hrrr-massden",
+
+    "goes-aod-east": "goes-aod-east",
+    "goes-aod-west": "goes-aod-west"
 };
 
 export function makeStepExpr(valueField, breaks, colors, nullVal) {
@@ -574,7 +604,10 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "tropomi-hcho", field: "tropomi", title: "TROPOMI-HCHOVCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true },
     
     { duration: "hourly", id: "hrrr-colmd", field: "hrrr", title: "HRRR-smokeVCD", breaks: BREAKS_HRRR_ugm2, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "10³ ug m⁻²" },
-    { duration: "hourly", id: "hrrr-massden", field: "hrrr", title: "HRRR-smoke8m", breaks: BREAKS_HRRR_ugm3, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "ug m⁻³" }
+    { duration: "hourly", id: "hrrr-massden", field: "hrrr", title: "HRRR-smoke8m", breaks: BREAKS_HRRR_ugm3, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "ug m⁻³" },
+
+    { duration: "hourly", id: "goes-aod-east", field: "goes", title: "GOES-East AOD", breaks: BREAKS_GOES_AOD, colors: PALETTE_GOES_AOD, decimals: 3, manualLayer: true, hourly: true },
+    { duration: "hourly", id: "goes-aod-west", field: "goes", title: "GOES-West AOD", breaks: BREAKS_GOES_AOD, colors: PALETTE_GOES_AOD, decimals: 3, manualLayer: true, hourly: true }
 ];
 
 export const LAYER_DEFS = (() => {
@@ -752,7 +785,7 @@ export const LAYER_DEFS = (() => {
         };
     }
     
-        const tropomiTmpl = LAYER_TEMPLATES.find(t => t.id === "tropomi-no2");
+    const tropomiTmpl = LAYER_TEMPLATES.find(t => t.id === "tropomi-no2");
     if (tropomiTmpl) {
         defs["tropomi-no2"] = {
             layers: [
@@ -816,7 +849,7 @@ export const LAYER_DEFS = (() => {
             ],
             legend: {
                 title: hrrrColmdTmpl.title,
-                breaks: hrrrColmdTmpl.breaks.map(v => v / 1000),
+                breaks: hrrrColmdTmpl.breaks,
                 colors: hrrrColmdTmpl.colors,
                 continuous: true,
                 unit: hrrrColmdTmpl.unit
@@ -844,6 +877,54 @@ export const LAYER_DEFS = (() => {
                 colors: hrrrMassdenTmpl.colors,
                 continuous: true,
                 unit: hrrrMassdenTmpl.unit
+            }
+        };
+    }
+    
+    const goesEastTmpl = LAYER_TEMPLATES.find(t => t.id === "goes-aod-east");
+    if (goesEastTmpl) {
+        defs["goes-aod-east"] = {
+            layers: [
+                { 
+                    id: "goes-aod-east-raster", 
+                    type: "raster", 
+                    source: "goes-aod-east", 
+                    paint: { 
+                        "raster-opacity": 0.9,
+                        "raster-resampling": "nearest"
+                    } 
+                }
+            ],
+            legend: {
+                title: goesEastTmpl.title,
+                breaks: goesEastTmpl.breaks,
+                colors: goesEastTmpl.colors,
+                continuous: true,
+                unit: ""
+            }
+        };
+    }
+
+    const goesWestTmpl = LAYER_TEMPLATES.find(t => t.id === "goes-aod-west");
+    if (goesWestTmpl) {
+        defs["goes-aod-west"] = {
+            layers: [
+                { 
+                    id: "goes-aod-west-raster", 
+                    type: "raster", 
+                    source: "goes-aod-west", 
+                    paint: { 
+                        "raster-opacity": 0.9,
+                        "raster-resampling": "nearest"
+                    } 
+                }
+            ],
+            legend: {
+                title: goesWestTmpl.title,
+                breaks: goesWestTmpl.breaks,
+                colors: goesWestTmpl.colors,
+                continuous: true,
+                unit: ""
             }
         };
     }

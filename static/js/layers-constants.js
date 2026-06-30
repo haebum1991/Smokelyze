@@ -44,6 +44,16 @@ export const PALETTE_TEMPO = [
   "#31004a"  // 150: Deep Purple
 ];
   
+export const PALETTE_GOES_AOD = [
+    "#fcfdbf", // Vivid peach gold/light cream (Clear skies)
+    "#f89053", // Sunset orange (Thin aerosol)
+    "#e35e69", // Coral/salmon red (Moderate)
+    "#ba3f7c", // Rose/magenta (Thick)
+    "#8c2981", // Raspberry pink (Very thick)
+    "#5b106c", // Royal purple (Dangerous/extremely thick)
+    "#2c105c"  // Deep twilight purple (Hazardous plume)
+];
+
 // [HRRR Palette] Custom smoke color ramp (Gray -> Pale Yellow -> Orange -> Dark Brown)
 export const PALETTE_HRRR_SMOKE = [
     "#dcdcdc", // Light Gray
@@ -126,8 +136,9 @@ export const BREAKS_FRP = [10, 50, 150, 350];
 export const BREAKS_SMOKE = [1000, 5000, 20000, 50000, 100000];
 export const BREAKS_BURN = [10, 50, 100, 500, 1000];
 export const BREAKS_TEMPO = [1, 25, 50, 75, 100, 125, 150]; // NASA Standard 7-step linear scale
-export const BREAKS_HRRR_ugm2 = [250, 1000, 5000, 10000, 20000, 40000, 60000];
-export const BREAKS_HRRR_ugm3 = [1, 5, 10, 20, 30, 40, 50];
+export const BREAKS_HRRR_ugm2 = [0, 1, 5, 10, 20, 40, 60];
+export const BREAKS_HRRR_ugm3 = [0, 5, 10, 20, 30, 40, 50];
+export const BREAKS_GOES_AOD = [0, 0.1, 0.2, 0.4, 0.6, 0.8, 1.0];
 
 // --------------------------------------------------------
 // Label definitions

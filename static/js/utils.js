@@ -192,6 +192,19 @@ export function urlPngHRRR(isoDate, hour, productId) {
   };
 }
 
+// url generator for png of GOES AOD
+export function urlPngGOES(isoDate, hour, productId) {
+  const [y, m, d] = isoDate.split("-");
+  const formattedHour = String(hour).padStart(2, "0");
+  const folder = `/goes_date_png/${productId}/${y}/${m}/${d}`;
+  const baseName = `${productId}_${isoDate}_${formattedHour}T`;
+
+  return {
+    jsonUrl: `${folder}/${baseName}.json`,
+    pngUrl: `${folder}/${baseName}.png`
+  };
+}
+
 // Convert EPSG:3857 (Web Mercator meters) to EPSG:4326 (LngLat degrees)
 export function mercatorToLngLat(x, y) {
   const lon = (x / 20037508.34) * 180;

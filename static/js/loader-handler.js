@@ -28,7 +28,12 @@ import { showTimeControls, hideTimeControls } from "./ui-time.js";
 import { airnowHasActiveLayers } from "./airnow.js";
 // ---- [External data] AirNow ----
 
-import { tempoLoadData, tropomiLoadData, hrrrLoadData } from "./raster-loader.js";
+import { 
+    tempoLoadData, 
+    tropomiLoadData, 
+    hrrrLoadData, 
+    goesLoadData 
+} from "./raster-loader.js";
 
 
 export async function loadSourceData(sourceKey, isoDate) {
@@ -584,7 +589,8 @@ export async function updateAllActiveSources() {
                     airnowLoadData(isoDate),
                     tempoLoadData(isoDate),
                     tropomiLoadData(isoDate),
-                    hrrrLoadData(isoDate)
+                    hrrrLoadData(isoDate),
+                    goesLoadData(isoDate)
                 ]);
             } catch (e) {
                 console.error("Hourly background load failed:", e);
@@ -600,7 +606,8 @@ export async function updateAllActiveSources() {
                     airnowLoadData(isoDate),
                     tempoLoadData(isoDate),
                     tropomiLoadData(isoDate),
-                    hrrrLoadData(isoDate)
+                    hrrrLoadData(isoDate),
+                    goesLoadData(isoDate)
                 ]);
             } catch (e) {
                 console.error("Hourly clear failed:", e);
@@ -707,6 +714,7 @@ function bindEventsLoaderHandler() {
         timePicker.addEventListener("change", utils.debounce(async () => {
             const hasTempo = !!document.querySelector("input[id^='layer-tempo-']:checked");
             const hasHrrr = !!document.querySelector("input[id^='layer-hrrr-']:checked");
+            const hasGoes = !!document.querySelector("input[id^='layer-goes-']:checked");
             const isoDate = utils.currentDate();
 
             // Load all hourly data in parallel, properly awaited.
@@ -723,6 +731,10 @@ function bindEventsLoaderHandler() {
             
             if (hasHrrr) {
                 promises.push(hrrrLoadData(isoDate));
+            }
+            
+            if (hasGoes) {
+                promises.push(goesLoadData(isoDate));
             }
 
             if (promises.length > 0) {
