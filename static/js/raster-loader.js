@@ -482,10 +482,20 @@ function initRasterHover() {
                         timestamp += ` ${match[1]}:00:00`;
                     }
 
+                    let datasetName = utils.ESML(metadata.id) || "NA";
+                    if (isGoes && datasetName !== "NA") {
+                        const parts = datasetName.split("_");
+                        if (parts[0] === "OR" && parts.length >= 3) {
+                            datasetName = `${parts[1]} (${parts[2]})`;
+                        } else if (parts.length >= 2) {
+                            datasetName = `${parts[0]} (${parts[1]})`;
+                        }
+                    }
+
                     metaHtml = `
                         <div style="display: flex; flex-direction: column;">
                             <span>Timestamp: <b>${timestamp} UTC</b></span>
-                            <span>Dataset: <b>${utils.ESML(metadata.id) || "NA"}</b></span>
+                            <span>Dataset: <b>${datasetName}</b></span>
                         </div>
                     `;
                 }
