@@ -28,17 +28,34 @@ export function utcToLocal(utcHour) {
 
 export function shiftTime(hours) {
     const timePicker = document.getElementById("timePicker");
+    const datePicker = document.getElementById("datePicker");
     if (!timePicker) return;
 
     const currentLocalHour = parseInt(timePicker.value);
-    const newLocalHour = (currentLocalHour + hours + 24) % 24;
+    const sum = currentLocalHour + hours;
+    let dateChanged = false;
 
+    // Check if we crossed a day boundary
+    if (datePicker && (sum >= 24 || sum < 0)) {
+        const dayShift = sum >= 24 ? 1 : -1;
+        const [y, m, d] = datePicker.value.split("-").map(Number);
+        const dt = new Date(Date.UTC(y, m - 1, d + dayShift));
+
+        datePicker.value = dt.toISOString().split("T")[0];
+        dateChanged = true;
+    }
+
+    const newLocalHour = (sum + 24) % 24;
     timePicker.value = String(newLocalHour).padStart(2, "0");
 
     const utcHour = localToUTC(newLocalHour, currentDate());
-    
     airnowSetCurrentTime(utcHour);
-    timePicker.dispatchEvent(new Event("change", { bubbles: true }));
+
+    if (dateChanged) {
+        datePicker.dispatchEvent(new Event("change", { bubbles: true }));
+    } else {
+        timePicker.dispatchEvent(new Event("change", { bubbles: true }));
+    }
 }
 
 export function initTimeButtons() {

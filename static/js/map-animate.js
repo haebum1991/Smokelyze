@@ -96,6 +96,31 @@ export function initMapAnimate() {
         const isDaily = selected && selected.value === "d";
         if (startTimeInput) startTimeInput.style.display = isDaily ? "none" : "block";
         if (endTimeInput) endTimeInput.style.display = isDaily ? "none" : "block";
+        
+        // Get timezone
+        const tzAbbr = (() => {
+            try {
+                const targetDate = new Date();
+                return new Intl.DateTimeFormat("en-US", { timeZoneName: "short" })
+                    .formatToParts(targetDate)
+                    .find(part => part.type === "timeZoneName").value;
+            } catch (e) {
+                return "";
+            }
+        })();
+        const tzSuffix = tzAbbr ? ` (${tzAbbr})` : "";
+
+        const startLabel = document.getElementById("TimelapseStartLabel");
+        const endLabel = document.getElementById("TimelapseEndLabel");
+        if (startLabel && endLabel) {
+            if (isDaily) {
+                startLabel.innerText = "Start Date:";
+                endLabel.innerText = "End Date:";
+            } else {
+                startLabel.innerText = `Start Date & Time${tzSuffix}:`;
+                endLabel.innerText = `End Date & Time${tzSuffix}:`;
+            }
+        }
     };
 
     const updateDefaultEndDate = () => {
