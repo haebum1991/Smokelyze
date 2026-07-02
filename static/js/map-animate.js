@@ -205,21 +205,22 @@ export function initMapAnimate() {
         }
 
         // Calculate num steps and validate max limits
+        const isAdmin = sessionStorage.getItem("smokelyze_is_admin") === "true";
         const diffMs = endDt - startDt;
         let numSteps;
 
         if (stepType === "h") {
             const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
             numSteps = diffHours + 1;
-            if (numSteps > 24) {
-                alert("Please limit Hourly time-lapse to a maximum of 24 frames (e.g. 00:00 to 23:00).");
+            if (!isAdmin && numSteps > 12) {
+                alert("Please limit Hourly time-lapse to a maximum of 12 frames (hours) (e.g. 06:00 to 17:00).");
                 return;
             }
         } else {
             const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
             numSteps = diffDays + 1;
-            if (numSteps > 31) {
-                alert("Please limit Daily time-lapse to a maximum of 31 frames.");
+            if (!isAdmin && numSteps > 14) {
+                alert("Please limit Daily time-lapse to a maximum of 14 frames (days).");
                 return;
             }
         }
