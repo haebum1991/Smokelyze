@@ -42,6 +42,11 @@ export async function logUserAction(type, payload = {}) {
         dataset = datasetNormMap[dataset];
     }
     
+    let layer = payload.layer || "";
+    if (datasetNormMap[layer]) {
+        layer = datasetNormMap[layer];
+    }
+    
     let logEntry = {
         id_user: String(uid || ""),
         id_session: String(sessionId || ""),
@@ -51,7 +56,7 @@ export async function logUserAction(type, payload = {}) {
         // Background Context & Specific Details (Normalized to Strings)
         key_userRole: String(sessionStorage.getItem("userRole") || "unknown"),
         key_dataset: String(dataset),
-        key_layer: String(payload.layer || ""),
+        key_layer: String(layer),
         key_aqs: payload.aqs ? "aqs_" + String(payload.aqs) : "none",
         key_state: String(payload.state || ""),
         key_filename: String(payload.filename || ""),
