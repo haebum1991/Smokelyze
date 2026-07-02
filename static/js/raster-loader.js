@@ -20,7 +20,7 @@ import { logUserAction } from "./fb-logging.js";
 import { state } from "./ui-state.js";
 import { auth } from "./fb-init.js";
 
-const TEMPO_CONFIG = {
+export const TEMPO_CONFIG = {
     "no2": {
         productId: "TEMPO_NO2_L3",
         sourceId: "tempo-no2",
@@ -35,7 +35,7 @@ const TEMPO_CONFIG = {
     }
 };
 
-const TROPOMI_CONFIG = {
+export const TROPOMI_CONFIG = {
     "no2": {
         productId: "TROPOMI_NO2_L3",
         sourceId: "tropomi-no2",
@@ -50,7 +50,7 @@ const TROPOMI_CONFIG = {
     }
 };
 
-const HRRR_CONFIG = {
+export const HRRR_CONFIG = {
     "colmd": {
         productId: "COLMD_entire",
         sourceId: "hrrr-colmd",
@@ -65,7 +65,7 @@ const HRRR_CONFIG = {
     }
 };
 
-const GOES_CONFIG = {
+export const GOES_CONFIG = {
     "east": {
         productId: "ABI-L2-AODC-east",
         sourceId: "goes-aod-east",
@@ -278,7 +278,7 @@ function colorizeRasterImage(imgUrl, metadata, source, sourceId) {
  * Fetches a PNG image with Firebase auth headers and returns a Blob URL.
  * This allows raster images to be served behind authentication.
  */
-async function fetchAuthenticatedImage(url, sourceId) {
+export async function fetchAuthenticatedImage(url, sourceId) {
     if (pendingBlobUrls[sourceId]) {
         URL.revokeObjectURL(pendingBlobUrls[sourceId]);
         pendingBlobUrls[sourceId] = null;

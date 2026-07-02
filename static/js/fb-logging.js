@@ -29,6 +29,19 @@ export async function logUserAction(type, payload = {}) {
 
     // 3. Unified Schema Template (R bind_rows() friendly)
     // All calls must now provide: dataset, aqs, state, filename, report_type, layer, date
+    let dataset = payload.dataset || "";
+    const datasetNormMap = {
+        "gam-v1": "gam_v1",
+        "gam-v2": "gam_v2",
+        "pm-cbsa": "pm_cbsa",
+        "epa-ember": "epa_ember",
+        "gam-v2-pred": "gam_v2_pred",
+        "pm-cbsa-pred": "pm_cbsa_pred"
+    };
+    if (datasetNormMap[dataset]) {
+        dataset = datasetNormMap[dataset];
+    }
+    
     let logEntry = {
         id_user: String(uid || ""),
         id_session: String(sessionId || ""),
@@ -37,7 +50,7 @@ export async function logUserAction(type, payload = {}) {
 
         // Background Context & Specific Details (Normalized to Strings)
         key_userRole: String(sessionStorage.getItem("userRole") || "unknown"),
-        key_dataset: String(payload.dataset || ""),
+        key_dataset: String(dataset),
         key_layer: String(payload.layer || ""),
         key_aqs: payload.aqs ? "aqs_" + String(payload.aqs) : "none",
         key_state: String(payload.state || ""),

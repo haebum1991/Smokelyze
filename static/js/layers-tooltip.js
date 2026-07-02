@@ -222,6 +222,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
               <hr style="${hrStyle}">
               <div style="${rowStyle}"><b>State:</b> ${ESML(p["state"] || "NA")}</div>
               <div style="${rowStyle}"><b>AQS:</b> ${ESML(p["AQS"] || "NA")}</div>
+              <div style="${rowStyle}"><b>Site name:</b> ${ESML(p["site_name"] || "NA")}</div>
               <div style="${rowStyle}"><b>Latitude:</b> ${ESML(smartFmt(p["lat"], "lat", dataSource, 3))}</div>
               <div style="${rowStyle}"><b>Longitude:</b> ${ESML(smartFmt(p["lon"], "lon", dataSource, 3))}</div>
               <div style="${rowStyle}"><b>Timestamp:</b> ${ESML(p["current_hour_str"] || "NA")}</div>

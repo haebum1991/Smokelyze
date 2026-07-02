@@ -41,15 +41,7 @@ const DATASET_MAPPING = {
     "epa_ember": "EPA EMBER",
     "gam_v2_pred": "UW GAM-v2 (+)",
     "pm_cbsa_pred": "UW Smoke PM2.5 (+)",
-    "hysplit": "HYSPLIT",
-    
-    // for download naming
-    "gam-v2": "UW GAM-v2",
-    "gam-v1": "UW GAM-v1",
-    "pm-cbsa": "UW Smoke PM2.5",
-    "epa-ember": "EPA EMBER",
-    "gam-v2-pred": "UW GAM-v2 (+)",
-    "pm-cbsa-pred": "UW Smoke PM2.5 (+)"
+    "hysplit": "HYSPLIT"
 };
 
 const LAYER_NAME_MAPPING = {
@@ -197,7 +189,10 @@ async function loadAnalytics() {
         const mappedDatasets = {};
         if (data.key_dataset) {
             for (const [key, val] of Object.entries(data.key_dataset)) {
-                if (DATASET_MAPPING[key]) mappedDatasets[DATASET_MAPPING[key]] = val;
+                if (DATASET_MAPPING[key]) {
+                    const mappedName = DATASET_MAPPING[key];
+                    mappedDatasets[mappedName] = (mappedDatasets[mappedName] || 0) + val;
+                }
             }
         }
 

@@ -343,7 +343,7 @@ export const DescData = {
                   "Due to quality control filtering, only high-quality pixels (<b style='color: var(--card-shadow);'>Data Quality Flag DQF = 0</b>) within the <b style='color: var(--card-shadow);'>valid range (-0.05 to 5.0)</b> are retained. " +
                   "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily (at 12 UTC)</b></li>" +
                   "<li>In our app, <b style='color: var(--card-shadow);'>" +
-                  "this data is available starting from 2018-01-01, </b>" + 
+                  "this data is available starting from 2019-01-01, </b>" + 
                   "and <b style='color: var(--card-shadow);'>spatially aggregated to 4 km</b> for visualization performance. (Original ABI AOD resolution is 2 km)</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li></ul>"
         },

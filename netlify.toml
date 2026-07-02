@@ -12,7 +12,8 @@
   node_bundler = "esbuild"
   external_node_modules = ["@google-cloud/storage"]
 
-# for date .gzip data
+
+# ---- date .gzip data ----
 [[redirects]]
   from = "/data_by_date/*"
   to   = "/.netlify/functions/gcs-proxy/data_by_date/:splat"
@@ -43,7 +44,8 @@
   status = 200
   force  = true
   
-# for date .geojson data
+
+# ---- date .geojson data ----
 [[redirects]]
   from = "/airnow_date_geojson/*"
   to   = "/.netlify/functions/gcs-proxy/airnow_date_geojson/:splat"
@@ -74,7 +76,8 @@
   status = 200
   force  = true
   
-# for date .json data
+  
+# ---- date .json data ----
 [[redirects]]
   from = "/noaa_hms_smoke_date_json/*"
   to   = "/.netlify/functions/gcs-proxy/noaa_hms_smoke_date_json/:splat"
@@ -142,6 +145,8 @@
   status = 200
   force  = true
 
+
+# ---- API approach -----
 [[redirects]]
   from = "/api/chat"
   to   = "https://fetch-aichat-go-service-1068523865415.us-central1.run.app/api/chat"
@@ -157,6 +162,12 @@
 [[redirects]]
   from = "/api/email/*"
   to   = "https://fetch-email-go-service-1068523865415.us-central1.run.app/:splat"
+  status = 200
+  force  = true
+  
+[[redirects]]
+  from = "/api/tsplot"
+  to   = "/.netlify/functions/gcs-tsplot"
   status = 200
   force  = true
 
