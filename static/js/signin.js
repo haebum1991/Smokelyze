@@ -138,6 +138,23 @@ onAuthStateChanged(auth, async (user) => {
             { id: "TSplotModalOverlay", close: (el) => el.style.display = "none" }
         ]
     };
+    
+    const setElementDisplay = (el, show) => {
+        if (!el) return;
+        if (!show) {
+            el.style.display = "none";
+            return;
+        }
+        if (
+            el.classList.contains("map-btn-control") ||
+            el.classList.contains("accordion-toggle") ||
+            el.id === "TelemetryPanel"
+        ) {
+            el.style.display = "flex";
+        } else {
+            el.style.display = "block";
+        }
+    };
 
     if (user && user.emailVerified) {
         try {
@@ -154,21 +171,13 @@ onAuthStateChanged(auth, async (user) => {
             // 2. Control Admin UI visibility
             adminUI.elements.forEach(id => {
                 const el = document.getElementById(id);
-                if (el) {
-                    if (el.classList.contains("map-btn-control") || el.classList.contains("accordion-toggle") || el.id === "TelemetryPanel") {
-                        el.style.display = isAdmin ? "flex" : "none";
-                    } else {
-                        el.style.display = isAdmin ? "block" : "none";
-                    }
-                }
+                setElementDisplay(el, isAdmin);
             });
 
             // 3. Control Premium UI visibility
             premiumUI.elements.forEach(id => {
                 const el = document.getElementById(id);
-                if (el) {
-                    el.style.display = isPaidOrAdmin ? "block" : "none";
-                }
+                setElementDisplay(el, isPaidOrAdmin);
             });
 
             // 4. Auto-close drawers if unauthorized
@@ -199,7 +208,7 @@ onAuthStateChanged(auth, async (user) => {
         
         adminUI.elements.forEach(id => {
             const el = document.getElementById(id);
-            if (el) el.style.display = "none";
+            setElementDisplay(el, false);
         });
         adminUI.drawers.forEach(d => {
             const el = document.getElementById(d.id);
@@ -208,7 +217,7 @@ onAuthStateChanged(auth, async (user) => {
         
         premiumUI.elements.forEach(id => {
             const el = document.getElementById(id);
-            if (el) el.style.display = "none";
+            setElementDisplay(el, false);
         });
         premiumUI.drawers.forEach(d => {
             const el = document.getElementById(d.id);
