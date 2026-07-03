@@ -114,36 +114,47 @@ onAuthStateChanged(auth, async (user) => {
     // Set flag for other modules to know auth is initialized
     window.fbAuthReady = true;
 
-    // [Centralized Admin UI Management: --- Check Admin Auth ---]
+    // [Centralized Admin & Premium UI Management]
     const adminUI = {
         elements: [
-            "AdminSettingsSection", 
-            "MapBtnAnalytics", 
-            "AerscreenToggle", 
-            "MapPostBtnAerscreen", 
-            "BoardBtnWrite", 
+            "AdminSettingsSection",
+            "BoardBtnWrite",
             "BoardBtnEmail",
             "TelemetryPanel"
         ],
+        drawers: []
+    };
+
+    const premiumUI = {
+        elements: [
+            "MapBtnAnalytics",
+            "AerscreenToggle",
+            "MapPostBtnAerscreen",
+            "MapPostBtnTSplot"
+        ],
         drawers: [
             { id: "AnalyticsModalOverlay", close: (el) => el.style.display = "none" },
-            { id: "AerscreenDrawer", close: (el) => el.classList.remove("open") }
+            { id: "AerscreenDrawer", close: (el) => el.classList.remove("open") },
+            { id: "TSplotModalOverlay", close: (el) => el.style.display = "none" }
         ]
     };
 
     if (user && user.emailVerified) {
         try {
             const snap = await getDoc(doc(db, "smokelyze_users", user.uid));
-            const isAdmin = snap.exists() && snap.data().role === "admin";
-            
-            // 1. Persist state for late-loading modules
-            sessionStorage.setItem("smokelyze_is_admin", isAdmin);
+            const role = snap.exists() ? snap.data().role : "";
+            const isAdmin = role === "admin";
+            const isPremium = role === "premium";
+            const isPaidOrAdmin = isAdmin || isPremium;
 
-            // 2. Control visibility
+            // 1. Persist states
+            sessionStorage.setItem("smokelyze_is_admin", isAdmin);
+            sessionStorage.setItem("smokelyze_is_premium", isPremium);
+
+            // 2. Control Admin UI visibility
             adminUI.elements.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
-                    // Use "" (empty) to revert to original CSS (flex/block as defined) or force "flex" for buttons/telemetry
                     if (el.classList.contains("map-btn-control") || el.classList.contains("accordion-toggle") || el.id === "TelemetryPanel") {
                         el.style.display = isAdmin ? "flex" : "none";
                     } else {
@@ -152,29 +163,54 @@ onAuthStateChanged(auth, async (user) => {
                 }
             });
 
-            // 3. Special Security: Auto-close admin views if unauthorized
+            // 3. Control Premium UI visibility
+            premiumUI.elements.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.display = isPaidOrAdmin ? "block" : "none";
+                }
+            });
+
+            // 4. Auto-close drawers if unauthorized
             if (!isAdmin) {
                 adminUI.drawers.forEach(d => {
                     const el = document.getElementById(d.id);
                     if (el) d.close(el);
                 });
             }
+            if (!isPaidOrAdmin) {
+                premiumUI.drawers.forEach(d => {
+                    const el = document.getElementById(d.id);
+                    if (el) d.close(el);
+                });
+            }
 
-            // 4. Dispatch global event
-            document.dispatchEvent(new CustomEvent("smokelyzeAuthChanged", { 
-                detail: { user, isAdmin } 
+            // 5. Dispatch global event
+            document.dispatchEvent(new CustomEvent("smokelyzeAuthChanged", {
+                detail: { user, isAdmin, isPremium }
             }));
         } catch (e) {
             console.warn("Centralized Admin Check failed:", e);
         }
     } else {
+    
         sessionStorage.setItem("smokelyze_is_admin", "false");
+        sessionStorage.setItem("smokelyze_is_premium", "false");
+        
         adminUI.elements.forEach(id => {
             const el = document.getElementById(id);
             if (el) el.style.display = "none";
         });
-        // Auto-close admin drawers on logout
         adminUI.drawers.forEach(d => {
+            const el = document.getElementById(d.id);
+            if (el) d.close(el);
+        });
+        
+        premiumUI.elements.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = "none";
+        });
+        premiumUI.drawers.forEach(d => {
             const el = document.getElementById(d.id);
             if (el) d.close(el);
         });

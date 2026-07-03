@@ -753,6 +753,7 @@ title: ""
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <script type="module" src="/js/ui-analytics.js"></script>
+<script type="module" src="/js/ui-tsplot.js"></script>
 
 <!-- MapPost Context Menu -->
 <div class="MapPost-context-menu" id="MapPostContextMenu" style="display:none;">
@@ -761,6 +762,7 @@ title: ""
     <button class="reply-btn-submit" id="MapPostBtnWrite" style="width: 100%;">Add MapPost</button>
     <button class="reply-btn-submit" id="MapPostBtnHysplit" style="width: 100%;">Run HYSPLIT</button>
     <button class="reply-btn-submit" id="MapPostBtnAerscreen">AERSCREEN</button>
+    <button class="reply-btn-submit" id="MapPostBtnTSplot" style="width: 100%;">Time-Series Plot</button>
     <button class="reply-btn-cancel" id="MapPostBtnClose" style="width: 100%;">Close</button>
   </div>
 </div>
@@ -975,6 +977,7 @@ title: ""
     </div>
   </div>
 </div>
+
 
 <!-- Aerscreen Modal -->
 <div class="MapPost-modal-overlay" id="AerscreenModalOverlay" style="display:none;">
@@ -1359,6 +1362,34 @@ title: ""
   </div>
 </div>
 
+
+<!-- Time-Series Plot Modal -->
+<div class="MapPost-modal-overlay" id="TSplotModalOverlay" style="display:none; z-index: 2000;">
+  <div class="MapPost-modal" style="max-width: 80rem; width: 95%;">
+    <div class="MapPost-modal-header">
+      <h3 id="TSplotModalTitle">Time-Series Plot</h3>
+      <button class="ui-btn-close" id="TSplotModalClose">
+        <svg width="20" height="20">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
+    </div>
+    <div class="MapPost-modal-body">
+      <div id="TSplotChartContainer" style="width: 100%; height: 100%; display: none;"></div>
+      <div id="TSplotLoading" style="display:none; text-align:center; padding: 5rem 2rem;">
+        <div id="TSplotSpinner"
+          style="margin: 0 auto 1.5rem auto; width: 4rem; height: 4rem; border: 4px solid var(--border-soft); border-top: 4px solid var(--card-shadow); border-radius: 50%; animation: spin 1s linear infinite;">
+        </div>
+        <span id="TSplotLoadingText" style="font-size: 1.4rem; color: var(--text-soft);">Loading hourly data...</span>
+      </div>
+      <div id="TSplotError"
+        style="display:none; color:var(--color-invalid, red); padding:2rem; text-align:center; font-size: 1.4rem;">
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <!-- Timelapse Modal -->
 <div class="MapPost-modal-overlay" id="TimelapseModalOverlay" style="display:none;">
   <div class="MapPost-modal">
@@ -1385,7 +1416,7 @@ title: ""
       </div>
 
       <div class="MapPost-form-group">
-        <label>Start Date & Time:</label>
+        <label id="TimelapseStartLabel">Start Date & Time:</label>
         <div class="MapPost-form-group-row">
           <input type="date" id="TimelapseStartDate">
           <select id="TimelapseStartTime">
@@ -1418,7 +1449,7 @@ title: ""
       </div>
 
       <div class="MapPost-form-group">
-        <label>End Date & Time:</label>
+        <label id="TimelapseEndLabel">End Date & Time:</label>
         <div class="MapPost-form-group-row">
           <input type="date" id="TimelapseEndDate">
           <select id="TimelapseEndTime">
