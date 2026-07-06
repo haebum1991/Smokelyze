@@ -101,6 +101,14 @@ function createMap() {
         crossSourceCollisions: false, // Disables label collisions between sources
         fadeDuration: 0              // Disable cross-fading between zoom levels
     });
+    
+    // Restore projection state from sessionStorage (defaults to mercator/2d)
+    m.on("style.load", () => {
+        const savedProj = sessionStorage.getItem("mapProjection");
+        if (savedProj) {
+            m.setProjection({ type: savedProj });
+        }
+    });
 
     // Handle WebGL context loss (black screen on low-end GPUs)
     const canvas = m.getCanvas();

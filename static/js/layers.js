@@ -149,6 +149,7 @@ if (map) {
 
     ensureLayers();
     applyLayerToggles();
+    addDayNightLayer();
   };
 
   if (map.loaded() || map.isStyleLoaded()) {
@@ -246,4 +247,111 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   setTimeout(updateLayerToggleColors, 100);
 });
+
+// --- Day/Night Terminator Calculations ---
+function getSelectedAppDate() {
+    const dp = document.getElementById("datePicker");
+    const tp = document.getElementById("timePicker");
+    if (!dp || !tp) return new Date();
+
+    const [y, m, d] = dp.value.split("-").map(Number);
+    const hr = parseInt(tp.value) || 0;
+    
+    return new Date(y, m - 1, d, hr, 0, 0);
+}
+
+function getNightPolygon(date) {
+    const now = date || new Date();
+    const startOfYear = new Date(now.getUTCFullYear(), 0, 1);
+    const dayOfYear = Math.floor((now - startOfYear) / (24 * 3600 * 1000)) + 1;
+
+    // Solar declination (approximate in radians)
+    const dec = 23.44 * Math.sin((360 / 365.24) * (dayOfYear - 80) * Math.PI / 180) * Math.PI / 180;
+    
+    // Subsolar longitude in degrees
+    const utcHours = now.getUTCHours() + now.getUTCMinutes() / 60 + now.getUTCSeconds() / 3600;
+    const sunLon = 180 - (utcHours / 24) * 360;
+
+    const coords = [];
+    const step = 2; // Degrees step
+
+    const safeDec = Math.abs(dec) < 0.0001 ? 0.0001 : dec;
+
+    for (let lon = -180; lon <= 180; lon += step) {
+        const lonRad = lon * Math.PI / 180;
+        const sunLonRad = sunLon * Math.PI / 180;
+        const latRad = Math.atan(-Math.cos(lonRad - sunLonRad) / Math.tan(safeDec));
+        coords.push([lon, latRad * 180 / Math.PI]);
+    }
+
+    if (dec > 0) {
+        coords.push([180, -90]);
+        coords.push([-180, -90]);
+    } else {
+        coords.push([180, 90]);
+        coords.push([-180, 90]);
+    }
+    coords.push(coords[0]);
+
+    return {
+        type: "Feature",
+        properties: {},
+        geometry: {
+            type: "Polygon",
+            coordinates: [coords]
+        }
+    };
+}
+
+export function addDayNightLayer() {
+    if (!map) return;
+    
+    if (!map.getSource("daynight-source")) {
+        map.addSource("daynight-source", {
+            type: "geojson",
+            data: getNightPolygon(getSelectedAppDate())
+        });
+    }
+    
+    if (!map.getLayer("daynight-layer")) {
+        const beforeId = map.getLayer("states-fill") ? "states-fill" : undefined;
+        map.addLayer({
+            id: "daynight-layer",
+            type: "fill",
+            source: "daynight-source",
+            paint: {
+                "fill-color": "#000000",
+                "fill-opacity": 0.4
+            },
+            layout: {
+                visibility: "none"
+            }
+        }, beforeId);
+    }
+}
+
+export function updateDayNightData() {
+    if (!map) return;
+    const src = map.getSource("daynight-source");
+    if (src) {
+        src.setData(getNightPolygon(getSelectedAppDate()));
+    }
+}
+
+export function setDayNightVisibility(visible) {
+    if (!map) return;
+    const isChecked = document.getElementById("MapBtnDayNight")?.checked ?? true;
+    const layoutVisible = (visible && isChecked) ? "visible" : "none";
+    if (map.getLayer("daynight-layer")) {
+      map.setLayoutProperty("daynight-layer", "visibility", layoutVisible);
+    }
+}
+
+// Attach event listeners for dynamic updates when the date or time changes
+(() => {
+    const datePicker = document.getElementById("datePicker");
+    const timePicker = document.getElementById("timePicker");
+    if (datePicker) datePicker.addEventListener("change", updateDayNightData);
+    if (timePicker) timePicker.addEventListener("change", updateDayNightData);
+})();
 

@@ -1,7 +1,7 @@
 
 import { savePatch, read, initStateShadingToggle, initPointLayersToggle, initNaShadingToggle, saveGlobalMapStyle, readGlobalMapStyle } from "./ui-state.js";
 import { onDescDrawerOpen, appendDrawerHelpIcon, appendAllLayerHelpIcons, appendGenericHelpIcon } from "./ui-param-desc.js";
-import { MAP_STYLES } from "./map-init.js";
+import { MAP_STYLES, map } from "./map-init.js";
 import {
     clearHighlight,
     setOnSetNewsDrawer,
@@ -301,7 +301,28 @@ export function initAccordion() {
         initPointLayersToggle();
         appendDrawerHelpIcon("ToggleSwitchPointLayers", "show-points");
     }
+    
+    const DayNightContainer = document.getElementById("ToggleSwitchDayNight");
+    if (DayNightContainer) {
+        appendSwitch(DayNightContainer, {
+            id: "MapBtnDayNight",
+            label: "Show Day/Night Shadow",
+            checked: true
+        });
 
+        const btn = document.getElementById("MapBtnDayNight");
+        if (btn) {
+            btn.addEventListener("change", () => {
+                const isHourlyActive = document.getElementById("timePicker")?.style.display === "block";
+                import("./layers.js").then(module => {
+                    module.setDayNightVisibility(isHourlyActive);
+                });
+            });
+        }
+
+        appendDrawerHelpIcon("ToggleSwitchDayNight", "show-day-night");
+    }
+    
     const NaShadingContainer = document.getElementById("ToggleSwitchNaShading");
     if (NaShadingContainer) {
         appendSwitch(NaShadingContainer, {
@@ -348,6 +369,13 @@ export function initAccordion() {
                 // 2. Persist
                 saveGlobalMapStyle(itemCfg.id);
                 sessionStorage.setItem("mapStyle", itemCfg.id);
+                
+                if (map) {
+                    const proj = map.getProjection();
+                    if (proj && proj.type) {
+                        sessionStorage.setItem("mapProjection", proj.type);
+                    }
+                }
 
                 // 3. Full Redraw via Reload
                 sessionStorage.setItem("mapStyleChanged", "true");

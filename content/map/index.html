@@ -11,11 +11,16 @@ title: ""
 <link rel="preconnect" href="https://cdn.plot.ly">
 <link rel="preconnect" href="https://tiles.openfreemap.org">
 
-<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<link href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/driver.js@1.4.0/dist/driver.css" rel="stylesheet">
 <link href="/css/map.css" rel="stylesheet">
 
+<script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js" defer></script>
+
+<!-- MapLibre old versions
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer></script>
+-->
 
 <!-- Measure js pacakge
 <link href="https://cdn.jsdelivr.net/npm/maplibre-gl-measures@latest/dist/maplibre-gl-measures.css" rel="stylesheet" />
@@ -196,12 +201,15 @@ title: ""
           </svg>
         </button>
       </div>
+      
+      <!-- Point Layers Toggle (Injected via JS) -->
+      <div id="ToggleSwitchPointLayers"></div>
 
       <!-- State Shading Toggle (Injected via JS) -->
       <div id="ToggleSwitchStateShading"></div>
 
-      <!-- Point Layers Toggle (Injected via JS) -->
-      <div id="ToggleSwitchPointLayers"></div>
+      <!-- Day/Night Shadow Toggle (Injected via JS) -->
+      <div id="ToggleSwitchDayNight"></div>
 
       <!-- NA Values Toggle (Injected via JS) -->
       <div id="ToggleSwitchNaShading"></div>

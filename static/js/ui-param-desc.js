@@ -17,6 +17,11 @@ export const DescData = {
             desc: "If enabled, individual monitoring station points (e.g., AQS points) are displayed on the map."
         },
         {
+            id: "show-day-night",
+            title: "Show Day/Night Shadow",
+            desc: "If enabled, a semi-transparent shadow representing the Earth's night hemisphere is overlaid on the map. <br><i>* Note</i>: This layer is active and visible only when viewing hourly datasets."
+        },
+        {
             id: "show-na-values",
             title: "Show N/A values",
             desc: "If enabled, regions or points with missing (N/A) values are displayed on the map."

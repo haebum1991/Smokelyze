@@ -85,6 +85,12 @@ export function showTimeControls() {
             if (el) el.style.setProperty("display", "none", "important");
         });
     }
+    
+    // Automatically show Day/Night shadow when hourly data is active
+    import("./layers.js").then(module => {
+        module.setDayNightVisibility(true);
+        module.updateDayNightData();
+    }).catch(err => console.error("Failed to load layers.js for Day/Night layer:", err));
 }
 
 export function hideTimeControls() {
@@ -101,6 +107,11 @@ export function hideTimeControls() {
             if (el) el.style.setProperty("display", "block", "important");
         });
     }
+    
+    // Automatically hide Day/Night terminator shadow when hourly data is inactive
+    import("./layers.js").then(module => {
+        module.setDayNightVisibility(false);
+    }).catch(err => console.error("Failed to load layers.js for Day/Night layer:", err));
 }
 
 export function updateTimezoneLabel(isoDate) {

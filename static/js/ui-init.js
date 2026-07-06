@@ -32,6 +32,7 @@ if (datePicker && !datePicker.value) {
 if (map) {
   if (geolocate) map.addControl(geolocate, "bottom-left");
   if (resetViewControl) map.addControl(new resetViewControl(), "bottom-left");
+  map.addControl(new maplibregl.GlobeControl(), "bottom-left");
   map.addControl(new maplibregl.AttributionControl({ compact: false }), "bottom-right");
   map.addControl(new maplibregl.ScaleControl({ maxWidth: 90, unit: "metric" }), "bottom-right");
 }
