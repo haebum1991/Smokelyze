@@ -30,6 +30,7 @@ if (datePicker && !datePicker.value) {
 
 // Initialize Map Controls
 if (map) {
+  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-left");
   if (geolocate) map.addControl(geolocate, "bottom-left");
   if (resetViewControl) map.addControl(new resetViewControl(), "bottom-left");
   map.addControl(new maplibregl.GlobeControl(), "bottom-left");

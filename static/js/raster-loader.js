@@ -15,7 +15,7 @@ import {
   PALETTE_GOES_AOD
 } from "./layers-constants.js";
 import * as utils from "./utils.js";
-import { showErrorToast } from "./loader-ui.js";
+import { showLoaderError } from "./loader-ui.js";
 import { logUserAction } from "./fb-logging.js";
 import { state } from "./ui-state.js";
 import { auth } from "./fb-init.js";
@@ -619,10 +619,26 @@ async function loadRasterData(isoDate, config, urlFn, labelType) {
         // Clear the previous source state before loading new data
         clearRasterSource(source, cfg.sourceId);
 
+        // Determine dynamic product ID based on target date for geocolor-east and geocolor-west (cutoff 2026-04-08)
+        let prodId = cfg.productId;
+        if (cfg.sourceId === "goes-geocolor-east") {
+            if (targetDate >= "2026-04-08") {
+                prodId = "GOES-East_ABI_GeoColor";
+            } else {
+                prodId = "GOESEastCONUSGeoColor";
+            }
+        } else if (cfg.sourceId === "goes-geocolor-west") {
+            if (targetDate >= "2026-04-08") {
+                prodId = "GOES-West_ABI_GeoColor";
+            } else {
+                prodId = "GOESWestCONUSGeoColor";
+            }
+        }
+
         // TROPOMI uses daily URL, others use hourly URL
         const { jsonUrl: baseJson, pngUrl: basePng } = isHourly 
-            ? urlFn(utcIsoDate, utcHour, cfg.productId)
-            : urlFn(isoDate, cfg.productId);
+            ? urlFn(utcIsoDate, utcHour, prodId)
+            : urlFn(isoDate, prodId);
             
         const buster = utils.getCacheBuster(isHourly ? utcIsoDate : isoDate);
         const jsonUrl = baseJson + buster;
@@ -678,21 +694,7 @@ async function loadRasterData(isoDate, config, urlFn, labelType) {
             clearRasterSource(source, cfg.sourceId);
 
             if (cb && cb.checked) {
-                const label = key.toUpperCase();
-                let errorMsg = `No ${label} data available for this date.`;
-                if (isHourly) {
-                    if (labelType === "GOES") {
-                        const isGeoColor = key.toLowerCase().includes("geocolor");
-                        errorMsg = `No GOES-${label} ${isGeoColor ? "GeoColor" : "AOD"} data available for this date and hour.`;
-                    } else if (labelType === "HRRR") {
-                        errorMsg = `No ${label} HRRR data available for this date and hour.`;
-                    } else if (labelType === "TEMPO") {
-                        errorMsg = `No ${label} TEMPO data available for this date and hour.`;
-                    }
-                } else {
-                    errorMsg = `No ${label} TROPOMI data available for this date.`;
-                }
-                showErrorToast(errorMsg, "error");
+                showLoaderError(cfg.sourceId, isoDate, isHourly);
             }
         }
     }

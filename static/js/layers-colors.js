@@ -95,8 +95,22 @@ export function updateLegend(activeStack = activeLayerStack) {
         
         // headerOnly mode: show toggle header but no color scale (for true-color imagery layers)
         if (conf.headerOnly) {
-            sectionHtml += `<div class="legend-item" style="justify-content:center; opacity:0.65; font-style:italic; padding: 0.4rem 0;">
-                                <span>Geo/True-color imagery: no legend</span>
+            const mapLayerId = layerDef?.layers?.[0]?.id || `${id}-raster`;
+            let currentOpacity = 0.9;
+            if (map && map.getLayer(mapLayerId)) {
+                try {
+                    const val = map.getPaintProperty(mapLayerId, "raster-opacity");
+                    if (typeof val === "number") currentOpacity = val;
+                } catch (e) {}
+            }
+            const pct = Math.round(currentOpacity * 100);
+
+            sectionHtml += `<div class="legend-item" style="display:flex; flex-direction:column; gap:0.4rem; padding: 0.4rem 0.2rem; width:100%; align-items:stretch;">
+                                <div style="display:flex; justify-content:space-between; width:100%; font-size:1.2rem; color:var(--text-main);">
+                                    <span>Opacity</span>
+                                    <span class="opacity-val-${id}" style="font-weight:bold;">${pct}%</span>
+                                </div>
+                                <input type="range" class="legend-opacity-slider" data-layer-id="${mapLayerId}" data-id="${id}" min="0" max="100" value="${pct}" style="width:100%; cursor:pointer; accent-color:var(--card-shadow); margin: 0.2rem 0;">
                             </div>`;
             sectionHtml += `</div></div>`;
             finalHtml += sectionHtml;
@@ -239,6 +253,29 @@ export function updateLegend(activeStack = activeLayerStack) {
 
     container.innerHTML = finalHtml;
     container.style.display = "block";
+    
+    // Bind events to opacity sliders
+    const sliders = container.querySelectorAll(".legend-opacity-slider");
+    sliders.forEach(slider => {
+        slider.addEventListener("input", (e) => {
+            const val = parseFloat(e.target.value) / 100;
+            const lyrId = e.target.getAttribute("data-layer-id");
+            const rawId = e.target.getAttribute("data-id");
+
+            if (map && map.getLayer(lyrId)) {
+                try {
+                    map.setPaintProperty(lyrId, "raster-opacity", val);
+                } catch (err) {
+                    console.error("Failed to set raster opacity", err);
+                }
+            }
+
+            const label = container.querySelector(`.opacity-val-${rawId}`);
+            if (label) {
+                label.textContent = `${e.target.value}%`;
+            }
+        });
+    });
 }
 
 /**

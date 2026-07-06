@@ -5,7 +5,7 @@
  */
 
 import { map } from "./map-init.js";
-import { toggleSpinner } from "./loader-ui.js";
+import { toggleSpinner, showLoaderError } from "./loader-ui.js";
 import { updateStateShading } from "./layers-colors.js";
 import {
     airnowFetchData,
@@ -77,6 +77,7 @@ export async function airnowLoadData(isoDate, localHour) {
             } catch (err) {
                 console.error("AirNow bundle load failed:", err);
                 dailyGeoJSON = EMPTY_FC;
+                showLoaderError("airnow_hourly", isoDate, true);
             }
         }
 

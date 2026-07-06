@@ -5,6 +5,12 @@
  
 import * as utils from "./utils.js";
 import { setLoadedNewsFeatures } from "./loader-state.js";
+import { 
+    ExcludeLayerGroups, 
+    DATA_IMPORT_METHOD, 
+    LAYER_TEMPLATES 
+} from "./layers-def.js";
+
 
 let loadingCounter = 0;
 
@@ -62,6 +68,100 @@ export function showErrorToast(message, type = "error") {
             if (toast.parentNode) toast.parentNode.removeChild(toast);
         }, 500);
     }, 3000);
+}
+
+export function showLoaderError(sourceKey, isoDate, isHourlyFlag = null) {
+    let displayName = "";
+    try {
+        const cleanKey = sourceKey.replace(/_/g, "-");
+        
+        if (sourceKey === "smoke") {
+            displayName = "HMS-smoke";
+        } else if (sourceKey === "fire") {
+            displayName = "HMS-fire";
+        } else {
+            // A. Check dataset select dropdown option
+            const dataSelect = document.getElementById("MapDataSelect");
+            if (dataSelect) {
+                const opt = Array.from(dataSelect.options).find(o => o.value === sourceKey || o.value === cleanKey);
+                if (opt) {
+                    displayName = opt.textContent.replace(/\(.*\)/, "").trim();
+                    if (!displayName) displayName = opt.textContent.trim();
+                }
+            }
+
+            // B. Check LAYER_TEMPLATES (prioritize checked checkboxes)
+            if (!displayName && typeof LAYER_TEMPLATES !== "undefined") {
+                const activeCheckboxIds = Array.from(document.querySelectorAll("input[type=checkbox][id^='layer-']:checked"))
+                    .map(cb => cb.id.replace("layer-", ""));
+
+                const matchingTemplates = LAYER_TEMPLATES.filter(t => {
+                    if (!activeCheckboxIds.includes(t.id)) return false;
+                    if (t.id === sourceKey || t.id === cleanKey) return true;
+                    if (t.datasets && (t.datasets.includes(sourceKey) || t.datasets.includes(cleanKey))) return true;
+                    const cfg = DATA_IMPORT_METHOD[t.id];
+                    return cfg && cfg.source === sourceKey;
+                });
+
+                if (matchingTemplates.length > 0) {
+                    const uniqueTitles = Array.from(new Set(matchingTemplates.map(t => t.title.replace(/\(.*\)/g, "").trim())));
+                    displayName = uniqueTitles.join(" & ");
+                } else {
+                    let tmpl = LAYER_TEMPLATES.find(t => t.id === sourceKey || t.id === cleanKey);
+                    if (!tmpl) {
+                        tmpl = LAYER_TEMPLATES.find(t => t.datasets && (t.datasets.includes(sourceKey) || t.datasets.includes(cleanKey)));
+                    }
+                    if (!tmpl) {
+                        tmpl = LAYER_TEMPLATES.find(t => {
+                            const cfg = DATA_IMPORT_METHOD[t.id];
+                            return cfg && cfg.source === sourceKey;
+                        });
+                    }
+                    if (tmpl) {
+                        displayName = tmpl.title;
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Failed to lookup displayName", err);
+    }
+
+    if (!displayName) {
+        displayName = sourceKey;
+    }
+
+    // Determine hourly
+    let isHourly = isHourlyFlag;
+    if (isHourly === null) {
+        isHourly = false;
+        const localDs = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
+        if (localDs && localDs.hourly) {
+            isHourly = true;
+        }
+        const cleanKey = sourceKey.replace(/_/g, "-");
+        const tmpl = LAYER_TEMPLATES.find(t => t.id === sourceKey || t.id === cleanKey);
+        if (tmpl && tmpl.duration === "hourly") {
+            isHourly = true;
+        }
+    }
+
+    let dateStr = isoDate;
+    if (isHourly) {
+        const timePicker = document.getElementById("timePicker");
+        if (timePicker) {
+            const hourVal = timePicker.value;
+            dateStr = `${isoDate} ${String(hourVal).padStart(2, "0")}:00`;
+        }
+    }
+
+    showErrorToast(`
+      No data found for this date (${utils.ESML(dateStr)}) and dataset (${utils.ESML(displayName)}).
+      <br>
+      Please see the detail information 
+      <svg width="24" height="24" style="vertical-align: middle; stroke: white; fill: none; stroke-width: 2;">
+        <use xlink:href="#icon-desc" />
+      </svg>`);
 }
 
 export function updateWildfireNewsList(features) {

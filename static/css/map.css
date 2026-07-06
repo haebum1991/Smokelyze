@@ -2899,3 +2899,31 @@ body.map-tut-active .maplibregl-ctrl-bottom-left {
   cursor: pointer;
 }
 
+/* Layout zoom controls horizontally at the bottom-left, next to the Geolocate control */
+.maplibregl-ctrl-bottom-left .maplibregl-ctrl-group:has(.maplibregl-ctrl-zoom-in) {
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+.maplibregl-ctrl-bottom-left .maplibregl-ctrl-group:has(.maplibregl-ctrl-zoom-in) button {
+  border-radius: 0 !important;
+}
+
+.maplibregl-ctrl-bottom-left .maplibregl-ctrl-group:has(.maplibregl-ctrl-zoom-in) button:first-child {
+  border-top-left-radius: var(--border-radius-0p8rem) !important;
+  border-bottom-left-radius: var(--border-radius-0p8rem) !important;
+  border-right: 0.1rem solid var(--border-main) !important;
+}
+
+.maplibregl-ctrl-bottom-left .maplibregl-ctrl-group:has(.maplibregl-ctrl-zoom-in) button:last-child {
+  border-top-right-radius: var(--border-radius-0p8rem) !important;
+  border-bottom-right-radius: var(--border-radius-0p8rem) !important;
+}
+
+/* Hide zoom controls on mobile (screen width 1024px or less) */
+@media (max-width: 1024px) {
+  .maplibregl-ctrl-bottom-left .maplibregl-ctrl-group:has(.maplibregl-ctrl-zoom-in) {
+    display: none !important;
+  }
+}
+

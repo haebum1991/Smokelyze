@@ -13,7 +13,7 @@ import { ensureLayers, applyLayerToggles } from "./layers-handler.js";
 import { EMPTY_FC } from "./layers-constants.js";
 import { regionStats } from "./layers-state.js";
 import { updateSearchVisibility } from "./stats-data-search.js";
-import { showErrorToast, toggleSpinner, updateWildfireNewsList } from "./loader-ui.js";
+import { toggleSpinner, updateWildfireNewsList, showLoaderError } from "./loader-ui.js";
 import { fetchGeoJSON } from "./loader-fetch.js";
 import {
     loadedSources, loadedGeoJSON, modelStatsCache, activeSources,
@@ -418,25 +418,8 @@ function handleLoadingError(sourceKey, isoDate, ds = null) {
         utils.refreshHighlight();
     }
 
-    // 4. Show error toast based on source type
-    if (["smoke", "fire"].includes(sourceKey)) {
-        showErrorToast(`
-          No data found for this date (${utils.ESML(isoDate)}) and dataset (${utils.ESML(sourceKey)}).
-          <br>
-          "HMS-smoke" and "HMS-fire" are automatically updated everyday, but 
-          the latest data is from the previous day.`);
-    } else if (ExcludeLayerGroups.restrictedSources.includes(sourceKey)) {
-        showErrorToast(`
-          No data found for this date (${utils.ESML(isoDate)}) and dataset (${utils.ESML(sourceKey)}).
-          <br>
-          Please see the detail information 
-          <svg width="24" height="24" style="vertical-align: middle; stroke: white; fill: none; stroke-width: 2;">
-            <use xlink:href="#icon-desc" />
-          </svg>
-          for the valid data period of <span style="color: #FFD700; font-weight: bold;">[Published]</span> data.`);
-    } else {
-        showErrorToast(`No data found for this date (${utils.ESML(isoDate)}) and dataset (${utils.ESML(sourceKey)})`);
-    }
+    // 4. Delegate to central showLoaderError helper
+    showLoaderError(sourceKey, isoDate);
 
     if (sourceKey === "wildfire_news") {
         updateWildfireNewsList([]);
@@ -647,7 +630,39 @@ function bindEventsLoaderHandler() {
                 module.updateTimezoneLabel(e.target.value);
             });
             
-            updateAllActiveSources();
+            // Auto-align dataset dropdown based on selected year
+            const targetDateStr = e.target.value;
+            let datasetChanged = false;
+            if (targetDateStr) {
+                const year = parseInt(targetDateStr.split("-")[0], 10);
+                const dataSelect = document.getElementById("MapDataSelect");
+                if (dataSelect) {
+                    const currentVal = dataSelect.value;
+                    let newVal = currentVal;
+                    if (year >= 2025) {
+                        if (currentVal === "gam-v2") {
+                            newVal = "gam-v2-pred";
+                        } else if (currentVal === "pm-cbsa") {
+                            newVal = "pm-cbsa-pred";
+                        }
+                    } else if (year >= 2019 && year <= 2024) {
+                        if (currentVal === "gam-v2-pred") {
+                            newVal = "gam-v2";
+                        } else if (currentVal === "pm-cbsa-pred") {
+                            newVal = "pm-cbsa";
+                        }
+                    }
+                    if (newVal !== currentVal) {
+                        dataSelect.value = newVal;
+                        dataSelect.dispatchEvent(new Event("change", { bubbles: true }));
+                        datasetChanged = true;
+                    }
+                }
+            }
+            
+            if (!datasetChanged) {
+                updateAllActiveSources();
+            }
         }, 500);
         datePicker.addEventListener("change", onDateChange);
         datePicker.addEventListener("input", onDateChange);

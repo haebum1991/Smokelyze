@@ -357,8 +357,8 @@ export const DescData = {
             title: "GOES-GeoColor-East (hourly)",
             desc: "<b>GOES-GeoColor-East (hourly)</b> provides hourly true-color composite imagery from the GOES-East geostationary satellite (GOES-16/GOES-19) over the CONUS domain. " +
                 "GeoColor is a multi-band composite that blends visible and infrared channels to produce a near-true-color image during daytime and a city lights / infrared cloud composite at nighttime. " +
-                "This dataset is fetched via the <b style='color: var(--card-shadow);'>NOAA NESDIS OGC Tiles API</b> (<code>fire.data.nesdis.noaa.gov</code>), which serves Cloud Optimized GeoTIFF (COG) imagery through a <code>/bbox</code> endpoint. " +
-                "Each frame is downloaded as a single composite PNG, reprojected to Web Mercator (EPSG:3857), and auto-cropped to remove transparent borders outside the satellite's coverage area. " +
+                "<br><i>* Source Note</i>: For dates before <b>2026-04-08</b>, the imagery is fetched via the <b>NOAA NESDIS OGC Tiles API</b> (<code>fire.data.nesdis.noaa.gov</code>). For dates on or after <b>2026-04-08</b>, it is fetched via the <b>NASA Worldview API</b> (<code>gibs.earthdata.nasa.gov</code>). " +
+                "Each frame is downloaded as a single composite PNG/WebP, reprojected to Web Mercator (EPSG:3857), and auto-cropped to remove transparent borders. " +
                 "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily (at 12 UTC)</b></li>" +
                 "<li>In our app, <b style='color: var(--card-shadow);'>" +
                 "this data is available starting from 2025-06-26, </b>" +
@@ -370,8 +370,8 @@ export const DescData = {
             title: "GOES-GeoColor-West (hourly)",
             desc: "<b>GOES-GeoColor-West (hourly)</b> provides hourly true-color composite imagery from the GOES-West geostationary satellite (GOES-18) over the CONUS domain. " +
                 "GeoColor is a multi-band composite that blends visible and infrared channels to produce a near-true-color image during daytime and a city lights / infrared cloud composite at nighttime. " +
-                "This dataset is fetched via the <b style='color: var(--card-shadow);'>NOAA NESDIS OGC Tiles API</b> (<code>fire.data.nesdis.noaa.gov</code>), which serves Cloud Optimized GeoTIFF (COG) imagery through a <code>/bbox</code> endpoint. " +
-                "Each frame is downloaded as a single composite PNG, reprojected to Web Mercator (EPSG:3857), and auto-cropped to remove transparent borders outside the satellite's coverage area. " +
+                "<br><i>* Source Note</i>: For dates before <b>2026-04-08</b>, the imagery is fetched via the <b>NOAA NESDIS OGC Tiles API</b> (<code>fire.data.nesdis.noaa.gov</code>). For dates on or after <b>2026-04-08</b>, it is fetched via the <b>NASA Worldview API</b> (<code>gibs.earthdata.nasa.gov</code>). " +
+                "Each frame is downloaded as a single composite PNG/WebP, reprojected to Web Mercator (EPSG:3857), and auto-cropped to remove transparent borders. " +
                 "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily (at 12 UTC)</b></li>" +
                 "<li>In our app, <b style='color: var(--card-shadow);'>" +
                 "this data is available starting from 2025-06-26, </b>" +
@@ -889,5 +889,16 @@ export function appendAllLayerHelpIcons() {
         // Insert just before the checkbox
         parentLabel.insertBefore(helpBtn, chk);
     });
+    
+    // Dataset Select help button binding
+    const datasetHelpBtn = document.getElementById("DatasetHelpBtn");
+    if (datasetHelpBtn && !datasetHelpBtn.dataset.bound) {
+        datasetHelpBtn.dataset.bound = "true";
+        datasetHelpBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            showHelpModal("general-info");
+        });
+    }
 }
 

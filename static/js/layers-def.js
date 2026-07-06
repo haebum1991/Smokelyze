@@ -564,7 +564,7 @@ export function getLayerDef(key, sourceKey, fieldName, breaks, colors, opts = {}
 export const LAYER_TEMPLATES = [
     // --- Real-time data ---
     { duration: "daily", id: "wildfire-news", field: "title", breaks: [], colors: ["blue"], title: "Wildfire News", datasets: ["wildfire-news"], type: "symbol", iconImage: "pulsing-news" },
-    { duration: "daily", id: "wildfire-nifc", field: "IncidentName", breaks: [], colors: ["orange"], title: "Wildfire Incidents", datasets: ["wildfire-nifc"], type: "symbol", iconImage: "pulsing-fire" },
+    { duration: "daily", id: "wildfire-nifc", field: "IncidentName", breaks: [], colors: ["orange"], title: "WF incident locations", datasets: ["wildfire-nifc"], type: "symbol", iconImage: "pulsing-fire" },
     { duration: "daily", id: "MapPost", field: "title", breaks: [], colors: ["red"], title: "MapPost", datasets: ["MapPost"], type: "symbol", iconImage: "pulsing-alert" },
 
     // ---- [External data] AirNow ----

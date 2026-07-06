@@ -307,7 +307,18 @@ title: ""
       <details>
         <summary>Published & Latest</summary>
 
-        <label for="MapDataSelect">Select dataset:</label>
+        <label for="MapDataSelect" id="SelectDatasetLabel"
+          style="display: inline-flex; align-items: center; gap: 0.3rem; margin: 0; position: relative;">
+          Select dataset:
+          <span id="DatasetHelpBtn" class="layer-help-btn drawer-help-btn"
+            style="display: inline-flex; align-items: center; cursor: pointer; margin: 0; padding: 0.1rem;"
+            title="? General information">
+            <svg width="20" height="20">
+              <use xlink:href="#icon-help" />
+            </svg>
+          </span>
+        </label>
+        
         <select id="MapDataSelect" name="MapDataSelect">
           <optgroup label="Latest Analysis & Prediction">
             <option value="gam-v2-pred">UW GAM-v2 (2025+)</option>
