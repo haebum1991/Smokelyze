@@ -10,7 +10,9 @@ export const ExcludeLayerGroups = {
       "tempo-no2", "tempo-hcho", 
       "tropomi-no2", "tropomi-hcho", 
       "hrrr-colmd", "hrrr-massden",
-      "goes-aod-east", "goes-aod-west"
+      "goes-aod-east", "goes-aod-west",
+      "goes-geocolor-east", "goes-geocolor-west",
+      "viirs-truecolor"
   ],
 
   // [layers-handler.js] > [addSourceIfMissing]
@@ -18,7 +20,9 @@ export const ExcludeLayerGroups = {
       "tempo-no2", "tempo-hcho", 
       "tropomi-no2", "tropomi-hcho", 
       "hrrr-colmd", "hrrr-massden",
-      "goes-aod-east", "goes-aod-west"
+      "goes-aod-east", "goes-aod-west",
+      "goes-geocolor-east", "goes-geocolor-west",
+      "viirs-truecolor"
   ],
 
   // ========= Find by [key] =========
@@ -35,7 +39,9 @@ export const ExcludeLayerGroups = {
       "tropomi-no2", "tropomi-hcho",
       "hysplit", 
       "hrrr-colmd", "hrrr-massden",
-      "goes-aod-east", "goes-aod-west"
+      "goes-aod-east", "goes-aod-west",
+      "goes-geocolor-east", "goes-geocolor-west",
+      "viirs-truecolor"
   ],
 
   // [layers-tooltip.js] > [stateHoverHTML] > [EXCLUDED]
@@ -45,7 +51,9 @@ export const ExcludeLayerGroups = {
       "tropomi-no2", "tropomi-hcho", 
       "hysplit", 
       "hrrr-colmd", "hrrr-massden",
-      "goes-aod-east", "goes-aod-west"
+      "goes-aod-east", "goes-aod-west",
+      "goes-geocolor-east", "goes-geocolor-west",
+      "viirs-truecolor"
   ],
 
   // [stats-common.js] > [getActiveModelLayers] > [EXCLUDED]
@@ -56,7 +64,9 @@ export const ExcludeLayerGroups = {
       "tropomi-no2", "tropomi-hcho", 
       "hysplit", 
       "hrrr-colmd", "hrrr-massden",
-      "goes-aod-east", "goes-aod-west"
+      "goes-aod-east", "goes-aod-west",
+      "goes-geocolor-east", "goes-geocolor-west",
+      "viirs-truecolor"
   ],
 
   // [stats-data-search.js] > [updateVisibility] > [EXCLUDED]
@@ -70,7 +80,9 @@ export const ExcludeLayerGroups = {
       "tropomi-no2", "tropomi-hcho", 
       "hysplit", 
       "hrrr-colmd", "hrrr-massden",
-      "goes-aod-east", "goes-aod-west"
+      "goes-aod-east", "goes-aod-west",
+      "goes-geocolor-east", "goes-geocolor-west",
+      "viirs-truecolor"
   ],
 
   // [stats-plot-dy-scatter.js] > [getActiveModelLayers] > [EXCLUDED]
@@ -81,7 +93,9 @@ export const ExcludeLayerGroups = {
       "tropomi-no2", "tropomi-hcho",
       "hysplit", 
       "hrrr-colmd", "hrrr-massden",
-      "goes-aod-east", "goes-aod-west"
+      "goes-aod-east", "goes-aod-west",
+      "goes-geocolor-east", "goes-geocolor-west",
+      "viirs-truecolor"
   ],
 
   // ========= Find by [source] =========
@@ -103,7 +117,9 @@ export const ExcludeLayerGroups = {
       "tempo-no2", "tempo-hcho", 
       "tropomi-no2", "tropomi-hcho", 
       "hrrr-colmd", "hrrr-massden",
-      "goes-aod-east", "goes-aod-west"
+      "goes-aod-east", "goes-aod-west",
+      "goes-geocolor-east", "goes-geocolor-west",
+      "viirs-truecolor"
   ],
 
   // [loader.js] > [loadSourceData] > Calculate state-level statistics (Public data)
@@ -250,6 +266,27 @@ export const DATA_IMPORT_METHOD = {
       source: "goes-aod-west",
       duration: "hourly",
       hourly: true
+  },
+  
+  "goes-geocolor-east": {
+      key: "goes-geocolor-east",
+      source: "goes-geocolor-east",
+      duration: "hourly",
+      hourly: true
+  },
+  
+  "goes-geocolor-west": {
+      key: "goes-geocolor-west",
+      source: "goes-geocolor-west",
+      duration: "hourly",
+      hourly: true
+  },
+  
+  "viirs-truecolor": {
+      key: "viirs-truecolor",
+      source: "viirs-truecolor",
+      duration: "daily",
+      hourly: false
   },
   
   "gam_v2": {
@@ -606,8 +643,13 @@ export const LAYER_TEMPLATES = [
     { duration: "hourly", id: "hrrr-colmd", field: "hrrr", title: "HRRR-smokeVCD", breaks: BREAKS_HRRR_ugm2, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "10³ ug m⁻²" },
     { duration: "hourly", id: "hrrr-massden", field: "hrrr", title: "HRRR-smoke8m", breaks: BREAKS_HRRR_ugm3, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "ug m⁻³" },
 
-    { duration: "hourly", id: "goes-aod-east", field: "goes", title: "GOES-East AOD", breaks: BREAKS_GOES_AOD, colors: PALETTE_GOES_AOD, decimals: 3, manualLayer: true, hourly: true },
-    { duration: "hourly", id: "goes-aod-west", field: "goes", title: "GOES-West AOD", breaks: BREAKS_GOES_AOD, colors: PALETTE_GOES_AOD, decimals: 3, manualLayer: true, hourly: true }
+    { duration: "hourly", id: "goes-aod-east", field: "goes", title: "GOES-AOD-East", breaks: BREAKS_GOES_AOD, colors: PALETTE_GOES_AOD, decimals: 3, manualLayer: true, hourly: true },
+    { duration: "hourly", id: "goes-aod-west", field: "goes", title: "GOES-AOD-West", breaks: BREAKS_GOES_AOD, colors: PALETTE_GOES_AOD, decimals: 3, manualLayer: true, hourly: true },
+    
+    { duration: "hourly", id: "goes-geocolor-east", field: "goes", title: "GOES-GeoColor-East", breaks: BREAKS_GOES_AOD, colors: PALETTE_GOES_AOD, decimals: 0, manualLayer: true, hourly: true },
+    { duration: "hourly", id: "goes-geocolor-west", field: "goes", title: "GOES-GeoColor-West", breaks: BREAKS_GOES_AOD, colors: PALETTE_GOES_AOD, decimals: 0, manualLayer: true, hourly: true },
+    
+    { duration: "daily", id: "viirs-truecolor", field: "viirs", title: "VIIRS-TrueColor", breaks: BREAKS_GOES_AOD, colors: PALETTE_GOES_AOD, decimals: 0, manualLayer: true, hourly: false }
 ];
 
 export const LAYER_DEFS = (() => {
@@ -925,6 +967,69 @@ export const LAYER_DEFS = (() => {
                 colors: goesWestTmpl.colors,
                 continuous: true,
                 unit: ""
+            }
+        };
+    }
+    
+    const goesGeocolorEastTmpl = LAYER_TEMPLATES.find(t => t.id === "goes-geocolor-east");
+    if (goesGeocolorEastTmpl) {
+        defs["goes-geocolor-east"] = {
+            layers: [
+                { 
+                    id: "goes-geocolor-east-raster", 
+                    type: "raster", 
+                    source: "goes-geocolor-east", 
+                    paint: { 
+                        "raster-opacity": 0.9,
+                        "raster-resampling": "nearest"
+                    } 
+                }
+            ],
+            legend: {
+                title: goesGeocolorEastTmpl.title,
+                headerOnly: true
+            }
+        };
+    }
+
+    const goesGeocolorWestTmpl = LAYER_TEMPLATES.find(t => t.id === "goes-geocolor-west");
+    if (goesGeocolorWestTmpl) {
+        defs["goes-geocolor-west"] = {
+            layers: [
+                { 
+                    id: "goes-geocolor-west-raster", 
+                    type: "raster", 
+                    source: "goes-geocolor-west", 
+                    paint: { 
+                        "raster-opacity": 0.9,
+                        "raster-resampling": "nearest"
+                    } 
+                }
+            ],
+            legend: {
+                title: goesGeocolorWestTmpl.title,
+                headerOnly: true
+            }
+        };
+    }
+
+    const viirsTruecolorTmpl = LAYER_TEMPLATES.find(t => t.id === "viirs-truecolor");
+    if (viirsTruecolorTmpl) {
+        defs["viirs-truecolor"] = {
+            layers: [
+                { 
+                    id: "viirs-truecolor-raster", 
+                    type: "raster", 
+                    source: "viirs-truecolor", 
+                    paint: { 
+                        "raster-opacity": 0.9,
+                        "raster-resampling": "nearest"
+                    } 
+                }
+            ],
+            legend: {
+                title: viirsTruecolorTmpl.title,
+                headerOnly: true
             }
         };
     }

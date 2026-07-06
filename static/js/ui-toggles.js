@@ -12,6 +12,7 @@ import {
     setOnSetAccordionCollapsed,
     ESML
 } from "./utils.js";
+import { triggerRefresh } from "./stats-common.js";
 
 // --- Component: Modern Toggle Switch ---
 const SWITCH_STYLE = `
@@ -401,7 +402,12 @@ export const setStatsDrawer = createDrawerToggle({
     id: "stats",
     btnId: "FigurePageToggle",
     drawerId: "FigurePageDrawer",
-    bodyClass: "FigurePage-drawer-open"
+    bodyClass: "FigurePage-drawer-open",
+    onOpen: () => {
+        if (typeof triggerRefresh === "function") {
+            triggerRefresh();
+        }
+    }
 });
 
 export function initStatsDrawer() {

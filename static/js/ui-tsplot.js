@@ -203,6 +203,12 @@ async function showTSProfile(lng, lat) {
         showError("Please toggle on a layer first.");
         return;
     }
+    
+    // Direct check for visual-only imagery layers to avoid hitting the backend API
+    if (activeConfig.productId.includes("geocolor") || activeConfig.productId.includes("truecolor")) {
+        showError("Time-series profile is not supported for imagery layers.");
+        return;
+    }
 
     const localSelectedDateStr = utils.currentDate(); // Date picker date, e.g. "2026-06-01"
 

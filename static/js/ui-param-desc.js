@@ -325,8 +325,8 @@ export const DescData = {
         },
         {
             id: "goes-aod-east",
-            title: "GOES-East AOD (hourly)",
-            desc: "<b>GOES-East AOD (hourly) (L2)</b> provides hourly Aerosol Optical Depth (AOD) measurements from the GOES-East geostationary satellite (GOES-16 for dates before 2025-01-01; GOES-19 for dates after 2025-01-01) over North America. AOD is a dimensionless measure of light extinction by aerosols (e.g., smoke, dust, haze) in the atmospheric column. " +
+            title: "GOES-AOD-East (hourly)",
+            desc: "<b>GOES-AOD-East (hourly) (L2)</b> provides hourly Aerosol Optical Depth (AOD) measurements from the GOES-East geostationary satellite (GOES-16 for dates before 2025-01-01; GOES-19 for dates after 2025-01-01) over North America. AOD is a dimensionless measure of light extinction by aerosols (e.g., smoke, dust, haze) in the atmospheric column. " +
                   "This dataset is processed through a cloud-based automated pipeline that extracts raw sub-hourly netCDF files from NOAA's public Google Cloud Storage bucket. " +
                   "Due to quality control filtering, only high-quality pixels (<b style='color: var(--card-shadow);'>Data Quality Flag DQF = 0</b>) within the <b style='color: var(--card-shadow);'>valid range (-0.05 to 5.0)</b> are retained. " +
                   "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily (at 12 UTC)</b></li>" +
@@ -337,8 +337,8 @@ export const DescData = {
         },
         {
             id: "goes-aod-west",
-            title: "GOES-West AOD (hourly)",
-            desc: "<b>GOES-West AOD (hourly) (L2)</b> provides hourly Aerosol Optical Depth (AOD) measurements from the GOES-West geostationary satellite (GOES-17 for dates before 2023-01-01; GOES-18 for dates after 2023-01-01) over Western North America. AOD is a dimensionless measure of light extinction by aerosols (e.g., smoke, dust, haze) in the atmospheric column. " +
+            title: "GOES-AOD-West (hourly)",
+            desc: "<b>GOES-AOD-West (hourly) (L2)</b> provides hourly Aerosol Optical Depth (AOD) measurements from the GOES-West geostationary satellite (GOES-17 for dates before 2023-01-01; GOES-18 for dates after 2023-01-01) over Western North America. AOD is a dimensionless measure of light extinction by aerosols (e.g., smoke, dust, haze) in the atmospheric column. " +
                   "This dataset is processed through a cloud-based automated pipeline that extracts raw sub-hourly netCDF files from NOAA's public Google Cloud Storage bucket. " +
                   "Due to quality control filtering, only high-quality pixels (<b style='color: var(--card-shadow);'>Data Quality Flag DQF = 0</b>) within the <b style='color: var(--card-shadow);'>valid range (-0.05 to 5.0)</b> are retained. " +
                   "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily (at 12 UTC)</b></li>" +
@@ -347,6 +347,45 @@ export const DescData = {
                   "and <b style='color: var(--card-shadow);'>spatially aggregated to 4 km</b> for visualization performance. (Original ABI AOD resolution is 2 km)</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li></ul>"
         },
+        {
+            id: "goes-geocolor-east",
+            title: "GOES-GeoColor-East (hourly)",
+            desc: "<b>GOES-GeoColor-East (hourly)</b> provides hourly true-color composite imagery from the GOES-East geostationary satellite (GOES-16/GOES-19) over the CONUS domain. " +
+                "GeoColor is a multi-band composite that blends visible and infrared channels to produce a near-true-color image during daytime and a city lights / infrared cloud composite at nighttime. " +
+                "This dataset is fetched via the <b style='color: var(--card-shadow);'>NOAA NESDIS OGC Tiles API</b> (<code>fire.data.nesdis.noaa.gov</code>), which serves Cloud Optimized GeoTIFF (COG) imagery through a <code>/bbox</code> endpoint. " +
+                "Each frame is downloaded as a single composite PNG, reprojected to Web Mercator (EPSG:3857), and auto-cropped to remove transparent borders outside the satellite's coverage area. " +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily (at 12 UTC)</b></li>" +
+                "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                "this data is available starting from 2025-06-26, </b>" +
+                "and <b style='color: var(--card-shadow);'>spatially aggregated to 4 km</b> for visualization performance.</li>" +
+                "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li></ul>"
+        },
+        {
+            id: "goes-geocolor-west",
+            title: "GOES-GeoColor-West (hourly)",
+            desc: "<b>GOES-GeoColor-West (hourly)</b> provides hourly true-color composite imagery from the GOES-West geostationary satellite (GOES-18) over the CONUS domain. " +
+                "GeoColor is a multi-band composite that blends visible and infrared channels to produce a near-true-color image during daytime and a city lights / infrared cloud composite at nighttime. " +
+                "This dataset is fetched via the <b style='color: var(--card-shadow);'>NOAA NESDIS OGC Tiles API</b> (<code>fire.data.nesdis.noaa.gov</code>), which serves Cloud Optimized GeoTIFF (COG) imagery through a <code>/bbox</code> endpoint. " +
+                "Each frame is downloaded as a single composite PNG, reprojected to Web Mercator (EPSG:3857), and auto-cropped to remove transparent borders outside the satellite's coverage area. " +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily (at 12 UTC)</b></li>" +
+                "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                "this data is available starting from 2025-06-26, </b>" +
+                "and <b style='color: var(--card-shadow);'>spatially aggregated to 4 km</b> for visualization performance.</li>" +
+                "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li></ul>"
+        },
+        {
+            id: "viirs-truecolor",
+            title: "VIIRS-TrueColor",
+            desc: "<b>VIIRS-TrueColor</b> provides daily corrected reflectance true-color imagery from the NOAA-21 (JPSS-2) satellite's VIIRS instrument. " +
+                "Unlike geostationary GOES imagery, VIIRS is a polar-orbiting sensor that captures high-resolution swath data once per day over each location, offering superior spatial detail at the cost of temporal frequency. " +
+                "This dataset is fetched via the <b style='color: var(--card-shadow);'>NASA Worldview WMS API</b> (<code>gibs.earthdata.nasa.gov</code>) using the <code>VIIRS_NOAA21_CorrectedReflectance_TrueColor</code> layer. " +
+                "Each daily composite is downloaded as a single PNG, and areas outside the satellite swath are transparent. " +
+                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily (at 12 UTC)</b></li>" +
+                "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                "this data is available starting from 2023-02-10, </b>" +
+                "and <b style='color: var(--card-shadow);'>spatially aggregated to 4 km</b> for visualization performance.</li>" +
+                "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li></ul>"
+        }
     ],
     "desc-published-intro": [
         {

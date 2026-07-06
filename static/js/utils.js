@@ -192,16 +192,29 @@ export function urlPngHRRR(isoDate, hour, productId) {
   };
 }
 
-// url generator for png of GOES AOD
+// url generator for png of GOES AOD / GeoColor
 export function urlPngGOES(isoDate, hour, productId) {
   const [y, m, d] = isoDate.split("-");
   const formattedHour = String(hour).padStart(2, "0");
   const folder = `/goes_date_png/${productId}/${y}/${m}/${d}`;
   const baseName = `${productId}_${isoDate}_${formattedHour}T`;
+  const ext = productId.includes("GeoColor") ? "webp" : "png";
 
   return {
     jsonUrl: `${folder}/${baseName}.json`,
-    pngUrl: `${folder}/${baseName}.png`
+    pngUrl: `${folder}/${baseName}.${ext}`
+  };
+}
+
+// url generator for VIIRS daily composites
+export function urlPngVIIRS(isoDate, productId) {
+  const [y] = isoDate.split("-");
+  const folder = `/goes_date_png/${productId}/${y}`;
+  const baseName = `${productId}_${isoDate}`;
+
+  return {
+    jsonUrl: `${folder}/${baseName}.json`,
+    pngUrl: `${folder}/${baseName}.webp`
   };
 }
 

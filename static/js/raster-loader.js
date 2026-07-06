@@ -66,17 +66,38 @@ export const HRRR_CONFIG = {
 };
 
 export const GOES_CONFIG = {
-    "east": {
+    "aod-east": {
         productId: "ABI-L2-AODC-east",
         sourceId: "goes-aod-east",
         layerId: "layer-goes-aod-east",
         mapLayerId: "goes-aod-east-raster"
     },
-    "west": {
+    "aod-west": {
         productId: "ABI-L2-AODC-west",
         sourceId: "goes-aod-west",
         layerId: "layer-goes-aod-west",
         mapLayerId: "goes-aod-west-raster"
+    },
+    "geocolor-east": {
+        productId: "GOESEastCONUSGeoColor",
+        sourceId: "goes-geocolor-east",
+        layerId: "layer-goes-geocolor-east",
+        mapLayerId: "goes-geocolor-east-raster"
+    },
+    "geocolor-west": {
+        productId: "GOESWestCONUSGeoColor",
+        sourceId: "goes-geocolor-west",
+        layerId: "layer-goes-geocolor-west",
+        mapLayerId: "goes-geocolor-west-raster"
+    }
+};
+
+export const VIIRS_CONFIG = {
+    "viirs-truecolor": {
+        productId: "VIIRS_NOAA21_CorrectedReflectance_TrueColor",
+        sourceId: "viirs-truecolor",
+        layerId: "layer-viirs-truecolor",
+        mapLayerId: "viirs-truecolor-raster"
     }
 };
 
@@ -91,7 +112,10 @@ const rasterDataStore = {
     "hrrr-colmd": { grayscale: null, metadata: null, coordinates: null },
     "hrrr-massden": { grayscale: null, metadata: null, coordinates: null },
     "goes-aod-east": { grayscale: null, metadata: null, coordinates: null },
-    "goes-aod-west": { grayscale: null, metadata: null, coordinates: null }
+    "goes-aod-west": { grayscale: null, metadata: null, coordinates: null },
+    "goes-geocolor-east": { grayscale: null, metadata: null, coordinates: null },
+    "goes-geocolor-west": { grayscale: null, metadata: null, coordinates: null },
+    "viirs-truecolor": { grayscale: null, metadata: null, coordinates: null }
 };
 
 function hexToRgb(hex) {
@@ -156,9 +180,15 @@ function colorizeRasterImage(imgUrl, metadata, source, sourceId) {
                 const imgH = imageData.height;
 
                 // MAX EFFICIENCY: Store only the 8-bit Grayscale channel (Red) to save 75% memory
-                const grayscale = new Uint8Array(imgW * imgH);
-                for (let i = 0; i < rawData.length; i += 4) {
-                    grayscale[i / 4] = rawData[i];
+                const isTrueColor = sourceId.includes("geocolor") || sourceId.includes("truecolor");
+
+                // MAX EFFICIENCY: Store only the 8-bit Grayscale channel (Red) to save 75% memory (skip for true color)
+                const grayscale = isTrueColor ? null : new Uint8Array(imgW * imgH);
+                
+                if (!isTrueColor) {
+                    for (let i = 0; i < rawData.length; i += 4) {
+                        grayscale[i / 4] = rawData[i];
+                    }
                 }
 
                 // Pre-calculate Mercator constants to avoid Math.log/Math.tan on every mouse move
@@ -223,33 +253,34 @@ function colorizeRasterImage(imgUrl, metadata, source, sourceId) {
                     return colors[colors.length - 1];
                 };
 
-                for (let i = 0; i < rawData.length; i += 4) {
-                    const px = rawData[i];
-                    if (px === 0) {
-                        rawData[i + 3] = 0;
-                    } else {
-                        const realValue = min_val + (px / 255) * (max_val - min_val);
-                        const displayValue = getDisplayValue(sourceId, realValue);
-                        
-                        const isHrrr = sourceId.includes("hrrr");
-                        const isGoes = sourceId.includes("goes");
-
-                        // For HRRR-smoke and GOES AOD, make values below the lowest break transparent 
-                        // to prevent painting a solid box over the entire map.
-                        if ((isHrrr || isGoes) && displayValue < breaks[0]) {
+                if (!isTrueColor) {
+                    for (let i = 0; i < rawData.length; i += 4) {
+                        const px = rawData[i];
+                        if (px === 0) {
                             rawData[i + 3] = 0;
-                            continue;
+                        } else {
+                            const realValue = min_val + (px / 255) * (max_val - min_val);
+                            const displayValue = getDisplayValue(sourceId, realValue);
+
+                            const isHrrr = sourceId.includes("hrrr");
+                            const isGoes = sourceId.includes("goes");
+
+                            // For HRRR-smoke and GOES AOD, make values below the lowest break transparent 
+                            // to prevent painting a solid box over the entire map.
+                            if ((isHrrr || isGoes) && displayValue < breaks[0]) {
+                                rawData[i + 3] = 0;
+                                continue;
+                            }
+
+                            const rgb = getRasterColor(displayValue);
+                            rawData[i] = rgb[0];
+                            rawData[i + 1] = rgb[1];
+                            rawData[i + 2] = rgb[2];
+                            rawData[i + 3] = 220;
                         }
-
-                        const rgb = getRasterColor(displayValue);
-                        rawData[i] = rgb[0];
-                        rawData[i + 1] = rgb[1];
-                        rawData[i + 2] = rgb[2];
-                        rawData[i + 3] = 220;
                     }
+                    processingCtx.putImageData(imageData, 0, 0);
                 }
-
-                processingCtx.putImageData(imageData, 0, 0);
 
                 // [Architecture Fix] Update MapLibre ImageSource instead of CanvasSource
                 const dataUrl = processingCanvas.toDataURL("image/png");
@@ -346,7 +377,8 @@ export function clearAllRaster() {
         ...Object.values(TEMPO_CONFIG),
         ...Object.values(TROPOMI_CONFIG),
         ...Object.values(HRRR_CONFIG),
-        ...Object.values(GOES_CONFIG)
+        ...Object.values(GOES_CONFIG),
+        ...Object.values(VIIRS_CONFIG)
     ]) {
         const source = map?.getSource(cfg.sourceId);
         if (source) clearRasterSource(source, cfg.sourceId);
@@ -389,7 +421,8 @@ function initRasterHover() {
             ...Object.values(TEMPO_CONFIG),
             ...Object.values(TROPOMI_CONFIG),
             ...Object.values(HRRR_CONFIG),
-            ...Object.values(GOES_CONFIG)
+            ...Object.values(GOES_CONFIG),
+            ...Object.values(VIIRS_CONFIG)
         ].find(cfg => {
             if (!map.getLayer(cfg.mapLayerId)) return false;
             return map.getLayoutProperty(cfg.mapLayerId, "visibility") === "visible";
@@ -454,7 +487,7 @@ function initRasterHover() {
                         unitHtml = `<span style="color: var(--text-main);">&micro;g m<sup>-3</sup></span>`;
                     }
                 } else if (isGoes) {
-                    layerTitle = sourceId === "goes-aod-east" ? "GOES-East AOD (hourly)" : "GOES-West AOD (hourly)";
+                    layerTitle = sourceId === "goes-aod-east" ? "GOES-AOD-East (hourly)" : "GOES-AOD-West (hourly)";
                     unitHtml = `<span style="color: var(--text-soft);">AOD</span>`;
                 } else if (isTempo) {
                     layerTitle = activeRasterLayer.productId.includes("NO2") ? "TEMPO-NO2VCD (hourly)" : "TEMPO-HCHOVCD (hourly)";
@@ -545,8 +578,9 @@ async function loadRasterData(isoDate, config, urlFn, labelType) {
     let utcIsoDate = isoDate;
     let utcHour = null;
 
-    // Daily datasets (TROPOMI) dont use timePicker/UTC conversion
-    const isHourly = labelType !== "TROPOMI";
+    // Daily datasets (TROPOMI & VIIRS) dont use timePicker/UTC conversion
+    const isHourly = labelType !== "TROPOMI" && labelType !== "VIIRS";
+    
     if (isHourly) {
         if (!timePicker) return;
         const localHour = parseInt(timePicker.value);
@@ -561,11 +595,29 @@ async function loadRasterData(isoDate, config, urlFn, labelType) {
         if (!source) continue;
 
         const cb = document.getElementById(cfg.layerId);
-        clearRasterSource(source, cfg.sourceId);
+        
+        // Check if the currently loaded date/hour matches the target date/hour
+        const store = rasterDataStore[cfg.sourceId];
+        const targetDate = isHourly ? utcIsoDate : isoDate;
+        const isAlreadyLoaded = store && store.loadedDate === targetDate && store.loadedHour === utcHour && store.cleared === false;
 
         if (!cb || !cb.checked) {
+            if (!isAlreadyLoaded || (store && store.cleared !== true)) {
+                const dateChanged = !store || store.loadedDate !== targetDate || store.loadedHour !== utcHour;
+                if (dateChanged) {
+                    clearRasterSource(source, cfg.sourceId);
+                }
+            }
             continue;
         }
+
+        // If checked and already loaded for the current date/hour, skip fetching and processing entirely!
+        if (isAlreadyLoaded) {
+            continue;
+        }
+
+        // Clear the previous source state before loading new data
+        clearRasterSource(source, cfg.sourceId);
 
         // TROPOMI uses daily URL, others use hourly URL
         const { jsonUrl: baseJson, pngUrl: basePng } = isHourly 
@@ -603,6 +655,8 @@ async function loadRasterData(isoDate, config, urlFn, labelType) {
                 rasterDataStore[cfg.sourceId].coordinates = coordinates;
                 rasterDataStore[cfg.sourceId].cleared = false;
                 rasterDataStore[cfg.sourceId].pngUrl = pngUrl;
+                rasterDataStore[cfg.sourceId].loadedDate = targetDate;
+                rasterDataStore[cfg.sourceId].loadedHour = utcHour;
 
                 const blobUrl = await fetchAuthenticatedImage(pngUrl, cfg.sourceId);
                 await colorizeRasterImage(blobUrl, metadata, source, cfg.sourceId);
@@ -628,7 +682,8 @@ async function loadRasterData(isoDate, config, urlFn, labelType) {
                 let errorMsg = `No ${label} data available for this date.`;
                 if (isHourly) {
                     if (labelType === "GOES") {
-                        errorMsg = `No GOES-${label} AOD data available for this date and hour.`;
+                        const isGeoColor = key.toLowerCase().includes("geocolor");
+                        errorMsg = `No GOES-${label} ${isGeoColor ? "GeoColor" : "AOD"} data available for this date and hour.`;
                     } else if (labelType === "HRRR") {
                         errorMsg = `No ${label} HRRR data available for this date and hour.`;
                     } else if (labelType === "TEMPO") {
@@ -657,5 +712,9 @@ export async function hrrrLoadData(isoDate) {
 
 export async function goesLoadData(isoDate) {
     return loadRasterData(isoDate, GOES_CONFIG, utils.urlPngGOES, "GOES");
+}
+
+export async function viirsLoadData(isoDate) {
+    return loadRasterData(isoDate, VIIRS_CONFIG, utils.urlPngVIIRS, "VIIRS");
 }
 

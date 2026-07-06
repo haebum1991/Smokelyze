@@ -92,7 +92,17 @@ export function updateLegend(activeStack = activeLayerStack) {
                         </div>`;
 
         sectionHtml += `<div class="legend-content">`;
-
+        
+        // headerOnly mode: show toggle header but no color scale (for true-color imagery layers)
+        if (conf.headerOnly) {
+            sectionHtml += `<div class="legend-item" style="justify-content:center; opacity:0.65; font-style:italic; padding: 0.4rem 0;">
+                                <span>Geo/True-color imagery: no legend</span>
+                            </div>`;
+            sectionHtml += `</div></div>`;
+            finalHtml += sectionHtml;
+            return; // skip rest of this iteration
+        }
+        
         // Point data (circle layers) → round swatches, others (fill/polygon) → square
         const isCircleLayer = layerDef?.layers?.[0]?.type === "circle" && !conf.sizeLegend;
         const swatchClass = isCircleLayer ? "legend-color-circle" : "legend-color-rect";

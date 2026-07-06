@@ -242,11 +242,15 @@ export function updateDailyStats(isoDate, regionIDs) {
                 updateStateShading();
             }
 
-            c.renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, "StatsRegionBodyDate", modelStats);
+            // Optimize: Only render the tables and ECharts if the FigurePageDrawer is actually open!
+            const drawer = document.getElementById("FigurePageDrawer");
+            if (drawer && drawer.classList.contains("open")) {
+                c.renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, "StatsRegionBodyDate", modelStats);
 
-            if (renderDailyBarLine) renderDailyBarLine("stats-plot-for-barline-date");
-            if (renderParCoords) renderParCoords("stats-plot-for-parcoords-date");
-            if (renderDailyScatter) renderDailyScatter("stats-plot-for-scatter-date");
+                if (renderDailyBarLine) renderDailyBarLine("stats-plot-for-barline-date");
+                if (renderParCoords) renderParCoords("stats-plot-for-parcoords-date");
+                if (renderDailyScatter) renderDailyScatter("stats-plot-for-scatter-date");
+            }
         })
         .catch(err => {
             console.error("Error updating daily stats:", err);

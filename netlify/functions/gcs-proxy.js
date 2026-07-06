@@ -299,6 +299,11 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers, body: buf.toString("base64"), isBase64Encoded: true };
     }
     
+    if (lower.endsWith(".webp")) {
+      headers["Content-Type"] = "image/webp";
+      return { statusCode: 200, headers, body: buf.toString("base64"), isBase64Encoded: true };
+    }
+    
     headers["Content-Type"] = "application/json; charset=utf-8";
     return { statusCode: 200, headers, body: buf.toString("utf8") };
 
