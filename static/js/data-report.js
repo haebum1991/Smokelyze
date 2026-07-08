@@ -16,16 +16,16 @@ import { downloadFile } from "./ui-download.js";
 const GAM_V2_TYPES = {
     "by_year": [
         { name: "No. of smoke days", method: "count" },
-        { name: "No. of smoke days with MDA8 residual > 97.5th quantile", method: "count" },
-        { name: "No. of smoke days with MDA8 residual > 97.5th quantile (EDM)", method: "count" },
-        { name: "No. of smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb", method: "count" },
-        { name: "No. of smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (EDM)", method: "count" },
-        { name: "Mean residual (ppb) on smoke days", method: "mean" },
-        { name: "Mean residual (ppb) on smoke days (EDM)", method: "mean" },
+        { name: "No. of smoke days with SMO > 97.5th quantile", method: "count" },
+        { name: "No. of smoke days with SMO > 97.5th quantile (EDM)", method: "count" },
+        { name: "No. of smoke days with SMO > 97.5th quantile & MDA8 > 70 ppb", method: "count" },
+        { name: "No. of smoke days with SMO > 97.5th quantile & MDA8 > 70 ppb (EDM)", method: "count" },
+        { name: "Mean SMO (ppb) on smoke days", method: "mean" },
+        { name: "Mean SMO (ppb) on smoke days (EDM)", method: "mean" },
+        { name: "Mean SMO quantile on smoke days", method: "mean" },
+        { name: "Mean SMO quantile on smoke days (EDM)", method: "mean" },
         { name: "Mean residual (ppb) on non-smoke days", method: "mean" },
         { name: "Mean residual (ppb) on non-smoke days (EDM)", method: "mean" },
-        { name: "Mean residual quantile on smoke days", method: "mean" },
-        { name: "Mean residual quantile on smoke days (EDM)", method: "mean" },
         { name: "Mean residual quantile on non-smoke days", method: "mean" },
         { name: "Mean residual quantile on non-smoke days (EDM)", method: "mean" },
         { name: "No. of ExcDays", method: "count" },
@@ -33,45 +33,57 @@ const GAM_V2_TYPES = {
         { name: "No. of ExcDays with significant SMO", method: "count" },
         { name: "No. of ExcDays with significant SMO (EDM)", method: "count" },
         { name: "No. of ExcDays with minimal SMO", method: "count" },
-        { name: "No. of ExcDays with minimal SMO (EDM)", method: "count" }
+        { name: "No. of ExcDays with minimal SMO (EDM)", method: "count" },
+        { name: "No. of observations (Apr-Oct)", method: "category" },
+        { name: "4th-highest-MDA8 (ppb)", method: "mean" },
+        { name: "4th-highest-MDA8 (ppb) excluding smoke days with SMO > 97.5th quantile", method: "mean" },
+        { name: "4th-highest-MDA8 (ppb) excluding smoke days with SMO > 97.5th quantile (EDM)", method: "mean" }
     ],
     "by_date": [
         { name: "Smoke days (1: Yes, 0: No)", method: "count" },
-        { name: "Smoke days with MDA8 residual > 97.5th quantile (1: Yes, 0: No)", method: "count" },
-        { name: "Smoke days with MDA8 residual > 97.5th quantile (1: Yes, 0: No) (EDM)", method: "count" },
-        { name: "Smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)", method: "count" },
-        { name: "Smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No) (EDM)", method: "count" },
-        { name: "Residual (ppb) on smoke days", method: "mean" },
-        { name: "Residual (ppb) on smoke days (EDM)", method: "mean" },
-        { name: "Residual quantile on smoke days", method: "mean" },
-        { name: "Residual quantile on smoke days (EDM)", method: "mean" },
+        { name: "Smoke days with SMO > 97.5th quantile (1: Yes, 0: No)", method: "count" },
+        { name: "Smoke days with SMO > 97.5th quantile (1: Yes, 0: No) (EDM)", method: "count" },
+        { name: "Smoke days with SMO > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)", method: "count" },
+        { name: "Smoke days with SMO > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No) (EDM)", method: "count" },
+        { name: "SMO (ppb) on smoke days", method: "mean" },
+        { name: "SMO (ppb) on smoke days (EDM)", method: "mean" },
+        { name: "SMO quantile on smoke days", method: "mean" },
+        { name: "SMO quantile on smoke days (EDM)", method: "mean" },
         { name: "Obs PM2.5 (ug m-3)", method: "mean" },
         { name: "ExcDay (0: None, 1: Days with minimal SMO, 2: Days with significant SMO)", method: "category" },
-        { name: "ExcDay (0: None, 1: Days with minimal SMO, 2: Days with significant SMO) (EDM)", method: "category" }
+        { name: "ExcDay (0: None, 1: Days with minimal SMO, 2: Days with significant SMO) (EDM)", method: "category" },
+        { name: "Rank of MDA8", method: "category" },
+        { name: "Rank of MDA8 excluding smoke days with SMO > 97.5th quantile", method: "category" },
+        { name: "Rank of MDA8 excluding smoke days with SMO > 97.5th quantile (EDM)", method: "category" }
     ]
 };
 
 const GAM_V1_TYPES = {
     "by_year": [
         { name: "No. of smoke days", method: "count" },
-        { name: "No. of smoke days with MDA8 residual > 97.5th quantile", method: "count" },
-        { name: "No. of smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb", method: "count" },
-        { name: "Mean residual (ppb) on smoke days", method: "mean" },
+        { name: "No. of smoke days with SMO > 97.5th quantile", method: "count" },
+        { name: "No. of smoke days with SMO > 97.5th quantile & MDA8 > 70 ppb", method: "count" },
+        { name: "Mean SMO (ppb) on smoke days", method: "mean" },
+        { name: "Mean SMO quantile on smoke days", method: "mean" },
         { name: "Mean residual (ppb) on non-smoke days", method: "mean" },
-        { name: "Mean residual quantile on smoke days", method: "mean" },
         { name: "Mean residual quantile on non-smoke days", method: "mean" },
         { name: "No. of ExcDays", method: "count" },
         { name: "No. of ExcDays with significant SMO", method: "count" },
-        { name: "No. of ExcDays with minimal SMO", method: "count" }
+        { name: "No. of ExcDays with minimal SMO", method: "count" },
+        { name: "No. of observations (May-Sep)", method: "category" },
+        { name: "4th-highest-MDA8 (ppb)", method: "mean" },
+        { name: "4th-highest-MDA8 (ppb) excluding smoke days with SMO > 97.5th quantile", method: "mean" }
     ],
     "by_date": [
         { name: "Smoke days (1: Yes, 0: No)", method: "count" },
-        { name: "Smoke days with MDA8 residual > 97.5th quantile (1: Yes, 0: No)", method: "count" },
-        { name: "Smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)", method: "count" },
-        { name: "Residual (ppb) on smoke days", method: "mean" },
-        { name: "Residual quantile on smoke days", method: "mean" },
+        { name: "Smoke days with SMO > 97.5th quantile (1: Yes, 0: No)", method: "count" },
+        { name: "Smoke days with SMO > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)", method: "count" },
+        { name: "SMO (ppb) on smoke days", method: "mean" },
+        { name: "SMO quantile on smoke days", method: "mean" },
         { name: "Obs PM2.5 (ug m-3)", method: "mean" },
-        { name: "ExcDay (0: None, 1: Days with minimal SMO, 2: Days with significant SMO)", method: "category" }
+        { name: "ExcDay (0: None, 1: Days with minimal SMO, 2: Days with significant SMO)", method: "category" },
+        { name: "Rank of MDA8", method: "category" },
+        { name: "Rank of MDA8 excluding smoke days with SMO > 97.5th quantile", method: "category" }
     ]
 };
 
@@ -463,24 +475,24 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
                 case "Smoke days (1: Yes, 0: No)":
                     isMatch = (d.smoke === 1);
                     break;
-                case "No. of smoke days with MDA8 residual > 97.5th quantile":
-                case "Smoke days with MDA8 residual > 97.5th quantile (1: Yes, 0: No)":
+                case "No. of smoke days with SMO > 97.5th quantile":
+                case "Smoke days with SMO > 97.5th quantile (1: Yes, 0: No)":
                     if (isEdmReport) {
                         isMatch = (d.smoke === 1 && d.edm_MDA8O3_resids > d.edm_p975);
                     } else {
                         isMatch = (d.smoke === 1 && d.MDA8O3_resids > d.p975);
                     }
                     break;
-                case "No. of smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb":
-                case "Smoke days with MDA8 residual > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)":
+                case "No. of smoke days with SMO > 97.5th quantile & MDA8 > 70 ppb":
+                case "Smoke days with SMO > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)":
                     if (isEdmReport) {
                         isMatch = (d.smoke === 1 && d.edm_MDA8O3_resids > d.edm_p975 && d.MDA8O3 > 70);
                     } else {
                         isMatch = (d.smoke === 1 && d.MDA8O3_resids > d.p975 && d.MDA8O3 > 70);
                     }
                     break;
-                case "Mean residual (ppb) on smoke days":
-                case "Residual (ppb) on smoke days":
+                case "Mean SMO (ppb) on smoke days":
+                case "SMO (ppb) on smoke days":
                     if (d.smoke === 1) {
                         isMatch = true;
                         val = isEdmReport ? d.edm_MDA8O3_resids : d.MDA8O3_resids;
@@ -492,8 +504,8 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
                         val = isEdmReport ? d.edm_MDA8O3_resids : d.MDA8O3_resids;
                     }
                     break;
-                case "Mean residual quantile on smoke days":
-                case "Residual quantile on smoke days":
+                case "Mean SMO quantile on smoke days":
+                case "SMO quantile on smoke days":
                     if (d.smoke === 1) {
                         isMatch = true;
                         val = isEdmReport ? d.edm_Quant_MDA8O3_resids : d.Quant_MDA8O3_resids;
@@ -525,6 +537,45 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
                     isMatch = true;
                     val = isEdmReport ? d.edm_exceedance : d.exceedance;
                     if (val === null || val === undefined) isMatch = false;
+                    break;
+                case "No. of observations (May-Sep)":
+                case "No. of observations (Apr-Oct)":
+                    if (d.n_obs_by_year !== undefined && d.n_obs_by_year !== null && d.n_obs_by_year !== "NA") {
+                        isMatch = true;
+                        val = d.n_obs_by_year;
+                    }
+                    break;
+                case "4th-highest-MDA8 (ppb)":
+                    if (d.fourth_MDA8O3 !== undefined && d.fourth_MDA8O3 !== null && d.fourth_MDA8O3 !== "NA") {
+                        isMatch = true;
+                        val = d.fourth_MDA8O3;
+                    }
+                    break;
+                case "4th-highest-MDA8 (ppb) excluding smoke days with SMO > 97.5th quantile":
+                    {
+                        const fldName = isEdmReport ? "edm_fourth_MDA8O3_wo_smoke_p975" : "fourth_MDA8O3_wo_smoke_p975";
+                        const fVal = d[fldName];
+                        if (fVal !== undefined && fVal !== null && fVal !== "NA") {
+                            isMatch = true;
+                            val = fVal;
+                        }
+                    }
+                    break;
+                case "Rank of MDA8":
+                    if (d.rank_MDA8O3 !== undefined && d.rank_MDA8O3 !== null && d.rank_MDA8O3 !== "NA") {
+                        isMatch = true;
+                        val = d.rank_MDA8O3;
+                    }
+                    break;
+                case "Rank of MDA8 excluding smoke days with SMO > 97.5th quantile":
+                    {
+                        const fldName = isEdmReport ? "edm_rank_MDA8O3_wo_smoke_p975" : "rank_MDA8O3_wo_smoke_p975";
+                        const rVal = d[fldName];
+                        if (rVal !== undefined && rVal !== null && rVal !== "NA") {
+                            isMatch = true;
+                            val = rVal;
+                        }
+                    }
                     break;
             }
         } else if (datasetId.startsWith("pm-cbsa")) {

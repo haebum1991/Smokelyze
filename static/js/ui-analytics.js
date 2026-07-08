@@ -88,6 +88,12 @@ const LAYER_NAME_MAPPING = {
     "tropomi-no2": "TROPOMI-NO2",
     "tropomi-hcho": "TROPOMI-HCHO",
     
+    "goes-aod-east": "GOES-AOD-East",
+    "goes-aod-west": "GOES-AOD-West",
+    "goes-geocolor-east": "GOES-GeoColor-East",
+    "goes-geocolor-west": "GOES-GeoColor-West",
+    "viirs-truecolor": "VIIRS-TrueColor",
+    
     "traj-backward": "HYSPLIT Traj (bwd)",
     "traj-forward": "HYSPLIT Traj (fwd)",
     "disp-backward": "HYSPLIT Disp (bwd)",
