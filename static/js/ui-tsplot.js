@@ -145,17 +145,13 @@ function getYAxisTitleAndDecimals(sourceId) {
         let title = displayTitle;
 
         if (sourceId.includes("no2")) {
-            if (sourceId.includes("airnow")) {
-                title = "NO2 (ppb)";
-            } else {
-                title = "NO2 (10¹⁴ molec cm⁻²)";
-            }
+            title = "NO2";
         } else if (sourceId.includes("hcho")) {
-            title = "HCHO (10¹⁴ molec cm⁻²)";
+            title = "HCHO";
         } else if (sourceId === "hrrr-colmd") {
-            title = "Smoke VCD (10³ µg m⁻²)";
+            title = "Smoke VCD";
         } else if (sourceId === "hrrr-massden") {
-            title = "Smoke 8m (µg m⁻³)";
+            title = "Smoke Concentration at 8m";
         } else if (sourceId.includes("goes")) {
             title = "AOD";
         } else {
@@ -165,6 +161,11 @@ function getYAxisTitleAndDecimals(sourceId) {
                 .replace("Obs ", "")
                 .replace("Pred ", "")
                 .replace(" (hourly)", "");
+        }
+
+        const unit = (typeof tmpl.unit === "function") ? tmpl.unit(currentDataset) : (tmpl.unit || "");
+        if (unit && !title.toLowerCase().includes(unit.toLowerCase())) {
+            title += ` (${unit})`;
         }
 
         return {

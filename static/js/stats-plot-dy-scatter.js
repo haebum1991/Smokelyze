@@ -85,7 +85,8 @@ export function renderDailyScatter(containerId) {
                 source: sourceKey,
                 field: (typeof tmpl.field === "function") ? tmpl.field(layerDsKey) : tmpl.field,
                 title: (typeof tmpl.title === "function") ? tmpl.title(layerDsKey) : tmpl.title,
-                decimals: tmpl.decimals ?? 1
+                decimals: tmpl.decimals ?? 1,
+                unit: (typeof tmpl.unit === "function") ? tmpl.unit(layerDsKey) : (tmpl.unit || "")
             };
         })
         .filter(l => l !== null);
@@ -111,6 +112,7 @@ export function renderDailyScatter(containerId) {
     const yKey = yLayer.field;
     const yTitle = yLayer.title;
     const yDec = yLayer.decimals;
+    const yUnit = yLayer.unit;
     const yAqsKey = getAqsKey(primarySource, yKey);
 
     let f1 = rawData.features;
@@ -175,6 +177,7 @@ export function renderDailyScatter(containerId) {
         const xKey = xLayer.field;
         const xTitle = xLayer.title;
         const xDec = xLayer.decimals;
+        const xUnit = xLayer.unit;
         const secondaryMap = secondaryMaps[idx];
         const nonSmoke = { x: [], y: [], text: [], customdata: [] };
         const smoke = { x: [], y: [], text: [], customdata: [] };
@@ -207,21 +210,25 @@ export function renderDailyScatter(containerId) {
         const smokeColor = (idx === 0) ? "red" : (idx === 1 ? "magenta" : null);
 
         if (nonSmoke.x.length > 0) {
+            let traceName = hasModelLayer ? (xLayers.length > 1 ? `${xTitle} (NSD)` : "Non-smoke day (NSD)") : xTitle;
+            if (xUnit) traceName += ` (${xUnit})`;
             traces.push({
                 x: nonSmoke.x, y: nonSmoke.y, mode: "markers", type: "scatter",
-                name: hasModelLayer ? (xLayers.length > 1 ? `${xTitle} (NSD)` : "Non-smoke day (NSD)") : xTitle,
+                name: traceName,
                 text: nonSmoke.text, customdata: nonSmoke.customdata,
                 marker: { color: color, size: 8, opacity: 0.7, line: { color: theme.axisText, width: 0.5 } },
-                hovertemplate: `${yTitle}: %{y:.${yDec}f}<br>${xTitle}: %{x:.${xDec}f}<br>%{text}<extra></extra>`
+                hovertemplate: `${yTitle}: %{y:.${yDec}f}${yUnit ? " " + yUnit : ""}<br>${xTitle}: %{x:.${xDec}f}${xUnit ? " " + xUnit : ""}<br>%{text}<extra></extra>`
             });
         }
         if (smoke.x.length > 0) {
+            let traceName = xLayers.length > 1 ? `${xTitle} (SMD)${smdLabelSuffix}` : `Smoke day (SMD)${smdLabelSuffix}`;
+            if (xUnit) traceName += ` (${xUnit})`;
             traces.push({
                 x: smoke.x, y: smoke.y, mode: "markers", type: "scatter",
-                name: xLayers.length > 1 ? `${xTitle} (SMD)${smdLabelSuffix}` : `Smoke day (SMD)${smdLabelSuffix}`,
+                name: traceName,
                 text: smoke.text, customdata: smoke.customdata,
                 marker: { color: smokeColor, size: 8, opacity: 0.8, line: { color: theme.axisText, width: 0.5 } },
-                hovertemplate: `${yTitle}: %{y:.${yDec}f}<br>${xTitle}: %{x:.${xDec}f}<br>%{text}<extra></extra>`
+                hovertemplate: `${yTitle}: %{y:.${yDec}f}${yUnit ? " " + yUnit : ""}<br>${xTitle}: %{x:.${xDec}f}${xUnit ? " " + xUnit : ""}<br>%{text}<extra></extra>`
             });
         }
     });
@@ -275,7 +282,7 @@ export function renderDailyScatter(containerId) {
         xaxis: {
             ...getSpikeLayout(theme),
             title: {
-                text: xLayers.length === 1 ? xLayers[0].title : "Comparison Variables",
+                text: xLayers.length === 1 ? (xLayers[0].unit ? `${xLayers[0].title} (${xLayers[0].unit})` : xLayers[0].title) : "Comparison Variables",
                 font: { size: fontSize, color: theme.axisText },
                 standoff: 20
             },
@@ -287,7 +294,7 @@ export function renderDailyScatter(containerId) {
         },
         yaxis: {
             ...getSpikeLayout(theme),
-            title: { text: yTitle, font: { size: fontSize, color: theme.axisText } },
+            title: { text: yUnit ? `${yTitle} (${yUnit})` : yTitle, font: { size: fontSize, color: theme.axisText } },
             tickfont: { size: fontSize * 0.8, color: theme.axisText },
             gridcolor: theme.grid,
             linecolor: theme.axisText,

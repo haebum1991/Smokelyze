@@ -173,10 +173,23 @@ export function getActiveModelLayers() {
         if (EXCLUDED.includes(shortId)) return;
 
         if (tmpl) {
-            const rawLabel = getCleanLabel(lbl) || shortId;
+            let rawLabel = getCleanLabel(lbl) || shortId;
             let group = currentDatasetLabel;
-            if (shortId.startsWith("airnow-") || tmpl.hourly) {
+            if (shortId.startsWith("tempo-")) {
+                group = "TEMPO";
+                rawLabel = rawLabel.replace(/^tempo-/i, "").replace(/^tempo\s+/i, "");
+            } else if (shortId.startsWith("tropomi-")) {
+                group = "TROPOMI";
+                rawLabel = rawLabel.replace(/^tropomi-/i, "").replace(/^tropomi\s+/i, "");
+            } else if (shortId.startsWith("hrrr-")) {
+                group = "HRRR";
+                rawLabel = rawLabel.replace(/^hrrr-/i, "").replace(/^hrrr\s+/i, "");
+            } else if (shortId.startsWith("goes-")) {
+                group = "GOES";
+                rawLabel = rawLabel.replace(/^goes-/i, "").replace(/^goes\s+/i, "");
+            } else if (shortId.startsWith("airnow-")) {
                 group = "AirNow";
+                rawLabel = rawLabel.replace(/^airnow-/i, "").replace(/^airnow\s+/i, "");
             }
 
             layers.push({ id: shortId, label: rawLabel, group: group });
@@ -507,6 +520,11 @@ export function triggerRefresh() {
     const activeMonthBtn = document.querySelector(".stats-tab-month-main .stats-tab-month-sub.active");
     const monthKey = activeMonthBtn ? activeMonthBtn.getAttribute("stats-table-month") : "all";
     updateAllStats(isoDate, regionIDs, monthKey);
+    
+    // Update custom drawn region stats if hook exists
+    if (typeof window.updateDrawStatsAverages === "function") {
+        window.updateDrawStatsAverages();
+    }
 }
 
 function bindEventsStats() {
@@ -757,7 +775,7 @@ export function getPlotTheme() {
                     the values in the table are determined entirely 
                     by the number of AQS sites within each state for the corresponding data.<br>
                     <br>
-                    This feature is not supported for [NIFC], [TEMPO], [TROPOMI], and [HRRR] raster layers.
+                    This feature is not supported for [NIFC], [GeoColor], and [TrueColor] group layers.
                 `.trim(),
             barline: `
                     If you see this message, it could be due to the following reasons: <br>
@@ -770,11 +788,11 @@ export function getPlotTheme() {
                     This displays the initial state-level data. 
                     Clicking on a state will show plot results for the AQS-level data included in that state. 
                     Nothing will be displayed if there is no data available.
-                    Note that the AQS-level does not support the [Satellite] data.<br>
+                    Note that the AQS-level does not support the [Satellite & Model] data.<br>
                     <br>
                     To return to the state-level plot from AQS-level plot, press the active "Back" button in the lower left corner.<br>
                     <br>
-                    This feature is not supported for [NIFC], [TEMPO], [TROPOMI], and [HRRR] raster layers.
+                    This feature is not supported for [NIFC], [GeoColor], and [TrueColor] group layers.
                 `.trim(),
             parcoords: `
                     If you see this message, it could be due to the following reasons: <br>
@@ -787,11 +805,11 @@ export function getPlotTheme() {
                     This displays the initial state-level data. 
                     Clicking on a state will show plot results for the AQS-level data included in that state. 
                     Nothing will be displayed if there is no data available.
-                    Note that the AQS-level does not support the [Satellite] data.<br>
+                    Note that the AQS-level does not support the [Satellite & Model] data.<br>
                     <br>
                     To return to the state-level plot from AQS-level plot, press the active "Back" button in the lower left corner.<br>
                     <br>
-                    This feature is not supported for [NIFC], [TEMPO], [TROPOMI], and [HRRR] raster layers.
+                    This feature is not supported for [NIFC], [GeoColor], and [TrueColor] group layers.
                 `.trim(),
             scatter: `
                     If you see this message, it could be due to the following reasons: <br>
@@ -801,7 +819,7 @@ export function getPlotTheme() {
                     
                     <br> 
                     [Note] <br>
-                    This feature is not supported for [NIFC] and [Satellite & Model] raster layers.
+                    This feature is not supported for [NIFC] and [Satellite & Model] group layers.
                 `.trim(),
             heatmap: `
                     If you see this message, it could be due to the following reasons: <br>
@@ -819,26 +837,23 @@ export function getPlotTheme() {
 }
 
 export function getMetricInfo(metricKey) {
-
     const templates = LAYER_TEMPLATES || [];
-    const tmpl = templates.find(function (t) { return t.field === metricKey; });
+    const tmpl = templates.find(function (t) { 
+        if (typeof t.field === "function") {
+            return t.field("gam-v2") === metricKey || t.field("gam-v1") === metricKey;
+        }
+        return t.field === metricKey;
+    });
 
     if (tmpl) {
-        const title = (typeof tmpl.title === "function") ? tmpl.title(metricKey) : tmpl.title;
+        const dsContext = metricKey === "T2MAX" ? "gam-v2" : "gam-v1";
+        const title = (typeof tmpl.title === "function") ? tmpl.title(dsContext) : tmpl.title;
         const decimals = (tmpl.decimals !== undefined) ? tmpl.decimals : 1;
-        return { title: title, y: title, decimals: decimals };
+        const unit = (typeof tmpl.unit === "function") ? tmpl.unit(dsContext) : (tmpl.unit || "");
+        return { title: title, y: title, decimals: decimals, unit: unit };
     }
 
-    return { title: metricKey, y: metricKey, decimals: 0 };
-}
-
-export function extractUnit(title) {
-    const regex = /\(([^)]+)\)$/;
-    const match = title.match(regex);
-    if (match && match[1]) {
-        return match[1].trim();
-    }
-    return "";
+    return { title: metricKey, y: metricKey, decimals: 0, unit: "" };
 }
 
 export function getStandardMetrics() {

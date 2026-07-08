@@ -101,6 +101,15 @@ const TUTORIAL_STEPS = [
         padding: 20,
     },
     {
+        element: "#MapBtnDraw",
+        popover: {
+            title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-draw"/></svg></span> Draw Area Stats',
+            description: "Draw a custom rectangle on the map to calculate real-time spatial averages for active layers (vector station points and raster models like TEMPO, HRRR, GOES) in that area.",
+            side: "top",
+            align: "start",
+        },
+    },
+    {
         element: "#MapBtnCapture",
         popover: {
             title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-camera"/></svg></span> Snapshot Tool',

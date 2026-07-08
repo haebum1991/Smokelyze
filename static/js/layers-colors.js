@@ -85,9 +85,21 @@ export function updateLegend(activeStack = activeLayerStack) {
         // Is this legend manually opened? (By default, checked layers are open, unless explicitly closed)
         const isOpen = !closedLegendIds.has(id);
 
+        let displayTitle = headerTitle;
+        if (conf.unit && !headerTitle.includes("(Disabled)")) {
+            if (conf.continuous) {
+                displayTitle = `<span style="display:flex; flex-direction:column; line-height:1.2;">
+                                    <span>${headerTitle}</span>
+                                    <span>(${conf.unit})</span>
+                                </span>`;
+            } else {
+                displayTitle = `${headerTitle} (${conf.unit})`;
+            }
+        }
+
         let sectionHtml = `<div class="legend-section ${isOpen ? 'is-top' : ''}" data-layer-id="${id}">`;
         sectionHtml += `<div class="legend-header" onclick="window.toggleLegendState('${id}')">
-                           <span class="legend-title">${headerTitle}</span>
+                           <span class="legend-title">${displayTitle}</span>
                            <span class="legend-badge"></span>
                         </div>`;
 
@@ -145,14 +157,6 @@ export function updateLegend(activeStack = activeLayerStack) {
                     <div style="display:flex; justify-content:space-between; color:var(--text-main); padding: 0 0.2rem;">
                         ${tickHtml}
                     </div>
-                    
-                    <!-- 단위 설명 -->
-                    ${unit ? `
-                        <div style="text-align:center; margin-top: 1.2rem; color:var(--text-main); font-weight:bold; line-height:1.3;">
-                            <div>Amount of ${substance}</div>
-                            <div>[ ${unit} ]</div>
-                        </div>
-                    ` : ""}
                 </div>
             `;
             

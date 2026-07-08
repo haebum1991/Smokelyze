@@ -19,6 +19,7 @@ import { showLoaderError } from "./loader-ui.js";
 import { logUserAction } from "./fb-logging.js";
 import { state } from "./ui-state.js";
 import { auth } from "./fb-init.js";
+import { LAYER_TEMPLATES } from "./layers-def.js";
 
 export const TEMPO_CONFIG = {
     "no2": {
@@ -104,7 +105,7 @@ export const VIIRS_CONFIG = {
 /**
  * Stores raw pixel data and metadata for hover value sampling
  */
-const rasterDataStore = {
+export const rasterDataStore = {
     "tempo-no2": { grayscale: null, metadata: null, coordinates: null },
     "tempo-hcho": { grayscale: null, metadata: null, coordinates: null },
     "tropomi-no2": { grayscale: null, metadata: null, coordinates: null },
@@ -478,23 +479,16 @@ function initRasterHover() {
                 let layerTitle = "";
                 let unitHtml = "";
                 
-                if (isHrrr) {
-                    if (isHrrrColmd) {
-                        layerTitle = "HRRR-smokeVCD (hourly)";
-                        unitHtml = `<span style="color: var(--text-main);">&times; 10&sup3; &micro;g m<sup>-2</sup></span>`;
-                    } else {
-                        layerTitle = "HRRR-smoke8m (hourly)";
-                        unitHtml = `<span style="color: var(--text-main);">&micro;g m<sup>-3</sup></span>`;
+                const tmpl = LAYER_TEMPLATES.find(t => t.id === sourceId);
+                if (tmpl) {
+                    layerTitle = tmpl.title;
+                    if (tmpl.hourly && !layerTitle.includes(" (hourly)")) {
+                        layerTitle += " (hourly)";
                     }
-                } else if (isGoes) {
-                    layerTitle = sourceId === "goes-aod-east" ? "GOES-AOD-East (hourly)" : "GOES-AOD-West (hourly)";
-                    unitHtml = `<span style="color: var(--text-soft);">AOD</span>`;
-                } else if (isTempo) {
-                    layerTitle = activeRasterLayer.productId.includes("NO2") ? "TEMPO-NO2VCD (hourly)" : "TEMPO-HCHOVCD (hourly)";
-                    unitHtml = `<span style="color: var(--text-main);">&times 10<sup>14</sup> molec. cm<sup>-2</sup></span>`;
-                } else if (isTropomi) {
-                    layerTitle = activeRasterLayer.productId.includes("NO2") ? "TROPOMI-NO2VCD" : "TROPOMI-HCHOVCD";
-                    unitHtml = `<span style="color: var(--text-main);">&times 10<sup>14</sup> molec. cm<sup>-2</sup></span>`;
+                    if (tmpl.unit) {
+                        const unitText = tmpl.unit.startsWith("10") ? `× ${tmpl.unit}` : tmpl.unit;
+                        unitHtml = `<span style="color: ${sourceId.includes("goes") ? "var(--text-soft)" : "var(--text-main)"}; font-weight: normal;"> ${unitText}</span>`;
+                    }
                 }
 
                 let metaHtml = "";

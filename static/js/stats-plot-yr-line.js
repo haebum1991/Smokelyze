@@ -4,11 +4,9 @@ import {
     getPlotTheme,
     getPlotlyConfig,
     getMetricInfo,
-    extractUnit,
     getSpikeLayout,
     clearPlotMessage,
     attachResizeObserver,
-    renderPlotMessage,
     selectedRegionsByMetric,
     setOnRenderLinePlot,
     setOnCurrentPlotHide
@@ -114,7 +112,7 @@ export function renderLinePlot(containerId) {
         plotDiv.style.marginTop = idx === 0 ? "0" : "2.4rem";
         container.appendChild(plotDiv);
 
-        const unit = extractUnit(info.y);
+        const unit = info.unit;
         const hoverDecimals = info.decimals ?? 0;
         const hoverTemplate = `<b style='font-weight: bold; color: var(--card-shadow);'>%{y:,.${hoverDecimals}f}</b> ${unit}<extra></extra>`;
 
@@ -133,7 +131,7 @@ export function renderLinePlot(containerId) {
             paper_bgcolor: theme.paper_bgcolor,
             plot_bgcolor: theme.plot_bgcolor,
             title: {
-                text: `${year} ${info.title}`,
+                text: info.unit ? `${year} ${info.title} (${info.unit})` : `${year} ${info.title}`,
                 font: { color: theme.axisText, size: fontSize }
             },
             hovermode: "x unified",
@@ -153,7 +151,7 @@ export function renderLinePlot(containerId) {
             },
             yaxis: {
                 ...getSpikeLayout(theme),
-                title: { text: info.y, font: { size: fontSize, color: theme.axisText }, standoff: 20 },
+                title: { text: info.unit ? `${info.title} (${info.unit})` : info.title, font: { size: fontSize, color: theme.axisText }, standoff: 20 },
                 tickfont: { size: fontSize * 0.8, color: theme.axisText },
                 gridcolor: theme.grid,
                 zerolinecolor: theme.grid,

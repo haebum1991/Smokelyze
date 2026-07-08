@@ -72,7 +72,16 @@ function getStyleMap(theme) {
   
     "fireCount": { type: "bar", color: "orange" },
     "fireFrp": { type: "scatter", color: "red", dash: "solid" },
-    "burn": { type: "bar", color: "darkred", marker: { line: { color: theme.axisText, width: 2 } } }
+    "burn": { type: "bar", color: "darkred", marker: { line: { color: theme.axisText, width: 2 } } },
+
+    "tempo-no2": { type: "scatter", color: "#6A0DAD", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#6A0DAD" } } },
+    "tempo-hcho": { type: "scatter", color: "#FF1493", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#FF1493" } } },
+    "tropomi-no2": { type: "scatter", color: "#BA55D3", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#BA55D3" } } },
+    "tropomi-hcho": { type: "scatter", color: "#EE82EE", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#EE82EE" } } },
+    "hrrr-colmd": { type: "scatter", color: "#A52A2A", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#A52A2A" } } },
+    "hrrr-massden": { type: "scatter", color: "#D2691E", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#D2691E" } } },
+    "goes-aod-east": { type: "scatter", color: "#FF8C00", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#FF8C00" } } },
+    "goes-aod-west": { type: "scatter", color: "#FFA500", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#FFA500" } } }
   };
 }
 
@@ -80,7 +89,7 @@ const GROUPS = [
   {
     id: "y1",
     axisName: "yaxis",
-    title: "Conc. (ppb or ug m-3)",
+    title: "Conc. (ppb or ug m⁻³)",
     metrics: [
       "mda8-obs", "mda8-pred", "mda8-pred-edm",
       "airnow-daily-pm25", "airnow-daily-mda8",
@@ -160,6 +169,27 @@ const GROUPS = [
     title: "Area burned (km²)",
     metrics: ["burn"],
     side: "right"
+  },
+  {
+    id: "y12",
+    axisName: "yaxis12",
+    title: "VCD (10¹⁴ molec. cm⁻²)",
+    metrics: ["tempo-no2", "tempo-hcho", "tropomi-no2", "tropomi-hcho"],
+    side: "right"
+  },
+  {
+    id: "y13",
+    axisName: "yaxis13",
+    title: "VCD (10³ ug m⁻²) / Conc. (ug m⁻³)",
+    metrics: ["hrrr-colmd", "hrrr-massden"],
+    side: "right"
+  },
+  {
+    id: "y14",
+    axisName: "yaxis14",
+    title: "AOD",
+    metrics: ["goes-aod-east", "goes-aod-west"],
+    side: "right"
   }
 ];
 
@@ -210,7 +240,8 @@ export function renderDailyBarLine(containerId) {
           key: lookupKey,
           group,
           title: (typeof tmpl.title === "function") ? tmpl.title(currentDataset) : tmpl.title,
-          decimals: tmpl.decimals ?? 1
+          decimals: tmpl.decimals ?? 1,
+          unit: (typeof tmpl.unit === "function") ? tmpl.unit(currentDataset) : (tmpl.unit || "")
         });
       }
     }
@@ -266,7 +297,7 @@ export function renderDailyBarLine(containerId) {
   const usedGroups = {};
 
   activeCheckboxes.forEach(item => {
-    const { key, group, title, decimals } = item;
+    const { key, group, title, decimals, unit } = item;
     usedGroups[group.id] = group;
 
     const style = STYLE_MAP[key] || { type: "scatter", color: "black" };
@@ -293,7 +324,7 @@ export function renderDailyBarLine(containerId) {
     const trace = {
       x: dataStatsX,
       y: dataStatsY,
-      name: title,
+      name: unit ? `${title} (${unit})` : title,
       yaxis: axisId,
       type: style.type,
       marker: {},

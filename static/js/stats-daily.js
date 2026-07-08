@@ -1,5 +1,5 @@
 
-import { DATA_IMPORT_METHOD } from "./layers-def.js";
+import { DATA_IMPORT_METHOD, LAYER_TEMPLATES } from "./layers-def.js";
 import * as utils from "./utils.js";
 import * as common from "./stats-common.js";
 import { regionStats } from "./layers-state.js";
@@ -11,6 +11,10 @@ import { renderDailyScatter } from "./stats-plot-dy-scatter.js";
 import { updateStateShading } from "./layers-colors.js";
 import { airnowGetCurrentTime } from "./airnow.js";
 import { utcToLocal } from "./ui-time.js";
+import { getActiveRasterLayers, getPolygonBBox } from "./map-area-stats.js";
+import { getBoundaryFeatures } from "./geo-boundary.js";
+import { pointInGeometry } from "./geo-utils.js";
+import { rasterDataStore } from "./raster-loader.js";
 
 // No App ref
 const dailyCache = {
@@ -18,6 +22,8 @@ const dailyCache = {
     smoke: {},
     fire: {}
 };
+
+const rasterCache = new Map();
 
 function loadDailyGeneric(options) {
     const {
@@ -235,25 +241,217 @@ export function updateDailyStats(isoDate, regionIDs) {
             const fireStats = results[2] || c.createFireStats(regionIDs);
             const modelStats = results[3] || c.createModelStats(regionIDs);
 
-            saveRegionStats(regionIDs, burnStats, smokeStats, fireStats);
+            return computeRasterStateAverages(isoDate, regionIDs, modelStats).then(() => {
+                // Merge all modelStats (including computed raster averages) into regionStats!
+                regionIDs.forEach(id => {
+                    if (modelStats[id]) {
+                        regionStats[id] = { ...regionStats[id], ...modelStats[id] };
+                    }
+                });
 
-            // Update state shading after satellite stats are loaded
-            if (typeof updateStateShading === "function") {
-                updateStateShading();
-            }
+                saveRegionStats(regionIDs, burnStats, smokeStats, fireStats);
 
-            // Optimize: Only render the tables and ECharts if the FigurePageDrawer is actually open!
-            const drawer = document.getElementById("FigurePageDrawer");
-            if (drawer && drawer.classList.contains("open")) {
-                c.renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, "StatsRegionBodyDate", modelStats);
+                // Update state shading after satellite stats are loaded
+                if (typeof updateStateShading === "function") {
+                    updateStateShading();
+                }
 
-                if (renderDailyBarLine) renderDailyBarLine("stats-plot-for-barline-date");
-                if (renderParCoords) renderParCoords("stats-plot-for-parcoords-date");
-                if (renderDailyScatter) renderDailyScatter("stats-plot-for-scatter-date");
-            }
+                // Optimize: Only render the tables and ECharts if the FigurePageDrawer is actually open!
+                const drawer = document.getElementById("FigurePageDrawer");
+                if (drawer && drawer.classList.contains("open")) {
+                    c.renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, "StatsRegionBodyDate", modelStats);
+
+                    if (renderDailyBarLine) renderDailyBarLine("stats-plot-for-barline-date");
+                    if (renderParCoords) renderParCoords("stats-plot-for-parcoords-date");
+                    if (renderDailyScatter) renderDailyScatter("stats-plot-for-scatter-date");
+                }
+            });
         })
         .catch(err => {
             console.error("Error updating daily stats:", err);
+        });
+}
+
+export function computeRasterStateAverages(isoDate, regionIDs, modelStats) {
+    const activeRasters = getActiveRasterLayers();
+    if (activeRasters.length === 0) return Promise.resolve();
+
+    return getBoundaryFeatures()
+        .then(boundaryFeatures => {
+            const templates = LAYER_TEMPLATES || [];
+            const currentDataset = (typeof utils.getEffectiveDataset === "function") ? utils.getEffectiveDataset() : (document.getElementById("MapDataSelect")?.value || "");
+            const rasterTrackingMap = {}; // Key: `${regionId}_${rasterLayer.sourceId}` -> { sum, count }
+
+            activeRasters.forEach(rasterLayer => {
+                const cacheKey = `${isoDate}_${rasterLayer.sourceId}`;
+                
+                // Cache Hit check
+                if (rasterCache.has(cacheKey)) {
+                    const cachedData = rasterCache.get(cacheKey);
+                    Object.keys(cachedData).forEach(regionId => {
+                        if (!modelStats[regionId]) {
+                            modelStats[regionId] = {};
+                        }
+                        modelStats[regionId][rasterLayer.sourceId] = cachedData[regionId].avg;
+                        modelStats[regionId][cachedData[regionId].fieldKey] = cachedData[regionId].avg;
+                    });
+                    return;
+                }
+
+                const store = rasterDataStore[rasterLayer.sourceId];
+                if (!store || !store.grayscale) return;
+
+                const tmpl = templates.find(t => t.id === rasterLayer.sourceId);
+                if (!tmpl) return;
+
+                // Bounding box of the raster extent
+                const rMinLng = store.xmin;
+                const rMaxLng = store.xmax;
+                const rMinLat = store.ymin;
+                const rMaxLat = store.ymax;
+
+                const cachedDataForLayer = {};
+
+                regionIDs.forEach(regionId => {
+                    // Find the boundary feature corresponding to this regionId (state name)
+                    const feat = boundaryFeatures.find(f => f.properties.ID === regionId);
+                    if (!feat || !feat.geometry) return;
+
+                    const { minLng, maxLng, minLat, maxLat } = getPolygonBBox(feat.geometry);
+
+                    // Quick overlap check with the raster extent
+                    if (maxLng < rMinLng || minLng > rMaxLng || maxLat < rMinLat || minLat > rMaxLat) {
+                        return; // Outside raster coverage
+                    }
+
+                    // Clamp bounding box to raster extent
+                    const clampLngMin = Math.max(minLng, rMinLng);
+                    const clampLngMax = Math.min(maxLng, rMaxLng);
+                    const clampLatMin = Math.max(minLat, rMinLat);
+                    const clampLatMax = Math.min(maxLat, rMaxLat);
+
+                    // Convert coordinates to pixel bounds
+                    const minPxX = Math.max(0, Math.floor(((clampLngMin - rMinLng) / store.lngRange) * store.imgW));
+                    const maxPxX = Math.min(store.imgW - 1, Math.ceil(((clampLngMax - rMinLng) / store.lngRange) * store.imgW));
+
+                    const latToMercY = (l) => Math.log(Math.tan((Math.PI / 4) + (l * Math.PI / 360)));
+                    const mercYMinClamped = latToMercY(clampLatMin);
+                    const mercYMaxClamped = latToMercY(clampLatMax);
+
+                    const maxPxY = Math.min(store.imgH - 1, Math.ceil(((store.mercYMax - mercYMinClamped) / store.mercYRange) * store.imgH));
+                    const minPxY = Math.max(0, Math.floor(((store.mercYMax - mercYMaxClamped) / store.mercYRange) * store.imgH));
+
+                    let sum = 0;
+                    let count = 0;
+
+                    const totalPixels = (maxPxX - minPxX) * (maxPxY - minPxY);
+                    let step = 1;
+                    if (totalPixels > 100) {
+                        step = Math.ceil(Math.sqrt(totalPixels / 100));
+                    }
+
+                    for (let pxY = minPxY; pxY <= maxPxY; pxY += step) {
+                        const mercY = store.mercYMax - (pxY / store.imgH) * store.mercYRange;
+                        const lat = (360 / Math.PI) * Math.atan(Math.exp(mercY)) - 90;
+
+                        for (let pxX = minPxX; pxX <= maxPxX; pxX += step) {
+                            const lng = rMinLng + (pxX / store.imgW) * store.lngRange;
+
+                            if (pointInGeometry([lng, lat], feat.geometry)) {
+                                const gray = store.grayscale[pxY * store.imgW + pxX];
+                                if (gray && gray !== 0) {
+                                    const realValue = store.metadata.min_val + (gray / 255) * (store.metadata.max_val - store.metadata.min_val);
+                                    let displayValue = realValue;
+                                    if (rasterLayer.sourceId.includes("tempo") || rasterLayer.sourceId.includes("tropomi")) {
+                                        displayValue = realValue / 1e14;
+                                    } else if (rasterLayer.sourceId.includes("hrrr-colmd")) {
+                                        displayValue = realValue / 1e3;
+                                    }
+                                    sum += displayValue;
+                                    count++;
+                                }
+                            }
+                        }
+                    }
+
+                    if (count > 0) {
+                        const avg = sum / count;
+                        if (!modelStats[regionId]) {
+                            modelStats[regionId] = {};
+                        }
+                        // Store under both layer id (for table) and field key (for daily plots)
+                        modelStats[regionId][rasterLayer.sourceId] = avg;
+
+                        const fieldKey = (typeof tmpl.field === "function") ? tmpl.field(currentDataset) : tmpl.field;
+                        modelStats[regionId][fieldKey] = avg;
+
+                        // Save tracking data for aggregates
+                        rasterTrackingMap[`${regionId}_${rasterLayer.sourceId}`] = { sum, count };
+
+                        // Add to cached dataset
+                        cachedDataForLayer[regionId] = { avg, fieldKey };
+                    }
+                });
+
+                // Aggregate values for US, US_conus, and Canada
+                const usStatesList = common.usStates || [];
+                const caStatesList = common.caStates || [];
+
+                let usSum = 0, usCount = 0;
+                let conusSum = 0, conusCount = 0;
+                let caSum = 0, caCount = 0;
+
+                regionIDs.forEach(regionId => {
+                    const trackingKey = `${regionId}_${rasterLayer.sourceId}`;
+                    const track = rasterTrackingMap[trackingKey];
+                    if (!track) return;
+
+                    if (usStatesList.includes(regionId)) {
+                        usSum += track.sum;
+                        usCount += track.count;
+
+                        if (regionId !== "Alaska" && regionId !== "Hawaii") {
+                            conusSum += track.sum;
+                            conusCount += track.count;
+                        }
+                    } else if (caStatesList.includes(regionId)) {
+                        caSum += track.sum;
+                        caCount += track.count;
+                    }
+                });
+
+                const saveAgg = (aggId, sum, count) => {
+                    if (count > 0) {
+                        const avg = sum / count;
+                        if (!modelStats[aggId]) modelStats[aggId] = {};
+                        modelStats[aggId][rasterLayer.sourceId] = avg;
+                        
+                        const fieldKey = (typeof tmpl.field === "function") ? tmpl.field(currentDataset) : tmpl.field;
+                        modelStats[aggId][fieldKey] = avg;
+
+                        cachedDataForLayer[aggId] = { avg, fieldKey };
+                    }
+                };
+
+                saveAgg("US", usSum, usCount);
+                saveAgg("US_conus", conusSum, conusCount);
+                saveAgg("Canada", caSum, caCount);
+
+                // Store in global cache
+                rasterCache.set(cacheKey, cachedDataForLayer);
+
+                // Limit cache size to 50 entries to prevent memory leak
+                if (rasterCache.size > 50) {
+                    const oldestKey = rasterCache.keys().next().value;
+                    rasterCache.delete(oldestKey);
+                }
+            });
+
+            return Promise.resolve();
+        })
+        .catch(err => {
+            console.error("Error calculating raster state averages:", err);
+            return Promise.resolve();
         });
 }
 

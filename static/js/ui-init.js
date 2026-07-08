@@ -12,6 +12,7 @@ import { initBtnTooltips } from "./ui-btn-tooltip.js";
 import { initHysplit } from "./aws-hysplit.js";
 import { initLoaderRuntime } from "./loader.js";
 import { initMapAnimate } from "./map-animate.js";
+import { initMapDrawStats } from "./map-area-stats.js";
 
 const datePicker = document.getElementById("datePicker");
 
@@ -52,4 +53,5 @@ initBtnTooltips?.();
 initHysplit?.();
 initLoaderRuntime?.();
 initMapAnimate?.();
+initMapDrawStats?.();
 

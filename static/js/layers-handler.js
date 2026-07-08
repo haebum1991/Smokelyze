@@ -316,21 +316,25 @@ export function applyLayerToggles() {
     });
 
     if (legendWillShow) {
-        const drawer = document.getElementById("LegendDrawer");
+        const legendDrawer = document.getElementById("LegendDrawer");
         const newsDrawer = document.getElementById("WFnewsDrawer");
         const mapPostDrawer = document.getElementById("MapPostDrawer");
         const hysplitDrawer = document.getElementById("HysplitDrawer");
         const statsDrawer = document.getElementById("FigurePageDrawer");
-
-        const isOthersOpen = newsDrawer?.classList.contains("open") || 
-                             mapPostDrawer?.classList.contains("open") || 
-                             hysplitDrawer?.classList.contains("open") ||
-                             statsDrawer?.classList.contains("open");
+        const areaStatsDrawer = document.getElementById("AreaStatsDrawer");
+        
+        const isAreaStatsOpen = areaStatsDrawer?.classList.contains("open");
+        
+        const isOthersOpen = newsDrawer?.classList.contains("open") ||
+            mapPostDrawer?.classList.contains("open") ||
+            hysplitDrawer?.classList.contains("open") ||
+            statsDrawer?.classList.contains("open");
 
         // UI Refinement:
         // 1. If a NEW layer checkbox was just selected, ALWAYS open the legend (per user request).
         // 2. Otherwise, only auto-open if no other drawer (that overlaps) is blocking it.
-        if (drawer && !drawer.classList.contains("open")) {
+        // 3. Exception: If the Area Statistics drawer is active, NEVER auto-open the legend.
+        if (legendDrawer && !legendDrawer.classList.contains("open") && !isAreaStatsOpen) {
             if (newLayerAdded || !isOthersOpen) {
                 setLegendDrawer(true);
             }

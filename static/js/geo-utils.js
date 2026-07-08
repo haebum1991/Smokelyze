@@ -41,7 +41,7 @@ function pointInPolygon(point, polygon) {
  * @param {Object} geometry - GeoJSON geometry object
  * @returns {boolean} True if point is inside geometry
  */
-function pointInGeometry(point, geometry) {
+export function pointInGeometry(point, geometry) {
     if (!geometry || !geometry.type || !geometry.coordinates) {
         return false;
     }

@@ -7,7 +7,6 @@ import {
     getStandardMetrics,
     isMetricVisible,
     getMetricInfo,
-    extractUnit,
     renderPlotMessage,
     clearPlotMessage,
     attachResizeObserver
@@ -115,7 +114,7 @@ export function renderHeatmap(containerId) {
         plotDiv.style.marginTop = renderedCount === 1 ? "0" : "2.4rem";
         container.appendChild(plotDiv);
 
-        const unit = extractUnit(info.y);
+        const unit = info.unit;
         const hoverDecimals = info.decimals ?? 0;
         const hoverTemplate = `<b style='font-size: 1.6rem; color: var(--card-shadow);'>%{z:,.${hoverDecimals}f}</b> <span style='font-size: 1.6rem; color: var(--text-strong);'> ${unit}</span><br><b style='color: var(--text-strong);'>%{x}</b><extra></extra>`;
 
@@ -128,7 +127,7 @@ export function renderHeatmap(containerId) {
             hovertemplate: hoverTemplate,
             hoverlabel: { bgcolor: theme.plot_bgcolor },
             colorbar: {
-                title: info.y,
+                title: info.unit ? `${info.title} (${info.unit})` : info.title,
                 titleside: "bottom",
                 titlefont: { size: fontSize, color: theme.axisText },
                 tickfont: { size: fontSize * 0.8, color: theme.axisText },
@@ -156,7 +155,7 @@ export function renderHeatmap(containerId) {
             },
             yaxis: {
                 title: {
-                    text: `${year} ${info.title}`,
+                    text: info.unit ? `${year} ${info.title} (${info.unit})` : `${year} ${info.title}`,
                     font: { size: fontSize, color: theme.axisText },
                     standoff: 20
                 },

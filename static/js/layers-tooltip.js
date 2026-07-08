@@ -88,6 +88,29 @@ export function smartFmt(val, field, dataSource, defaultDecimals = 1) {
   return num.toFixed(decimals);
 }
 
+function renderPopupRow(label, fieldKey, val, dsContext) {
+    const templates = LAYER_TEMPLATES || [];
+    const tmpl = templates.find(t => {
+        if (typeof t.field === "function") {
+            return t.field(dsContext) === fieldKey || t.field("gam-v2") === fieldKey || t.field("gam-v1") === fieldKey;
+        }
+        return t.field === fieldKey;
+    });
+
+    let unitStr = "";
+    if (tmpl) {
+        const resolvedUnit = (typeof tmpl.unit === "function") ? tmpl.unit(dsContext) : tmpl.unit;
+        if (resolvedUnit) {
+            unitStr = " " + resolvedUnit;
+        }
+    }
+
+    const isNA = (val === undefined || val === null || val === "" || String(val).toUpperCase() === "NA");
+    const formattedVal = isNA ? "NA" : smartFmt(val, fieldKey, dsContext);
+    const resolvedUnitStr = isNA ? "" : unitStr;
+    return `<div style="margin: 0;"><b>${ESML(label)}:</b> <b style="color: var(--card-shadow);">${ESML(formattedVal)}</b><span style="color: var(--text-main); font-weight: normal;">${ESML(resolvedUnitStr)}</span></div>`;
+}
+
 /**
  * Generates HTML content for map popups/tooltips based on data source.
  */
@@ -207,18 +230,9 @@ export function generatePopupHTML(p, dataSource, isLocked) {
               ${closeBtn}
               <div style="${rowStyleHead}"><b>AirNow (Hourly)</b></div>
               <hr style="${hrStyle}">
-              <div style="${rowStyle}"> 
-                <b>Obs PM2.5 (hourly) (ug m⁻³):</b> 
-                <b style="color: var(--card-shadow);">${ESML(smartFmt(p["pm25(ug/m3)"], "pm25(ug/m3)", dataSource))}</b>
-              </div>
-              <div style="${rowStyle}"> 
-                <b>Obs O3 (hourly) (ppb):</b> 
-                <b style="color: var(--card-shadow);">${ESML(smartFmt(p["ozone(ppb)"], "ozone(ppb)", dataSource))}</b>
-              </div>
-              <div style="${rowStyle}"> 
-                <b>Obs NO2 (hourly) (ppb):</b> 
-                <b style="color: var(--card-shadow);">${ESML(smartFmt(p["no2(ppb)"], "no2(ppb)", dataSource))}</b>
-              </div>
+              ${renderPopupRow("Obs PM2.5 (hourly)", "pm25(ug/m3)", p["pm25(ug/m3)"], dataSource)}
+              ${renderPopupRow("Obs O3 (hourly)", "ozone(ppb)", p["ozone(ppb)"], dataSource)}
+              ${renderPopupRow("Obs NO2 (hourly)", "no2(ppb)", p["no2(ppb)"], dataSource)}
               <hr style="${hrStyle}">
               <div style="${rowStyle}"><b>State:</b> ${ESML(p["state"] || "NA")}</div>
               <div style="${rowStyle}"><b>AQS:</b> ${ESML(p["AQS"] || "NA")}</div>
@@ -236,31 +250,8 @@ export function generatePopupHTML(p, dataSource, isLocked) {
             <hr style="${hrStyle}">
             `;
       
-      // Always show MDA8 O3 (NA if missing)
-      const mda8Value = (p["MDA8O3"] !== undefined && p["MDA8O3"] !== null)
-        ? ESML(smartFmt(p["MDA8O3"], "MDA8O3", dataSource))
-        : "NA";
-      AirnowHtml += `
-            <div style="${rowStyle}"> 
-              <b>Obs MDA8 (ppb):</b> 
-              <b style="color: var(--card-shadow);">
-                ${mda8Value}
-              </b>
-            </div>
-            `;
-            
-      // Always show PM2.5 (NA if missing)
-      const pm25Value = (p["PM2.5"] !== undefined && p["PM2.5"] !== null)
-        ? ESML(smartFmt(p["PM2.5"], "PM2.5", dataSource))
-        : "NA";
-      AirnowHtml += `
-            <div style="${rowStyle}"> 
-              <b>Obs PM2.5 (ug m⁻³):</b> 
-              <b style="color: var(--card-shadow);">
-                ${pm25Value}
-              </b>
-            </div>
-            `;
+      AirnowHtml += renderPopupRow("Obs MDA8", "MDA8O3", p["MDA8O3"], dataSource);
+      AirnowHtml += renderPopupRow("Obs PM2.5", "PM2.5", p["PM2.5"], dataSource);
 
       return AirnowHtml += `
             <hr style="${hrStyle}">
@@ -319,10 +310,10 @@ export function generatePopupHTML(p, dataSource, isLocked) {
           <hr style="${hrStyle}">
           <div style="${rowStyle}">Days with SMO>0: ${ESML(smartFmt(p["smoke"], "smoke", dataSource))}</div>
           <hr style="${hrStyle}">
-          <div style="${rowStyle}">Obs MDA8 (ppb): ${ESML(smartFmt(p["MDA8O3"], "MDA8O3", dataSource))}</div>
-          <div style="${rowStyle}">Pred MDA8 (ppb): ${ESML(smartFmt(p["MDA8O3_pred"], "MDA8O3_pred", dataSource))}</div>
-          <div style="${rowStyle}">Residual (ppb): ${ESML(smartFmt(p["MDA8O3_resids"], "MDA8O3_resids", dataSource))}</div>
-          <div style="${rowStyle}">SMO (ppb): ${ESML(smartFmt(p["SMO"], "SMO", dataSource))}</div>
+          ${renderPopupRow("Obs MDA8", "MDA8O3", p["MDA8O3"], dataSource)}
+          ${renderPopupRow("Pred MDA8", "MDA8O3_pred", p["MDA8O3_pred"], dataSource)}
+          ${renderPopupRow("Residual", "MDA8O3_resids", p["MDA8O3_resids"], dataSource)}
+          ${renderPopupRow("SMO", "SMO", p["SMO"], dataSource)}
           <hr style="${hrStyle}">`;
     } else if (dataSource === "pm_cbsa" || dataSource === "pm_cbsa_pred") {
       bodyHtml += `
@@ -331,16 +322,16 @@ export function generatePopupHTML(p, dataSource, isLocked) {
           <div style="${rowStyle}">Longitude: ${ESML(smartFmt(p["lon"], "lon", dataSource, 3))}</div>
           <div style="${rowStyle}">Latitude: ${ESML(smartFmt(p["lat"], "lat", dataSource, 3))}</div>
           <hr style="${hrStyle}">
-          <div style="${rowStyle}">HMS: ${ESML(smartFmt(p["HMS"], "HMS", dataSource, 0))}</div>
+          <div style="${rowStyle}">HMS: ${ESML(smartFmt(p["smoke_m0p5m"], "smoke_m0p5m", dataSource) !== "0" || smartFmt(p["smoke_m1p0m"], "smoke_m1p0m", dataSource) !== "0" ? "1" : "0")}</div>
           <div style="${rowStyle}">Smoke m0p5m: ${ESML(smartFmt(p["smoke_m0p5m"], "smoke_m0p5m", dataSource))}</div>
           <div style="${rowStyle}">Smoke m1p0m: ${ESML(smartFmt(p["smoke_m1p0m"], "smoke_m1p0m", dataSource))}</div>
           <hr style="${hrStyle}">
-          <div style="${rowStyle}">Obs PM2.5 (ug m⁻³): ${ESML(smartFmt(p["PM2.5"], "PM2.5", dataSource))}</div>
-          <div style="${rowStyle}">Quantile of PM2.5 (%): ${ESML(smartFmt(p["Quant_PM2.5"], "Quant_PM2.5", dataSource))}</div>
-          <div style="${rowStyle}">PM2.5-Crit m0p5m (ug m⁻³): ${ESML(smartFmt(p["PM2.5_Crit_m0p5m"], "PM2.5_Crit_m0p5m", dataSource))}</div>
-          <div style="${rowStyle}">PM2.5-Crit m1p0m (ug m⁻³): ${ESML(smartFmt(p["PM2.5_Crit_m1p0m"], "PM2.5_Crit_m1p0m", dataSource))}</div>
-          <div style="${rowStyle}">Smoke PM2.5 m0p5m (ug m⁻³): ${ESML(smartFmt(p["smoke_PM2.5_m0p5m"], "smoke_PM2.5_m0p5m", dataSource))}</div>
-          <div style="${rowStyle}">Smoke PM2.5 m1p0m (ug m⁻³): ${ESML(smartFmt(p["smoke_PM2.5_m1p0m"], "smoke_PM2.5_m1p0m", dataSource))}</div>`;
+          ${renderPopupRow("Obs PM2.5", "PM2.5", p["PM2.5"], dataSource)}
+          ${renderPopupRow("Quantile of PM2.5", "Quant_PM2.5", p["Quant_PM2.5"], dataSource)}
+          ${renderPopupRow("PM2.5-Crit m0p5m", "PM2.5_Crit_m0p5m", p["PM2.5_Crit_m0p5m"], dataSource)}
+          ${renderPopupRow("PM2.5-Crit m1p0m", "PM2.5_Crit_m1p0m", p["PM2.5_Crit_m1p0m"], dataSource)}
+          ${renderPopupRow("Smoke PM2.5 m0p5m", "smoke_PM2.5_m0p5m", p["smoke_PM2.5_m0p5m"], dataSource)}
+          ${renderPopupRow("Smoke PM2.5 m1p0m", "smoke_PM2.5_m1p0m", p["smoke_PM2.5_m1p0m"], dataSource)}`;
     } else if (dataSource === "gam_v1") {
       bodyHtml += `
           <div style="${rowStyle}">AQS O3: ${ESML(p["AQS_O3"] || "NA")}</div>
@@ -351,19 +342,19 @@ export function generatePopupHTML(p, dataSource, isLocked) {
           <div style="${rowStyle}">HMS: ${ESML(smartFmt(p["HMS"], "HMS", dataSource, 0))}</div>
           <div style="${rowStyle}">Smoke: ${ESML(smartFmt(p["smoke"], "smoke", dataSource))}</div>
           <hr style="${hrStyle}">
-          <div style="${rowStyle}">Obs MDA8 (ppb): ${ESML(smartFmt(p["MDA8O3"], "MDA8O3", dataSource))}</div>
-          <div style="${rowStyle}">Pred MDA8 (ppb): ${ESML(smartFmt(p["MDA8O3_pred"], "MDA8O3_pred", dataSource))}</div>
-          <div style="${rowStyle}">Residual (ppb): ${ESML(smartFmt(p["MDA8O3_resids"], "MDA8O3_resids", dataSource))}</div>
-          <div style="${rowStyle}">Quantile of residual (%): ${ESML(smartFmt(p.Quant_MDA8O3_resids, "Quant_MDA8O3_resids", dataSource))}</div>
-          <div style="${rowStyle}">SMO (ppb): ${ESML(smartFmt(p["SMO"], "SMO", dataSource))}</div>
+          ${renderPopupRow("Obs MDA8", "MDA8O3", p["MDA8O3"], dataSource)}
+          ${renderPopupRow("Pred MDA8", "MDA8O3_pred", p["MDA8O3_pred"], dataSource)}
+          ${renderPopupRow("Residual", "MDA8O3_resids", p["MDA8O3_resids"], dataSource)}
+          ${renderPopupRow("Quantile of residual", "Quant_MDA8O3_resids", p.Quant_MDA8O3_resids, dataSource)}
+          ${renderPopupRow("SMO", "SMO", p["SMO"], dataSource)}
           <hr style="${hrStyle}">
           <div style="${rowStyle}">AQS PM: ${ESML(p["AQS_PM"] || "NA")}</div>
-          <div style="${rowStyle}">Obs PM2.5 (ug m⁻³): ${ESML(smartFmt(p["PM2.5"], "PM2.5", dataSource))}</div>
-          <div style="${rowStyle}">Quantile of PM2.5 (%): ${ESML(smartFmt(p["Quant_PM2.5"], "Quant_PM2.5", dataSource))}</div>
-          <div style="${rowStyle}">PM2.5-Crit (ug m⁻³): ${ESML(smartFmt(p["PM2.5_Crit"], "PM2.5_Crit", dataSource))}</div>
+          ${renderPopupRow("Obs PM2.5", "PM2.5", p["PM2.5"], dataSource)}
+          ${renderPopupRow("Quantile of PM2.5", "Quant_PM2.5", p["Quant_PM2.5"], dataSource)}
+          ${renderPopupRow("PM2.5-Crit", "PM2.5_Crit", p["PM2.5_Crit"], dataSource)}
           <hr style="${hrStyle}">
-          <div style="${rowStyle}">TMAX (°C): ${ESML(smartFmt(p["TMAX"], "TMAX", dataSource))}</div>
-          <div style="${rowStyle}">SRAD (W m⁻²): ${ESML(smartFmt(p["SRAD"], "SRAD", dataSource))}</div>`;
+          ${renderPopupRow("TMAX", "TMAX", p["TMAX"], dataSource)}
+          ${renderPopupRow("SRAD", "SRAD", p["SRAD"], dataSource)}`;
     } else if (dataSource === "gam_v2" || dataSource === "gam_v2_pred") {
       bodyHtml += `
           <div style="${rowStyle}">AQS O3: ${ESML(p["AQS_O3"] || "NA")}</div>
@@ -374,23 +365,23 @@ export function generatePopupHTML(p, dataSource, isLocked) {
           <div style="${rowStyle}">HMS: ${ESML(smartFmt(p["HMS"], "HMS", dataSource, 0))}</div>
           <div style="${rowStyle}">Smoke: ${ESML(smartFmt(p["smoke"], "smoke", dataSource))}</div>
           <hr style="${hrStyle}">
-          <div style="${rowStyle}">Obs MDA8 (ppb): ${ESML(smartFmt(p["MDA8O3"], "MDA8O3", dataSource))}</div>
-          <div style="${rowStyle}">Pred MDA8 (ppb): ${ESML(smartFmt(p["MDA8O3_pred"], "MDA8O3_pred", dataSource))}</div>
-          <div style="${rowStyle}">Residual (ppb): ${ESML(smartFmt(p["MDA8O3_resids"], "MDA8O3_resids", dataSource))}</div>
-          <div style="${rowStyle}">Quantile of residual (%): ${ESML(smartFmt(p.Quant_MDA8O3_resids, "Quant_MDA8O3_resids", dataSource))}</div>
-          <div style="${rowStyle}">SMO (ppb): ${ESML(smartFmt(p["SMO"], "SMO", dataSource))}</div>
-          <div style="${rowStyle}">Pred MDA8 (EDM) (ppb): ${ESML(smartFmt(p.edm_MDA8O3_pred, "edm_MDA8O3_pred", dataSource))}</div>
-          <div style="${rowStyle}">Residual (EDM) (ppb): ${ESML(smartFmt(p.edm_MDA8O3_resids, "edm_MDA8O3_resids", dataSource))}</div>
-          <div style="${rowStyle}">Quantile of residual (EDM) (%): ${ESML(smartFmt(p.edm_Quant_MDA8O3_resids, "edm_Quant_MDA8O3_resids", dataSource))}</div>
-          <div style="${rowStyle}">SMO (EDM) (ppb): ${ESML(smartFmt(p.edm_SMO, "edm_SMO", dataSource))}</div>
+          ${renderPopupRow("Obs MDA8", "MDA8O3", p["MDA8O3"], dataSource)}
+          ${renderPopupRow("Pred MDA8", "MDA8O3_pred", p["MDA8O3_pred"], dataSource)}
+          ${renderPopupRow("Residual", "MDA8O3_resids", p["MDA8O3_resids"], dataSource)}
+          ${renderPopupRow("Quantile of residual", "Quant_MDA8O3_resids", p.Quant_MDA8O3_resids, dataSource)}
+          ${renderPopupRow("SMO", "SMO", p["SMO"], dataSource)}
+          ${renderPopupRow("Pred MDA8 (EDM)", "edm_MDA8O3_pred", p.edm_MDA8O3_pred, dataSource)}
+          ${renderPopupRow("Residual (EDM)", "edm_MDA8O3_resids", p.edm_MDA8O3_resids, dataSource)}
+          ${renderPopupRow("Quantile of residual (EDM)", "edm_Quant_MDA8O3_resids", p.edm_Quant_MDA8O3_resids, dataSource)}
+          ${renderPopupRow("SMO (EDM)", "edm_SMO", p.edm_SMO, dataSource)}
           <hr style="${hrStyle}">
           <div style="${rowStyle}">AQS PM: ${ESML(p["AQS_PM"] || "NA")}</div>
-          <div style="${rowStyle}">Obs PM2.5 (ug m⁻³): ${ESML(smartFmt(p["PM2.5"], "PM2.5", dataSource))}</div>
-          <div style="${rowStyle}">Quantile of PM2.5 (%): ${ESML(smartFmt(p["Quant_PM2.5"], "Quant_PM2.5", dataSource))}</div>
-          <div style="${rowStyle}">PM2.5-Crit (ug m⁻³): ${ESML(smartFmt(p["PM2.5_Crit"], "PM2.5_Crit", dataSource))}</div>
+          ${renderPopupRow("Obs PM2.5", "PM2.5", p["PM2.5"], dataSource)}
+          ${renderPopupRow("Quantile of PM2.5", "Quant_PM2.5", p["Quant_PM2.5"], dataSource)}
+          ${renderPopupRow("PM2.5-Crit", "PM2.5_Crit", p["PM2.5_Crit"], dataSource)}
           <hr style="${hrStyle}">
-          <div style="${rowStyle}">TMAX (K): ${ESML(smartFmt(p["T2MAX"], "T2MAX", dataSource))}</div>
-          <div style="${rowStyle}">SRAD (W m⁻²): ${ESML(smartFmt(p["SRAD"], "SRAD", dataSource))}</div>`;
+          ${renderPopupRow("TMAX", "T2MAX", p["T2MAX"], dataSource)}
+          ${renderPopupRow("SRAD", "SRAD", p["SRAD"], dataSource)}`;
     } else {
       bodyHtml += `
           <hr style="${hrStyle}">

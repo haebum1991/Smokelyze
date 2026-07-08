@@ -127,8 +127,7 @@ export function appendSwitch(parent, options) {
 /**
  * Helper: Close other drawers (especially on mobile)
  */
-const LAYERS_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>`;
-const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+const drawerSetters = {};
 
 export function closeAllExcept(activeId, onlyIds = null) {
     const drawers = [
@@ -138,7 +137,8 @@ export function closeAllExcept(activeId, onlyIds = null) {
         { id: "MapPost", drawer: "MapPostDrawer", btn: "MapPostToggle", cls: "MapPost-drawer-open" },
         { id: "hysplit", drawer: "HysplitDrawer", btn: "HysplitToggle", cls: "Hysplit-drawer-open" },
         { id: "legend", drawer: "LegendDrawer", btn: "LegendToggle", cls: "Legend-drawer-open" },
-        { id: "aerscreen", drawer: "AerscreenDrawer", btn: "AerscreenToggle", cls: "Aerscreen-drawer-open" }
+        { id: "aerscreen", drawer: "AerscreenDrawer", btn: "AerscreenToggle", cls: "Aerscreen-drawer-open" },
+        { id: "areastats", drawer: "AreaStatsDrawer", btn: "MapBtnDraw", cls: "AreaStats-drawer-open" }
     ];
 
     drawers.forEach(({ id, drawer, btn, cls }) => {
@@ -148,11 +148,17 @@ export function closeAllExcept(activeId, onlyIds = null) {
             if (onlyIds && !onlyIds.includes(id)) return;
             
             const drawerEl = document.getElementById(drawer);
-            const btnEl = document.getElementById(btn);
             if (drawerEl?.classList.contains("open")) {
-                drawerEl.classList.remove("open");
-                btnEl?.classList.remove("active");
-                if (cls) document.body.classList.remove(cls);
+                const setter = drawerSetters[id];
+                if (setter) {
+                    setter(false); // Clean closing through setter (fires onClose)
+                } else {
+                    // Fallback
+                    drawerEl.classList.remove("open");
+                    const btnEl = document.getElementById(btn);
+                    if (btnEl) btnEl.classList.remove("active");
+                    if (cls) document.body.classList.remove(cls);
+                }
             }
         }
     });
@@ -397,7 +403,7 @@ export function initAccordion() {
 function createDrawerToggle(config) {
     const { id, btnId, drawerId, bodyClass, onOpen, onClose } = config;
 
-    return function setDrawer(open) {
+    const setter = function setDrawer(open) {
         const btn = document.getElementById(btnId);
         const drawer = document.getElementById(drawerId);
         if (!drawer) return;
@@ -412,15 +418,18 @@ function createDrawerToggle(config) {
                 // Mobile: Close everything
                 closeAllExcept(id);
                 clearHighlight?.();
-            } else if (["legend", "news", "MapPost", "hysplit", "aerscreen"].includes(id)) {
+            } else if (["legend", "news", "MapPost", "hysplit", "aerscreen", "areastats"].includes(id)) {
                 // PC: Only close siblings in the same group (Left side drawers)
-                closeAllExcept(id, ["legend", "news", "MapPost", "hysplit", "aerscreen"]);
+                closeAllExcept(id, ["legend", "news", "MapPost", "hysplit", "aerscreen", "areastats"]);
             }
             onOpen?.();
         } else {
             onClose?.();
         }
     };
+
+    drawerSetters[id] = setter;
+    return setter;
 }
 
 /**
@@ -623,6 +632,29 @@ export function initAerscreenDrawer() {
 }
 
 /**
+ * 9. Area Stats Drawer
+ */
+export const setAreaStatsDrawer = createDrawerToggle({
+    id: "areastats",
+    btnId: "MapBtnDraw",
+    drawerId: "AreaStatsDrawer",
+    bodyClass: "AreaStats-drawer-open",
+    onOpen: () => window.dispatchEvent(new CustomEvent("areastats-drawer-opened")),
+    onClose: () => window.dispatchEvent(new CustomEvent("areastats-drawer-closed"))
+});
+
+export function initAreaStatsDrawer() {
+    const btn = document.getElementById("MapBtnDraw");
+    const drawer = document.getElementById("AreaStatsDrawer");
+    const closeBtn = document.getElementById("AreaStatsDrawerClose");
+    if (!drawer) return;
+
+    if (btn) btn.addEventListener("click", () => setAreaStatsDrawer());
+    addCloseHandler(closeBtn, () => setAreaStatsDrawer(false));
+    addSwipeClose(drawer, { direction: "left", onClose: () => setAreaStatsDrawer(false) });
+}
+
+/**
  * Main Initialization
  */
 export function initAll() {
@@ -634,6 +666,7 @@ export function initAll() {
     initLegendDrawer();
     initHysplitDrawer();
     initAerscreenDrawer();
+    initAreaStatsDrawer();
     appendAllLayerHelpIcons();
 }
 
@@ -668,7 +701,8 @@ const KEY_TIPS_MAP = {
     "t": { id: "MapBtnTutorial", label: "T" },   // Tutorial
     "l": { id: "LegendToggle", label: "L" },     // Legend
     "h": { id: "HysplitToggle", label: "H" },     // Hysplit
-    "v": { id: "MapBtnAnimate", label: "V" }      // Timelapse/Video
+    "v": { id: "MapBtnAnimate", label: "V" },     // Timelapse/Video
+    "w": { id: "MapBtnDraw", label: "W" }         // Draw Area Stats
 };
 
 let isKeyTipMode = false;
@@ -834,7 +868,8 @@ const showKeyTips = () => {
         "t": "Quick Start",
         "l": "Map Legend",
         "h": "HYSPLIT",
-        "v": "Timelapse (Video)"
+        "v": "Timelapse (Video)",
+        "w": "Draw Area Stats"
     };
 
     Object.entries(KEY_TIPS_MAP).forEach(([key, cfg]) => {
@@ -922,6 +957,9 @@ const handleCommonShortcut = (key) => {
             break;
         case "v":
             document.getElementById("MapBtnAnimate")?.click();
+            break;
+        case "w":
+            setAreaStatsDrawer();
             break;
     }
     clearKeyTips();

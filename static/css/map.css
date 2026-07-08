@@ -1442,7 +1442,8 @@ tr.stats-state-row-ca.show {
 .MapPost-drawer,
 .WFnews-drawer,
 .Hysplit-drawer,
-.Aerscreen-drawer {
+.Aerscreen-drawer,
+.AreaStats-drawer {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -1463,7 +1464,8 @@ tr.stats-state-row-ca.show {
   overscroll-behavior: contain;
 }
 
-.Legend-drawer {
+.Legend-drawer,
+.AreaStats-drawer {
   z-index: var(--z-map-legend);
   height: auto;
   bottom: auto;
@@ -1482,7 +1484,8 @@ tr.stats-state-row-ca.show {
 .MapPost-drawer.open,
 .WFnews-drawer.open,
 .Hysplit-drawer.open,
-.Aerscreen-drawer.open {
+.Aerscreen-drawer.open,
+.AreaStats-drawer.open {
   transform: translateX(0);
 }
 
@@ -1490,7 +1493,8 @@ tr.stats-state-row-ca.show {
 .MapPost-drawer-list,
 .WFnews-drawer-list,
 .Hysplit-drawer-list,
-.Aerscreen-drawer-list {
+.Aerscreen-drawer-list,
+.AreaStats-drawer-list {
   flex: 1;
   overflow-y: auto;
   padding: 1rem;
@@ -1503,7 +1507,8 @@ tr.stats-state-row-ca.show {
 .MapPost-drawer-header,
 .WFnews-drawer-header,
 .Hysplit-drawer-header,
-.Aerscreen-drawer-header {
+.Aerscreen-drawer-header,
+.AreaStats-drawer-header {
   padding: 0.3rem 1.5rem;
   display: flex;
   align-items: center;
@@ -1520,7 +1525,8 @@ tr.stats-state-row-ca.show {
 .MapPost-drawer-header h3,
 .WFnews-drawer-header h3,
 .Hysplit-drawer-header h3,
-.Aerscreen-drawer-header h3 {
+.Aerscreen-drawer-header h3,
+.AreaStats-drawer-header h3 {
   margin: 0;
   font-size: 1.6rem;
   font-weight: bold;
@@ -1531,7 +1537,8 @@ tr.stats-state-row-ca.show {
 #MapPostDrawerClose,
 #WFnewsDrawerClose,
 #HysplitDrawerClose,
-#AerscreenDrawerClose {
+#AerscreenDrawerClose,
+#AreaStatsDrawerClose {
   color: var(--color-bg);
 }
 
@@ -1633,9 +1640,11 @@ body.FigurePage-drawer-open .MapPost-drawer.open,
 body.FigurePage-drawer-open #HysplitToggle,
 body.FigurePage-drawer-open .Hysplit-drawer.open,
 body.FigurePage-drawer-open #AerscreenToggle,
-body.FigurePage-drawer-open .Aerscreen-drawer.open {
+body.FigurePage-drawer-open .Aerscreen-drawer.open,
+body.FigurePage-drawer-open .AreaStats-drawer.open {
   transform: translateX(var(--FigurePage-drawer-width));
 }
+
 
 @media (max-width: 1024px) {
 
@@ -1648,17 +1657,20 @@ body.FigurePage-drawer-open .Aerscreen-drawer.open {
   body.FigurePage-drawer-open #HysplitToggle,
   body.FigurePage-drawer-open .Hysplit-drawer.open,
   body.FigurePage-drawer-open #AerscreenToggle,
-  body.FigurePage-drawer-open .Aerscreen-drawer.open {
+  body.FigurePage-drawer-open .Aerscreen-drawer.open,
+  body.FigurePage-drawer-open .AreaStats-drawer.open {
     transform: none;
   }
 
   .Legend-drawer,
   .MapPost-drawer,
-  .WFnews-drawer {
+  .WFnews-drawer,
+  .AreaStats-drawer {
     width: 100%;
   }
-  
-  .Legend-drawer {
+
+  .Legend-drawer,
+  .AreaStats-drawer {
     width: 50%;
   }
 }
