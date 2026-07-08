@@ -35,9 +35,9 @@ const GAM_V2_TYPES = {
         { name: "No. of ExcDays with minimal SMO", method: "count" },
         { name: "No. of ExcDays with minimal SMO (EDM)", method: "count" },
         { name: "No. of observations (Apr-Oct)", method: "category" },
-        { name: "4th-highest-MDA8 (ppb)", method: "mean" },
-        { name: "4th-highest-MDA8 (ppb) excluding smoke days with SMO > 97.5th quantile", method: "mean" },
-        { name: "4th-highest-MDA8 (ppb) excluding smoke days with SMO > 97.5th quantile (EDM)", method: "mean" }
+        { name: "4th-highest-MDA8 (ppb)", method: "category" },
+        { name: "4th-highest-MDA8 (ppb) excluding smoke days with SMO > 97.5th quantile", method: "category" },
+        { name: "4th-highest-MDA8 (ppb) excluding smoke days with SMO > 97.5th quantile (EDM)", method: "category" }
     ],
     "by_date": [
         { name: "Smoke days (1: Yes, 0: No)", method: "count" },
@@ -71,8 +71,8 @@ const GAM_V1_TYPES = {
         { name: "No. of ExcDays with significant SMO", method: "count" },
         { name: "No. of ExcDays with minimal SMO", method: "count" },
         { name: "No. of observations (May-Sep)", method: "category" },
-        { name: "4th-highest-MDA8 (ppb)", method: "mean" },
-        { name: "4th-highest-MDA8 (ppb) excluding smoke days with SMO > 97.5th quantile", method: "mean" }
+        { name: "4th-highest-MDA8 (ppb)", method: "category" },
+        { name: "4th-highest-MDA8 (ppb) excluding smoke days with SMO > 97.5th quantile", method: "category" }
     ],
     "by_date": [
         { name: "Smoke days (1: Yes, 0: No)", method: "count" },
@@ -192,6 +192,54 @@ function updateReportTypes() {
         if (type.name === prevVal) opt.selected = true;
         typeSelect.appendChild(opt);
     });
+    
+    update4thHighestNotice();
+}
+
+/**
+ * Show notice for 4th-highest metrics
+ */
+function update4thHighestNotice() {
+    const dataset = document.getElementById("DatadbReportTableDataset").value;
+    const typeSelect = document.getElementById("DatadbReportTableType");
+    const noticeEl = document.getElementById("DatadbReportTable4thHighestNotice");
+
+    if (!typeSelect || !noticeEl) return;
+
+    const selectedType = typeSelect.value;
+    if (selectedType && selectedType.includes("4th-highest")) {
+        let msg = "";
+        if (dataset.startsWith("gam-v2")) {
+            msg = "The 4th-highest-MDA8 values provided here are calculated based on the wildfire season (Apr-Oct) of each year, " +
+                  "and only include days with valid data for GAM analysis. While ozone concentrations are generally high " +
+                  "during the wildfire season—minimizing the impact of missing days—the number of valid observation days " +
+                  "(or conversely, missing days) can still affect the rank of the 4th-highest value. " +
+                  "Please interpret these metrics with caution and reference them in conjunction with the [No. of observations] report.";
+        } else if (dataset.startsWith("gam-v1")) {
+            msg = "The 4th-highest-MDA8 values provided here are calculated based on the wildfire season (May-Sep) of each year, " +
+                  "and only include days with valid data for GAM analysis. While ozone concentrations are generally high " +
+                  "during the wildfire season—minimizing the impact of missing days—the number of valid observation days " +
+                  "(or conversely, missing days) can still affect the rank of the 4th-highest value. " +
+                  "Please interpret these metrics with caution and reference them in conjunction with the [No. of observations] report.";
+        }
+
+        if (msg) {
+            noticeEl.textContent = msg;
+            noticeEl.style.cssText = "display: block; " +
+                                     "background: var(--color-code-bg); " +
+                                     "border-left: 0.5rem solid var(--card-shadow); " +
+                                     "padding: 1.2rem 1.6rem; " +
+                                     "border-radius: 0 var(--border-radius-0p8rem) var(--border-radius-0p8rem) 0; " +
+                                     "margin: 1.4rem 0 2rem; " +
+                                     "font-size: var(--fs-m); " +
+                                     "color: var(--text-main); " +
+                                     "line-height: 1.7;";
+        } else {
+            noticeEl.style.display = "none";
+        }
+    } else {
+        noticeEl.style.display = "none";
+    }
 }
 
 /**
@@ -876,6 +924,7 @@ async function downloadAllReportsCSV() {
 function initReport() {
     const dsSelect = document.getElementById("DatadbReportTableDataset");
     const periodRadios = document.querySelectorAll('input[name="DatadbReportTablePeriod"]');
+    const typeSelect = document.getElementById("DatadbReportTableType");
 
     if (dsSelect) {
         dsSelect.addEventListener("change", () => {
@@ -886,6 +935,10 @@ function initReport() {
         updateStates();
         updateYears();
         updateReportTypes();
+    }
+    
+    if (typeSelect) {
+        typeSelect.addEventListener("change", update4thHighestNotice);
     }
 
     periodRadios.forEach(r => r.addEventListener("change", handlePeriodChange));
