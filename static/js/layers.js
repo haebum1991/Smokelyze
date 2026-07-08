@@ -115,6 +115,14 @@ if (map) {
     });
 
     map.on("mousemove", "states-fill", (e) => {
+    
+      if (window.isDrawActive?.()) {
+        map.getCanvas().style.cursor = "";
+        map.setFilter("states-hover", ["==", ["get", "ID"], ""]);
+        hoverPopup.remove();
+        return;
+      }
+      
       let allPriorityIds = getAllInteractiveLayerIds();
       allPriorityIds = allPriorityIds.filter(id => id !== "smoke-fill" && id !== "burn-fill" && map.getLayer(id));
 

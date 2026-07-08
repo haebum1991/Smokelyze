@@ -118,6 +118,77 @@ const STYLES = `
   box-shadow: 0 0 1rem var(--card-shadow);
   color: var(--color-bg) !important;
 }
+
+.draw-mode-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.1) 40%, rgba(0, 0, 0, 0.55) 100%);
+  pointer-events: none;
+  z-index: 998;
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.draw-mode-overlay.active {
+  opacity: 1;
+}
+
+.draw-mode-banner {
+  position: fixed;
+  top: 1.5rem;
+  left: 50%;
+  transform: translate(-50%, -20px);
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid #00ffff;
+  color: #fff;
+  padding: 0.8rem 1.6rem;
+  border-radius: 20px;
+  font-size: 1.25rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 15px rgba(0, 255, 255, 0.1);
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.draw-mode-banner.active {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.draw-mode-banner .pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #00ffff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 rgba(0, 255, 255, 0.6);
+  animation: draw-pulse-glow 1.5s infinite;
+}
+
+@keyframes draw-pulse-glow {
+  0% {
+    box-shadow: 0 0 0 0px rgba(0, 255, 255, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(0, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0px rgba(0, 255, 255, 0);
+  }
+}
+
+@media (max-width: 1024px) {
+  #MapBtnDraw {
+    display: none !important;
+  }
+}
 `;
 
 function injectStyles() {
@@ -126,6 +197,58 @@ function injectStyles() {
     style.id = "map-draw-stats-styles";
     style.textContent = STYLES;
     document.head.appendChild(style);
+}
+
+function showDarkOverlay() {
+    let overlay = document.getElementById("draw-mode-overlay");
+    if (!overlay) {
+        overlay = document.createElement("div");
+        overlay.id = "draw-mode-overlay";
+        overlay.className = "draw-mode-overlay";
+        document.body.appendChild(overlay);
+    }
+    overlay.offsetHeight; // force reflow
+    overlay.classList.add("active");
+}
+
+function hideDarkOverlay() {
+    const overlay = document.getElementById("draw-mode-overlay");
+    if (overlay) {
+        overlay.classList.remove("active");
+        setTimeout(() => {
+            if (overlay.parentNode && !overlay.classList.contains("active")) {
+                overlay.parentNode.removeChild(overlay);
+            }
+        }, 300);
+    }
+}
+
+function showBanner(text, showDot = true) {
+    let banner = document.getElementById("draw-mode-banner");
+    if (!banner) {
+        banner = document.createElement("div");
+        banner.id = "draw-mode-banner";
+        banner.className = "draw-mode-banner";
+        document.body.appendChild(banner);
+    }
+    banner.innerHTML = `
+        ${showDot ? '<span class="pulse-dot"></span>' : ''}
+        <span>${text}</span>
+    `;
+    banner.offsetHeight; // force reflow
+    banner.classList.add("active");
+}
+
+function hideBanner() {
+    const banner = document.getElementById("draw-mode-banner");
+    if (banner) {
+        banner.classList.remove("active");
+        setTimeout(() => {
+            if (banner.parentNode && !banner.classList.contains("active")) {
+                banner.parentNode.removeChild(banner);
+            }
+        }, 300);
+    }
 }
 
 /**
@@ -394,6 +517,8 @@ export async function initMapDrawStats() {
         if (drawBtn) {
             drawBtn.classList.add("active");
         }
+        hideDarkOverlay();
+        hideBanner();
         bringDrawLayersToFront();
         updateAverages();
     });
@@ -402,8 +527,19 @@ export async function initMapDrawStats() {
         bringDrawLayersToFront();
         updateAverages();
     });
+    
+    map.on("draw.modechange", (e) => {
+        if (e.mode !== "draw_rectangle") {
+            hideDarkOverlay();
+            if (draw.getSelectedIds().length === 0) {
+                hideBanner();
+            }
+        }
+    });
 
     map.on("draw.delete", () => {
+        hideDarkOverlay();
+        hideBanner();
         clearAverages();
         const drawBtn = document.getElementById("MapBtnDraw");
         if (drawBtn) {
@@ -419,11 +555,14 @@ export async function initMapDrawStats() {
                 // Clicked selected shape again -> deselect/fix it!
                 draw.changeMode("simple_select", { featureIds: [] });
                 lastSelectedId = null;
+                hideBanner();
             } else {
                 lastSelectedId = id;
+                showBanner("Area Selected: Drag to move, press Backspace/Delete to remove, click map to lock", true);
             }
         } else {
             lastSelectedId = null;
+            hideBanner();
         }
         bringDrawLayersToFront();
         updateAverages();
@@ -432,6 +571,16 @@ export async function initMapDrawStats() {
 
     // Expose update function globally for window-based events (like stats refresh)
     window.updateDrawStatsAverages = updateAverages;
+    window.isDrawActive = () => {
+        if (!draw) return false;
+        try {
+            const mode = draw.getMode();
+            const selected = draw.getSelectedIds() || [];
+            return mode === "draw_rectangle" || selected.length > 0;
+        } catch (e) {
+            return false;
+        }
+    };
 
     // Listen to custom drawer show/hide events
     window.addEventListener("areastats-drawer-opened", () => {
@@ -439,6 +588,8 @@ export async function initMapDrawStats() {
             draw.deleteAll();
             draw.changeMode("draw_rectangle");
         }
+        showDarkOverlay();
+        showBanner("Drawing Mode: Click map to start, move, then click again to finish drawing", true);
         const guideHtml = `
             <div style="display: flex; align-items: center; gap: 0.8rem; font-size: 1.3rem; color: var(--text-main); line-height: 1.4; padding: 1rem;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--card-shadow)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
@@ -453,6 +604,8 @@ export async function initMapDrawStats() {
     });
 
     window.addEventListener("areastats-drawer-closed", () => {
+        hideDarkOverlay();
+        hideBanner();
         clearAverages();
         if (draw) {
             draw.deleteAll();
@@ -568,7 +721,10 @@ export function updateAverages() {
 
     // Compute averages for the latest drawn/modified shape
     const shape = selectedFeatures[selectedFeatures.length - 1];
-    const activeLayers = getActiveModelLayers();
+    const activeLayers = getActiveModelLayers().filter(layer => {
+        const id = layer.id;
+        return !id.startsWith("tempo-") && !id.startsWith("tropomi-") && !id.startsWith("hrrr-") && !id.startsWith("goes-");
+    });
     const activeRasterLayers = getActiveRasterLayers();
 
     const isNifcActive = document.getElementById("layer-wildfire-nifc")?.checked &&
@@ -642,7 +798,7 @@ export function updateAverages() {
                 html += `
                     <div class="draw-stats-panel-row">
                         <span class="label">${layer.label}</span>
-                        <span class="value">${positiveCount} / ${count} <small style="color: var(--text-main); font-size: 1.1rem;">sites</small></span>
+                        <span class="value">${positiveCount} / ${count}<span style="color: var(--text-main); font-weight: normal;"> sites</span></span>
                     </div>
                 `;
             } else {
@@ -651,7 +807,7 @@ export function updateAverages() {
                 html += `
                     <div class="draw-stats-panel-row">
                         <span class="label">${layer.label}</span>
-                        <span class="value">${avg}<span style="color: var(--text-main);">${unit}</span> <small style="color: var(--text-main); font-size: 1.1rem;">(${count} sites)</small></span>
+                        <span class="value">${avg}<span style="color: var(--text-main); font-weight: normal;">${unit}</span> <small style="color: var(--text-main); font-size: 1.1rem; font-weight: normal;">(${count} sites)</small></span>
                     </div>
                 `;
             }
@@ -688,7 +844,7 @@ export function updateAverages() {
         html += `
             <div class="draw-stats-panel-row">
                 <span class="label">WF incidents location</span>
-                <span class="value">${wfCount} <small style="color: var(--text-main); font-size: 1.1rem;">incidents</small></span>
+                <span class="value">${wfCount}<span style="color: var(--text-main); font-weight: normal;"> incidents</span></span>
             </div>
         `;
     }
@@ -723,7 +879,7 @@ export function updateAverages() {
         html += `
             <div class="draw-stats-panel-row">
                 <span class="label">HMS-fire</span>
-                <span class="value">${fireCount} <small style="color: var(--text-main); font-size: 1.1rem;">points</small></span>
+                <span class="value">${fireCount}<span style="color: var(--text-main); font-weight: normal;"> points</span></span>
             </div>
         `;
         if (frpCount > 0) {
@@ -731,7 +887,7 @@ export function updateAverages() {
             html += `
                 <div class="draw-stats-panel-row">
                     <span class="label">HMS-fire FRP</span>
-                    <span class="value">${frpAvg}<span style="color: var(--text-main);"> MW</span></span>
+                    <span class="value">${frpAvg}<span style="color: var(--text-main); font-weight: normal;"> MW</span></span>
                 </div>
             `;
         }

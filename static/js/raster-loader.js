@@ -399,6 +399,13 @@ function initRasterHover() {
 
     map.on("mousemove", (e) => {
         
+        if (window.isDrawActive?.()) {
+            tooltip.style.display = "none";
+            map.getCanvas().style.cursor = "";
+            if (tempoHoverBound) tempoHoverBound.isShowing = false;
+            return;
+        }
+        
         // [UX Fix]: Dont interfere if the tooltip is locked by a click
         if (state?.tooltipLocked) return;
 

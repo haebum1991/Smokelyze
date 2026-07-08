@@ -21,7 +21,8 @@ import {
   setMapPostDrawer, 
   setLegendDrawer, 
   setHysplitDrawer, 
-  setAerscreenDrawer 
+  setAerscreenDrawer,
+  setAreaStatsDrawer 
 } from "./ui-toggles.js";
 
 function numOr(x, d) { return (typeof x === "number" && isFinite(x)) ? x : d; }
@@ -96,6 +97,7 @@ export function closeAllDrawersExceptAccordion() {
   setLegendDrawer?.(false);
   setHysplitDrawer?.(false);
   setAerscreenDrawer?.(false);
+  setAreaStatsDrawer?.(false);
 
   // 2) AI Chat (Uses different class structure)
   const aiDrawer = document.getElementById("AiChatDrawer");

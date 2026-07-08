@@ -59,6 +59,13 @@ function bindHover(layerId, getHTML) {
 
     map.on("mousemove", layerId, (e) => {
         if (state?.tooltipLocked) return;
+        
+        if (window.isDrawActive?.()) {
+            map.getCanvas().style.cursor = "";
+            tooltip.style.display = "none";
+            return;
+        }
+        
         map.getCanvas().style.cursor = "pointer";
 
         const f = e.features?.[0];
@@ -99,6 +106,8 @@ function bindClick(layerId, dataSource) {
     // Register a one-time global click listener if not already present
     if (!map._globalInteractionBound) {
         map.on("click", (e) => {
+            
+            if (window.isDrawActive?.()) return;
             const interactiveLayerIds = Object.keys(layerDataMap);
             const features = map.queryRenderedFeatures(e.point, { layers: interactiveLayerIds });
 
