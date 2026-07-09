@@ -271,6 +271,7 @@ const DrawRectangle = {
         this.setActionableState({
             trash: true
         });
+        map.dragPan.disable();
         return {
             rectangleId: rectangle.id,
             startPoint: null
@@ -283,6 +284,7 @@ const DrawRectangle = {
         } else {
             this.updateUIClasses({ mouse: "pointer" });
             this.changeMode("simple_select", { featureIds: [state.rectangleId] });
+            map.dragPan.enable();
         }
     },
 
@@ -299,6 +301,18 @@ const DrawRectangle = {
             ];
             const feature = this.getFeature(state.rectangleId);
             feature.setCoordinates([coords]);
+        }
+    },
+
+    onTouchMove: function (state, e) {
+        return this.onMouseMove(state, e);
+    },
+
+    onTouchEnd: function (state, e) {
+        if (state.startPoint) {
+            this.updateUIClasses({ mouse: "pointer" });
+            this.changeMode("simple_select", { featureIds: [state.rectangleId] });
+            map.dragPan.enable();
         }
     },
 
@@ -325,16 +339,7 @@ const DrawRectangle = {
 
 export function initMapDrawStats() {
     injectStyles();
-
-    const isMobileOrTablet = window.innerWidth <= 1024 ||
-        /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ||
-        (navigator.maxTouchPoints > 0 && /Macintosh/i.test(navigator.userAgent));
-
-    if (isMobileOrTablet) {
-        console.log("Drawing statistics initialization bypassed on mobile/tablet to optimize tap interaction.");
-        return;
-    }
-
+    
     if (typeof MapboxDraw === "undefined") {
         console.log("Waiting for MapboxDraw library...");
         setTimeout(initMapDrawStats, 50);
