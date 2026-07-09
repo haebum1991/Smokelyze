@@ -323,9 +323,9 @@ const DrawRectangle = {
     }
 };
 
-export async function initMapDrawStats() {
+export function initMapDrawStats() {
     injectStyles();
-    
+
     const isMobileOrTablet = window.innerWidth <= 1024 ||
         /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ||
         (navigator.maxTouchPoints > 0 && /Macintosh/i.test(navigator.userAgent));
@@ -334,12 +334,11 @@ export async function initMapDrawStats() {
         console.log("Drawing statistics initialization bypassed on mobile/tablet to optimize tap interaction.");
         return;
     }
-    
+
     if (typeof MapboxDraw === "undefined") {
         console.log("Waiting for MapboxDraw library...");
-        while (typeof MapboxDraw === "undefined") {
-            await new Promise(resolve => setTimeout(resolve, 50));
-        }
+        setTimeout(initMapDrawStats, 50);
+        return;
     }
     if (!map) return;
 
