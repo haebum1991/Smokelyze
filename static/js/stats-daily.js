@@ -283,7 +283,15 @@ export function computeRasterStateAverages(isoDate, regionIDs, modelStats) {
             const rasterTrackingMap = {}; // Key: `${regionId}_${rasterLayer.sourceId}` -> { sum, count }
 
             activeRasters.forEach(rasterLayer => {
-                const cacheKey = `${isoDate}_${rasterLayer.sourceId}`;
+                
+                const store = rasterDataStore[rasterLayer.sourceId];
+                const tmpl = templates.find(t => t.id === rasterLayer.sourceId);
+                const isHourly = tmpl && tmpl.duration === "hourly";
+                const loadedHour = (isHourly && store) ? store.loadedHour : null;
+                
+                const cacheKey = (isHourly && loadedHour !== null && loadedHour !== undefined)
+                    ? `${isoDate}_H${loadedHour}_${rasterLayer.sourceId}`
+                    : `${isoDate}_${rasterLayer.sourceId}`;
                 
                 // Cache Hit check
                 if (rasterCache.has(cacheKey)) {
@@ -298,10 +306,7 @@ export function computeRasterStateAverages(isoDate, regionIDs, modelStats) {
                     return;
                 }
 
-                const store = rasterDataStore[rasterLayer.sourceId];
                 if (!store || !store.grayscale) return;
-
-                const tmpl = templates.find(t => t.id === rasterLayer.sourceId);
                 if (!tmpl) return;
 
                 // Bounding box of the raster extent
