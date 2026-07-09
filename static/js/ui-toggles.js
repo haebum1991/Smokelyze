@@ -168,21 +168,30 @@ export function closeAllExcept(activeId, onlyIds = null) {
  * Helper: Add swipe-to-close functionality (Modularized)
  */
 export function addSwipeClose(el, options = {}) {
-    const { direction = "right", threshold = 60, onClose = () => { }, maxWidth = 1024 } = options;
+    const { direction = "right", threshold = 60, onClose = () => { }, maxWidth = 1024, strictMaxWidth = false } = options;
 
     let touchStartX = 0;
     let touchStartY = 0;
     let isDragging = false;
 
+    function checkSwipeEnabled() {
+        if (strictMaxWidth) {
+            return window.innerWidth <= maxWidth;
+        }
+        return window.innerWidth <= maxWidth ||
+            /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ||
+            (navigator.maxTouchPoints > 0 && /Macintosh/i.test(navigator.userAgent));
+    }
+
     el.addEventListener("touchstart", (e) => {
-        if (window.innerWidth > maxWidth) return;
+        if (!checkSwipeEnabled()) return;
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         isDragging = false;
     }, { passive: true });
 
     el.addEventListener("touchmove", (e) => {
-        if (window.innerWidth > maxWidth) return;
+        if (!checkSwipeEnabled()) return;
 
         const touchMoveX = e.touches[0].clientX;
         const touchMoveY = e.touches[0].clientY;
@@ -209,7 +218,7 @@ export function addSwipeClose(el, options = {}) {
     }, { passive: true });
 
     el.addEventListener("touchend", (e) => {
-        if (window.innerWidth > maxWidth || !isDragging) return;
+        if (!checkSwipeEnabled() || !isDragging) return;
 
         const touchEndX = e.changedTouches[0].clientX;
         const touchEndY = e.changedTouches[0].clientY;

@@ -98,7 +98,8 @@ export function initAiChat() {
     // Add Swipe to close for mobile
     addSwipeClose(aiDrawer, {
         direction: "down",
-        onClose: closeDrawer
+        onClose: closeDrawer,
+        strictMaxWidth: true
     });
 }
 
