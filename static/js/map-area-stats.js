@@ -268,61 +268,92 @@ const DrawRectangle = {
         this.addFeature(rectangle);
         this.clearSelectedFeatures();
         this.updateUIClasses({ mouse: "add" });
-        this.setActionableState({
-            trash: true
-        });
-        map.dragPan.disable();
+        this.setActionableState({ trash: true });
+
+        // 변경: 맵 고유의 드래그 기능을 완전히 꺼서 MapboxDraw가 이벤트를 먹도록 처리
+        if (map) {
+            map.dragPan.disable();
+            map.touchZoomRotate.disable();
+        }
+
         return {
             rectangleId: rectangle.id,
-            startPoint: null
+            startPoint: null,
+            drawing: false
         };
     },
 
-    onClick: function (state, e) {
+    // 변경: 터치/마우스 다운(누르기 시작) 시점을 시작점으로 인지
+    onDrag: function (state, e) {
         if (!state.startPoint) {
             state.startPoint = [e.lngLat.lng, e.lngLat.lat];
-        } else {
-            this.updateUIClasses({ mouse: "pointer" });
-            this.changeMode("simple_select", { featureIds: [state.rectangleId] });
-            map.dragPan.enable();
+            state.drawing = true;
         }
-    },
 
-    onMouseMove: function (state, e) {
-        if (state.startPoint) {
-            const start = state.startPoint;
-            const end = [e.lngLat.lng, e.lngLat.lat];
-            const coords = [
-                [start[0], start[1]],
-                [end[0], start[1]],
-                [end[0], end[1]],
-                [start[0], end[1]],
-                [start[0], start[1]]
-            ];
-            const feature = this.getFeature(state.rectangleId);
+        const start = state.startPoint;
+        const end = [e.lngLat.lng, e.lngLat.lat];
+        const coords = [
+            [start[0], start[1]],
+            [end[0], start[1]],
+            [end[0], end[1]],
+            [start[0], end[1]],
+            [start[0], start[1]]
+        ];
+
+        const feature = this.getFeature(state.rectangleId);
+        if (feature) {
             feature.setCoordinates([coords]);
         }
     },
 
+    // 추가: 마우스 드래그와 터치 드래그가 동일하게 작동하도록 매핑
     onTouchMove: function (state, e) {
-        return this.onMouseMove(state, e);
+        this.onDrag(state, e);
     },
 
-    onTouchEnd: function (state, e) {
-        if (state.startPoint) {
+    // 변경: 마우스나 손가락을 떼는 순간 사각형 완성 및 고정
+    onMouseUp: function (state, e) {
+        if (state.drawing) {
             this.updateUIClasses({ mouse: "pointer" });
             this.changeMode("simple_select", { featureIds: [state.rectangleId] });
-            map.dragPan.enable();
+            
+            // 맵 원래 기능 원상복구
+            if (map) {
+                map.dragPan.enable();
+                map.touchZoomRotate.enable();
+            }
+        }
+    },
+
+    // 터치가 끝났을 때도 동일하게 마무리
+    onTouchEnd: function (state, e) {
+        this.onMouseUp(state, e);
+    },
+
+    // 데스크톱 클릭 유저를 위한 하이브리드 지원 (클릭-이동-클릭도 같이 보장)
+    onClick: function (state, e) {
+        if (!state.startPoint) {
+            state.startPoint = [e.lngLat.lng, e.lngLat.lat];
+            state.drawing = true;
+        } else {
+            this.onMouseUp(state, { lngLat: e.lngLat });
+        }
+    },
+
+    onMouseMove: function (state, e) {
+        if (state.drawing && !state.startPoint) return;
+        if (state.startPoint) {
+            this.onDrag(state, e);
         }
     },
 
     onKeyUp: function (state, e) {
-        if (e.keyCode === 27) { // ESC key
+        if (e.keyCode === 27) { // ESC
             this.deleteFeature(state.rectangleId, { silent: true });
             this.changeMode("simple_select");
-            const drawBtn = document.getElementById("MapBtnDraw");
-            if (drawBtn) {
-                drawBtn.classList.remove("active");
+            if (map) {
+                map.dragPan.enable();
+                map.touchZoomRotate.enable();
             }
         }
     },
@@ -339,7 +370,6 @@ const DrawRectangle = {
 
 export function initMapDrawStats() {
     injectStyles();
-    
     if (typeof MapboxDraw === "undefined") {
         console.log("Waiting for MapboxDraw library...");
         setTimeout(initMapDrawStats, 50);
