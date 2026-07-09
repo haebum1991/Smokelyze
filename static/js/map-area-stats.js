@@ -324,13 +324,17 @@ const DrawRectangle = {
 };
 
 export async function initMapDrawStats() {
+    injectStyles();
+    
+    const isMobileOrTablet = window.innerWidth <= 1024 ||
+        /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ||
+        (navigator.maxTouchPoints > 0 && /Macintosh/i.test(navigator.userAgent));
 
-    if (window.innerWidth <= 1024) {
-        console.log("Drawing statistics initialization bypassed on mobile to optimize tap interaction.");
+    if (isMobileOrTablet) {
+        console.log("Drawing statistics initialization bypassed on mobile/tablet to optimize tap interaction.");
         return;
     }
     
-    injectStyles();
     if (typeof MapboxDraw === "undefined") {
         console.log("Waiting for MapboxDraw library...");
         while (typeof MapboxDraw === "undefined") {
