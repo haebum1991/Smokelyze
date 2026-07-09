@@ -324,6 +324,12 @@ const DrawRectangle = {
 };
 
 export async function initMapDrawStats() {
+
+    if (window.innerWidth <= 1024) {
+        console.log("Drawing statistics initialization bypassed on mobile to optimize tap interaction.");
+        return;
+    }
+    
     injectStyles();
     if (typeof MapboxDraw === "undefined") {
         console.log("Waiting for MapboxDraw library...");
