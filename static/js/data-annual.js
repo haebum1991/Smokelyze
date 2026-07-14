@@ -95,23 +95,25 @@ async function loadAnnualReports() {
 function renderTypeTable(type, reportsByYear, tableBody) {
     if (!tableBody) return;
 
-    const sortedYears = Object.keys(reportsByYear).sort((a, b) => b - a);
-
-    if (sortedYears.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan='3' style='text-align:center; padding: 3rem;'>No ${type.toUpperCase()} reports found.</td></tr>`;
-        return;
+    const currentYear = new Date().getFullYear();
+    const reports = { ...reportsByYear };
+    if (!reports[currentYear]) {
+        reports[currentYear] = [];
     }
+
+    const sortedYears = Object.keys(reports).sort((a, b) => b - a);
 
     tableBody.innerHTML = "";
     sortedYears.forEach(year => {
-        const records = reportsByYear[year];
+        const records = reports[year];
         records.sort((a, b) => new Date(a.asOfDate) - new Date(b.asOfDate));
 
         let prelim = null;
         let final = null;
 
-        if (records.length === 1) {
-            const currentYear = new Date().getFullYear();
+        if (records.length === 0) {
+            // Both remain null
+        } else if (records.length === 1) {
             if (parseInt(year) < currentYear - 1) {
                 final = records[0];
             } else {
@@ -135,12 +137,16 @@ function renderTypeTable(type, reportsByYear, tableBody) {
 function renderDownloadCell(record, type, year) {
     if (!record) {
         let msg = "";
+        const currentYear = new Date().getFullYear();
         if (type === "Preliminary") {
-            msg = "No preliminary version";
+            if (parseInt(year) >= currentYear) {
+                msg = `Expected update: Dec ${year}`;
+            } else {
+                msg = "No preliminary version";
+            }
         } else {
-            // Finalized follows the logic: Available in Sep of (year + 1)
             const targetYear = parseInt(year) + 1;
-            msg = `Expected update: Sep ${targetYear}`;
+            msg = `Expected update: Aug ${targetYear}`;
         }
         return `<div class="datadb-annual-table-empty-cell">${msg}</div>`;
     }

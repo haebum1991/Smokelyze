@@ -53,6 +53,7 @@ function isClientCacheValid(event, etag) {
 }
 
 function getCacheControl(path) {
+  if (path.startsWith("smokeday/")) return "public, max-age=3600, must-revalidate";
   if (path.startsWith("realtime/")) return "public, max-age=3600, must-revalidate";
   return "public, max-age=604800, must-revalidate";
 }
