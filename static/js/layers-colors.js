@@ -105,8 +105,10 @@ export function updateLegend(activeStack = activeLayerStack) {
 
         sectionHtml += `<div class="legend-content">`;
         
-        // headerOnly mode: show toggle header but no color scale (for true-color imagery layers)
-        if (conf.headerOnly) {
+        // Setup opacity slider HTML if it is a raster layer
+        const isRaster = layerDef?.layers?.[0]?.type === "raster";
+        let opacitySliderHtml = "";
+        if (isRaster) {
             const mapLayerId = layerDef?.layers?.[0]?.id || `${id}-raster`;
             let currentOpacity = 0.9;
             if (map && map.getLayer(mapLayerId)) {
@@ -117,13 +119,15 @@ export function updateLegend(activeStack = activeLayerStack) {
             }
             const pct = Math.round(currentOpacity * 100);
 
-            sectionHtml += `<div class="legend-item" style="display:flex; flex-direction:column; gap:0.4rem; padding: 0.4rem 0.2rem; width:100%; align-items:stretch;">
-                                <div style="display:flex; justify-content:space-between; width:100%; font-size:1.2rem; color:var(--text-main);">
-                                    <span>Opacity</span>
-                                    <span class="opacity-val-${id}" style="font-weight:bold;">${pct}%</span>
-                                </div>
-                                <input type="range" class="legend-opacity-slider" data-layer-id="${mapLayerId}" data-id="${id}" min="0" max="100" value="${pct}" style="width:100%; cursor:pointer; accent-color:var(--card-shadow); margin: 0.2rem 0;">
-                            </div>`;
+            opacitySliderHtml = `<div class="legend-item" style="display:flex; align-items:center; gap:0.8rem; padding: 0.4rem 0.2rem; width:100%;">
+                                    <input type="range" class="legend-opacity-slider" data-layer-id="${mapLayerId}" data-id="${id}" min="0" max="100" value="${pct}" style="flex:1; cursor:pointer; accent-color:var(--card-shadow); margin: 0;">
+                                    <span class="opacity-val-${id}" style="font-size:1.2rem; font-weight:bold; color:var(--text-main); min-width:3.2rem; text-align:right;">${pct}%</span>
+                                </div>`;
+        }
+
+        // headerOnly mode: show toggle header but no color scale (for true-color imagery layers)
+        if (conf.headerOnly) {
+            sectionHtml += opacitySliderHtml;
             sectionHtml += `</div></div>`;
             finalHtml += sectionHtml;
             return; // skip rest of this iteration
@@ -250,7 +254,13 @@ export function updateLegend(activeStack = activeLayerStack) {
                                <span>N/A</span>
                              </div>`;
         }
-
+        
+        // Add opacity slider for all other raster layers
+        if (isRaster && !conf.headerOnly) {
+            sectionHtml += `<hr class="legend-divider">`;
+            sectionHtml += opacitySliderHtml;
+        }
+        
         sectionHtml += `</div></div>`; // End of legend-content and legend-section
         finalHtml += sectionHtml;
     });
@@ -278,6 +288,13 @@ export function updateLegend(activeStack = activeLayerStack) {
             if (label) {
                 label.textContent = `${e.target.value}%`;
             }
+        });
+        
+        // Prevent touch events from bubbling up and triggering mobile swipe gestures
+        ["touchstart", "touchmove", "touchend"].forEach(evtName => {
+            slider.addEventListener(evtName, (e) => {
+                e.stopPropagation();
+            }, { passive: true });
         });
     });
 }
