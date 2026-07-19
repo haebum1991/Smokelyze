@@ -45,7 +45,7 @@ This software is released under the **GNU Affero General Public License v3.0 (AG
 
 If you utilize this platform or its associated methodologies in your research, please cite the following primary paper:
 
-- **Lee, H., & Jaffe, D. A. (2026)**. Smokelyze: A Cloud-Native Platform for Real-Time Wildfire Smoke Impact Analytics. *Bulletin of the American Meteorological Society (BAMS)*.
+- **Lee, H., & Jaffe, D. A. (2026)**. Smokelyze.org: Advanced Spatiotemporal Analytics for Wildfire Smoke and Air Quality. *Bulletin of the American Meteorological Society (BAMS)*.
 
 ### Scientific Foundations (GAM Framework)
 
