@@ -79,6 +79,25 @@ export function initHysplit() {
         setHysplitVisibility("all", e.detail);
     });
     
+    // 0. Listen for color input changes in the history list (delegated)
+    document.addEventListener("input", (e) => {
+        const picker = e.target.closest(".hysplit-color-input");
+        if (picker) {
+            const runId = parseInt(picker.dataset.runId);
+            const newColor = picker.value;
+            changeHysplitColor(runId, newColor, false);
+        }
+    });
+
+    document.addEventListener("change", (e) => {
+        const picker = e.target.closest(".hysplit-color-input");
+        if (picker) {
+            const runId = parseInt(picker.dataset.runId);
+            const newColor = picker.value;
+            changeHysplitColor(runId, newColor, true);
+        }
+    });
+    
     // 1. Capture coordinate from context menu (parallel to fb-MapPost)
     map.on("contextmenu", (e) => {
         state.pendingLngLat = e.lngLat;
@@ -645,8 +664,8 @@ function uiHideHysplitModal() {
 // --- Persistence ---
 function saveToStorage() {
     try {
-        // Limit storage to last 10 items to prevent hitting quota
-        const toSave = state.history.slice(0, 10);
+        // Limit storage to last 20 items to prevent hitting quota
+        const toSave = state.history.slice(0, 20);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
     } catch (e) {
         console.warn("HYSPLIT: Failed to save to localStorage", e);
@@ -666,7 +685,7 @@ function loadFromStorage() {
         // Render in reverse to maintain original unshift order
         [...history].reverse().forEach(item => {
             if (!existingRunIds.includes(String(item.runId))) {
-                renderHysplitTrajectory(item.data, item.params.direction, item.runId, true, item.params);
+                renderHysplitTrajectory(item.data, item.params.direction, item.runId, true, item.params, item.color);
             }
         });
     } catch (e) {
@@ -924,7 +943,11 @@ function updateHysplitDrawerList() {
                     <div style="font-size: 1.3rem; font-weight: bold; color: var(--text-heading);">
                         ${utils.ESML(p.date)} ${utils.ESML(p.time)}:00 UTC
                     </div>
-                    <div style="display: flex; gap: 0.5rem;">
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <!-- Color picker circle swatch button -->
+                        <button class="hysplit-item-color-btn ui-btn-close" style="width: 1.8rem; height: 1.8rem; border-radius: 50%; background: ${utils.ESML(item.color)}; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; position: relative; padding: 0;" title="Change Color">
+                            <input type="color" class="hysplit-color-input" data-run-id="${item.runId}" value="${item.color}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                        </button>
                         ${animBtn}
                         <button class="hysplit-item-focus ui-btn-close" data-run-id="${item.runId}" title="Receptor Location">
                             <svg width="18" height="18">
@@ -952,6 +975,50 @@ function updateHysplitDrawerList() {
             </div>
         `;
     }).join("");
+}
+
+function changeHysplitColor(runId, newColor, isFinal = false) {
+    const item = state.history.find(h => h.runId === runId);
+    if (!item) return;
+
+    item.color = newColor;
+
+    if (isFinal) {
+        saveToStorage();
+    }
+
+    // 1. Update DOM styles directly to avoid re-rendering list and breaking color picker focus
+    const card = document.querySelector(`.Hysplit-item[data-run-id="${runId}"]`);
+    if (card) {
+        card.style.borderLeftColor = newColor;
+        const colorBtn = card.querySelector(".hysplit-item-color-btn");
+        if (colorBtn) colorBtn.style.backgroundColor = newColor;
+    }
+
+    // 2. Update Map layers
+    if (map) {
+        const isDispersion = (item.params.run_type === "dispersion");
+
+        const updatePaint = (layerId, prop, val) => {
+            if (map.getLayer(layerId)) {
+                try {
+                    map.setPaintProperty(layerId, prop, val);
+                } catch (e) {
+                    console.error(`Failed to update paint property on layer ${layerId}`, e);
+                }
+            }
+        };
+
+        if (isDispersion) {
+            updatePaint(`hysplit-layer-point-${runId}`, "circle-color", newColor);
+        } else {
+            updatePaint(`hysplit-layer-wall-${runId}`, "fill-extrusion-color", newColor);
+            updatePaint(`hysplit-layer-line-${runId}`, "line-color", newColor);
+            updatePaint(`hysplit-layer-points-${runId}`, "circle-color", newColor);
+            updatePaint(`hysplit-layer-vispoints-${runId}`, "circle-color", newColor);
+            updatePaint(`hysplit-layer-point-${runId}`, "circle-stroke-color", newColor);
+        }
+    }
 }
 
 function setHysplitVisibility(runId, visible) {
@@ -1074,12 +1141,12 @@ function downloadTrajectoryAsCSV(runId) {
     downloadFile(filename, csvContent);
 }
 
-function renderHysplitTrajectory(data, direction, existingRunId = null, isRestoring = false, forcedParams = null) {
+function renderHysplitTrajectory(data, direction, existingRunId = null, isRestoring = false, forcedParams = null, forcedColor = null) {
     if (!map || !data || data.length === 0) return;
 
     const runId = existingRunId || Date.now();
-    const color = RAINBOW_COLORS[state.runCount % RAINBOW_COLORS.length];
-    state.runCount++;
+    const color = forcedColor || RAINBOW_COLORS[state.runCount % RAINBOW_COLORS.length];
+    if (!forcedColor) state.runCount++;
 
     const isDispersion = (forcedParams && forcedParams.run_type === "dispersion");
 
@@ -1117,8 +1184,8 @@ function renderHysplitTrajectory(data, direction, existingRunId = null, isRestor
         animActive: !isRestoring // Enable animation by default on first run
     });
 
-    // Enforce 10-item limit: remove oldest if exceeded
-    if (state.history.length > 10) {
+    // Enforce 20-item limit: remove oldest if exceeded
+    if (state.history.length > 20) {
         const oldest = state.history[state.history.length - 1];
         removeTrajectory(oldest.runId);
     }
@@ -1342,7 +1409,8 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
         // Pass coordinates and color into props for unified formatting
         props.lon = fLon;
         props.lat = fLat;
-        props.color = color;
+        const hItem = state.history.find(h => h.runId === runId);
+        props.color = hItem ? hItem.color : color;
 
         tooltip.innerHTML = generatePopupHTML(props, "hysplit", false);
         tooltip.style.display = "block";
@@ -1385,7 +1453,8 @@ function drawTrajectoryLayers(runId, data, direction, color, isRestoring = false
         
         props.lon = fLon;
         props.lat = fLat;
-        props.color = color;
+        const hItem = state.history.find(h => h.runId === runId);
+        props.color = hItem ? hItem.color : color;
 
         if (utils.highlightLocation) {
             e.preventDefault(); // Stop click from bubbling up and triggering clearHighlight
@@ -1513,7 +1582,8 @@ function drawDispersionLayers(runId, data, color, isRestoring = false) {
         // Ensure these are treated as numbers and formatted
         props.lon = fLon;
         props.lat = fLat;
-        props.color = color;
+        const hItem = state.history.find(h => h.runId === runId);
+        props.color = hItem ? hItem.color : color;
         props.run_type = "dispersion";
 
         tooltip.innerHTML = generatePopupHTML(props, "hysplit", false);
@@ -1538,7 +1608,8 @@ function drawDispersionLayers(runId, data, color, isRestoring = false) {
         const f = e.features?.[0];
         if (!f) return;
         const [fLon, fLat] = f.geometry.coordinates;
-        const props = { ...f.properties, lon: fLon, lat: fLat, color, run_type: "dispersion" };
+        const hItem = state.history.find(h => h.runId === runId);
+        const props = { ...f.properties, lon: fLon, lat: fLat, color: hItem ? hItem.color : color, run_type: "dispersion" };
 
         if (utils.highlightLocation) {
             e.preventDefault();

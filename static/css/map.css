@@ -2939,3 +2939,10 @@ body.map-tut-active .maplibregl-ctrl-bottom-left {
   }
 }
 
+/* Hide HYSPLIT color picker button on mobile (screen width 1024px or less) */
+@media (max-width: 1024px) {
+  .hysplit-item-color-btn {
+    display: none !important;
+  }
+}
+
