@@ -120,7 +120,14 @@ export function updateLegend(activeStack = activeLayerStack) {
             const pct = Math.round(currentOpacity * 100);
 
             opacitySliderHtml = `<div class="legend-item" style="display:flex; align-items:center; gap:0.8rem; padding: 0.4rem 0.2rem; width:100%;">
+                                    <!-- Interactive slider for screen -->
                                     <input type="range" class="legend-opacity-slider" data-layer-id="${mapLayerId}" data-id="${id}" min="0" max="100" value="${pct}" style="flex:1; cursor:pointer; accent-color:var(--card-shadow); margin: 0;">
+                                    
+                                    <!-- Static progress bar for map capture -->
+                                    <div class="legend-opacity-static-bar" style="display:none; flex:1; height:0.6rem; background:rgba(255,255,255,0.15); border-radius:0.3rem; position:relative; overflow:hidden;">
+                                        <div style="width:${pct}%; height:100%; background:var(--card-shadow); border-radius:0.3rem;"></div>
+                                    </div>
+
                                     <span class="opacity-val-${id}" style="font-size:1.2rem; font-weight:bold; color:var(--text-main); min-width:3.2rem; text-align:right;">${pct}%</span>
                                 </div>`;
         }

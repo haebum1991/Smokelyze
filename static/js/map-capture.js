@@ -43,7 +43,20 @@ async function captureMapProcess(options = {}) {
 
                             try {
                                 const scale = 2; 
-                                const elCanvas = await html2canvas(el, { backgroundColor: null, logging: false, useCORS: true, scale });
+                                const elCanvas = await html2canvas(el, { 
+                                    backgroundColor: null, 
+                                    logging: false, 
+                                    useCORS: true, 
+                                    scale,
+                                    onclone: (clonedDoc) => {
+                                        clonedDoc.querySelectorAll(".legend-opacity-slider").forEach(slider => {
+                                            slider.style.setProperty("display", "none", "important");
+                                        });
+                                        clonedDoc.querySelectorAll(".legend-opacity-static-bar").forEach(bar => {
+                                            bar.style.setProperty("display", "block", "important");
+                                        });
+                                    }
+                                });
                                 const rect = el.getBoundingClientRect();
                                 ctx.drawImage(elCanvas, rect.left - mapRect.left, rect.top - mapRect.top, elCanvas.width / scale, elCanvas.height / scale);
                             } catch (e) {
