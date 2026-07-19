@@ -22,7 +22,8 @@ import {
   setLegendDrawer, 
   setHysplitDrawer, 
   setAerscreenDrawer,
-  setAreaStatsDrawer 
+  setAreaStatsDrawer,
+  setBoundarySettings
 } from "./ui-toggles.js";
 
 function numOr(x, d) { return (typeof x === "number" && isFinite(x)) ? x : d; }
@@ -34,6 +35,7 @@ export function resetUIAndData() {
   resetGlobalStateShading?.();
   resetGlobalPointLayers?.();
   resetGlobalNaShading?.();
+  setBoundarySettings?.();
   clearModelStats?.();
   hideTimeControls?.();
   closeAllDrawersExceptAccordion();

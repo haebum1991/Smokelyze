@@ -435,6 +435,36 @@ async function handleMapRestore(element) {
             updateAllActiveSources();
         }
     }
+    
+    // 5. Update sessionStorage state (mapStateV1) so it persists after map style change reloads
+    try {
+        const { savePatch } = await import("./ui-state.js");
+        const patch = {};
+        if (ms.date) {
+            patch.date = ms.date;
+        }
+        if (ms.layers) {
+            patch.layers = {};
+            document.querySelectorAll("input[type=checkbox][id^='layer-']").forEach(cb => {
+                const key = cb.id.replace(/^layer-/, "");
+                patch.layers[key] = cb.checked;
+            });
+        }
+        if (dsSelect) {
+            patch.dataset = dsSelect.value;
+        }
+        if (ms.center) {
+            patch.view = {
+                center: ms.center,
+                zoom: ms.zoom || map.getZoom(),
+                bearing: map.getBearing(),
+                pitch: map.getPitch()
+            };
+        }
+        savePatch(patch);
+    } catch (err) {
+        console.error("Failed to save restored map condition to sessionStorage", err);
+    }
 
     if (showErrorToast) {
         showErrorToast("Map condition restored!", "info");

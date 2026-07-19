@@ -89,8 +89,8 @@ if (map) {
         type: "line",
         source: "states-source",
         paint: {
-          "line-color": "#ffffff",
-          "line-width": 1
+          "line-color": sessionStorage.getItem("boundaryColor") || "#ffffff",
+          "line-width": parseFloat(sessionStorage.getItem("boundaryWidth") || "1.0")
         }
       });
     }

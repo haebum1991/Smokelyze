@@ -233,6 +233,52 @@ title: ""
         </div>
       </div>
       
+      <!-- Boundary Color/Width Selection -->
+      <div id="BoundaryColorWidthSelection" style="margin-top: 1rem; margin-bottom: 1rem;">
+        <div id="BoundaryColorWidthHeader"
+          style="font-size: 1.4rem; font-weight: bold; margin-bottom: 0.8rem; color: var(--text-main); display: flex; align-items: center; justify-content: space-between;">
+          <span>Boundary Color/Width</span>
+        </div>
+        <div style="display: flex; gap: 0.6rem; padding: 0 0.4rem; align-items: center;">
+          <!-- White -->
+          <button class="boundary-color-btn" data-color="#ffffff"
+            style="width: 3rem; height: 3rem; border-radius: var(--border-radius-0p8rem); border: 0.2rem solid transparent; background: #ffffff; cursor: pointer; box-shadow: 0 0.2rem 0.6rem rgba(0,0,0,0.15); transition: all 0.2s; padding: 0;"
+            title="White"></button>
+
+          <!-- Grey -->
+          <button class="boundary-color-btn" data-color="#888888"
+            style="width: 3rem; height: 3rem; border-radius: var(--border-radius-0p8rem); border: 0.2rem solid transparent; background: #888888; cursor: pointer; box-shadow: 0 0.2rem 0.6rem rgba(0,0,0,0.15); transition: all 0.2s; padding: 0;"
+            title="Grey"></button>
+
+          <!-- Black -->
+          <button class="boundary-color-btn" data-color="#000000"
+            style="width: 3rem; height: 3rem; border-radius: var(--border-radius-0p8rem); border: 0.2rem solid transparent; background: #000000; cursor: pointer; box-shadow: 0 0.2rem 0.6rem rgba(0,0,0,0.15); transition: all 0.2s; padding: 0;"
+            title="Black"></button>
+
+          <!-- Custom Button -->
+          <button class="boundary-color-btn-custom" id="boundary-custom-btn"
+            style="width: 3rem; height: 3rem; border-radius: var(--border-radius-0p8rem); border: 0.2rem solid transparent; background: linear-gradient(135deg, #ff3366, #ff9933, #33ccff, #33ff66); cursor: pointer; box-shadow: 0 0.2rem 0.6rem rgba(0,0,0,0.15); transition: all 0.2s; padding: 0; position: relative;"
+            title="Custom Color">
+            <input type="color" id="boundary-color-picker"
+              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+          </button>
+
+          <!-- Width Select -->
+          <select id="boundary-width-select"
+            style="flex: 1; padding: 0.6rem 0.2rem; border-radius: var(--border-radius-0p8rem); border: 0.1rem solid var(--card-shadow); background: var(--color-bg); color: var(--text-main); font-size: 1.4rem; font-weight: bold; cursor: pointer; text-align: center; box-shadow: 0 0.2rem 0.6rem rgba(0,0,0,0.15); text-align-last: center; height: 3rem; min-width: 6.5rem;">
+            <option value="0.0">0.0px</option>
+            <option value="0.5">0.5px</option>
+            <option value="1.0">1.0px</option>
+            <option value="1.5">1.5px</option>
+            <option value="2.0">2.0px</option>
+            <option value="2.5">2.5px</option>
+            <option value="3.0">3.0px</option>
+            <option value="3.5">3.5px</option>
+            <option value="4.0">4.0px</option>
+          </select>
+        </div>
+      </div>
+      
       <hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
 
       <details open>

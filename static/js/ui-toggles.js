@@ -399,10 +399,178 @@ export function initAccordion() {
             grid.appendChild(item);
         });
     }
+    
+    // --- Boundary Color Selection ---
+    const activeColor = sessionStorage.getItem("boundaryColor") || "#ffffff";
+    const colorBtns = document.querySelectorAll(".boundary-color-btn");
+    const picker = document.getElementById("boundary-color-picker");
 
+    // Helper to deactivate all buttons
+    const deactivateAllColorButtons = () => {
+        colorBtns.forEach(b => {
+            b.classList.remove("active");
+            b.style.borderColor = "transparent";
+            b.style.boxShadow = "0 0.2rem 0.6rem rgba(0,0,0,0.15)";
+        });
+        if (picker) {
+            const customLabel = picker.parentElement;
+            if (customLabel) {
+                customLabel.classList.remove("active");
+                customLabel.style.borderColor = "transparent";
+                customLabel.style.boxShadow = "0 0.2rem 0.6rem rgba(0,0,0,0.15)";
+            }
+        }
+    };
+
+    // Helper to activate a specific element
+    const activateColorButton = (el) => {
+        el.classList.add("active");
+        el.style.borderColor = "var(--card-shadow)";
+        el.style.boxShadow = "0 0 1rem var(--card-shadow)";
+    };
+
+    // Initialize preset buttons
+    colorBtns.forEach(btn => {
+        const btnColor = btn.dataset.color;
+        if (btnColor === activeColor.toLowerCase()) {
+            activateColorButton(btn);
+        }
+        
+        btn.addEventListener("click", () => {
+            deactivateAllColorButtons();
+            activateColorButton(btn);
+            
+            sessionStorage.setItem("boundaryColor", btnColor);
+            
+            if (map && map.getLayer("states-line")) {
+                try {
+                    map.setPaintProperty("states-line", "line-color", btnColor);
+                } catch (e) {
+                    console.error("Failed to update boundary color", e);
+                }
+            }
+        });
+    });
+
+    // Initialize Custom Color Picker
+    if (picker) {
+        const presets = ["#ffffff", "#888888", "#000000"];
+        const isPreset = presets.includes(activeColor.toLowerCase());
+        
+        if (!isPreset) {
+            picker.value = activeColor;
+            const customLabel = picker.parentElement;
+            if (customLabel) {
+                activateColorButton(customLabel);
+            }
+        }
+
+        const handleCustomColorInput = (e) => {
+            const chosenColor = e.target.value;
+            deactivateAllColorButtons();
+            
+            const customLabel = picker.parentElement;
+            if (customLabel) {
+                activateColorButton(customLabel);
+            }
+
+            sessionStorage.setItem("boundaryColor", chosenColor);
+            
+            if (map && map.getLayer("states-line")) {
+                try {
+                    map.setPaintProperty("states-line", "line-color", chosenColor);
+                } catch (err) {
+                    console.error("Failed to update boundary color", err);
+                }
+            }
+        };
+
+        picker.addEventListener("input", handleCustomColorInput);
+        picker.addEventListener("change", handleCustomColorInput);
+    }
+    
+    // --- Boundary Width Selection ---
+    const widthSelect = document.getElementById("boundary-width-select");
+    if (widthSelect) {
+        const savedWidth = sessionStorage.getItem("boundaryWidth") || "1.0";
+        const normalizedWidth = parseFloat(savedWidth).toFixed(1);
+        widthSelect.value = normalizedWidth;
+
+        widthSelect.addEventListener("change", (e) => {
+            const val = parseFloat(e.target.value);
+            sessionStorage.setItem("boundaryWidth", String(val));
+            
+            if (map && map.getLayer("states-line")) {
+                try {
+                    map.setPaintProperty("states-line", "line-width", val);
+                } catch (err) {
+                    console.error("Failed to update boundary width", err);
+                }
+            }
+        });
+    }
+    
     const s = read?.();
     const isCollapsed = s?.accordionCollapsed ?? true;
     setAccordionCollapsed(isCollapsed);
+}
+
+export function setBoundarySettings(color = "#ffffff", width = 1.0) {
+    if (color === "#ffffff" && width === 1.0) {
+        sessionStorage.removeItem("boundaryColor");
+        sessionStorage.removeItem("boundaryWidth");
+    } else {
+        sessionStorage.setItem("boundaryColor", color);
+        sessionStorage.setItem("boundaryWidth", String(width));
+    }
+    
+    const colorBtns = document.querySelectorAll(".boundary-color-btn");
+    colorBtns.forEach(b => {
+        const btnColor = b.dataset.color;
+        if (btnColor === color.toLowerCase()) {
+            b.classList.add("active");
+            b.style.borderColor = "var(--card-shadow)";
+            b.style.boxShadow = "0 0 1rem var(--card-shadow)";
+        } else {
+            b.classList.remove("active");
+            b.style.borderColor = "transparent";
+            b.style.boxShadow = "0 0.2rem 0.6rem rgba(0,0,0,0.15)";
+        }
+    });
+
+    const picker = document.getElementById("boundary-color-picker");
+    if (picker) {
+        const presets = ["#ffffff", "#888888", "#000000"];
+        const isPreset = presets.includes(color.toLowerCase());
+        const customLabel = picker.parentElement;
+        if (customLabel) {
+            if (!isPreset) {
+                picker.value = color;
+                customLabel.classList.add("active");
+                customLabel.style.borderColor = "var(--card-shadow)";
+                customLabel.style.boxShadow = "0 0 1rem var(--card-shadow)";
+            } else {
+                picker.value = "#ffffff";
+                customLabel.classList.remove("active");
+                customLabel.style.borderColor = "transparent";
+                customLabel.style.boxShadow = "0 0.2rem 0.6rem rgba(0,0,0,0.15)";
+            }
+        }
+    }
+
+    const widthSelect = document.getElementById("boundary-width-select");
+    if (widthSelect) {
+        widthSelect.value = parseFloat(width).toFixed(1);
+    }
+
+    if (map && map.getLayer("states-line")) {
+        try {
+            map.setPaintProperty("states-line", "line-color", color);
+            map.setPaintProperty("states-line", "line-width", parseFloat(width));
+        } catch (e) {
+            console.error("Failed to update boundary settings on map", e);
+        }
+    }
 }
 
 /**
