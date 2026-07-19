@@ -1028,6 +1028,13 @@ function setHysplitVisibility(runId, visible) {
     items.forEach(item => {
         if (item.visible === visible) return;
         item.visible = visible;
+        
+        if (!visible) {
+            item.animActive = false;
+            if (item.params.run_type === "dispersion" && DispersionDrawerState.runId === item.runId) {
+                hideDispersionDrawer();
+            }
+        }
 
         const visibility = visible ? "visible" : "none";
         const testLayer = `hysplit-layer-point-${item.runId}`;
@@ -1062,6 +1069,13 @@ function toggleTrajectoryVisibility(runId) {
     if (!item) return;
 
     item.visible = !item.visible;
+    
+    if (!item.visible) {
+        item.animActive = false;
+        if (item.params.run_type === "dispersion" && DispersionDrawerState.runId === runId) {
+            hideDispersionDrawer();
+        }
+    }
 
     if (item.visible) {
         const testLayer = `hysplit-layer-point-${runId}`;
