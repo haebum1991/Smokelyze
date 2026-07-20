@@ -61,12 +61,12 @@ This software is released under the **GNU Affero General Public License v3.0 (AG
 
 If you utilize the Smokelyze platform, its data products, or underlying methodologies in your research or regulatory demonstrations, please cite the primary BAMS paper:
 
-- **Lee, H., & Jaffe, D. A. (2026)**. Smokelyze.org: Advanced Spatiotemporal Analytics for Wildfire Smoke and Air Quality. *Bulletin of the American Meteorological Society (BAMS)*.
+- **Lee, H., & Jaffe, D. A. (2026)**. Smokelyze.org: Advanced Spatiotemporal Analytics for Wildfire Smoke and Air Quality. *Bulletin of the American Meteorological Society*, Under Review.
 
 ### Primary Scientific References (GAM Framework)
 
+- **Jaffe, D. A., Lee, H., Magzamen, S., Goldberg, D., & O'Dell, K. (2026)**. Health and Regulatory Impacts of $\mathrm{PM_{2.5}}$ from Wildland Fires for 2019–2024 in the U.S. *GeoHealth*, 10, e2025GH001576. [https://doi.org/10.1029/2025GH001576](https://doi.org/10.1029/2025GH001576)
 - **Lee, H., & Jaffe, D. A. (2025)**. Impact of wildfires on $\mathrm{O_3}$ and air quality across the United States for 2019–2024 using Generalized Additive Models. *Journal of Geophysical Research: Atmospheres*, 130, e2025JD044088. [https://doi.org/10.1029/2025JD044088](https://doi.org/10.1029/2025JD044088)
 - **Lee, H., & Jaffe, D. A. (2024b)**. Wildfire impacts on $\mathrm{O_3}$ in the continental United States using $\mathrm{PM_{2.5}}$ and a Generalized Additive Model (2018–2023). *Environmental Science & Technology*, 58, 14764–14774. [https://doi.org/10.1021/acs.est.4c05870](https://doi.org/10.1021/acs.est.4c05870)
 - **Lee, H., & Jaffe, D. A. (2024a)**. Impact of wildfire smoke on ozone concentrations using a Generalized Additive model in Salt Lake City, Utah, USA, 2006–2022. *Journal of the Air & Waste Management Association*, 74, 116-130. [https://doi.org/10.1080/10962247.2023.2291197](https://doi.org/10.1080/10962247.2023.2291197)
-- **Jaffe, D. A., Lee, H., Magzamen, S., Goldberg, D., & O'Dell, K. (2026)**. Health and Regulatory Impacts of $\mathrm{PM_{2.5}}$ from Wildland Fires for 2019–2024 in the U.S. *GeoHealth*, 10, e2025GH001576. [https://doi.org/10.1029/2025GH001576](https://doi.org/10.1029/2025GH001576)
 
