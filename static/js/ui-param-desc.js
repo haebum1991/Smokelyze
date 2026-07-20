@@ -259,7 +259,7 @@ export const DescData = {
             title: "TEMPO-NO2VCD (hourly)",
             desc: "<b>TEMPO-NO2VCD (hourly) (L3)</b> provides high-resolution tropospheric vertical column density (VCD) of nitrogen dioxide (NO<sub>2</sub>) from NASA's geostationary TEMPO satellite. " +
                   "Data is strictly filtered using the official <em>Main Quality Flag (0)</em> and a <em>Cloud Fraction threshold (< 10%)</em> to ensure high-accuracy, clear-sky observations. " +
-                  "It allows for near real-time tracking of nitrogen dioxide levels over North America in unit of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
+                  "It allows for near real-time tracking of nitrogen dioxide levels over North America in unit of 10<sup>14</sup> molecules cm<sup>-2</sup>. " +
                   "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 12 UTC)</li>" +
                   "<li>In our app, <b style='color: var(--card-shadow);'>" +
                   "this data is available starting from 2023-08-02, </b>" + 
@@ -271,7 +271,7 @@ export const DescData = {
             title: "TEMPO-HCHOVCD (hourly)",
             desc: "<b>TEMPO-HCHOVCD (hourly) (L3)</b> provides high-resolution vertical column density (VCD) of formaldehyde (HCHO) from NASA's geostationary TEMPO satellite. " +
                   "Data is strictly filtered using the official <em>Main Quality Flag (0)</em> and a <em>Cloud Fraction threshold (< 10%)</em> to ensure high-accuracy, clear-sky observations. " +
-                  "It allows for near real-time tracking of formaldehyde levels over North America in unit of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
+                  "It allows for near real-time tracking of formaldehyde levels over North America in unit of 10<sup>14</sup> molecules cm<sup>-2</sup>. " +
                   "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 12 UTC)</li>" +
                   "<li>In our app, <b style='color: var(--card-shadow);'>" +
                   "this data is available starting from 2023-08-02, </b>" + 
@@ -283,7 +283,7 @@ export const DescData = {
             title: "TROPOMI-NO2VCD",
             desc: "<b>TROPOMI-NO2VCD (L3)</b> maps are based on Collection 3 of the Sentinel-5P Nitrogen Dioxide Level-2 products (L2__NO2___) from the Copernicus Data Space Ecosystem. " +
                   "Data is strictly filtered according to the official recommendation (<b>QA value > 0.75</b>) to ensure high-accuracy, clear-sky observations. " +
-                  "The measurements are mapped on a fixed grid and processed into Level-3 data by <b>S5P-PAL</b>, providing tropospheric vertical column density (VCD) in units of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
+                  "The measurements are mapped on a fixed grid and processed into Level-3 data by <b>S5P-PAL</b>, providing tropospheric vertical column density (VCD) in units of 10<sup>14</sup> molecules cm<sup>-2</sup>. " +
                   "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 16 UTC)</li>" +
                   "<li>In our app, <b style='color: var(--card-shadow);'>" +
                   "this data is available starting from 2018-05-01. </b>" +
@@ -296,7 +296,7 @@ export const DescData = {
             title: "TROPOMI-HCHOVCD",
             desc: "<b>TROPOMI-HCHOVCD (L3)</b> maps are based on Collection 3 of the Sentinel-5P Formaldehyde Level-2 products (L2__HCHO__) from the Copernicus Dataspace Browser. " +
                   "Data is strictly filtered according to the official recommendation (<b>QA Value > 0.5</b>) to ensure high-accuracy, clear-sky observations. " +
-                  "The measurements are mapped on a fixed grid and processed into Level-3 data by <b>S5P-PAL</b>, tracking formaldehyde levels over North America in units of 10<sup>14</sup> molecules/cm<sup>2</sup>. " +
+                  "The measurements are mapped on a fixed grid and processed into Level-3 data by <b>S5P-PAL</b>, tracking formaldehyde levels over North America in units of 10<sup>14</sup> molecules cm<sup>-2</sup>. " +
                   "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 16 UTC)</li>" +
                   "<li>In our app, <b style='color: var(--card-shadow);'>" +
                   "this data is available starting from 2018-05-07. </b>" +

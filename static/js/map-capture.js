@@ -26,12 +26,16 @@ async function captureMapProcess(options = {}) {
                     // 1. Draw Map
                     ctx.drawImage(mapCanvas, 0, 0);
 
-                    // 2. Draw Overlays (Date, Legend, Markers, Tooltip)
+                    // 2. Draw Overlays (Date, Drawers, Markers, Tooltip)
                     if (typeof html2canvas !== "undefined") {
                         const mapRect = map.getContainer().getBoundingClientRect();
+                        const drawerIds = [
+                            "LegendDrawer",
+                            "AreaStatsDrawer"
+                        ];
                         const overlays = [
                             document.querySelector(".toolbar-date"),
-                            document.getElementById("LegendDrawer"),
+                            ...drawerIds.map(id => document.getElementById(id)),
                             ...Array.from(document.querySelectorAll(".mapboxgl-marker, .maplibregl-marker")),
                             options.excludeTooltip ? null : document.getElementById("MapTooltip")
                         ].filter(Boolean);
@@ -39,7 +43,7 @@ async function captureMapProcess(options = {}) {
                         for (const el of overlays) {
                             const style = window.getComputedStyle(el);
                             if (style.display === "none" || style.opacity === "0" || style.visibility === "hidden") continue;
-                            if (el.id === "LegendDrawer" && !el.classList.contains("open")) continue;
+                            if (drawerIds.includes(el.id) && !el.classList.contains("open")) continue;
 
                             try {
                                 const scale = 2; 
