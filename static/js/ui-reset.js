@@ -68,8 +68,28 @@ export function resetUIAndData() {
     }
   });
 
-  // 5) Clear TEMPO Canvas layers explicitly
+  // 5) Clear TEMPO Canvas layers explicitly & reset raster opacities to default (0.9)
   clearAllRaster?.();
+  const rasterLayerIds = [
+    "tempo-no2-raster",
+    "tempo-hcho-raster",
+    "tropomi-no2-raster", 
+    "tropomi-hcho-raster",
+    "hrrr-colmd-raster",
+    "hrrr-massden-raster",
+    "goes-aod-east-raster", 
+    "goes-aod-west-raster",
+    "goes-geocolor-east-raster", 
+    "goes-geocolor-west-raster",
+    "viirs-truecolor-raster"
+  ];
+  rasterLayerIds.forEach(id => {
+    if (map && map.getLayer(id)) {
+      try {
+        map.setPaintProperty(id, "raster-opacity", 0.9);
+      } catch (e) {}
+    }
+  });
 
   // 6) Visibility & Data Synchronization
   applyLayerToggles?.();

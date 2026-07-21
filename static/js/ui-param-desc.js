@@ -30,8 +30,8 @@ export const DescData = {
             id: "map-type",
             title: "Map Type",
             desc: "Select the background map style for overlaying data. <br><ul>" +
-                  "<li><b style='color: var(--card-shadow);'>Default, Light, Topo</b>: These maps use lightweight <b>Raster (PNG)</b> images. They have very low memory usage, consume minimal GPU resources, and ensure high stability on older devices.</li>" +
-                  "<li><b style='color: var(--card-shadow);'>Vector</b>: This map relies on high-resolution <b>Vector Tiles</b>. It provides extremely crisp details and smooth zooming, but requires significantly higher GPU/VRAM resources to render.</li></ul>" +
+                  "<li><b>Default, Light, Topo</b>: These maps use lightweight <b>Raster (PNG)</b> images. They have very low memory usage, consume minimal GPU resources, and ensure high stability on older devices.</li>" +
+                  "<li><b>Vector</b>: This map relies on high-resolution <b>Vector Tiles</b>. It provides extremely crisp details and smooth zooming, but requires significantly higher GPU/VRAM resources to render.</li></ul>" +
                   "<br><b>Data Sources:</b><ul>" +
                   "<li><b>Default</b>: <a href='https://www.openstreetmap.org' target='_blank'>OpenStreetMap</a></li>" +
                   "<li><b>Light</b>: <a href='https://carto.com/basemaps/' target='_blank'>CARTO Light</a></li>" +
@@ -76,13 +76,13 @@ export const DescData = {
         { 
             id: "wildfire-news",
             title: "Wildfire News", 
-            desc: "<b style='color: var(--card-shadow);'>Wildfire News</b> are automatically retrieved from Google News based on <b style='color: var(--card-shadow);'>UTC time</b>. " +
+            desc: "<b>Wildfire News</b> are automatically retrieved from Google News based on <b>UTC time</b>. " +
                   "The system monitors key terms such as <em>'wildfire'</em>, <em>'smoke plume'</em>, <em>'forest fire'</em>, etc. to provide the latest updates. " +
-                  "Since precise incident coordinates are rarely available in news feeds, articles are assigned to <b style='color: var(--card-shadow);'>representative state-level locations</b>. " +
-                  "To ensure visibility when multiple articles share the same state, a <b style='color: var(--card-shadow);'>small random jitter</b> is applied to prevent markers from overlapping. " +
-                  "All collected articles are consolidated in the <b style='color: var(--card-shadow);'>side drawer</b> for easy browsing, ensuring that news across all regions can be accessed regardless of map localization." +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Every 6 hours</b> (at 0, 6, 12, 18 UTC)</li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "Since precise incident coordinates are rarely available in news feeds, articles are assigned to <b>representative state-level locations</b>. " +
+                  "To ensure visibility when multiple articles share the same state, a <b>small random jitter</b> is applied to prevent markers from overlapping. " +
+                  "All collected articles are consolidated in the <b>side drawer</b> for easy browsing, ensuring that news across all regions can be accessed regardless of map localization." +
+                  "<br><ul><li>Update cycle: <b>Every 6 hours</b> (at 0, 6, 12, 18 UTC)</li>" +
+                  "<li>In our app, <b>" +
                   "this data is available starting from 2018-01-01. </b>" +
                   "The data is collected every 6 hours and the map is updated accordingly. </li>" +
                   "<li>Depending on the keywords used for collection, irrelevant news articles may be included in the results.</li></ul>"
@@ -90,19 +90,19 @@ export const DescData = {
         {
             id: "MapPost",
             title: "MapPost",
-            desc: "<b style='color: var(--card-shadow);'>MapPost</b> is a community-driven feature that allows users to share insights, opinions, and observations directly on the map. " +
+            desc: "<b>MapPost</b> is a community-driven feature that allows users to share insights, opinions, and observations directly on the map. " +
                   "Users can pin a location and add a title and detailed content. " +
                   "Other members can also reply to MapPost to foster discussion. " +
                   "To add a MapPost, toggle the MapPost layer and click [+MapPost] button (or Right-click on the map)." +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Real-time</b></li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "<br><ul><li>Update cycle: <b>Real-time</b></li>" +
+                  "<li>In our app, <b>" +
                   "this data is managed in real-time. </b>" +
                   "Only registered users can create or reply to MapPost. </li></ul>"
         },
         {
             id: "HysplitSim",
             title: "HYSPLIT Simulation",
-            desc: "<b style='color: var(--card-shadow);'>HYSPLIT (Hybrid Single-Particle Lagrangian Integrated Trajectory)</b> is a model for computing air mass trajectories, as well as complex transport, and dispersion. <br><br>" +
+            desc: "<b>HYSPLIT (Hybrid Single-Particle Lagrangian Integrated Trajectory)</b> is a model for computing air mass trajectories, as well as complex transport, and dispersion. <br><br>" +
                 "In our application, you can execute <b>Forward/Backward Trajectories</b> and <b>Dispersion Simulations</b> based on NAM12 meteorological data (for values outside the specified range, GDAS1 is used). " +
                 "<ul><li><b>Trajectory</b>: Tracks the movement of an air mass over time. Useful for finding the source or destination of a smoke plume.</li>" +
                 "<li><b>Dispersion</b>: Simulates the spread and concentration of pollutants over time, including physical effects like <b>Gravitational Settling</b>.</li></ul>" +
@@ -153,15 +153,15 @@ export const DescData = {
         {
             id: "wildfire-nifc",
             title: "WF incident locations",
-            desc: "<b style='color: var(--card-shadow);'>Wildfire (WF) incident locations </b> are retrieved from the " + 
-                  "<b style='color: var(--card-shadow);'>NIFC (National Interagency Fire Center) WFIGS (Wildland Fire Interagency Geospatial Services)</b>. " + 
+            desc: "<b>Wildfire (WF) incident locations </b> are retrieved from the " + 
+                  "<b>NIFC (National Interagency Fire Center) WFIGS (Wildland Fire Interagency Geospatial Services)</b>. " + 
                   "This dataset provides verified information on wildland fire occurrences based on " + 
-                  "<b style='color: var(--card-shadow);'>UTC time</b>, " + 
+                  "<b>UTC time</b>, " + 
                   "including <em>incident name</em>, <em>fire cause</em>, and <em>burn area (acres)</em>. " +
-                  "This data includes <b style='color: var(--card-shadow);'>precise discovery coordinates</b> as reported by fire management agencies via the Integrated Reporting of Wildland-Fire Information (IRWIN). " +
+                  "This data includes <b>precise discovery coordinates</b> as reported by fire management agencies via the Integrated Reporting of Wildland-Fire Information (IRWIN). " +
                   "The system captures a wide range of incident types and categories, ensuring a comprehensive overview of fire events across the region." +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Every 6 hours</b> (at 0, 6, 12, 18 UTC)</li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "<br><ul><li>Update cycle: <b>Every 6 hours</b> (at 0, 6, 12, 18 UTC)</li>" +
+                  "<li>In our app, <b>" +
                   "this data is available starting from 2018-01-01. </b>" +
                   "The data is collected every 6 hours and the map is updated accordingly. </li></ul>"
         }
@@ -172,50 +172,50 @@ export const DescData = {
             title: "Obs MDA8",
             desc: "<b>Obs MDA8</b> provides the maximum daily 8-hour average ozone concentrations from the US EPA AirNow network. " +
                   "MDA8 is the primary metric used for ozone air quality standards and health assessments. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 9 UTC)</li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 9 UTC)</li>" +
+                  "<li>In our app, <b>" +
                   "this data is available starting from 2018-07-18. </b></li>" +
-                  "<li>Typically has a <b style='color: var(--card-shadow);'>1-day reporting delay</b> from the current date.</li></ul>"
+                  "<li>Typically has a <b>1-day reporting delay</b> from the current date.</li></ul>"
         },
         {
             id: "airnow-daily-pm25",
             title: "Obs PM2.5",
             desc: "<b>Obs PM2.5</b> provides 24-hour averaged fine particulate matter concentrations from the US EPA AirNow network. " +
                   "This daily data is useful for assessing longer-term air quality trends and compliance with daily air quality standards. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 9 UTC)</li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 9 UTC)</li>" +
+                  "<li>In our app, <b>" +
                   "this data is available starting from 2018-07-18. </b></li>" +
-                  "<li>Typically has a <b style='color: var(--card-shadow);'>1-day reporting delay</b> from the current date.</li></ul>"
+                  "<li>Typically has a <b>1-day reporting delay</b> from the current date.</li></ul>"
         },
         {
             id: "airnow-hourly-ozone",
             title: "Obs O3 (hourly)",
             desc: "<b>Obs O3 (hourly)</b> provides real-time hourly ground-level ozone (O3) concentrations from the US EPA AirNow network. " +
                   "Ground-level ozone is formed by chemical reactions between pollutants and sunlight, often exacerbated by wildfire emissions. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Every 6 hours</b> (at 3, 9, 15, 21 UTC)</li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "<br><ul><li>Update cycle: <b>Every 6 hours</b> (at 3, 9, 15, 21 UTC)</li>" +
+                  "<li>In our app, <b>" +
                   "this data is available starting from 2019-07-01. </b></li>" +
-                  "<li>Typically has up to a <b style='color: var(--card-shadow);'>6-hr reporting delay</b> from the current local time.</li></ul>"
+                  "<li>Typically has up to a <b>6-hr reporting delay</b> from the current local time.</li></ul>"
         },
         {
             id: "airnow-hourly-pm25",
             title: "Obs PM2.5 (hourly)",
             desc: "<b>Obs PM2.5 (hourly)</b> provides real-time hourly fine particulate matter (PM2.5) concentrations from the US EPA AirNow network. " +
                   "This data is crucial for identifying immediate smoke impacts and tracking air quality trends as they happen. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Every 6 hours</b> (at 3, 9, 15, 21 UTC)</li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "<br><ul><li>Update cycle: <b>Every 6 hours</b> (at 3, 9, 15, 21 UTC)</li>" +
+                  "<li>In our app, <b>" +
                   "this data is available starting from 2019-07-01. </b></li>" +
-                  "<li>Typically has up to a <b style='color: var(--card-shadow);'>6-hr reporting delay</b> from the current local time.</li></ul>"
+                  "<li>Typically has up to a <b>6-hr reporting delay</b> from the current local time.</li></ul>"
         },
         {
             id: "airnow-hourly-no2",
             title: "Obs NO2 (hourly)",
             desc: "<b>Obs NO2 (hourly)</b> provides real-time hourly nitrogen dioxide (NO2) concentrations from the US EPA AirNow network. " +
                   "NO2 is a primary pollutant from combustion sources and is a key precursor to ozone and secondary particulate matter formation. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Every 6 hours</b> (at 3, 9, 15, 21 UTC)</li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "<br><ul><li>Update cycle: <b>Every 6 hours</b> (at 3, 9, 15, 21 UTC)</li>" +
+                  "<li>In our app, <b>" +
                   "this data is available starting from 2019-07-01. </b></li>" +
-                  "<li>Typically has up to a <b style='color: var(--card-shadow);'>6-hr reporting delay</b> from the current local time.</li></ul>"
+                  "<li>Typically has up to a <b>6-hr reporting delay</b> from the current local time.</li></ul>"
         }
     ],
     "desc-satellite": [
@@ -224,8 +224,8 @@ export const DescData = {
           title: "HMS-smoke",
           desc: "<b>NOAA-HMS Smoke Plumes</b> are satellite-derived products highlighting areas of overhead smoke. " +
                 "Statistical summaries represent the coverage area (km²) within administrative boundaries. " +
-                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Twice Daily</b> (at 13, 18 UTC)</li>" +
-                "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                "<br><ul><li>Update cycle: <b>Twice Daily</b> (at 13, 18 UTC)</li>" +
+                "<li>In our app, <b>" +
                 "this data is available starting from 2018-01-01. </b>" +
                 "Due to the NOAA HMS processing cycle, " +
                 "Finalized data are typically published at 11:00-13:00 UTC on the following day, " +
@@ -235,10 +235,10 @@ export const DescData = {
           id: "fire",
           title: "HMS-fire",
           desc: "<b>NOAA-HMS Fire Points</b> represent thermal anomalies and Fire Radiative Power (FRP). " +
-                "The points are <b style='color: var(--card-shadow);'>spatially aggregated at 0.001 degree (~ 0.1 km) resolution</b> to ensure clarity and prevent overlapping markers. " +
-                "And then, the <b style='color: var(--card-shadow);'>regional statistics</b> (fire points and FRP) are computed. " +
-                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Twice Daily</b> (at 13, 18 UTC)</li>" +
-                "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                "The points are <b>spatially aggregated at 0.001 degree (~ 0.1 km) resolution</b> to ensure clarity and prevent overlapping markers. " +
+                "And then, the <b>regional statistics</b> (fire points and FRP) are computed. " +
+                "<br><ul><li>Update cycle: <b>Twice Daily</b> (at 13, 18 UTC)</li>" +
+                "<li>In our app, <b>" +
                 "this data is available starting from 2018-01-01. </b>" + 
                 "Due to the NOAA HMS processing cycle, " +
                 "Finalized data are typically published at 11:00-13:00 UTC on the following day, " +
@@ -249,8 +249,8 @@ export const DescData = {
           title: "MODIS area burned",
           desc: "<b>MODIS Burned Area (MCD64A1)</b> identifies the historical footprint of fire-impacted terrain. " +
                 "This 500m resolution dataset highlights monthly changes in surface reflectance associated with burning. " +
-                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Manual/On-demand</b></li>" +
-                "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                "<br><ul><li>Update cycle: <b>Manual/On-demand</b></li>" +
+                "<li>In our app, <b>" +
                 "this data is available starting from 2018-01-01, </b>" + 
                 "and is updated on an as-available basis. </li></ul>"
         },
@@ -260,11 +260,12 @@ export const DescData = {
             desc: "<b>TEMPO-NO2VCD (hourly) (L3)</b> provides high-resolution tropospheric vertical column density (VCD) of nitrogen dioxide (NO<sub>2</sub>) from NASA's geostationary TEMPO satellite. " +
                   "Data is strictly filtered using the official <em>Main Quality Flag (0)</em> and a <em>Cloud Fraction threshold (< 10%)</em> to ensure high-accuracy, clear-sky observations. " +
                   "It allows for near real-time tracking of nitrogen dioxide levels over North America in unit of 10<sup>14</sup> molecules cm<sup>-2</sup>. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 12 UTC)</li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
+                  "<li>In our app, <b>" +
                   "this data is available starting from 2023-08-02, </b>" + 
-                  "and, <b style='color: var(--card-shadow);'>spatially aggregated to 0.04&deg; (~ 4.4 km)</b> for visualization performance.</li>" +
-                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li></ul>"
+                  "and, <b>spatially aggregated to 0.04&deg; (~ 4.4 km)</b> for visualization performance.</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading. While values are highly accurate (R² > 0.99), a small average difference (~4%) may exist compared to raw 32-bit float files.</li></ul>"
         },
         {
             id: "tempo-hcho",
@@ -272,11 +273,12 @@ export const DescData = {
             desc: "<b>TEMPO-HCHOVCD (hourly) (L3)</b> provides high-resolution vertical column density (VCD) of formaldehyde (HCHO) from NASA's geostationary TEMPO satellite. " +
                   "Data is strictly filtered using the official <em>Main Quality Flag (0)</em> and a <em>Cloud Fraction threshold (< 10%)</em> to ensure high-accuracy, clear-sky observations. " +
                   "It allows for near real-time tracking of formaldehyde levels over North America in unit of 10<sup>14</sup> molecules cm<sup>-2</sup>. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 12 UTC)</li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
+                  "<li>In our app, <b>" +
                   "this data is available starting from 2023-08-02, </b>" + 
-                  "and, <b style='color: var(--card-shadow);'>spatially aggregated to 0.04&deg; (~ 4.4 km)</b> for visualization performance.</li>" +
-                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li></ul>"
+                  "and, <b>spatially aggregated to 0.04&deg; (~ 4.4 km)</b> for visualization performance.</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading. While values are highly accurate (R² > 0.99), a small average difference (~4%) may exist compared to raw 32-bit float files.</li></ul>"
         },
         {
             id: "tropomi-no2",
@@ -284,12 +286,13 @@ export const DescData = {
             desc: "<b>TROPOMI-NO2VCD (L3)</b> maps are based on Collection 3 of the Sentinel-5P Nitrogen Dioxide Level-2 products (L2__NO2___) from the Copernicus Data Space Ecosystem. " +
                   "Data is strictly filtered according to the official recommendation (<b>QA value > 0.75</b>) to ensure high-accuracy, clear-sky observations. " +
                   "The measurements are mapped on a fixed grid and processed into Level-3 data by <b>S5P-PAL</b>, providing tropospheric vertical column density (VCD) in units of 10<sup>14</sup> molecules cm<sup>-2</sup>. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 16 UTC)</li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 16 UTC)</li>" +
+                  "<li>In our app, <b>" +
                   "this data is available starting from 2018-05-01. </b>" +
-                  "and, <b style='color: var(--card-shadow);'>spatially aggregated to 0.044&deg; (~ 5 km)</b> for visualization performance.</li>" +
+                  "and, <b>spatially aggregated to 0.044&deg; (~ 5 km)</b> for visualization performance.</li>" +
                   "<li>Map Portal: <a href='https://maps.s5p-pal.com/no2-tropospheric/' target='_blank'>S5P-PAL NO2 Map</a></li>" +
-                  "<li>Due to the S5P-PAL data processing cycle, the most recent dataset is available with <b style='color: var(--card-shadow);'>approximately 2-week latency</b>.</li></ul>"
+                  "<li>Due to the S5P-PAL data processing cycle, the most recent dataset is available with <b>approximately 2-week latency</b>.</li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading. While values are highly accurate (R² > 0.99), a small average difference (~4%) may exist compared to raw 32-bit float files.</li></ul>"
         },
         {
             id: "tropomi-hcho",
@@ -297,12 +300,13 @@ export const DescData = {
             desc: "<b>TROPOMI-HCHOVCD (L3)</b> maps are based on Collection 3 of the Sentinel-5P Formaldehyde Level-2 products (L2__HCHO__) from the Copernicus Dataspace Browser. " +
                   "Data is strictly filtered according to the official recommendation (<b>QA Value > 0.5</b>) to ensure high-accuracy, clear-sky observations. " +
                   "The measurements are mapped on a fixed grid and processed into Level-3 data by <b>S5P-PAL</b>, tracking formaldehyde levels over North America in units of 10<sup>14</sup> molecules cm<sup>-2</sup>. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 16 UTC)</li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 16 UTC)</li>" +
+                  "<li>In our app, <b>" +
                   "this data is available starting from 2018-05-07. </b>" +
-                  "and, <b style='color: var(--card-shadow);'>spatially aggregated to 0.044&deg; (~ 5 km)</b> for visualization performance.</li>" +
+                  "and, <b>spatially aggregated to 0.044&deg; (~ 5 km)</b> for visualization performance.</li>" +
                   "<li>Map Portal: <a href='https://maps.s5p-pal.com/hcho/' target='_blank'>S5P-PAL HCHO Map</a></li>" +
-                  "<li>Due to the S5P-PAL data processing cycle, the most recent dataset is available with <b style='color: var(--card-shadow);'>approximately 2-week latency</b>.</li></ul>"
+                  "<li>Due to the S5P-PAL data processing cycle, the most recent dataset is available with <b>approximately 2-week latency</b>.</li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading. While values are highly accurate (R² > 0.99), a small average difference (~4%) may exist compared to raw 32-bit float files.</li></ul>"
         },
         {
             id: "hrrr-colmd",
@@ -310,11 +314,12 @@ export const DescData = {
             desc: "<b>HRRR-smokeVCD (Smoke Vertically Integrated)</b> provides column-integrated smoke mass density from the NOAA High-Resolution Rapid Refresh (HRRR) model. " +
                   "This dataset represents the total mass of smoke in the atmospheric column from the surface to the top of the atmosphere, measured in units of <b>&micro;g m<sup>-2</sup></b>. " +
                   "It is particularly useful for understanding the total overhead smoke load and long-range transport of smoke plumes. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 12 UTC)</li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
+                  "<li>In our app, <b>" +
                   "this data is available starting from 2021-01-01, </b>" + 
-                  "and <b style='color: var(--card-shadow);'>spatially aggregated to 6-7 km</b> for visualization performance. (Original HRRR resolution is 3 km)</li>" +
-                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li></ul>"
+                  "and <b>spatially aggregated to 6-7 km</b> for visualization performance. (Original HRRR resolution is 3 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading. While values are highly accurate (R² > 0.99), a small average difference (~4%) may exist compared to raw 32-bit float files.</li></ul>"
         },
         {
             id: "hrrr-massden",
@@ -322,35 +327,38 @@ export const DescData = {
             desc: "<b>HRRR-smoke8m (Smoke 8-m above ground)</b> provides near-surface (8 m) smoke mass concentration from the NOAA High-Resolution Rapid Refresh (HRRR) model. " +
                   "This dataset estimates the concentration of smoke particles at 8 meters above ground level, measured in units of <b>&micro;g m<sup>-3</sup></b>. " +
                   "It is highly relevant for assessing ground-level air quality impacts and potential health risks associated with wildfire smoke. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily</b> (at 12 UTC)</li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
+                  "<li>In our app, <b>" +
                   "this data is available starting from 2021-01-01, </b>" + 
-                  "and <b style='color: var(--card-shadow);'>spatially aggregated to 6-7 km</b> for visualization performance. (Original HRRR resolution is 3 km)</li>" +
-                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li></ul>"
+                  "and <b>spatially aggregated to 6-7 km</b> for visualization performance. (Original HRRR resolution is 3 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading. While values are highly accurate (R² > 0.99), a small average difference (~4%) may exist compared to raw 32-bit float files.</li></ul>"
         },
         {
             id: "goes-aod-east",
             title: "GOES-AOD-East (hourly)",
             desc: "<b>GOES-AOD-East (hourly) (L2)</b> provides hourly Aerosol Optical Depth (AOD) measurements from the GOES-East geostationary satellite (GOES-16 for dates before 2025-01-01; GOES-19 for dates after 2025-01-01) over North America. AOD is a dimensionless measure of light extinction by aerosols (e.g., smoke, dust, haze) in the atmospheric column. " +
                   "This dataset is processed through a cloud-based automated pipeline that extracts raw sub-hourly netCDF files from NOAA's public Google Cloud Storage bucket. " +
-                  "Due to quality control filtering, only high-quality pixels (<b style='color: var(--card-shadow);'>Data Quality Flag DQF = 0</b>) within the <b style='color: var(--card-shadow);'>valid range (-0.05 to 5.0)</b> are retained. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily (at 12 UTC)</b></li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "Due to quality control filtering, only high-quality pixels (<b>Data Quality Flag DQF = 0</b>) within the <b>valid range (-0.05 to 5.0)</b> are retained. " +
+                  "<br><ul><li>Update cycle: <b>Daily (at 12 UTC)</b></li>" +
+                  "<li>In our app, <b>" +
                   "this data is available starting from 2018-01-01, </b>" + 
-                  "and <b style='color: var(--card-shadow);'>spatially aggregated to 4 km</b> for visualization performance. (Original ABI AOD resolution is 2 km)</li>" +
-                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li></ul>"
+                  "and <b>spatially aggregated to 4 km</b> for visualization performance. (Original ABI AOD resolution is 2 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading. While values are highly accurate (R² > 0.99), a small average difference (~4%) may exist compared to raw 32-bit float files.</li></ul>"
         },
         {
             id: "goes-aod-west",
             title: "GOES-AOD-West (hourly)",
             desc: "<b>GOES-AOD-West (hourly) (L2)</b> provides hourly Aerosol Optical Depth (AOD) measurements from the GOES-West geostationary satellite (GOES-17 for dates before 2023-01-01; GOES-18 for dates after 2023-01-01) over Western North America. AOD is a dimensionless measure of light extinction by aerosols (e.g., smoke, dust, haze) in the atmospheric column. " +
                   "This dataset is processed through a cloud-based automated pipeline that extracts raw sub-hourly netCDF files from NOAA's public Google Cloud Storage bucket. " +
-                  "Due to quality control filtering, only high-quality pixels (<b style='color: var(--card-shadow);'>Data Quality Flag DQF = 0</b>) within the <b style='color: var(--card-shadow);'>valid range (-0.05 to 5.0)</b> are retained. " +
-                  "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily (at 12 UTC)</b></li>" +
-                  "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                  "Due to quality control filtering, only high-quality pixels (<b>Data Quality Flag DQF = 0</b>) within the <b>valid range (-0.05 to 5.0)</b> are retained. " +
+                  "<br><ul><li>Update cycle: <b>Daily (at 12 UTC)</b></li>" +
+                  "<li>In our app, <b>" +
                   "this data is available starting from 2019-01-01, </b>" + 
-                  "and <b style='color: var(--card-shadow);'>spatially aggregated to 4 km</b> for visualization performance. (Original ABI AOD resolution is 2 km)</li>" +
-                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li></ul>"
+                  "and <b>spatially aggregated to 4 km</b> for visualization performance. (Original ABI AOD resolution is 2 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading. While values are highly accurate (R² > 0.99), a small average difference (~4%) may exist compared to raw 32-bit float files.</li></ul>"
         },
         {
             id: "goes-geocolor-east",
@@ -359,10 +367,10 @@ export const DescData = {
                 "GeoColor is a multi-band composite that blends visible and infrared channels to produce a near-true-color image during daytime and a city lights / infrared cloud composite at nighttime. " +
                 "<br><i>* Source Note</i>: For dates before <b>2026-04-08</b>, the imagery is fetched via the <b>NOAA NESDIS OGC Tiles API</b> (<code>fire.data.nesdis.noaa.gov</code>). For dates on or after <b>2026-04-08</b>, it is fetched via the <b>NASA Worldview API</b> (<code>gibs.earthdata.nasa.gov</code>). " +
                 "Each frame is downloaded as a single composite PNG/WebP, reprojected to Web Mercator (EPSG:3857), and auto-cropped to remove transparent borders. " +
-                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily (at 12 UTC)</b></li>" +
-                "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                "<br><ul><li>Update cycle: <b>Daily (at 12 UTC)</b></li>" +
+                "<li>In our app, <b>" +
                 "this data is available starting from 2025-06-26, </b>" +
-                "and <b style='color: var(--card-shadow);'>spatially aggregated to 4 km</b> for visualization performance.</li>" +
+                "and <b>spatially aggregated to 4 km</b> for visualization performance.</li>" +
                 "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li></ul>"
         },
         {
@@ -372,10 +380,10 @@ export const DescData = {
                 "GeoColor is a multi-band composite that blends visible and infrared channels to produce a near-true-color image during daytime and a city lights / infrared cloud composite at nighttime. " +
                 "<br><i>* Source Note</i>: For dates before <b>2026-04-08</b>, the imagery is fetched via the <b>NOAA NESDIS OGC Tiles API</b> (<code>fire.data.nesdis.noaa.gov</code>). For dates on or after <b>2026-04-08</b>, it is fetched via the <b>NASA Worldview API</b> (<code>gibs.earthdata.nasa.gov</code>). " +
                 "Each frame is downloaded as a single composite PNG/WebP, reprojected to Web Mercator (EPSG:3857), and auto-cropped to remove transparent borders. " +
-                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily (at 12 UTC)</b></li>" +
-                "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                "<br><ul><li>Update cycle: <b>Daily (at 12 UTC)</b></li>" +
+                "<li>In our app, <b>" +
                 "this data is available starting from 2025-06-26, </b>" +
-                "and <b style='color: var(--card-shadow);'>spatially aggregated to 4 km</b> for visualization performance.</li>" +
+                "and <b>spatially aggregated to 4 km</b> for visualization performance.</li>" +
                 "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li></ul>"
         },
         {
@@ -383,12 +391,12 @@ export const DescData = {
             title: "VIIRS-TrueColor",
             desc: "<b>VIIRS-TrueColor</b> provides daily corrected reflectance true-color imagery from the NOAA-21 (JPSS-2) satellite's VIIRS instrument. " +
                 "Unlike geostationary GOES imagery, VIIRS is a polar-orbiting sensor that captures high-resolution swath data once per day over each location, offering superior spatial detail at the cost of temporal frequency. " +
-                "This dataset is fetched via the <b style='color: var(--card-shadow);'>NASA Worldview WMS API</b> (<code>gibs.earthdata.nasa.gov</code>) using the <code>VIIRS_NOAA21_CorrectedReflectance_TrueColor</code> layer. " +
+                "This dataset is fetched via the <b>NASA Worldview WMS API</b> (<code>gibs.earthdata.nasa.gov</code>) using the <code>VIIRS_NOAA21_CorrectedReflectance_TrueColor</code> layer. " +
                 "Each daily composite is downloaded as a single PNG, and areas outside the satellite swath are transparent. " +
-                "<br><ul><li>Update cycle: <b style='color: var(--card-shadow);'>Daily (at 12 UTC)</b></li>" +
-                "<li>In our app, <b style='color: var(--card-shadow);'>" +
+                "<br><ul><li>Update cycle: <b>Daily (at 12 UTC)</b></li>" +
+                "<li>In our app, <b>" +
                 "this data is available starting from 2023-02-10, </b>" +
-                "and <b style='color: var(--card-shadow);'>spatially aggregated to 4 km</b> for visualization performance.</li>" +
+                "and <b>spatially aggregated to 4 km</b> for visualization performance.</li>" +
                 "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li></ul>"
         }
     ],
@@ -398,12 +406,12 @@ export const DescData = {
             title: "General information",
             desc: "The detailed information is provided in the tooltip, and please see the [Parameter descriptions] for each dataset. " +
                   "We recommend using the most recent (highest) version for each analysis." +
-                  "<ul><li><b style='color: var(--card-shadow);'>[UW GAM-v2]</b> includes smoke days and smoke O3 for the wildfire season (<b>April-October, 2019-2024</b>).</li>" +
-                  "<li><b style='color: var(--card-shadow);'>[UW GAM-v1]</b> includes smoke days and smoke O3 for the wildfire season (<b>May-Sep, 2018-2023</b>).</li>" +
-                  "<li><b style='color: var(--card-shadow);'>[UW Smoke PM2.5]</b> includes smoke days and smoke PM2.5 for the full year (<b>2019-2024</b>).</li>" +
+                  "<ul><li><b>[UW GAM-v2]</b> includes smoke days and smoke O3 for the wildfire season (<b>April-October, 2019-2024</b>).</li>" +
+                  "<li><b>[UW GAM-v1]</b> includes smoke days and smoke O3 for the wildfire season (<b>May-Sep, 2018-2023</b>).</li>" +
+                  "<li><b>[UW Smoke PM2.5]</b> includes smoke days and smoke PM2.5 for the full year (<b>2019-2024</b>).</li>" +
                   "<br>" +
-                  "<li><b style='color: var(--card-shadow);'>[UW GAM-v2 (2025+)]</b> includes smoke days and smoke O3 for the wildfire season (<b>April-October, 2025+</b>).</li>" +
-                  "<li><b style='color: var(--card-shadow);'>[UW Smoke PM2.5 (2025+)]</b> includes smoke days and smoke PM2.5 for the full year (<b>2025+</b>).</li></ul>"
+                  "<li><b>[UW GAM-v2 (2025+)]</b> includes smoke days and smoke O3 for the wildfire season (<b>April-October, 2025+</b>).</li>" +
+                  "<li><b>[UW Smoke PM2.5 (2025+)]</b> includes smoke days and smoke PM2.5 for the full year (<b>2025+</b>).</li></ul>"
         },
         {
             id: "purpose",
@@ -425,24 +433,24 @@ export const DescData = {
             desc: "The [Latest Analysis & Prediction] section provides continuous monitoring and near real-time predictions of wildfire impacts for the 2025 season and beyond. " +
                   "While the [Published] datasets are based on finalized historical records, these predictions utilize validated model parameters from our research (e.g., <b>UW GAM-v2</b>) but integrate preliminary seasonal data to provide current situational awareness. " +
                   "This allows users to track ongoing smoke impacts as they occur using the same frameworks established in our peer-reviewed research." +
-                  "<br><ul><li><b style='color: var(--card-shadow);'>[UW GAM-v2 (2025+)]</b> includes smoke days and smoke O3 for the wildfire season (April-October). " +
+                  "<br><ul><li><b>[UW GAM-v2 (2025+)]</b> includes smoke days and smoke O3 for the wildfire season (April-October). " +
                   "Due to the update cycle of predictors used in GAM estimation, the most recent data is approximately <b>8-9 weeks old</b>. " +
                   "Based on the EPA data finalization cycle, a full re-analysis of the previous year (e.g., 2025) is typically conducted during Q3-Q4 of the current year (e.g., 2026), and data may be updated accordingly.</li>" +
-                  "<li><b style='color: var(--card-shadow);'>[UW Smoke PM2.5 (2025+)]</b> includes smoke days and smoke PM2.5 for the full year. " +
+                  "<li><b>[UW Smoke PM2.5 (2025+)]</b> includes smoke days and smoke PM2.5 for the full year. " +
                   "The most recent data is uploaded with a delay of approximately <b>2-3 days</b>. " +
                   "Based on the EPA data finalization cycle, a full re-analysis of the previous year (e.g., 2025) is typically conducted during Q3-Q4 of the current year (e.g., 2026), and data may be updated accordingly.</li></ul>"
         },
         {
             id: "research-o3-gam",
             title: "Research for smoke contribution to O3 using GAM in the US",
-            desc: "<ul><li><b style='color: var(--card-shadow);'>[UW GAM-v2]</b>, data period: Apr to Oct, 2019-2024, study area: CONUS + AK + HI<ul>" +
+            desc: "<ul><li><b>[UW GAM-v2]</b>, data period: Apr to Oct, 2019-2024, study area: CONUS + AK + HI<ul>" +
                   "<li>EPA data for O3 and PM2.5 (pre-generated data) were downloaded as of 2024-11-19.</li>" +
                   "<li>Lee, H. and Jaffe, D. A.: " +
                   "Impact of Wildfires on O3 and Air Quality Across the United States for 2019–2024 Using Generalized Additive Models, " +
                   "<em>J. Geophys. Res. Atmos.</em>, 130, e2025JD044088, 2025. " +
                   "<a href='https://doi.org/10.1029/2025JD044088' target='_blank'>https://doi.org/10.1029/2025JD044088</a></li></ul></li>" +
                   
-                  "<li><b style='color: var(--card-shadow);'>[UW GAM-v1]</b>, data period: May to Sep, 2018-2023, study area: CONUS<ul>" +
+                  "<li><b>[UW GAM-v1]</b>, data period: May to Sep, 2018-2023, study area: CONUS<ul>" +
                   "<li>EPA data for O3 and PM2.5 (pre-generated data) were downloaded as of 2023-10-26.</li>" +
                   "<li>Lee, H. and Jaffe, D. A.: " + 
                   "Wildfire impacts on O3 in the continental United States using PM2.5 and a generalized additive model (2018–2023), " +
@@ -452,7 +460,7 @@ export const DescData = {
         {
             id: "research-pm25-gam",
             title: "Research for smoke contribution to PM2.5 in the US",
-            desc: "<ul><li><b style='color: var(--card-shadow);'>[UW Smoke PM2.5]</b>, data period: Jan to Dec, 2019-2024, study area: CONUS + AK + HI<ul>" +
+            desc: "<ul><li><b>[UW Smoke PM2.5]</b>, data period: Jan to Dec, 2019-2024, study area: CONUS + AK + HI<ul>" +
                   "<li>EPA data for O3 and PM2.5 (pre-generated data) were downloaded as of 2024-11-19.</li>" +
                   "<li>Jaffe, D., Lee, H., Magzamen, S., Goldberg, D., and O'Dell, K.: " + 
                   "Health and Regulatory Impacts of PM2.5 from Wildland Fires for 2019–2024 in the US, " +
@@ -462,7 +470,7 @@ export const DescData = {
         {
             id: "research-o3-ember",
             title: "Research for smoke contribution to O3 using EMBER in the US",
-            desc: "<ul><li><b style='color: var(--card-shadow);'>[EPA EMBER]</b>, data period: Apr to Sep, 2023, study area: CONUS<ul>" +
+            desc: "<ul><li><b>[EPA EMBER]</b>, data period: Apr to Sep, 2023, study area: CONUS<ul>" +
                   "<li>Simon, H. Beidler, J., Baker, K. R., Henderson, B. H., Fox, L., Misenis, C., Campbell, P., Vukovich, J., Possiel, N., and Eyth, A.: " +
                   "Expedited modeling of burn events results (EMBER): A screening-level dataset of 2023 ozone fire impacts in the US, " + 
                   "<em>Data in Brief</em>, 58, 111208, 2024. " +

@@ -1388,6 +1388,11 @@ tr.stats-state-row-ca.show {
   border-bottom: 0.1rem solid var(--text-soft);
 }
 
+.Desc-content b,
+.Desc-content strong {
+  color: var(--card-shadow);
+}
+
 .Desc-item {
   margin-bottom: 2.5rem;
 }

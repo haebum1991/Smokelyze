@@ -63,7 +63,7 @@ If you utilize the Smokelyze platform, its data products, or underlying methodol
 
 - **Lee, H., & Jaffe, D. A. (2026)**. Smokelyze.org: Advanced Spatiotemporal Analytics for Wildfire Smoke and Air Quality. *Bulletin of the American Meteorological Society*, Under Review.
 
-### Primary Scientific References (GAM Framework)
+### Primary Scientific References
 
 - **Jaffe, D. A., Lee, H., Magzamen, S., Goldberg, D., & O'Dell, K. (2026)**. Health and Regulatory Impacts of $\mathrm{PM_{2.5}}$ from Wildland Fires for 2019–2024 in the U.S. *GeoHealth*, 10, e2025GH001576. [https://doi.org/10.1029/2025GH001576](https://doi.org/10.1029/2025GH001576)
 - **Lee, H., & Jaffe, D. A. (2025)**. Impact of wildfires on $\mathrm{O_3}$ and air quality across the United States for 2019–2024 using Generalized Additive Models. *Journal of Geophysical Research: Atmospheres*, 130, e2025JD044088. [https://doi.org/10.1029/2025JD044088](https://doi.org/10.1029/2025JD044088)
