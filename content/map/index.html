@@ -791,7 +791,7 @@ title: ""
 
     "epa-ember": [
       "layer-mda8-obs", "layer-mda8-pred", "layer-smo", "layer-resids",
-      "layer-ExcDays"
+      "layer-smokeday", "layer-ExcDays"
     ],
 
 
@@ -824,11 +824,23 @@ title: ""
     allLabels.forEach(label => {
       label.style.display = "none";
     });
+    
+    const smokedayChk = document.getElementById("layer-smokeday");
+    if (smokedayChk && smokedayChk.nextSibling) {
+      if (selectedValue === "epa-ember") {
+        smokedayChk.nextSibling.nodeValue = " Day with SMO>0";
+      } else {
+        smokedayChk.nextSibling.nodeValue = " Smoke day (SMD)";
+      }
+    }
 
     visibleLayerIds.forEach(id => {
-      const labelToShow = document.querySelector(`label input#${id}`).closest("label");
-      if (labelToShow) {
-        labelToShow.style.display = "block";
+      const inputEl = document.getElementById(id);
+      if (inputEl) {
+        const labelToShow = inputEl.closest("label");
+        if (labelToShow) {
+          labelToShow.style.display = "block";
+        }
       }
     });
   }
