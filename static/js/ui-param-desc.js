@@ -558,10 +558,35 @@ export const DescData = {
                 "<em>Data in Brief</em>, 58, 111208, 2024. " +
                 "<a href='https://doi.org/10.1016/j.dib.2024.111208' target='_blank'>https://doi.org/10.1016/j.dib.2024.111208</a>"
         },
-        { id: "mda8-obs", title: "Obs MDA8", desc: "Daily maximum 8-hour average O3 concentration (MDA8) observed at AQS monitoring sites" },
-        { id: "mda8-pred", title: "Pred MDA8", desc: "Predicted MDA8 from the EMBER model" },
-        { id: "smo", title: "SMO", desc: "Smoke contribution to O3 (or Smoke O3, SMO)" },
-        { id: "resids", title: "Residual", desc: "The difference between observed and predicted MDA8 (Obs MDA8 - Pred MDA8) from EMBER model" },
+        {
+          id: "mda8-obs",
+          title: "Obs MDA8",
+          desc: "Monitored MDA8 Ozone (ppb):<br>" +
+                "Monitored MDA8 ozone. This data is based on ozone values available in AQS as of May 23, 2024 (data truncated to nearest whole number).<br><br>" +
+                "Please see the detailed information: <a href='https://www.epa.gov/air-quality-analysis/expedited-modeling-burn-events-results-ember' target='_blank'>https://www.epa.gov/air-quality-analysis/expedited-modeling-burn-events-results-ember</a>"
+        },
+        {
+          id: "mda8-pred",
+          title: "Pred MDA8",
+          desc: "Modeled MDA8 Ozone (ppb): Base Simulation<br>" +
+                "Modeled MDA8 ozone from base EMBER simulation for the 36km grid cell in which the monitor is located (data truncated to nearest whole number).<br><br>" +
+                "Please see the detailed information: <a href='https://www.epa.gov/air-quality-analysis/expedited-modeling-burn-events-results-ember' target='_blank'>https://www.epa.gov/air-quality-analysis/expedited-modeling-burn-events-results-ember</a>"
+        },
+        {
+          id: "smo",
+          title: "SMO",
+          desc: "Modeled MDA8 Ozone Impacts from All Fires (ppb):<br>" +
+                "EMBER predictions of MDA8 ozone attributed to US and Canadian wild and prescribed fire emissions in the 36km grid cell in which the monitor is located (data rounded to nearest whole number).<br>" +
+                "Calculated as: [Modeled MDA8 Ozone (ppb): Base EMBER Simulation] - [Modeled MDA8 Ozone (ppb): Zero Fires Simulation].<br><br>" +
+                "Please see the detailed information: <a href='https://www.epa.gov/air-quality-analysis/expedited-modeling-burn-events-results-ember' target='_blank'>https://www.epa.gov/air-quality-analysis/expedited-modeling-burn-events-results-ember</a>"
+        },
+        {
+          id: "resids",
+          title: "Residual",
+          desc: "[Obs MDA8] - [Pred MDA8]<br>" +
+                "Calculated as: [Monitored MDA8 Ozone (ppb)] - [Modeled MDA8 Ozone (ppb): Base Simulation].<br><br>" +
+                "Please see the detailed information: <a href='https://www.epa.gov/air-quality-analysis/expedited-modeling-burn-events-results-ember' target='_blank'>https://www.epa.gov/air-quality-analysis/expedited-modeling-burn-events-results-ember</a>"
+        },
         { id: "ExcDays", title: "ExcDay", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO: not caused by smoke <br> - with significant SMO (case with SMO > 0): caused by smoke" }
     ]
 };

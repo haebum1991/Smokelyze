@@ -168,6 +168,10 @@ export function renderDailyScatter(containerId) {
         primarySource === "pm_cbsa" ||
         primarySource === "pm_cbsa_pred"
     );
+    const isEpaEmberSource = (
+        activeModelSource === "epa_ember" ||
+        primarySource === "epa_ember"
+    );
     const smdLabelSuffix = isPmCbsaSource ? " m0p5m" : "";
     const primarySmokeKey = isPmCbsaSource ? "smoke_m0p5m" : "smoke";
     const traces = [];
@@ -210,7 +214,11 @@ export function renderDailyScatter(containerId) {
         const smokeColor = (idx === 0) ? "red" : (idx === 1 ? "magenta" : null);
 
         if (nonSmoke.x.length > 0) {
-            let traceName = hasModelLayer ? (xLayers.length > 1 ? `${xTitle} (NSD)` : "Non-smoke day (NSD)") : xTitle;
+            let traceName = hasModelLayer 
+                ? (isEpaEmberSource 
+                    ? (xLayers.length > 1 ? `${xTitle} (SMO≤0)` : "Days with SMO≤0") 
+                    : (xLayers.length > 1 ? `${xTitle} (NSD)` : "Non-smoke day (NSD)")) 
+                : xTitle;
             if (xUnit) traceName += ` (${xUnit})`;
             traces.push({
                 x: nonSmoke.x, y: nonSmoke.y, mode: "markers", type: "scatter",
@@ -221,7 +229,9 @@ export function renderDailyScatter(containerId) {
             });
         }
         if (smoke.x.length > 0) {
-            let traceName = xLayers.length > 1 ? `${xTitle} (SMD)${smdLabelSuffix}` : `Smoke day (SMD)${smdLabelSuffix}`;
+            let traceName = isEpaEmberSource 
+                ? (xLayers.length > 1 ? `${xTitle} (SMO>0)` : "Days with SMO>0") 
+                : (xLayers.length > 1 ? `${xTitle} (SMD)${smdLabelSuffix}` : `Smoke day (SMD)${smdLabelSuffix}`);
             if (xUnit) traceName += ` (${xUnit})`;
             traces.push({
                 x: smoke.x, y: smoke.y, mode: "markers", type: "scatter",
