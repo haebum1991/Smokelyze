@@ -41,7 +41,7 @@
             <span class="doc-step-num">3</span>
             <div>
                 <strong>Event Filtering:</strong> Excludes non-smoke PM2.5 anomalies, such as Independence Day
-                fireworks (July 4–5), to prevent background contamination.
+                fireworks (Jul 4–5), to prevent background contamination.
             </div>
         </div>
         <div class="doc-flow-step">
@@ -79,7 +79,7 @@
         <tbody>
             <tr>
                 <td><code>date</code></td>
-                <td>Observation date (April-October)</td>
+                <td>Observation date (Apr-Oct)</td>
                 <td>2023-08-15</td>
             </tr>
             <tr>
@@ -122,8 +122,8 @@ df_hms0 <- df_pm25[, c("AQS", "pm25", "HMS", "year", "month", "day")] %>%
     <p>For each site and month, the criteria are calculated using the 5-year aggregate distribution to balance stability
         and relevance.</p>
     <div class="doc-callout">
-        <strong>Example (Rolling Baseline):</strong> The criteria for <strong>January 2025</strong> at Site A is
-        calculated as the <code>Median + 1 × MAD</code> of all "HMS=0" days in January across the
+        <strong>Example (Rolling Baseline):</strong> The criteria for <strong>Jan 2025</strong> at Site A is
+        calculated as the <code>Median + 1 × MAD</code> of all "HMS=0" days in Jan across the
         <strong>2021–2025</strong> period.
     </div>
 

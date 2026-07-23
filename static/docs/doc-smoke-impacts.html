@@ -29,7 +29,7 @@
             <strong>Figure 1.</strong> Distributions of daily PM<sub>2.5</sub> concentrations for HMS=0 (left) and
             HMS=1 (right) days. For the HMS=0 distribution the median + 1 and 0.5 median absolute deviations (MAD)
             are also shown. This plot shows the full year data for all PM<sub>2.5</sub> sites. If we use only the
-            April–October data instead, the means are similar (6.6 and 10.9 ug m<sup>-3</sup>, respectively).
+            Apr-Oct data instead, the means are similar (6.6 and 10.9 ug m<sup>-3</sup>, respectively).
         </figcaption>
     </figure>
 
@@ -76,9 +76,9 @@
     </p>
     <p>
         Note that the PM<sub>2.5</sub> criteria can differ between datasets due to variations in calculation
-        methodologies and time periods. As mentioned above, the criteria for the GAM v1 dataset (May–September
+        methodologies and time periods. As mentioned above, the criteria for the GAM v1 dataset (May–Sep,
         2018–2023) were based on the <strong>Mean + 1 SD</strong> method and calculated as a single fixed value for each
-        site. In contrast, the GAM v2 dataset (April–October 2019–2024) utilizes the <strong>Median + 1 MAD</strong>
+        site. In contrast, the GAM v2 dataset (Apr-Oct, 2019–2024) utilizes the <strong>Median + 1 MAD</strong>
         method calculated on a monthly basis, yielding seven distinct values (one for each month from April to
         October) per site. These variations in both statistical metrics and temporal resolution may lead to
         differences in criteria between the two versions, primarily affecting days with PM<sub>2.5</sub>
@@ -124,7 +124,7 @@
         publications.
     </p>
     <p>
-        Figure 2, below, shows performance of the GAM v2 for 803 sites nationally for data from April–October
+        Figure 2, below, shows performance of the GAM v2 for 803 sites nationally for data from Apr-Oct,
         2019–2024. This plot includes all observed and predicted MDA8 values and has a mean R<sup>2</sup> of 0.83.
         The mean R<sup>2</sup> for the individual GAMs at these 803 sites is 0.75. We define the model residuals as
         observed MDA8 – GAM predicted MDA8. On smoke days, we define the smoke O<sub>3</sub> (SMO) to be equal to
@@ -133,10 +133,10 @@
 
     <figure style="margin: 2rem 0; text-align: center;">
         <img src="/images/doc-smoke-impacts/fig_2.webp"
-            alt="Observed vs predicted MDA8 for 803 sites, April–October 2019–2024"
+            alt="Observed vs predicted MDA8 for 803 sites, Apr-Oct, 2019–2024"
             style="max-width: 100%; border-radius: var(--border-radius-0p8rem); border: 0.1rem solid var(--border-main);">
         <figcaption style="margin-top: 0.8rem; font-size: 1.4rem; color: var(--text-muted); line-height: 1.6;">
-            <strong>Figure 2.</strong> Observed vs predicted MDA8 for 803 sites, April–October 2019–2024. The
+            <strong>Figure 2.</strong> Observed vs predicted MDA8 for 803 sites, Apr-Oct, 2019–2024. The
             residuals are defined by observed MDA8 – GAM predicted MDA8.
         </figcaption>
     </figure>
@@ -197,7 +197,7 @@
         obtain Y<sub>EDM</sub>. Hereafter, this method will be referred to as GAM-EDM.
     </p>
     <p>
-        Figure 4 shows performance of the GAM v2-EDM for 803 sites nationally for data from April–October 2019–2024.
+        Figure 4 shows performance of the GAM v2-EDM for 803 sites nationally for data from Apr-Oct, 2019–2024.
         The slope was slightly lower compared to Figure 2, and this is a natural phenomenon when applying bias
         correction. However, what is important is when we investigate true positives (TP) that exceed 70 ppb for both
         observed and predicted MDA8. The TP of GAM-EDM for training data (63%) improved by 18% compared to GAM (45%).
@@ -208,10 +208,10 @@
 
     <figure style="margin: 2rem 0; text-align: center;">
         <img src="/images/doc-smoke-impacts/fig_4.webp"
-            alt="Observed vs predicted MDA8 for 803 sites with GAM-EDM, April–October 2019–2024"
+            alt="Observed vs predicted MDA8 for 803 sites with GAM-EDM, Apr-Oct, 2019–2024"
             style="max-width: 100%; border-radius: var(--border-radius-0p8rem); border: 0.1rem solid var(--border-main);">
         <figcaption style="margin-top: 0.8rem; font-size: 1.4rem; color: var(--text-muted); line-height: 1.6;">
-            <strong>Figure 4.</strong> Observed vs predicted MDA8 for 803 sites, April–October 2019–2024. The figure
+            <strong>Figure 4.</strong> Observed vs predicted MDA8 for 803 sites, Apr-Oct, 2019–2024. The figure
             also shows how we derive the residuals (observed MDA8 – GAM-EDM predicted MDA8).
         </figcaption>
     </figure>

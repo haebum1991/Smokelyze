@@ -1,0 +1,113 @@
+
+<h2>NOAA/GOES Satellite Retrieval</h2>
+<hr>
+
+<section id="goes">
+    <p>Retrieves and processes geostationary satellite data from NOAA's GOES series (GOES-East and GOES-West) over North
+        America. This includes high-resolution Aerosol Optical Depth (AOD) from the Advanced Baseline Imager (ABI) Level
+        2 products as well as true-color GeoColor imagery, providing continuous daytime monitoring of wildfire smoke
+        plumes and aerosol transport.</p>
+
+    <h3>1. Key Information</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Track overhead aerosol optical depth (AOD) and true-color satellite imagery for
+            near real-time smoke plume identification and transport monitoring.</li>
+        <li><strong>Source:</strong> <a href="https://console.cloud.google.com/storage/browser/gcp-public-data-goes-16"
+                target="_blank" rel="noopener noreferrer">NOAA GOES Public Datasets on Google Cloud Storage (GCS)</a>
+            and <a href="https://fire.data.nesdis.noaa.gov/" target="_blank" rel="noopener noreferrer">NOAA NESDIS OGC
+                Imagery API</a>.</li>
+        <li><strong>Products:</strong>
+            <code>ABI-L2-AODC-east</code> / <code>ABI-L2-AODC-west</code> (Aerosol Optical Depth) and
+            <code>GOESEastCONUSGeoColor</code> / <code>GOESWestCONUSGeoColor</code> (True-color imagery).
+        </li>
+        <li><strong>Satellite Continuity:</strong>
+            <ul>
+                <li>GOES-East: GOES-16 (before 2025-01-01) &rarr; GOES-19 (on or after 2025-01-01).</li>
+                <li>GOES-West: GOES-17 (before 2023-01-01) &rarr; GOES-18 (on or after 2023-01-01).</li>
+            </ul>
+        </li>
+        <li><strong>Refresh Rate:</strong> Sub-hourly to hourly observations across the Continental United States
+            (CONUS) domain.</li>
+    </ul>
+
+    <h3>2. Main Workflow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>Cloud Query:</strong> Queries public GCS
+            buckets (or NESDIS OGC API) for ABI L2 AOD or GeoColor imagery granules based on date and satellite domain.
+        </div>
+        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>Quality Masking (AOD):</strong> Applies
+            official Data Quality Flags (<code>DQF == 0</code>) and filters physically valid optical depth values (-0.05
+            &le; AOD &le; 5.0).</div>
+        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Spatial Aggregation:</strong> Spatially
+            aggregates raw 2 km resolution pixels by a factor of 2 (downsampling to ~4 km resolution) using mean
+            bilinear sampling for web optimization.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>Projection Alignment:</strong> Reprojects
+            native Geostationary (GEOS) projection into <strong>EPSG:3857</strong> (Web Mercator) and crops raster to
+            North American domain boundaries.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">5</span><strong>Raster Web Encoding:</strong> Encodes
+            normalized floating-point rasters into 8-bit unsigned integer <strong>PNG</strong> or compressed
+            <strong>WebP</strong> tiles, exporting accompanying <strong>JSON</strong> metadata for exact frontend value
+            reconstruction.</div>
+    </div>
+
+    <h3>3. R Libraries Used</h3>
+    <pre><code>library(terra)               # SpatRaster engine & spatial projection
+library(dplyr)               # Data manipulation & filtering
+library(stringr)             # String parsing & regex
+library(lubridate)           # Date/time manipulation
+library(httr)                # HTTP API requests & downloading
+library(jsonlite)            # JSON metadata export
+library(foreach)             # Parallel processing
+library(doSNOW)              # Cluster management
+library(webp)                # WebP image compression
+library(png)                 # PNG image encoding
+library(googleCloudStorageR)  # Cloud storage delivery</code></pre>
+
+    <h3>4. Technical Implementation</h3>
+    <h4>- Dynamic Satellite Bucket Routing</h4>
+    <p>Routes queries dynamically to GOES-16/19 (East) or GOES-17/18 (West) GCS public storage buckets based on
+        observation dates.</p>
+    <pre><code># Satellite routing logic based on transition dates
+if (str_detect(product, "east")) {
+  bucket <- ifelse(as.Date(date) < as.Date("2025-01-01"),
+                   "gcp-public-data-goes-16",  # GOES-16 before 2025
+                   "gcp-public-data-goes-19") # GOES-19 from 2025
+} else if (str_detect(product, "west")) {
+  bucket <- ifelse(as.Date(date) < as.Date("2023-01-01"),
+                   "gcp-public-data-goes-17",  # GOES-17 before 2023
+                   "gcp-public-data-goes-18") # GOES-18 from 2023
+}</code></pre>
+
+    <h4>- AOD Quality Control & Filtering</h4>
+    <p>Extracts raw ABI AOD fields alongside the Data Quality Flag (DQF) layer, enforcing strict quality masking before
+        spatial aggregation.</p>
+    <pre><code># Load AOD and DQF subdatasets
+i_rast <- terra::rast(valid_file, "AOD")
+i_rast_dqf <- terra::rast(valid_file, "DQF")
+
+# Apply Quality Mask: DQF == 0 & valid AOD range (-0.05 to 5.0)
+i_rast_valid <- (i_rast_dqf == 0) & (i_rast >= -0.05) & (i_rast <= 5.0)
+i_rast <- terra::mask(i_rast, i_rast_valid, maskvalues = FALSE, updatevalue = NA)
+
+# Spatial Aggregation (2 km -> ~4 km)
+i_rast <- terra::aggregate(i_rast, fact = 2, fun = "mean", na.rm = TRUE)</code></pre>
+
+    <h4>- Reprojection & 8-Bit Web PNG/JSON Export</h4>
+    <p>Reprojects the aggregated raster to Web Mercator (EPSG:3857), normalizes values to an 8-bit range (0-255), and
+        exports PNG tiles with JSON metadata for client-side value recovery.</p>
+    <pre><code># Reproject to EPSG:3857 (Web Mercator)
+i_rast <- terra::project(i_rast, "EPSG:3857", method = "bilinear")
+i_rast <- terra::crop(i_rast, terra::ext(crop_extent_3857))
+
+# 8-bit Normalization
+i_min <- terra::global(i_rast, fun = "min", na.rm = TRUE)[1, 1]
+i_max <- terra::global(i_rast, fun = "max", na.rm = TRUE)[1, 1]
+
+r_encoded <- (i_rast - i_min) / (i_max - i_min) * 255
+r_encoded[is.na(r_encoded)] <- 0
+
+# Save 8-bit PNG and metadata JSON
+terra::writeRaster(r_encoded, filename = png_path, datatype = "INT1U", filetype = "PNG", NAflag = 0)
+write(jsonlite::toJSON(list(min_val = i_min, max_val = i_max, crs_file = "EPSG:3857"), auto_unbox = TRUE), json_path)</code></pre>
+</section>
+

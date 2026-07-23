@@ -1,0 +1,79 @@
+
+<h2>NOAA/VIIRS Satellite Retrieval</h2>
+<hr>
+
+<section id="viirs">
+    <p>Retrieves daily corrected reflectance true-color satellite imagery from the Visible Infrared Imaging Radiometer Suite (VIIRS) instrument aboard the NOAA-21 satellite via NASA Worldview's Global Imagery Browse Services (GIBS). VIIRS is a polar-orbiting sensor that captures high-resolution daytime imagery over North America once per day, offering detailed visual inspection of smoke plume structure, surface fire footprints, and regional clarity.</p>
+
+    <h3>1. Key Information</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Provide daily high-spatial-resolution true-color satellite imagery for visually inspecting smoke plume boundaries, cloud cover, and surface terrain impacts.</li>
+        <li><strong>Source:</strong> <a href="https://worldview.earthdata.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA Worldview GIBS (Global Imagery Browse Services) API</a>.</li>
+        <li><strong>Products:</strong> <code>VIIRS_NOAA21_CorrectedReflectance_TrueColor</code> (NOAA-21 VIIRS Corrected Reflectance True Color).</li>
+        <li><strong>Resolution:</strong> Native ~250–750 m spatial resolution, processed and rendered to ~4 km Web Mercator (EPSG:3857) resolution for web display optimization.</li>
+        <li><strong>Refresh Rate:</strong> Daily polar-orbiting swath coverage across North America (CONUS, Canada, and Alaska).</li>
+    </ul>
+
+    <h3>2. Main Workflow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>API Query Construction:</strong> Constructs NASA GIBS WMS request URLs specifying the layer name, target observation date, and coordinate bounding box.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>Coordinate Transformation:</strong> Transforms geographic longitude/latitude bounds (lon: -179&deg; to -13&deg;, lat: 14&deg; to 73&deg;) into Web Mercator (EPSG:3857) meters to eliminate spatial warping.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Imagery Fetching:</strong> Requests composite daily true-color PNG frames directly from NASA GIBS high-performance endpoints.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>WebP Compression:</strong> Converts downloaded raw PNG images into optimized, compressed 8-bit <strong>WebP</strong> images (quality factor 70) for rapid client loading.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">5</span><strong>Metadata Export:</strong> Generates accompanying <strong>JSON</strong> metadata files storing image dimensions, layer metadata, and bounding box extents in EPSG:3857.</div>
+    </div>
+
+    <h3>3. R Libraries Used</h3>
+    <pre><code>library(httr)                # HTTP WMS API requests & image retrieval
+library(png)                 # PNG raster decoding
+library(webp)                # WebP compression & encoding
+library(jsonlite)            # JSON metadata generation & export
+library(lubridate)           # Date manipulation & formatting
+library(stringr)             # Pattern matching & string parsing
+library(foreach)             # Parallel multi-core execution
+library(doSNOW)              # Cluster backend engine
+library(googleCloudStorageR)  # GCS bucket delivery</code></pre>
+
+    <h3>4. Technical Implementation</h3>
+    <h4>- Geographic to Web Mercator Bounding Box Conversion</h4>
+    <p>Converts geographic degree coordinates into Web Mercator linear meter extents to request native EPSG:3857 tiles directly from NASA GIBS.</p>
+    <pre><code># Helper function: lon/lat degrees to EPSG:3857 Web Mercator meters
+deg_to_merc <- function(lon, lat) {
+  r <- 6378137
+  x <- r * lon * pi / 180
+  y <- r * log(tan(pi / 4 + lat * pi / 360))
+  return(c(x, y))
+}
+
+# Transform North American bounding box
+min_xy <- deg_to_merc(-179, 14)  # lon_min, lat_min
+max_xy <- deg_to_merc(-13, 73)   # lon_max, lat_max
+
+# Calculate dimensions for target 4 km resolution
+width  <- round((max_xy[1] - min_xy[1]) / 4000)
+height <- round((max_xy[2] - min_xy[2]) / 4000)</code></pre>
+
+    <h4>- NASA GIBS WMS Fetching & WebP Tile Encoding</h4>
+    <p>Issues a WMS GetMap request to NASA GIBS, downloads the raw true-color PNG frame, and re-encodes the raster into a compressed WebP tile alongside metadata JSON.</p>
+    <pre><code># Construct NASA GIBS WMS query URL (EPSG:3857)
+gibs_url <- sprintf(
+  "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&LAYERS=%s&TIME=%s&BBOX=%f,%f,%f,%f&WIDTH=%d&HEIGHT=%d&FORMAT=image/png",
+  "VIIRS_NOAA21_CorrectedReflectance_TrueColor", target_date_str,
+  min_xy[1], min_xy[2], max_xy[1], max_xy[2], width, height
+)
+
+# Fetch image and convert to compressed WebP
+res <- httr::GET(gibs_url, httr::write_disk(tmp_png_path, overwrite = TRUE))
+img_data <- png::readPNG(tmp_png_path)
+webp::write_webp(img_data, target_webp_path, quality = 70)
+
+# Export JSON metadata
+meta_info <- list(
+  id = "VIIRS_NOAA21_CorrectedReflectance_TrueColor",
+  datetime = target_date_str,
+  extent_file = c(min_xy[1], max_xy[1], min_xy[2], max_xy[2]),
+  crs_file = "EPSG:3857"
+)
+write(jsonlite::toJSON(meta_info, auto_unbox = TRUE), json_meta_path)</code></pre>
+</section>
+

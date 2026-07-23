@@ -1,0 +1,84 @@
+
+<h2>NOAA/HRRR Model Data Processing</h2>
+<hr>
+
+<section id="hrrr">
+    <p>Processes High-Resolution Rapid Refresh (HRRR) numerical weather and atmospheric smoke model outputs from NOAA over the Continental United States (CONUS). This pipeline extracts near-surface smoke concentration (8 m above ground) and column-integrated smoke mass density, enabling continuous evaluation of ground-level air quality impacts and total overhead smoke loads.</p>
+
+    <h3>1. Key Information</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Extract surface smoke concentration and column-integrated smoke density from operational NOAA HRRR simulations for air quality analysis and model comparison.</li>
+        <li><strong>Source:</strong> <a href="https://console.cloud.google.com/storage/browser/high-resolution-rapid-refresh" target="_blank" rel="noopener noreferrer">NOAA HRRR Archive on Google Cloud Storage (GCS)</a>.</li>
+        <li><strong>Products:</strong>
+            <code>MASSDEN:8 m</code> (Near-surface smoke mass concentration in &mu;g m<sup>-3</sup>) and
+            <code>COLMD:entire</code> (Column-integrated smoke mass density in &mu;g m<sup>-2</sup>).
+        </li>
+        <li><strong>Resolution:</strong> Native 3 km spatial resolution, aggregated to ~6-7 km grid in EPSG:3857 for web performance.</li>
+        <li><strong>Refresh Rate:</strong> Hourly operational atmospheric model runs.</li>
+    </ul>
+
+    <h3>2. Main Workflow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>Direct GCS Streaming:</strong> Accesses NOAA HRRR GRIB2 files on GCS via GDAL virtual file system (<code>/vsicurl/</code>) without downloading complete datasets to local storage.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>Subdataset Extraction:</strong> Uses index (<code>.idx</code>) files to locate and extract targeted subdatasets (<code>MASSDEN:8 m</code> or <code>COLMD:entire</code>) from GRIB2 files.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Unit Standardization:</strong> Converts raw scientific units (kg m<sup>-3</sup> for concentration, kg m<sup>-2</sup> for column density) into standard air quality units (&mu;g m<sup>-3</sup> and &mu;g m<sup>-2</sup>).</div>
+        <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>Spatial Resampling & Projection:</strong> Aggregates 3 km grid cells by a factor of 2 (~6-7 km) and reprojects grid from native Lambert Conformal to <strong>EPSG:3857</strong> (Web Mercator).</div>
+        <div class="doc-flow-step"><span class="doc-step-num">5</span><strong>Web Raster Encoding:</strong> Encodes continuous floating-point fields into 8-bit integer <strong>PNG</strong> rasters and generates companion <strong>JSON</strong> metadata for web display and value decoding.</div>
+    </div>
+
+    <h3>3. R Libraries Used</h3>
+    <pre><code>library(terra)               # High-performance GRIB2 raster processing engine
+library(dplyr)               # Data manipulation & pipeline operations
+library(stringr)             # String pattern matching & regex
+library(lubridate)           # Date/time formatting & extraction
+library(httr)                # HTTP requests for index (.idx) retrieval
+library(jsonlite)            # JSON metadata generation
+library(foreach)             # Parallel loop execution
+library(doSNOW)              # Cluster engine for multi-core scaling
+library(googleCloudStorageR)  # Cloud delivery to GCS bucket</code></pre>
+
+    <h3>4. Technical Implementation</h3>
+    <h4>- Direct Streaming via vsicurl</h4>
+    <p>Streams targeted GRIB2 subdatasets directly from NOAA's public GCS bucket using GDAL's <code>/vsicurl/</code> virtual protocol, avoiding massive GRIB2 downloads.</p>
+    <pre><code># Formulate GCS virtual file path for direct streaming
+tz_path <- paste0("t", sprintf("%02d", tz_hr), "z")
+url_base <- "https://storage.googleapis.com/high-resolution-rapid-refresh"
+i_file_name <- paste0("hrrr.", tz_path, ".wrfsfcf00.grib2")
+i_full_path <- paste0("/vsicurl/", url_base, "/hrrr.", date_str, "/conus/", i_file_name)
+
+# Read raster stack directly from Cloud Storage
+i_rast <- terra::rast(i_full_path)
+target_idx <- grep("MASSDEN:8 m", names(i_rast))
+i_rast <- i_rast[[target_idx[1]]]</code></pre>
+
+    <h4>- Unit Conversion Logic</h4>
+    <p>Converts mass density and column-integrated density values from SI units (kg) to microgram (&mu;g) scientific notation.</p>
+    <pre><code># Unit conversion helper function
+if (product == "COLMD:entire") {
+  # Convert kg/m² to µg/m²
+  i_rast <- i_rast * 1e9
+} else if (product == "MASSDEN:8 m") {
+  # Convert kg/m³ to µg/m³
+  if (as.Date(date) > as.Date("2021-12-21")) {
+    i_rast <- i_rast * 1e9
+  }
+}</code></pre>
+
+    <h4>- Spatial Aggregation & Web PNG Normalization</h4>
+    <p>Aggregates native grid resolution, reprojects to EPSG:3857, normalizes floating-point values into 8-bit integers (0-255), and outputs PNG tiles with min/max metadata JSON.</p>
+    <pre><code># Aggregate (3 km -> 6-7 km) & Reproject
+i_rast <- terra::aggregate(i_rast, fact = 2, fun = "mean", na.rm = TRUE)
+i_rast <- terra::project(i_rast, "EPSG:3857", method = "bilinear")
+
+# 8-bit Normalization
+i_min <- terra::global(i_rast, fun = "min", na.rm = TRUE)[1, 1]
+i_max <- terra::global(i_rast, fun = "max", na.rm = TRUE)[1, 1]
+
+r_encoded <- (i_rast - i_min) / (i_max - i_min) * 255
+r_encoded[is.na(r_encoded)] <- 0
+
+# Save 8-bit PNG and JSON Metadata
+terra::writeRaster(r_encoded, filename = png_file_path, datatype = "INT1U", filetype = "PNG", NAflag = 0)
+write(jsonlite::toJSON(list(min_val = i_min, max_val = i_max, crs_file = "EPSG:3857"), auto_unbox = TRUE), json_file_path)</code></pre>
+</section>
+
