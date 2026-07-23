@@ -216,7 +216,7 @@ export function renderDailyScatter(containerId) {
         if (nonSmoke.x.length > 0) {
             let traceName = hasModelLayer 
                 ? (isEpaEmberSource 
-                    ? (xLayers.length > 1 ? `${xTitle} (SMO≤0)` : "Days with SMO≤0") 
+                    ? (xLayers.length > 1 ? `${xTitle} (SMO ≤ 0)` : "Days with SMO ≤ 0") 
                     : (xLayers.length > 1 ? `${xTitle} (NSD)` : "Non-smoke day (NSD)")) 
                 : xTitle;
             if (xUnit) traceName += ` (${xUnit})`;
@@ -230,7 +230,7 @@ export function renderDailyScatter(containerId) {
         }
         if (smoke.x.length > 0) {
             let traceName = isEpaEmberSource 
-                ? (xLayers.length > 1 ? `${xTitle} (SMO>0)` : "Days with SMO>0") 
+                ? (xLayers.length > 1 ? `${xTitle} (SMO > 0)` : "Days with SMO > 0") 
                 : (xLayers.length > 1 ? `${xTitle} (SMD)${smdLabelSuffix}` : `Smoke day (SMD)${smdLabelSuffix}`);
             if (xUnit) traceName += ` (${xUnit})`;
             traces.push({

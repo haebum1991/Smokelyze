@@ -259,7 +259,7 @@ function renderDailyTimeSeriesPlot(theme, dsId, aqs, tableData) {
                 (dsId === "gam-v2" ? "Pred MDA8 (EDM): %{customdata[1]}<br>" : "") +
                 "SMO: %{customdata[2]}<br>" +
                 (dsId === "gam-v2" ? "SMO (EDM): %{customdata[3]}<br>" : "") +
-                (dsId === "epa-ember" ? "Day with SMO>0: " : "Smoke day: ") + "%{customdata[4]}<extra></extra>"
+                (dsId === "epa-ember" ? "Day with SMO > 0: " : "Smoke day: ") + "%{customdata[4]}<extra></extra>"
         });
 
         const tr3 = {
@@ -303,7 +303,7 @@ function renderDailyTimeSeriesPlot(theme, dsId, aqs, tableData) {
         const tr5 = {
             x: dates,
             y: sortedData.map(d => Number(d.smoke) === 1 ? d["MDA8O3"] : null),
-            name: dsId === "epa-ember" ? "Day with SMO>0 (Y/N)" : "Smoke day (Y/N)", type: "scatter", mode: "markers",
+            name: dsId === "epa-ember" ? "Day with SMO > 0 (Y/N)" : "Smoke day (Y/N)", type: "scatter", mode: "markers",
             hoverinfo: "skip"
         };
         applyTraceStyle(tr5, "scatter-smoke-marker", theme);
@@ -362,18 +362,18 @@ function renderScatterPlot(theme, dsId, aqs, tableData) {
     if (dsId === "epa-ember") {
         const tr1 = {
             x: nonSmoke.map(d => d.MDA8O3_pred), y: nonSmoke.map(d => d.MDA8O3),
-            mode: "markers", name: "Days with SMO≤0", type: "scatter",
+            mode: "markers", name: "Days with SMO ≤ 0", type: "scatter",
             customdata: nonSmoke.map(d => d.date),
-            hovertemplate: "<b>Days with SMO≤0</b><br>Date: %{customdata}<br>Obs MDA8: %{y:.1f}<br>Pred MDA8: %{x:.1f}<extra></extra>"
+            hovertemplate: "<b>Days with SMO ≤ 0</b><br>Date: %{customdata}<br>Obs MDA8: %{y:.1f}<br>Pred MDA8: %{x:.1f}<extra></extra>"
         };
         applyTraceStyle(tr1, "scatter-non-smoke", theme);
         traces.push(tr1);
     
         const tr2 = {
             x: smoke.map(d => d.MDA8O3_pred), y: smoke.map(d => d.MDA8O3),
-            mode: "markers", name: "Days with SMO>0", type: "scatter",
+            mode: "markers", name: "Days with SMO > 0", type: "scatter",
             customdata: smoke.map(d => d.date),
-            hovertemplate: "<b>Days with SMO>0</b><br>Date: %{customdata}<br>Obs MDA8: %{y:.1f}<br>Pred MDA8: %{x:.1f}<extra></extra>"
+            hovertemplate: "<b>Days with SMO > 0</b><br>Date: %{customdata}<br>Obs MDA8: %{y:.1f}<br>Pred MDA8: %{x:.1f}<extra></extra>"
         };
         applyTraceStyle(tr2, "scatter-smoke", theme);
         traces.push(tr2);
@@ -506,8 +506,8 @@ function renderMonthlySmokePlot(theme, dsId, aqs, tableData) {
     } else {
         const tr1 = {
             x: months, y: months.map(m => monthlyData[m].count), type: "bar",
-            name: dsId === "epa-ember" ? "No. of days with SMO>0" : "No. of smoke days",
-            hovertemplate: (dsId === "epa-ember" ? "No. of days with SMO>0: " : "No. of smoke days: ") + "%{y}<extra></extra>"
+            name: dsId === "epa-ember" ? "No. of days with SMO > 0" : "No. of smoke days",
+            hovertemplate: (dsId === "epa-ember" ? "No. of days with SMO > 0: " : "No. of smoke days: ") + "%{y}<extra></extra>"
         };
         applyTraceStyle(tr1, "monthly-bar", theme);
         traces = [tr1];
@@ -546,7 +546,7 @@ function renderMonthlySmokePlot(theme, dsId, aqs, tableData) {
     const plotTitle = dsId === "pm-cbsa"
         ? `Monthly smoke day count<br>(AQS PM: ${aqs})`
         : (dsId === "epa-ember"
-            ? `Monthly count of days with SMO>0 and SMO<br>(AQS O3: ${aqs})`
+            ? `Monthly count of days with SMO > 0 and SMO<br>(AQS O3: ${aqs})`
             : `Monthly smoke day count and SMO<br>(AQS O3: ${aqs})`);
 
     const layout = {
@@ -693,17 +693,17 @@ function renderAnnualExceedancePlot(theme, dsId, aqs, tableData) {
         const y_smoke = years.map(y => yearlyData[y].smoke_m0);
         traces.push({
             x: years, y: y_base,
-            name: "ExcDays with SMO≤0", type: "bar",
+            name: "ExcDays with SMO ≤ 0", type: "bar",
             marker: { color: "black" },
             customdata: y_base,
-            hovertemplate: "SMO≤0: %{customdata}<extra></extra>"
+            hovertemplate: "SMO ≤ 0: %{customdata}<extra></extra>"
         });
         traces.push({
             x: years, y: y_smoke,
-            name: "ExcDays with SMO>0", type: "bar",
+            name: "ExcDays with SMO > 0", type: "bar",
             marker: { color: "red" },
             customdata: y_smoke,
-            hovertemplate: "SMO>0: %{customdata}<extra></extra>"
+            hovertemplate: "SMO > 0: %{customdata}<extra></extra>"
         });
     } else if (dsId === "gam-v1") {
         const y_base = years.map(y => yearlyData[y].not_smoke_m0);

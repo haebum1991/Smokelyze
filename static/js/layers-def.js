@@ -610,7 +610,7 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "srad", field: "SRAD", breaks: BREAKS_SRAD, colors: PALETTE_EPA, title: "SRAD", decimals: 1, datasets: ["gam-v2", "gam-v1", "gam-v2-pred"], unit: "W m⁻²" },
 
     // --- Smoke day (Binary) ---
-    { duration: "daily", id: "smokeday", field: "smoke", breaks: BREAKS_BIN, colors: PALETTE_BIN_1, title: (ds) => ds === "epa-ember" ? "Day with SMO>0" : "Smoke Day (SMD)", labelParams: LABEL_BIN, decimals: 0, datasets: ["gam-v2", "gam-v1", "epa-ember", "gam-v2-pred"], cal_type: "count", unit: "" },
+    { duration: "daily", id: "smokeday", field: "smoke", breaks: BREAKS_BIN, colors: PALETTE_BIN_1, title: (ds) => ds === "epa-ember" ? "Day with SMO > 0" : "Smoke Day (SMD)", labelParams: LABEL_BIN, decimals: 0, datasets: ["gam-v2", "gam-v1", "epa-ember", "gam-v2-pred"], cal_type: "count", unit: "" },
     { duration: "daily", id: "smokeday-975", field: "smoke_p975", breaks: BREAKS_BIN, colors: PALETTE_BIN_2, title: "SMO > 97.5th", labelParams: LABEL_BIN, decimals: 0, datasets: ["gam-v2", "gam-v1", "gam-v2-pred"], cal_type: "count", unit: "" },
     { duration: "daily", id: "smokeday-975-edm", field: "edm_smoke_p975", breaks: BREAKS_BIN, colors: PALETTE_BIN_3, title: "SMO > 97.5th (EDM)", labelParams: LABEL_BIN, decimals: 0, datasets: ["gam-v2", "gam-v2-pred"], cal_type: "count", unit: "" },
     { duration: "daily", id: "smokeday-m0p5m", field: "smoke_m0p5m", breaks: BREAKS_BIN, colors: PALETTE_BIN_1, title: "Smoke day (SMD) m0p5m", labelParams: LABEL_BIN, decimals: 0, datasets: ["pm-cbsa", "pm-cbsa-pred"], cal_type: "count", unit: "" },

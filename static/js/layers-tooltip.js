@@ -308,7 +308,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
           <div style="${rowStyle}">Longitude: ${ESML(smartFmt(p["lon"], "lon", dataSource, 3))}</div>
           <div style="${rowStyle}">Latitude: ${ESML(smartFmt(p["lat"], "lat", dataSource, 3))}</div>
           <hr style="${hrStyle}">
-          <div style="${rowStyle}">Days with SMO>0: ${ESML(smartFmt(p["smoke"], "smoke", dataSource))}</div>
+          <div style="${rowStyle}">Days with SMO > 0: ${ESML(smartFmt(p["smoke"], "smoke", dataSource))}</div>
           <hr style="${hrStyle}">
           ${renderPopupRow("Obs MDA8", "MDA8O3", p["MDA8O3"], dataSource)}
           ${renderPopupRow("Pred MDA8", "MDA8O3_pred", p["MDA8O3_pred"], dataSource)}

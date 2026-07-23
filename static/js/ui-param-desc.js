@@ -590,7 +590,7 @@ export const DescData = {
                 "Calculated as: [Monitored MDA8 Ozone (ppb)] - [Modeled MDA8 Ozone (ppb): Base Simulation].<br><br>" +
                 "Please see the detailed information: <a href='https://www.epa.gov/air-quality-analysis/expedited-modeling-burn-events-results-ember' target='_blank'>https://www.epa.gov/air-quality-analysis/expedited-modeling-burn-events-results-ember</a>"
         },
-        { id: "smokeday", title: "Day with SMO>0", desc: "Identified days with SMO>0 ppb (1: Yes, 0: No)" },
+        { id: "smokeday", title: "Day with SMO > 0", desc: "Identified days with SMO > 0 ppb (1: Yes, 0: No)" },
         { id: "ExcDays", title: "ExcDay", desc: "Exceedance days (> 70 ppb): <br> - with minimal SMO: not caused by smoke <br> - with significant SMO (case with SMO > 0): caused by smoke" }
     ]
 };
