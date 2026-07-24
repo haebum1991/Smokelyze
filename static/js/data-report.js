@@ -40,18 +40,18 @@ const GAM_V2_TYPES = {
         { name: "4th-highest-MDA8 (ppb) excluding smoke days with SMO > 97.5th quantile (EDM)", method: "category" }
     ],
     "by_date": [
-        { name: "Smoke days (1: Yes, 0: No)", method: "count" },
-        { name: "Smoke days with SMO > 97.5th quantile (1: Yes, 0: No)", method: "count" },
-        { name: "Smoke days with SMO > 97.5th quantile (1: Yes, 0: No) (EDM)", method: "count" },
-        { name: "Smoke days with SMO > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)", method: "count" },
-        { name: "Smoke days with SMO > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No) (EDM)", method: "count" },
-        { name: "SMO (ppb) on smoke days", method: "mean" },
-        { name: "SMO (ppb) on smoke days (EDM)", method: "mean" },
-        { name: "SMO quantile on smoke days", method: "mean" },
-        { name: "SMO quantile on smoke days (EDM)", method: "mean" },
+        { name: "Smoke day (1: Yes, 0: No)", method: "count" },
+        { name: "Smoke day with SMO > 97.5th quantile (1: Yes, 0: No)", method: "count" },
+        { name: "Smoke day with SMO > 97.5th quantile (1: Yes, 0: No) (EDM)", method: "count" },
+        { name: "Smoke day with SMO > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)", method: "count" },
+        { name: "Smoke day with SMO > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No) (EDM)", method: "count" },
+        { name: "SMO (ppb) on smoke day", method: "mean" },
+        { name: "SMO (ppb) on smoke day (EDM)", method: "mean" },
+        { name: "SMO quantile on smoke day", method: "mean" },
+        { name: "SMO quantile on smoke day (EDM)", method: "mean" },
         { name: "Obs PM2.5 (ug m-3)", method: "mean" },
-        { name: "ExcDay (0: None, 1: Days with minimal SMO, 2: Days with significant SMO)", method: "category" },
-        { name: "ExcDay (0: None, 1: Days with minimal SMO, 2: Days with significant SMO) (EDM)", method: "category" },
+        { name: "ExcDay (0: None, 1: ExcDay with minimal SMO, 2: ExcDay with significant SMO)", method: "category" },
+        { name: "ExcDay (0: None, 1: ExcDay with minimal SMO, 2: ExcDay with significant SMO) (EDM)", method: "category" },
         { name: "Rank of MDA8", method: "category" },
         { name: "Rank of MDA8 excluding smoke days with SMO > 97.5th quantile", method: "category" },
         { name: "Rank of MDA8 excluding smoke days with SMO > 97.5th quantile (EDM)", method: "category" }
@@ -75,13 +75,13 @@ const GAM_V1_TYPES = {
         { name: "4th-highest-MDA8 (ppb) excluding smoke days with SMO > 97.5th quantile", method: "category" }
     ],
     "by_date": [
-        { name: "Smoke days (1: Yes, 0: No)", method: "count" },
-        { name: "Smoke days with SMO > 97.5th quantile (1: Yes, 0: No)", method: "count" },
-        { name: "Smoke days with SMO > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)", method: "count" },
-        { name: "SMO (ppb) on smoke days", method: "mean" },
-        { name: "SMO quantile on smoke days", method: "mean" },
+        { name: "Smoke day (1: Yes, 0: No)", method: "count" },
+        { name: "Smoke day with SMO > 97.5th quantile (1: Yes, 0: No)", method: "count" },
+        { name: "Smoke day with SMO > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)", method: "count" },
+        { name: "SMO (ppb) on smoke day", method: "mean" },
+        { name: "SMO quantile on smoke day", method: "mean" },
         { name: "Obs PM2.5 (ug m-3)", method: "mean" },
-        { name: "ExcDay (0: None, 1: Days with minimal SMO, 2: Days with significant SMO)", method: "category" },
+        { name: "ExcDay (0: None, 1: ExcDay with minimal SMO, 2: ExcDay with significant SMO)", method: "category" },
         { name: "Rank of MDA8", method: "category" },
         { name: "Rank of MDA8 excluding smoke days with SMO > 97.5th quantile", method: "category" }
     ]
@@ -102,13 +102,13 @@ const PM_CBSA_TYPES = {
         { name: "No. of ExcDays with smoke PM2.5=0 (Criteria 2)", method: "count" }
     ],
     "by_date": [
-        { name: "Days with overhead HMS (1: Yes, 0: No)", method: "count" },
-        { name: "Probable smoke days (HMS + PM2.5 > Criteria 1) (1: Yes, 0: No)", method: "count" },
-        { name: "Highly probable smoke days (HMS + PM2.5 > Criteria 2) (1: Yes, 0: No)", method: "count" },
-        { name: "Smoke PM2.5 (ug m-3) on probable smoke days (HMS + PM2.5 > Criteria 1)", method: "mean" },
-        { name: "Smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)", method: "mean" },
-        { name: "ExcDay (Criteria 1) (0: None, 1: Days with smoke PM2.5=0, 2: Days with smoke PM2.5>0)", method: "category" },
-        { name: "ExcDay (Criteria 2) (0: None, 1: Days with smoke PM2.5=0, 2: Days with smoke PM2.5>0)", method: "category" }
+        { name: "Day with overhead HMS (1: Yes, 0: No)", method: "count" },
+        { name: "Probable smoke day (HMS + PM2.5 > Criteria 1) (1: Yes, 0: No)", method: "count" },
+        { name: "Highly probable smoke day (HMS + PM2.5 > Criteria 2) (1: Yes, 0: No)", method: "count" },
+        { name: "Smoke PM2.5 (ug m-3) on probable smoke day (HMS + PM2.5 > Criteria 1)", method: "mean" },
+        { name: "Smoke PM2.5 (ug m-3) on highly probable smoke day (HMS + PM2.5 > Criteria 2)", method: "mean" },
+        { name: "ExcDay (Criteria 1) (0: None, 1: ExcDay with smoke PM2.5=0, 2: ExcDay with smoke PM2.5>0)", method: "category" },
+        { name: "ExcDay (Criteria 2) (0: None, 1: ExcDay with smoke PM2.5=0, 2: ExcDay with smoke PM2.5>0)", method: "category" }
     ]
 };
 
@@ -520,11 +520,11 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
         if (datasetId.startsWith("gam")) {
             switch (baseReportType) {
                 case "No. of smoke days":
-                case "Smoke days (1: Yes, 0: No)":
+                case "Smoke day (1: Yes, 0: No)":
                     isMatch = (d.smoke === 1);
                     break;
                 case "No. of smoke days with SMO > 97.5th quantile":
-                case "Smoke days with SMO > 97.5th quantile (1: Yes, 0: No)":
+                case "Smoke day with SMO > 97.5th quantile (1: Yes, 0: No)":
                     if (isEdmReport) {
                         isMatch = (d.smoke === 1 && d.edm_MDA8O3_resids > d.edm_p975);
                     } else {
@@ -532,7 +532,7 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
                     }
                     break;
                 case "No. of smoke days with SMO > 97.5th quantile & MDA8 > 70 ppb":
-                case "Smoke days with SMO > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)":
+                case "Smoke day with SMO > 97.5th quantile & MDA8 > 70 ppb (1: Yes, 0: No)":
                     if (isEdmReport) {
                         isMatch = (d.smoke === 1 && d.edm_MDA8O3_resids > d.edm_p975 && d.MDA8O3 > 70);
                     } else {
@@ -540,7 +540,7 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
                     }
                     break;
                 case "Mean SMO (ppb) on smoke days":
-                case "SMO (ppb) on smoke days":
+                case "SMO (ppb) on smoke day":
                     if (d.smoke === 1) {
                         isMatch = true;
                         val = isEdmReport ? d.edm_MDA8O3_resids : d.MDA8O3_resids;
@@ -553,7 +553,7 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
                     }
                     break;
                 case "Mean SMO quantile on smoke days":
-                case "SMO quantile on smoke days":
+                case "SMO quantile on smoke day":
                     if (d.smoke === 1) {
                         isMatch = true;
                         val = isEdmReport ? d.edm_Quant_MDA8O3_resids : d.Quant_MDA8O3_resids;
@@ -581,7 +581,7 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
                     const excVal3 = isEdmReport ? d.edm_exceedance : d.exceedance;
                     isMatch = (excVal3 !== null && excVal3 === 1);
                     break;
-                case "ExcDay (0: None, 1: Days with minimal SMO, 2: Days with significant SMO)":
+                case "ExcDay (0: None, 1: ExcDay with minimal SMO, 2: ExcDay with significant SMO)":
                     isMatch = true;
                     val = isEdmReport ? d.edm_exceedance : d.exceedance;
                     if (val === null || val === undefined) isMatch = false;
@@ -632,23 +632,23 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
 
             switch (baseReportType) {
                 case "No. of days with overhead HMS":
-                case "Days with overhead HMS (1: Yes, 0: No)":
+                case "Day with overhead HMS (1: Yes, 0: No)":
                     isMatch = (d.HMS === 1);
                     break;
                 case "No. of probable smoke days (HMS + PM2.5 > Criteria 1)":
-                case "Probable smoke days (HMS + PM2.5 > Criteria 1) (1: Yes, 0: No)":
+                case "Probable smoke day (HMS + PM2.5 > Criteria 1) (1: Yes, 0: No)":
                     isMatch = (d.smoke_m0p5m === 1);
                     break;
                 case "No. of highly probable smoke days (HMS + PM2.5 > Criteria 2)":
-                case "Highly probable smoke days (HMS + PM2.5 > Criteria 2) (1: Yes, 0: No)":
+                case "Highly probable smoke day (HMS + PM2.5 > Criteria 2) (1: Yes, 0: No)":
                     isMatch = (d.smoke_m1p0m === 1);
                     break;
                 case "Mean smoke PM2.5 (ug m-3) on probable smoke days (HMS + PM2.5 > Criteria 1)":
-                case "Smoke PM2.5 (ug m-3) on probable smoke days (HMS + PM2.5 > Criteria 1)":
+                case "Smoke PM2.5 (ug m-3) on probable smoke day (HMS + PM2.5 > Criteria 1)":
                     if (d.smoke_m0p5m === 1) { isMatch = true; val = del_0p5; }
                     break;
                 case "Mean smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)":
-                case "Smoke PM2.5 (ug m-3) on highly probable smoke days (HMS + PM2.5 > Criteria 2)":
+                case "Smoke PM2.5 (ug m-3) on highly probable smoke day (HMS + PM2.5 > Criteria 2)":
                     if (d.smoke_m1p0m === 1) { isMatch = true; val = del_1p0; }
                     break;
                 case "No. of ExcDays (Criteria 1)":
@@ -669,12 +669,12 @@ function calculateReportValues(data, datasetId, reportType, timeKey, method) {
                 case "No. of ExcDays with smoke PM2.5=0 (Criteria 2)":
                     isMatch = (d.exceedance_m1p0m !== null && d.exceedance_m1p0m === 1);
                     break;
-                case "ExcDay (Criteria 1) (0: None, 1: Days with smoke PM2.5=0, 2: Days with smoke PM2.5>0)":
+                case "ExcDay (Criteria 1) (0: None, 1: ExcDay with smoke PM2.5=0, 2: ExcDay with smoke PM2.5>0)":
                     isMatch = true;
                     val = d.exceedance_m0p5m;
                     if (val === null || val === undefined) isMatch = false;
                     break;
-                case "ExcDay (Criteria 2) (0: None, 1: Days with smoke PM2.5=0, 2: Days with smoke PM2.5>0)":
+                case "ExcDay (Criteria 2) (0: None, 1: ExcDay with smoke PM2.5=0, 2: ExcDay with smoke PM2.5>0)":
                     isMatch = true;
                     val = d.exceedance_m1p0m;
                     if (val === null || val === undefined) isMatch = false;
