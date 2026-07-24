@@ -14,7 +14,9 @@
             (2024a; 2024b)</strong> utilized a
         <strong>Mean + Standard Deviation (SD)</strong> approach, the <strong>Median + Median Absolute Deviation
             (MAD)</strong>
-        method was adopted in <strong style="color: var(--card-shadow);">Lee and Jaffe (2025)</strong> to better handle
+        method was adopted in 
+        <strong style="color: var(--card-shadow);">Lee and Jaffe (2025)</strong> and 
+        <strong style="color: var(--card-shadow);">Jaffe et al. (2026)</strong> to better handle
         extreme values and provide a more
         reliable baseline.
     </div>
@@ -164,12 +166,12 @@ df_crit$pm_crit <- df_crit$pm_crit_med + (k * df_crit$pm_crit_mad)</code></pre>
             <tr>
                 <td>0.5</td>
                 <td>Low Stringency</td>
-                <td>Capturing subtle/diluted smoke influence</td>
+                <td>Capturing subtle/diluted smoke influence (Jaffe et al., 2026)</td>
             </tr>
             <tr>
                 <td><strong>1.0</strong></td>
                 <td><strong>Standard</strong></td>
-                <td><strong>Optimized balance for national studies (JGR 2025)</strong></td>
+                <td><strong>Optimized balance for national studies</strong> (Lee and Jaffe, 2025; Jaffe et al., 2026)</td>
             </tr>
             <tr>
                 <td>1.5</td>
@@ -181,12 +183,13 @@ df_crit$pm_crit <- df_crit$pm_crit_med + (k * df_crit$pm_crit_mad)</code></pre>
 
     <h4 style="margin-top: 2rem;">- State-level Fallback (Imputation)</h4>
     <p>To maintain spatial continuity across the monitoring network, a <strong>State-level Fallback</strong> mechanism
-        is applied. Stations failing the <strong>minimum data sufficiency check</strong> (n < 10 valid HMS=0
-            observations) have their local thresholds replaced by the <strong>state-wide average criteria</strong> for
-            the
-            corresponding month. This imputation ensures that even sites with sparse background data can effectively
-            isolate
-            smoke events using regional baseline context.</p>
+        is applied. Stations failing the 
+        <strong style="color: var(--card-shadow);">minimum data sufficiency check
+        (n < 10 valid HMS=0 observations)</strong> have their local thresholds replaced by the 
+        <strong style="color: var(--card-shadow);">state-wide average criteria</strong> 
+        for the corresponding month. 
+        This imputation ensures that even sites with sparse background data can effectively
+        isolate smoke events using regional baseline context.</p>
 
     <!-- 
     <pre><code># Imputation and State-level Fallback logic
@@ -254,15 +257,22 @@ df_crit <- data.table::rbindlist(df_crit_list) %>% data.frame()</code></pre>
 
 <section id="pmcrit-mapping">
     <h3>4. Web App Integration</h3>
-    <p>Following the methodology inspired by <strong style="color: var(--card-shadow);">Lee and Jaffe
-            (2025)</strong>—which used a fixed 6-year period (2019-2024)—this application recalibrates these 5-year
-        rolling criteria annually to provide the most current context for smoke identification in the dynamic US
-        wildfire environment.</p>
+    <p>Following the methodology inspired by 
+    <strong style="color: var(--card-shadow);">Lee and Jaffe (2025)</strong> and 
+    <strong style="color: var(--card-shadow);">Jaffe et al. (2026)</strong>,
+    which used a fixed 6-year period (2019-2024), this application recalibrates these 5-year
+    rolling criteria annually to provide the most current context 
+    for smoke identification in the dynamic US wildfire environment.</p>
 </section>
 
 <br>
 <hr>
 <p class="doc-footer-text">
+    Jaffe, D., Lee, H., Magzamen, S., Goldberg, D., and O'Dell, K. (2026): 
+    Health and Regulatory Impacts of PM2.5 from Wildland Fires for 2019–2024 in the US, <em>GeoHealth</em>, 10, e2025GH001576
+    <a href="https://doi.org/10.1029/2025GH001576" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1029/2025GH001576</a>
+    <br><br>
     Lee, H. and Jaffe, D. A. (2025): Impact of Wildfires on O3 and Air Quality Across the United States for 2019–2024
     Using Generalized Additive Models, <em>J. Geophys. Res.: Atmos.</em>, 130, e2025JD044088.
     <a href="https://doi.org/10.1029/2025JD044088" target="_blank"

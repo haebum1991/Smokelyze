@@ -8,7 +8,7 @@
         Identifying the presence of surface-level smoke is the critical first
         step. A <strong>"Smoke Day"</strong> is defined as the intersection of overhead smoke plumes detected
         via satellite and abnormal ground-level PM2.5 concentrations (<strong style="color: var(--card-shadow);">Lee and
-            Jaffe, 2024a; 2024b; 2025</strong>).
+            Jaffe, 2024a; 2024b; 2025; Jaffe et al., 2026</strong>).
     </p>
     <div class="doc-callout">
         <strong>Identifying Surface Impacts:</strong> Satellite data (HMS) indicates the presence of smoke in the
@@ -43,9 +43,9 @@
                 <strong>Daily PM2.5 > PM2.5-criteria:</strong> Daily PM2.5 concentration exceeds the local
                 baseline. The stringency level applied depends on the research focus:
                 <ul>
-                    <li><strong>Smoke O3 Analysis (e.g., UW GAM-v2 dataset):</strong> Uses <strong>k = 1.0</strong>
+                    <li><strong>UW GAM-v2 dataset (Lee and Jaffe, 2025):</strong> Uses <strong>k = 1.0</strong>
                         (Median + 1.0 &times; MAD) as the standard filter.</li>
-                    <li><strong>Smoke PM2.5 Analysis (e.g., UW Smoke PM2.5 dataset):</strong> Reports both <strong>k =
+                    <li><strong>UW Smoke PM2.5 dataset (Jaffe et al., 2026):</strong> Reports both <strong>k =
                             0.5</strong> and <strong>k = 1.0</strong> to capture a broader
                         range of impacts.</li>
                 </ul>
@@ -119,6 +119,11 @@ df$smoke_m1p0m <- if_else(df$PM2.5 > df$PM2.5_Crit_m1p0m & df$HMS == 1, 1, 0)</c
 <br>
 <hr>
 <p class="doc-footer-text">
+    Jaffe, D., Lee, H., Magzamen, S., Goldberg, D., and O'Dell, K. (2026): 
+    Health and Regulatory Impacts of PM2.5 from Wildland Fires for 2019–2024 in the US, <em>GeoHealth</em>, 10, e2025GH001576
+    <a href="https://doi.org/10.1029/2025GH001576" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1029/2025GH001576</a>
+    <br><br>
     Lee, H. and Jaffe, D. A. (2025): Impact of Wildfires on O3 and Air Quality Across the United States for 2019–2024
     Using Generalized Additive Models, <em>J. Geophys. Res.: Atmos.</em>, 130, e2025JD044088.
     <a href="https://doi.org/10.1029/2025JD044088" target="_blank"
