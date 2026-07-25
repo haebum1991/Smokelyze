@@ -1,5 +1,5 @@
 
-# Smokelyze: Advanced Spatiotemporal Analytics for Wildfire Smoke and Air Quality
+# Smokelyze.org: Advanced Spatiotemporal Analytics for Wildfire Smoke and Air Quality
 
 Smokelyze (`Smokelyze.org`) is an open-access, cloud-native Web analytics application designed to operationalize established Generalized Additive Model (GAM) machine learning frameworks for quantifying the impact of wildfire smoke on surface particulate matter ($\mathrm{PM_{2.5}}$) and maximum daily 8-hour average ozone ($\mathrm{MDA8 O_3}$). Developed by Haebum Lee (PhD) and Daniel A. Jaffe (PhD) at the Jaffe Research Group (University of Washington), the platform fuses ground-based regulatory observations, satellite retrievals, atmospheric transport models, and machine learning to support state/federal environmental agencies in Exceptional Event Demonstrations (EED) and aid health scientists in smoke exposure assessments.
 
