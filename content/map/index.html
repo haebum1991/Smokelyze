@@ -1070,14 +1070,21 @@ title: ""
       <div
         style="margin-top: 1.5rem; font-size: 1.4rem; color: var(--text-main); border-top: 0.1rem solid var(--border-main); padding-top: 0.8rem;">
         * Note: Simulations use <b style="color: var(--card-shadow);">NAM 12km</b> meteorological data by default.
-        For locations outside the NAM12 domain (e.g., Alaska, Hawaii), the model automatically switches to <b style="color: var(--card-shadow);">GDAS1 (1°)</b>.
-        For NAM12 trajectories exceeding 72 hours, GDAS1 data is additionally used as backup to prevent domain boundary truncation.
-        Dispersion modeling is conducted with <b style="color: var(--card-shadow);">minimal physical
-          parameters</b> due to server
-        resource constraints. <b style="color: var(--card-shadow);"> Use results for reference only</b>. For detailed
-        scientific analysis, please visit the
-        official <a href="https://www.ready.noaa.gov/hypub-bin/dispasrc.pl" target="_blank"
-          style="color: var(--card-shadow); text-decoration: underline;">NOAA READY Website</a>.
+        For locations outside the NAM12 domain (e.g., Alaska, Hawaii), the model automatically switches to <b
+          style="color: var(--card-shadow);">GDAS1 (1°)</b>.
+        For NAM12 trajectories exceeding 72 hours, GDAS1 data is additionally used as backup to prevent domain boundary
+        truncation.
+        The vertical motion uses the default option (i.e., <b style="color: var(--card-shadow);">Model vertical velocity</b>).
+        Dispersion modeling is conducted with
+        <b style="color: var(--card-shadow);">minimal physical parameters</b>
+        (e.g., release rate, release duration, particle diameter and density)
+        due to server resource constraints.
+        <b style="color: var(--card-shadow);">Use results for screening purposes only</b>.
+        For detailed scientific analysis, please visit the official website: 
+        <a href="https://www.ready.noaa.gov/hypub-bin/trajtype.pl" target="_blank"
+          style="color: var(--card-shadow); text-decoration: underline;">NOAA READY (trajectory)</a> or
+        <a href="https://www.ready.noaa.gov/hypub-bin/dispasrc.pl" target="_blank"
+          style="color: var(--card-shadow); text-decoration: underline;">NOAA READY (dispersion)</a>.
       </div>
     </div>
 
