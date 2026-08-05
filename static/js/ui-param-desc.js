@@ -558,7 +558,7 @@ export const DescData = {
                 "Expediated modeling of burn events results (EMBER): A screening-level dataset of 2023 ozone fire impacts in the US, " +
                 "<em>Data in Brief</em>, 58, 111208, 2024. " +
                 "<a href='https://doi.org/10.1016/j.dib.2024.111208' target='_blank'>https://doi.org/10.1016/j.dib.2024.111208</a><br><br>" +
-                "<b>Note</b>: Since this dataset has been reprocessed to fit our application (Smokelyze), for the original dataset, " +
+                "<b>Note</b>: Since variable names in this dataset have been renamed to fit our application (Smokelyze), for the original dataset, " +
                 "please see the detailed information: <a href='https://www.epa.gov/air-quality-analysis/expedited-modeling-burn-events-results-ember' target='_blank'>https://www.epa.gov/air-quality-analysis/expedited-modeling-burn-events-results-ember</a>"
         },
         {

@@ -325,8 +325,8 @@ export function refreshHighlight() {
 
   const geoData = loadedGeoJSON[actualDS];
 
+  // If the target point dataset is still loading for the new date, wait and do NOT clear highlight
   if (!geoData?.features) {
-    clearHighlight();
     return;
   }
 
@@ -369,9 +369,14 @@ export function refreshHighlight() {
     const tooltip = document.getElementById("MapTooltip");
     if (tooltip && generatePopupHTML) {
       tooltip.innerHTML = generatePopupHTML(match.properties, h.dataSource, state.tooltipLocked);
+      tooltip.style.display = "block";
     }
   } else {
-    clearHighlight();
+    // Only clear highlight if the dataset is confirmed loaded for the current date, but this specific point wasn't found
+    const targetDate = document.getElementById("datePicker")?.value;
+    if (loadedSources[actualDS] === targetDate) {
+      clearHighlight();
+    }
   }
 }
 
