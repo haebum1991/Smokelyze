@@ -1,0 +1,111 @@
+
+---
+title: ""
+---
+
+<script>document.body.classList.add("page-about");</script>
+
+<br>
+<h1 style="color: white; text-align: center; text-shadow: 0 0.2rem 0.5rem var(--color-black);">
+  Dan Jaffe, Ph.D.
+  <br>
+  (Principal Investigator)
+</h1>
+
+<div class="reveal-on-scroll" style="text-align: center;">
+  <h3 style="color: white; text-shadow: 0 0.2rem 0.5rem var(--color-black);">
+    Professor & Chair, Physical Sciences Division
+  </h3>
+
+  <p style="color: white; text-shadow: 0 0.2rem 0.5rem var(--color-black);">
+    School of STEM, University of Washington Bothell<br>
+    Professor, Atmospheric Sciences, University of Washington Seattle<br>
+  </p>
+
+  <div class="social-links" style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 1rem;">
+    <a href="https://scholar.google.com/citations?user=iDUkPfAAAAAJ&hl=en" target="_blank" rel="noopener noreferrer">
+      <img src="/images/ggscholar_logo.png" width="30" height="30" alt="Google Scholar">
+    </a>
+  </div>
+  <br>
+</div>
+
+
+<div class="card-about reveal-on-scroll">
+  <h2 style="color: var(--card-shadow);">About Dr. Dan Jaffe</h2>
+  <p style="margin-bottom: 1.5rem;">
+    Dr. Dan Jaffe is a Professor of Environmental Chemistry at the University of Washington. He received his B.S. in
+    Chemistry from the Massachusetts Institute of Technology (MIT) and his Ph.D. in Chemistry from the University of
+    Washington. He is an expert on atmospheric chemistry, ozone photochemistry, urban and regional smog, and long-range
+    transport of pollutants, and is the author of more than 150 peer-reviewed publications on ozone, aerosols, mercury,
+    and other air pollutants. Co-authors on these papers include his graduate students, post-doctoral fellows, and
+    numerous UW Bothell undergraduates.
+  </p>
+  <p style="margin-bottom: 1.5rem;">
+    Dr. Jaffe is widely recognized as an expert on global transport of pollutants, especially transport from Asia to the
+    U.S., and has published several papers on the influence of background sources on regional and urban air quality. He
+    recently participated on the panel for the National Academy of Science's study on the Significance of
+    Intercontinental Transport of Air Pollutants and was chosen as the Fulbright Distinguished Chair in Environmental
+    Sciences.
+  </p>
+  <p style="margin-bottom: 1.5rem;">
+    Dr. Jaffe's research has been funded by the National Science Foundation (NSF), NOAA, NASA, EPA, and industry
+    partners. Recently, he has had several projects funded via crowd-funding. Dr. Jaffe's current projects include
+    studying ozone and particulate matter from global and regional air pollution sources at the Mt. Bachelor Observatory
+    in central Oregon, studying the impacts of wildfires on air quality in the Western U.S., and studying the impacts
+    from diesel-powered trains and coal trains.
+  </p>
+  <hr>
+  <ul>
+    <li><strong style="color: var(--card-shadow);">UW News Page:</strong> <a
+        href="https://www.washington.edu/news/people/dan-jaffe/" target="_blank"
+        rel="noopener noreferrer">https://www.washington.edu/news/people/dan-jaffe/</a></li>
+    <li><strong style="color: var(--card-shadow);">Jaffe Group Website:</strong> <a
+        href="https://sites.uw.edu/jaffe-group/" target="_blank"
+        rel="noopener noreferrer">https://sites.uw.edu/jaffe-group/</a></li>
+  </ul>
+</div>
+<br>
+
+
+<style>
+  body.page-about .container {
+    max-width: 100%;
+    margin: 0 auto;
+
+    background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url("/images/main_bg_2.webp");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 120% auto;
+    background-attachment: fixed;
+    transition: background-position 0.3s linear;
+  }
+
+  body.page-about .content {
+    max-width: 60%;
+  }
+
+  @media (max-width: 1366px) {
+    body.page-about .container {
+      min-height: 100vh;
+      background-size: cover;
+      background-attachment: scroll !important;
+    }
+
+    body.page-about .content {
+      max-width: 90%;
+    }
+  }
+</style>
+
+<script>
+  window.addEventListener("scroll", function () {
+    const container = document.querySelector("body.page-about .container");
+    if (container) {
+      let scrollY = window.pageYOffset;
+      let moveX = 50 - (scrollY * 0.01);
+      container.style.backgroundPosition = moveX + "% center";
+    }
+  });
+</script>
+

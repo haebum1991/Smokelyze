@@ -1,5 +1,6 @@
 
 <h2>Note on Statistics: Here we focus on the impacts of smoke on PM2.5 and O3 concentrations</h2>
+<p>Last Updated: 2026-08-10</p>
 <hr>
 
 <section id="smoke-pm25">
@@ -78,11 +79,10 @@
         Note that the PM<sub>2.5</sub> criteria can differ between datasets due to variations in calculation
         methodologies and time periods. As mentioned above, the criteria for the GAM v1 dataset (May–Sep,
         2018–2023) were based on the <strong>Mean + 1 SD</strong> method and calculated as a single fixed value for each
-        site. In contrast, the GAM v2 dataset (Apr-Oct, 2019–2024) utilizes the <strong>Median + 1 MAD</strong>
-        method calculated on a monthly basis, yielding seven distinct values (one for each month from April to
-        October) per site. These variations in both statistical metrics and temporal resolution may lead to
-        differences in criteria between the two versions, primarily affecting days with PM<sub>2.5</sub>
-        concentrations near the threshold.
+        site. In published literature (e.g., GAM v2 dataset; Lee and Jaffe, 2025; Jaffe et al., 2026), the <strong>Median + 1 MAD</strong>
+        method was calculated on a per-calendar-month basis. In this web application platform, we further enhance this approach by adopting a
+        <strong>5-year rolling window combined with a 3-month seasonal rolling window (target month ± 1 month)</strong> for each target month. This dual-rolling design mitigates the risk of baseline sample scarcity—caused by increasingly frequent wildfire smoke events reducing non-smoke (HMS = 0) background days—while eliminating artificial boundary jumps between adjacent months.
+        Consequently, the datasets provided in <strong>[Resources] &gt; [Data] &gt; [Latest Analysis &amp; Prediction]</strong> are calculated and derived using this 5-year rolling combined with 3-month seasonal rolling PM<sub>2.5</sub>-criteria method.
     </p>
     <p>
         Finally, one variable to pay attention to in our datasets is the "Quant_PM2.5" (Quantile PM<sub>2.5</sub>).
@@ -91,10 +91,16 @@
         (HMS=0).
         This quantile derivation is designed to be fully consistent with the scope of the PM<sub>2.5</sub>-criteria
         calculation;
-        specifically, for the GAM v2 dataset, Quant_PM2.5 is calculated according to each site's distinct monthly ECDF
-        to account for seasonal shifts in the background distribution. The higher this value, the greater the
-        statistical confidence that smoke has influenced the PM<sub>2.5</sub> data. During significant smoke events,
-        we typically observe many adjacent sites with high Quant_PM2.5 values (e.g., >95<sup>th</sup> percentile).
+        specifically, Quant_PM2.5 is calculated according to each site's distinct 5-year rolling and 3-month seasonal rolling (target month ± 1 month) ECDF
+        to account for both seasonal shifts and annual baseline updates.
+    </p>
+    <div class="doc-callout">
+        <strong>Example:</strong><br>
+        • <strong>July 2025 at Site A:</strong> The background ECDF reference distribution is compiled from all non-smoke (HMS = 0) days in <strong>June–August (3-month window) across 2021–2025 (5-year rolling period)</strong>.<br>
+        • <strong>July 2026 at Site A:</strong> The 5-year rolling window shifts to <strong>2022–2026 (June–August)</strong>. Because the reference baseline drops 2021 and incorporates 2026, the ECDF reference curve, PM<sub>2.5</sub>-criteria threshold, and resulting <code>Quant_PM2.5</code> values are updated for 2026. Thus, a daily concentration of 12.0 µg/m³ may evaluate to a slightly different percentile between 2025 and 2026 to reflect evolving multi-year air quality trends.
+    </div>
+    <p>
+        The higher this value, the greater the statistical confidence that smoke has influenced the PM<sub>2.5</sub> data. During significant smoke events, we typically observe many adjacent sites with high Quant_PM2.5 values (e.g., &gt;95<sup>th</sup> percentile).
     </p>
 </section>
 

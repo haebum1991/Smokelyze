@@ -1,24 +1,30 @@
 
 <h2>PM2.5-criteria Calculation</h2>
+<p>Last Updated: 2026-08-10</p>
 <hr>
 
 <section id="pmcrit-overview">
     <h3>1. Overview</h3>
     <p>
-        The <strong>PM2.5-criteria</strong> is a site-specific and month-specific threshold used to distinguish
+        The <strong>PM2.5-criteria</strong> is a site-specific threshold used to distinguish
         background "normal" PM2.5 from smoke-influenced elevated concentrations. This methodology has evolved to
-        improve robustness against outliers and non-normal distributions typical of air quality data.
+        improve robustness against outliers and eliminate abrupt step-changes between adjacent calendar months.
     </p>
     <div class="doc-callout">
         <strong>Methodological Improvement:</strong> While <strong style="color: var(--card-shadow);">Lee and Jaffe
             (2024a; 2024b)</strong> utilized a
         <strong>Mean + Standard Deviation (SD)</strong> approach, the <strong>Median + Median Absolute Deviation
             (MAD)</strong>
-        method was adopted in 
-        <strong style="color: var(--card-shadow);">Lee and Jaffe (2025)</strong> and 
+        method was adopted in
+        <strong style="color: var(--card-shadow);">Lee and Jaffe (2025)</strong> and
         <strong style="color: var(--card-shadow);">Jaffe et al. (2026)</strong> to better handle
-        extreme values and provide a more
-        reliable baseline.
+        extreme values and non-normal distributions.<br><br>
+        <strong>Web App (Smokelyze) Improvement (5-Yr & 3-Mt Rolling Window):</strong> 
+        Building upon the Median + MAD foundation from published literature, 
+        this web platform adopts a combined <strong>5-year rolling window</strong> with a <strong>3-month seasonal rolling window (target month ± 1 month)</strong>. 
+        This enhancement directly addresses the growing risk of baseline sample scarcity,
+        caused by increasingly frequent wildfire smoke events reducing the number of non-smoke (HMS = 0) days,
+        while ensuring sample sufficiency (n ≥ 10) and eliminating artificial step-changes between adjacent months.
     </div>
 </section>
 
@@ -35,8 +41,8 @@
         <div class="doc-flow-step">
             <span class="doc-step-num">2</span>
             <div>
-                <strong>Seasonal Baselining:</strong> Aggregates <strong>background PM2.5 data</strong> (HMS=0) by
-                calendar month using a rolling 5-year window to capture region-specific seasonality.
+                <strong>Seasonal Baselining:</strong> Aggregates <strong>background PM2.5 data</strong> (HMS=0) using a
+                3-month seasonal window (target month ± 1 month, e.g., Apr–Jun for May) across a 5-year rolling window to capture region-specific seasonality and maintain baseline data volume.
             </div>
         </div>
         <div class="doc-flow-step">
@@ -49,15 +55,15 @@
         <div class="doc-flow-step">
             <span class="doc-step-num">4</span>
             <div>
-                <strong>Robust Statistics:</strong> Calculates the monthly <strong>Median and MAD of background
-                    PM2.5</strong> for each station (requires >= 10 valid observations).
+                <strong>Robust Statistics:</strong> Calculates the 5-year 3-month seasonal rolling <strong>Median and MAD of
+                    background PM2.5</strong> for each station and target month (requires ≥ 10 valid observations).
             </div>
         </div>
         <div class="doc-flow-step">
             <span class="doc-step-num">5</span>
             <div>
                 <strong>Threshold Synthesis:</strong> Computes the <strong>PM2.5-criteria</strong> = Median + (k ×
-                MAD), establishing the site-specific threshold for surface smoke identification.
+                MAD), establishing the site-specific threshold for smoke day identification.
             </div>
         </div>
     </div>
@@ -106,7 +112,7 @@
             </tr>
             <tr>
                 <td><code>HMS</code></td>
-                <td>Binary smoke flag (1=Smoke, 0=None)</td>
+                <td>Binary smoke flag (1: Overhead, 0: Non-overhead)</td>
                 <td>1</td>
             </tr>
         </tbody>
@@ -121,34 +127,40 @@ df_hms0 <- df_pm25[, c("AQS", "pm25", "HMS", "year", "month", "day")] %>%
   dplyr::filter(!(month == 7 & day %in% c(4, 5))) # Fireworks exclusion</code></pre>
 
     <h4>- Calculating PM2.5-criteria</h4>
-    <p>For each site and month, the criteria are calculated using the 5-year aggregate distribution to balance stability
-        and relevance.</p>
+    <p>
+        In published studies (<strong style="color: var(--card-shadow);">Lee and Jaffe, 2025</strong>; <strong
+            style="color: var(--card-shadow);">Jaffe et al., 2026</strong>), criteria were computed strictly per calendar month. In this web application, a combined <strong>5-year rolling window</strong> and <strong>3-month seasonal rolling window (target month ± 1 month)</strong> is applied. This dual-rolling design mitigates the risk of baseline sample scarcity caused by declining non-smoke (HMS = 0) days during heavy wildfire seasons while providing smooth, continuous seasonal baseline transitions.
+    </p>
     <div class="doc-callout">
-        <strong>Example (Rolling Baseline):</strong> The criteria for <strong>Jan 2025</strong> at Site A is
-        calculated as the <code>Median + 1 × MAD</code> of all "HMS=0" days in Jan across the
-        <strong>2021–2025</strong> period.
+        <strong>Example (Web App 5-Yr / 3-Month Rolling Baseline):</strong> The criteria for <strong>May 2025</strong> at Site A is
+        calculated as the <code>Median + 1 × MAD</code> of all non-smoke (HMS = 0) days within the 3-month seasonal window (<strong>April–June</strong>) across the <strong>5-year rolling period (2021–2025)</strong>.
     </div>
 
-    <pre><code># Monthly robust statistics (Aggregated over 5 years)
+    <pre><code># Seasonal robust statistics (Web App method: target month ± 1 month over 5 years)
 
 year_target <- max(unique(df_hms0$year))
 year_from <- year_target - 4
 
-df_hms0 <- df_hms0 %>%
-  dplyr::filter(year %in% c((year_from:year_target))) %>%
-  dplyr::select(-year, -HMS, -day) %>%
-  na.omit()
+df_hms0_5yr <- df_hms0 %>%
+  dplyr::filter(year %in% c(year_from:year_target))
 
-df_crit <- df_hms0 %>%
-  dplyr::group_by(AQS, month) %>%
-  dplyr::summarize(
-    n_pm_hms0 = n(),
-    pm_crit_med = median(pm25, na.rm = TRUE),
-    pm_crit_mad = mad(pm25, na.rm = TRUE, constant = 1.4826) # R default
-  )
+# Calculate criteria for each target month (1 to 12) using month ± 1 month window
+df_crit <- dplyr::bind_rows(lapply(1:12, function(mt) {
+  win_mt <- ((mt - 1 + (-1:1)) %% 12) + 1  # e.g., May (5) -> c(4, 5, 6)
+  
+  df_hms0_5yr %>%
+    dplyr::filter(month %in% win_mt) %>%
+    dplyr::group_by(AQS) %>%
+    dplyr::summarize(
+      month = mt,
+      n_pm_hms0 = n(),
+      pm_crit_med = median(pm25, na.rm = TRUE),
+      pm_crit_mad = mad(pm25, na.rm = TRUE, constant = 1.4826) # R default
+    )
+}))
 df_crit$year <- year_target
 
-# Criteria calculation (k = 1.0, or 0.5 if you want)
+# Criteria calculation (k = 1.0, or 0.5 if required)
 k <- 1
 df_crit$pm_crit <- df_crit$pm_crit_med + (k * df_crit$pm_crit_mad)</code></pre>
 
@@ -171,7 +183,8 @@ df_crit$pm_crit <- df_crit$pm_crit_med + (k * df_crit$pm_crit_mad)</code></pre>
             <tr>
                 <td><strong>1.0</strong></td>
                 <td><strong>Standard</strong></td>
-                <td><strong>Optimized balance for national studies</strong> (Lee and Jaffe, 2025; Jaffe et al., 2026)</td>
+                <td><strong>Optimized balance for national studies</strong> (Lee and Jaffe, 2025; Jaffe et al., 2026)
+                </td>
             </tr>
             <tr>
                 <td>1.5</td>
@@ -183,13 +196,14 @@ df_crit$pm_crit <- df_crit$pm_crit_med + (k * df_crit$pm_crit_mad)</code></pre>
 
     <h4 style="margin-top: 2rem;">- State-level Fallback (Imputation)</h4>
     <p>To maintain spatial continuity across the monitoring network, a <strong>State-level Fallback</strong> mechanism
-        is applied. Stations failing the 
+        is applied. Stations failing the
         <strong style="color: var(--card-shadow);">minimum data sufficiency check
-        (n < 10 valid HMS=0 observations)</strong> have their local thresholds replaced by the 
-        <strong style="color: var(--card-shadow);">state-wide average criteria</strong> 
-        for the corresponding month. 
-        This imputation ensures that even sites with sparse background data can effectively
-        isolate smoke events using regional baseline context.</p>
+            (n < 10 valid HMS=0 observations)</strong> have their local thresholds replaced by the
+                <strong style="color: var(--card-shadow);">state-wide average criteria</strong>
+                for the corresponding month.
+                This imputation ensures that even sites with sparse background data can effectively
+                isolate smoke events using regional baseline context.
+    </p>
 
     <!-- 
     <pre><code># Imputation and State-level Fallback logic
@@ -256,20 +270,21 @@ df_crit <- data.table::rbindlist(df_crit_list) %>% data.frame()</code></pre>
 </section>
 
 <section id="pmcrit-mapping">
-    <h3>4. Web App Integration</h3>
-    <p>Following the methodology inspired by 
-    <strong style="color: var(--card-shadow);">Lee and Jaffe (2025)</strong> and 
-    <strong style="color: var(--card-shadow);">Jaffe et al. (2026)</strong>,
-    which used a fixed 6-year period (2019-2024), this application recalibrates these 5-year
-    rolling criteria annually to provide the most current context 
-    for smoke identification in the dynamic US wildfire environment.</p>
+    <h3>4. Web App (Smokelyze) Integration</h3>
+    <p>Building upon the Median + MAD methodology established in
+        <strong style="color: var(--card-shadow);">Lee and Jaffe (2025)</strong> and
+        <strong style="color: var(--card-shadow);">Jaffe et al. (2026)</strong>,
+        the datasets provided in <strong>[Resources] &gt; [Data] &gt; [Latest Analysis &amp; Prediction]</strong> are calculated by applying a dual-rolling baseline design: an annual <strong>5-year rolling window</strong> combined with a <strong>3-month seasonal rolling window (target month ± 1 month)</strong>.
+        Because the 5-year rolling window advances each year, the site-specific PM<sub>2.5</sub>-criteria thresholds are dynamically recalibrated annually. This design safeguards baseline statistical reliability against diminishing non-smoke (HMS = 0) days in intensifying wildfire seasons, while delivering smooth, continuous background thresholds across the continental US monitoring network.
+    </p>
 </section>
 
 <br>
 <hr>
 <p class="doc-footer-text">
-    Jaffe, D., Lee, H., Magzamen, S., Goldberg, D., and O'Dell, K. (2026): 
-    Health and Regulatory Impacts of PM2.5 from Wildland Fires for 2019–2024 in the US, <em>GeoHealth</em>, 10, e2025GH001576
+    Jaffe, D., Lee, H., Magzamen, S., Goldberg, D., and O'Dell, K. (2026):
+    Health and Regulatory Impacts of PM2.5 from Wildland Fires for 2019–2024 in the US, <em>GeoHealth</em>, 10,
+    e2025GH001576
     <a href="https://doi.org/10.1029/2025GH001576" target="_blank"
         rel="noopener noreferrer">https://doi.org/10.1029/2025GH001576</a>
     <br><br>

@@ -486,12 +486,18 @@ title: ""
             "doc-pred-gam-v2": "/docs/doc-pred-gam-v2.html"
         };
 
-        // Dynamically create doc-page divs
-        Object.keys(docSources).forEach((docId, i) => {
+        // URL deep linking support (e.g., /resrc/documents?doc=doc-gam)
+        const params = new URLSearchParams(window.location.search);
+        let initialDoc = params.get("doc") || "doc-citation";
+        if (!docSources[initialDoc]) initialDoc = "doc-citation";
+        const initialSection = params.get("section") || null;
+
+        // Dynamically create doc-page divs (set initialDoc visible immediately to prevent flicker)
+        Object.keys(docSources).forEach((docId) => {
             const div = document.createElement("div");
             div.className = "doc-page reveal-from-right";
             div.id = docId;
-            div.style.display = i === 0 ? "block" : "none";
+            div.style.display = docId === initialDoc ? "block" : "none";
             div.innerHTML = '<p class="doc-loading">Loading...</p>';
             mainArea.appendChild(div);
         });
@@ -581,7 +587,7 @@ title: ""
             }
         }
 
-        function showDoc(docId, sectionId) {
+        function showDoc(docId, sectionId, updateHistory = true) {
             pages.forEach(p => {
                 const isTarget = p.id === docId;
                 p.style.display = isTarget ? "block" : "none";
@@ -607,6 +613,15 @@ title: ""
                     if (s.dataset.section === sectionId) s.classList.add("active");
                 });
             }
+            
+            if (updateHistory) {
+                try {
+                    const newUrl = `?doc=${docId}${sectionId ? "&section=" + sectionId : ""}`;
+                    if (window.location.search !== newUrl) {
+                        history.pushState(null, "", newUrl);
+                    }
+                } catch (err) { }
+            }
 
             loadDoc(docId).then(() => {
                 if (sectionId) {
@@ -629,17 +644,33 @@ title: ""
                 });
             }
         });
+        
+        // Intercept inline document links (e.g., <a href="?doc=doc-pmcrit" data-doc="doc-pmcrit">)
+        document.addEventListener("click", function (e) {
+            const link = e.target.closest("a[data-doc]");
+            if (link) {
+                e.preventDefault();
+                const targetDoc = link.getAttribute("data-doc");
+                const targetSection = link.getAttribute("data-section") || null;
+                if (docSources[targetDoc]) {
+                    showDoc(targetDoc, targetSection);
+                }
+            }
+        });
+
+        // Handle Browser Back / Forward buttons
+        window.addEventListener("popstate", () => {
+            const currentParams = new URLSearchParams(window.location.search);
+            let currentDoc = currentParams.get("doc") || "doc-citation";
+            if (!docSources[currentDoc]) currentDoc = "doc-citation";
+            const currentSec = currentParams.get("section") || null;
+            showDoc(currentDoc, currentSec, false);
+        });
 
         // Pre-load all documents in the background
         Object.keys(docSources).forEach(id => loadDoc(id));
 
-        // URL deep linking support (e.g., /resrc/documents?doc=doc-gam)
-        const params = new URLSearchParams(window.location.search);
-        let initialDoc = params.get("doc") || "doc-citation";
-        if (!docSources[initialDoc]) initialDoc = "doc-citation";
-        const initialSection = params.get("section") || null;
-
-        showDoc(initialDoc, initialSection);
+        showDoc(initialDoc, initialSection, false);
     })();
 </script>
 

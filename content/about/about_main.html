@@ -1,0 +1,80 @@
+
+---
+title: ""
+---
+
+<script>document.body.classList.add("page-about");</script>
+
+<h1 style="text-align: center;">
+  Our Team
+</h1>
+
+<p style="text-align: center; max-width: 800px; margin: 0 auto 3.5rem; line-height: 1.6; font-size: 1.5rem;">
+  Rooted in peer-reviewed research from the University of Washington,
+  our team develops Smokelyze:
+  an open-access platform fusing machine learning,
+  satellite retrievals, and cloud-native spatiotemporal analytics
+  to quantify wildfire smoke impacts on air quality and public health.
+</p>
+
+<div class="team-cards-grid">
+  <!-- Dr. Dan Jaffe Card -->
+  <div class="card-about team-card-item reveal-on-scroll" onclick="location.href='/about/about_djaffe/'">
+    <h2 style="color: var(--card-shadow);">
+      Dan Jaffe, Ph.D.
+    </h2>
+    <p>
+      Principal Investigator (PI)
+    </p>
+    <p>
+      Professor & Chair, Physical Sciences Division, School of STEM, University of Washington Bothell
+    </p>
+  </div>
+
+  <!-- Dr. Haebum Lee Card -->
+  <div class="card-about team-card-item reveal-on-scroll" onclick="location.href='/about/about_hblee/'">
+    <h2 style="color: var(--card-shadow);">
+      Haebum Lee, Ph.D.
+    </h2>
+    <p>
+      Developer & Lead Scientist
+    </p>
+    <p>
+      Postdoctoral Scholar, School of STEM, University of Washington Bothell
+    </p>
+  </div>
+</div>
+
+<style>
+  .team-cards-grid {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2.5rem;
+    max-width: 900px;
+    margin: 0 auto 3rem;
+  }
+
+  .team-card-item {
+    width: 380px;
+    max-width: 100%;
+    padding: 2.4rem 2rem;
+    margin: 0;
+    cursor: pointer;
+    box-sizing: border-box;
+    will-change: transform;
+    transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+
+  .team-card-item:hover {
+    transform: translateY(-4px);
+    border-color: var(--card-shadow);
+    box-shadow: 0.4rem 0.4rem 1.4rem var(--card-shadow);
+  }
+
+  /* Prevent nested link hover flickering */
+  .team-card-item a {
+    pointer-events: none;
+  }
+</style>
+
