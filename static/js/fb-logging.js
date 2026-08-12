@@ -47,6 +47,10 @@ export async function logUserAction(type, payload = {}) {
         layer = datasetNormMap[layer];
     }
     
+    const rawDate = payload.date || document.getElementById("datePicker")?.value || "";
+    const todayStr = new Date().toISOString().split("T")[0];
+    const resolvedDate = (rawDate && rawDate.toUpperCase() !== "LIVE") ? rawDate : todayStr;
+
     let logEntry = {
         id_user: String(uid || ""),
         id_session: String(sessionId || ""),
@@ -61,7 +65,7 @@ export async function logUserAction(type, payload = {}) {
         key_state: String(payload.state || ""),
         key_filename: String(payload.filename || ""),
         key_report_type: String(payload.report_type || ""),
-        key_date: String(payload.date || document.getElementById("datePicker")?.value || "")
+        key_date: String(resolvedDate)
     };
 
     console.log(`[FB-LOG] ${type}:`, logEntry);

@@ -150,8 +150,15 @@ export function generatePopupHTML(p, dataSource, isLocked) {
       if (s === "" || s === "{}" || s === "{ }" || s.toUpperCase() === "NA") return "N/A";
       return s + suffix;
     };
+    
+    const formatAcres = (v) => {
+      if (v === undefined || v === null) return null;
+      const num = Number(v);
+      if (isNaN(num)) return null;
+      return num.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    };
   
-    if (dataSource === "wildfire_inci") {
+    if (["wildfire_inci", "wildfire_inci_curr"].includes(dataSource)) {
       return `
           ${closeBtn}
           <div style="${rowStyleHead}">${ESML(cleanVal(p.IncidentName))}</div>
@@ -166,12 +173,12 @@ export function generatePopupHTML(p, dataSource, isLocked) {
           <div style="${rowStyle}"><b>County:</b> ${ESML(cleanVal(p.POOCounty))}</div>
           <div style="${rowStyle}"><b>Type:</b> ${ESML(cleanVal(p.IncidentTypeCategory))}</div>
           <div style="${rowStyle}"><b>Cause:</b> ${ESML(cleanVal(p.FireCause))}</div>
-          <div style="${rowStyle}"><b>Acres:</b> ${ESML(cleanVal(p.DiscoveryAcres))}</div>
+          <div style="${rowStyle}"><b>Acres:</b> ${ESML(cleanVal(formatAcres(p.DiscoveryAcres)))}</div>
           <div style="${rowStyle}"><b>Latitude:</b> ${ESML(smartFmt(p.lat, "lat", dataSource, 3))}</div>
           <div style="${rowStyle}"><b>Longitude:</b> ${ESML(smartFmt(p.lon, "lon", dataSource, 3))}</div>`;
     }
   
-    if (dataSource === "wildfire_peri") {
+    if (["wildfire_peri", "wildfire_peri_curr"].includes(dataSource)) {
       return `
           ${closeBtn}
           <div style="${rowStyleHead}">${ESML(cleanVal(p.poly_IncidentName))}</div>
@@ -186,7 +193,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
           <div style="${rowStyle}"><b>County:</b> ${ESML(cleanVal(p.attr_POOCounty))}</div>
           <div style="${rowStyle}"><b>Type:</b> ${ESML(cleanVal(p.attr_IncidentTypeCategory))}</div>
           <div style="${rowStyle}"><b>Cause:</b> ${ESML(cleanVal(p.attr_FireCause))}</div>
-          <div style="${rowStyle}"><b>Acres:</b> ${ESML(cleanVal(p.poly_GISAcres))}</div>`;
+          <div style="${rowStyle}"><b>Acres:</b> ${ESML(cleanVal(formatAcres(p.poly_GISAcres)))}</div>`;
     }
     
     if (dataSource === "MapPost") {

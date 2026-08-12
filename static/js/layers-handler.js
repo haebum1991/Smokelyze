@@ -120,8 +120,13 @@ function bindClick(layerId, dataSource) {
                 const mapping = DATASET_SOURCE_MAP[dsKey];
                 const sourceKey = (mapping && typeof mapping === "object") ? mapping.source : (mapping || dsKey);
 
-                const coords = topF.geometry.coordinates;
-                highlightLocation?.(coords, topF.properties, sourceKey);
+                let coords = topF.geometry.type === "Point" ? topF.geometry.coordinates : (e.lngLat ? [e.lngLat.lng, e.lngLat.lat] : null);
+                if (!coords && topF.geometry.coordinates) {
+                    coords = (topF.geometry.type === "Polygon") ? topF.geometry.coordinates[0][0] : topF.geometry.coordinates[0][0][0];
+                }
+                if (coords) {
+                    highlightLocation?.(coords, topF.properties, sourceKey);
+                }
                 e.preventDefault();
 
                 // [Report to Brain]
@@ -138,7 +143,7 @@ function bindClick(layerId, dataSource) {
                     logUserAction("click_point", {
                         dataset: sourceKey,
                         layer: cleanLayerId,
-                        aqs: props.AQS || props.AQS_O3 || props.AQS_PM,
+                        aqs: props.AQS || props.AQS_O3 || props.AQS_PM || props.UniqueFireIdentifier || props.attr_UniqueFireIdentifier,
                         state: props.state || "N/A"
                     });
                 }

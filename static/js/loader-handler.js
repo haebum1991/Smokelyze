@@ -73,6 +73,14 @@ export async function loadSourceData(sourceKey, isoDate) {
 
     const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
     if (!ds) return;
+    
+    const liveKeys = ExcludeLayerGroups.liveKeys || [];
+    if (liveKeys.includes(sourceKey)) {
+        if (loadedGeoJSON[sourceKey]) {
+            return;
+        }
+        isoDate = "LIVE";
+    }
 
     ensureLayers();
 
@@ -128,7 +136,7 @@ export async function loadSourceData(sourceKey, isoDate) {
             );
         }
 
-        if (["wildfire_inci", "wildfire_peri"].includes(sourceKey) && data.features) {
+        if (["wildfire_inci", "wildfire_peri", "wildfire_inci_curr", "wildfire_peri_curr"].includes(ds.source) && data.features) {
             const stateMap = {
                 "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas", "CA": "California",
                 "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware", "DC": "District of Columbia", "FL": "Florida", "GA": "Georgia",

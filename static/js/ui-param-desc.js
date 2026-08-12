@@ -151,33 +151,51 @@ export const DescData = {
     ],
     "desc-nifc": [
         {
+            id: "wildfire-inci-curr",
+            title: "WF incidents (Live)",
+            desc: "<b>Wildfire (WF) live current incidents </b> are fetched directly from " +
+                "<b>NIFC (National Interagency Fire Center) WFIGS (Wildland Fire Interagency Geospatial Services)</b>. " +
+                "This dataset provides real-time verified point locations of current active wildland fires." +
+                "<br><ul><li>Update cycle: <b>Every hour</b></li>" +
+                "<li>Data Source: <a href='https://services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/WFIGS_Incident_Locations_Current/FeatureServer/0' target='_blank' rel='noopener noreferrer'>NIFC WFIGS Incident Locations Current (ArcGIS REST)</a></li></ul>"
+        },
+        {
+            id: "wildfire-peri-curr",
+            title: "WF perimeters (Live)",
+            desc: "<b>Wildfire (WF) live current perimeters </b> are fetched directly from " +
+                "<b>NIFC (National Interagency Fire Center) WFIGS (Wildland Fire Interagency Geospatial Services)</b>. " +
+                "This dataset provides real-time perimeter boundary polygons of current active wildland fires." +
+                "<br><ul><li>Update cycle: <b>Every hour</b></li>" +
+                "<li>Data Source: <a href='https://services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/WFIGS_Interagency_Perimeters_Current/FeatureServer/0' target='_blank' rel='noopener noreferrer'>NIFC WFIGS Interagency Perimeters Current (ArcGIS REST)</a></li></ul>"
+        },
+        {
             id: "wildfire-inci",
-            title: "WF incident locations",
-            desc: "<b>Wildfire (WF) incident locations </b> are retrieved from the " + 
-                  "<b>NIFC (National Interagency Fire Center) WFIGS (Wildland Fire Interagency Geospatial Services)</b>. " + 
-                  "This dataset provides verified information on wildland fire occurrences based on " + 
-                  "<b>UTC time</b>, " + 
-                  "including <em>incident name</em>, <em>fire cause</em>, and <em>burn area (acres)</em>. " +
-                  "This data includes <b>precise discovery coordinates</b> as reported by fire management agencies via the Integrated Reporting of Wildland-Fire Information (IRWIN). " +
-                  "The system captures a wide range of incident types and categories, ensuring a comprehensive overview of fire events across the region." +
-                  "<br><ul><li>Update cycle: <b>Every 6 hours</b> (at 0, 6, 12, 18 UTC)</li>" +
-                  "<li>In our app, <b>" +
-                  "this data is available starting from 2018-01-01. </b>" +
-                  "The data is collected every 6 hours and the map is updated accordingly. </li></ul>"
+            title: "WF incidents",
+            desc: "<b>Wildfire (WF) incidents </b> are retrieved from the " +
+                "<b>NIFC (National Interagency Fire Center) WFIGS (Wildland Fire Interagency Geospatial Services)</b>. " +
+                "This dataset provides verified information on wildland fire occurrences based on " +
+                "<b>UTC time</b>, " +
+                "including <em>incident name</em>, <em>fire cause</em>, and <em>burn area (acres)</em>. " +
+                "This data includes <b>precise discovery coordinates</b> as reported by fire management agencies via the Integrated Reporting of Wildland-Fire Information (IRWIN). " +
+                "The system captures a wide range of incident types and categories, ensuring a comprehensive overview of fire events across the region." +
+                "<br><ul><li>Update cycle: <b>Every 6 hours</b> (at 0, 6, 12, 18 UTC)</li>" +
+                "<li><b>Filtering Note</b>: Historical data is queried and grouped based on <b>Discovery Time (FireDiscoveryDateTime)</b>.</li>" +
+                "<li>In our app, <b>this data is available starting from 2018-01-01. </b></li>" +
+                "<li>Data Source: <a href='https://services3.arcgis.com/T4QMspbfLg3qTGWY/ArcGIS/rest/services/WFIGS_Incident_Locations/FeatureServer/0' target='_blank' rel='noopener noreferrer'>NIFC WFIGS Incident Locations (ArcGIS REST)</a></li></ul>"
         },
         {
             id: "wildfire-peri",
             title: "WF perimeters",
-            desc: "<b>Wildfire (WF) interagency perimeters </b> are retrieved from the " + 
-                  "<b>NIFC (National Interagency Fire Center) WFIGS (Wildland Fire Interagency Geospatial Services)</b>. " + 
-                  "This dataset provides official polygon perimeter boundaries of active and historical wildland fires based on " + 
-                  "<b>UTC time</b>, " + 
-                  "including <em>polygon incident name</em>, <em>GIS acres</em>, and <em>IRWIN ID</em>. " +
-                  "This spatial data captures the actual spatial extent and perimeter geometry as mapped by interagency fire management teams via the Integrated Reporting of Wildland-Fire Information (IRWIN)." +
-                  "<br><ul><li>Update cycle: <b>Every 6 hours</b> (at 0, 6, 12, 18 UTC)</li>" +
-                  "<li>In our app, <b>" +
-                  "this data is available starting from 2020-01-01. </b>" +
-                  "The polygon perimeter data is collected every 6 hours and the map is updated accordingly. </li></ul>"
+            desc: "<b>Wildfire (WF) interagency perimeters </b> are retrieved from the " +
+                "<b>NIFC (National Interagency Fire Center) WFIGS (Wildland Fire Interagency Geospatial Services)</b>. " +
+                "This dataset provides official polygon perimeter boundaries of active and historical wildland fires based on " +
+                "<b>UTC time</b>, " +
+                "including <em>polygon incident name</em>, <em>GIS acres</em>, and <em>IRWIN ID</em>. " +
+                "This spatial data captures the actual spatial extent and perimeter geometry as mapped by interagency fire management teams via the Integrated Reporting of Wildland-Fire Information (IRWIN)." +
+                "<br><ul><li>Update cycle: <b>Every 6 hours</b> (at 0, 6, 12, 18 UTC)</li>" +
+                "<li><b>Filtering Note</b>: Historical perimeter data is queried and grouped based on <b>Discovery Time (attr_FireDiscoveryDateTime)</b>.</li>" +
+                "<li>In our app, <b>this data is available starting from 2020-01-01. </b></li>" +
+                "<li>Data Source: <a href='https://services3.arcgis.com/T4QMspbfLg3qTGWY/ArcGIS/rest/services/WFIGS_Interagency_Perimeters/FeatureServer/0' target='_blank' rel='noopener noreferrer'>NIFC WFIGS Interagency Perimeters (ArcGIS REST)</a></li></ul>"
         }
     ],
     "desc-airnow": [
@@ -621,36 +639,12 @@ export function renderParamDesc(dsKey) {
     items.forEach(item => {
         const safeTitle = ESML(item.title);
 
-        if (item.id === "wildfire-news") {
-            html += `
-                <div class="Desc-item">
-                    <h4>${safeTitle} <canvas class="ui-pulsing-icon" data-type="news" width="30" height="30" style="vertical-align:middle; margin-left:0.4rem;"></canvas></h4>
-                    <p>${item.desc}</p>
-                </div>
-            `;
-        } else if (item.id === "wildfire-inci") {
-            html += `
-                <div class="Desc-item">
-                    <h4>${safeTitle} <canvas class="ui-pulsing-icon" data-type="fire" width="30" height="30" style="vertical-align:middle; margin-left:0.4rem;"></canvas></h4>
-                    <p>${item.desc}</p>
-                </div>
-            `;
-        } else if (item.id === "MapPost") {
-            html += `
-                <div class="Desc-item">
-                    <h4>${safeTitle} <canvas class="ui-pulsing-icon" data-type="alert" width="30" height="30" style="vertical-align:middle; margin-left:0.4rem;"></canvas></h4>
-                    <p>${item.desc}</p>
-                </div>
-            `;
-        } else {
-            html += `
-                <div class="Desc-item">
-                    <h4>${safeTitle}</h4>
-                    <p>${item.desc}</p>
-                </div>
-            `;
-        }
-
+        html += `
+            <div class="Desc-item">
+                <h4>${safeTitle}</h4>
+                <p>${item.desc}</p>
+            </div>
+        `;
     });
 
     if (html === "") {

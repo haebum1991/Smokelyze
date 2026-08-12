@@ -101,13 +101,19 @@ export function getEffectiveDataset(isoDate) {
 // Data 추가시 로직 추가 필요 부분**
 // url generator for gzfile (published data)
 export function urlByDateGZfile(ds, isoDate) {
+
+  const cb = getCacheBuster(isoDate);
+
+  if (["wildfire_inci_curr", "wildfire_peri_curr"].includes(ds?.source)) {
+    return `${ds.gzfileBaseUrlDate}/${ds.source}/${ds.prefix}latest.geojson.gz${cb}`;
+  }
+  
   const d = new Date(isoDate);
   if (isNaN(d.getTime())) return null;
   const yyyy = d.getUTCFullYear();
   const mm = pad2(d.getUTCMonth() + 1);
   const dd = pad2(d.getUTCDate());
 
-  const cb = getCacheBuster(isoDate);
   if (["smoke", "fire", "airnow_daily", "airnow_hourly"].includes(ds.source)) {
     // /gzfileBaseUrlDate/YYYY/PREFIX_YYYY-MM-DD.geojson
     return `${ds.gzfileBaseUrlDate}/${yyyy}/${ds.prefix}${yyyy}-${mm}-${dd}.geojson.gz${cb}`;
@@ -401,6 +407,7 @@ export function highlightLocation(coords, p, dataSource, targetZoom = 8) {
     else if (p.AQS_O3) { idKey = "AQS_O3"; idVal = p.AQS_O3; }
     else if (p.AQS_PM) { idKey = "AQS_PM"; idVal = p.AQS_PM; }
     else if (p.ID) { idKey = "ID"; idVal = p.ID; }
+    else if (p.IrwinID || p.poly_IRWINID) { idKey = p.IrwinID ? "IrwinID" : "poly_IRWINID"; idVal = p.IrwinID || p.poly_IRWINID; }
     else if (p.site_name) { idKey = "site_name"; idVal = p.site_name; }
     else if (p.link) { idKey = "link"; idVal = p.link; }
     else if (p.docId) { idKey = "docId"; idVal = p.docId; }

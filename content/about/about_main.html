@@ -19,7 +19,7 @@ title: ""
 
 <div class="team-cards-grid">
   <!-- Dr. Dan Jaffe Card -->
-  <div class="card-about team-card-item reveal-on-scroll" onclick="location.href='/about/about_djaffe/'">
+  <div class="card-about team-card-item" onclick="location.href='/about/about_djaffe/'">
     <h2 style="color: var(--card-shadow);">
       Dan Jaffe, Ph.D.
     </h2>
@@ -32,7 +32,7 @@ title: ""
   </div>
 
   <!-- Dr. Haebum Lee Card -->
-  <div class="card-about team-card-item reveal-on-scroll" onclick="location.href='/about/about_hblee/'">
+  <div class="card-about team-card-item" onclick="location.href='/about/about_hblee/'">
     <h2 style="color: var(--card-shadow);">
       Haebum Lee, Ph.D.
     </h2>
@@ -62,8 +62,19 @@ title: ""
     margin: 0;
     cursor: pointer;
     box-sizing: border-box;
-    will-change: transform;
+    opacity: 0;
+    animation: pureFadeIn 1.0s ease-out forwards;
     transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+
+  @keyframes pureFadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
 
   .team-card-item:hover {

@@ -5,7 +5,12 @@
  
 import { regionStats } from "./layers-state.js";
 import { updateStateShading } from "./layers-colors.js";
-import { LAYER_TEMPLATES, DATASET_SOURCE_MAP, DATA_IMPORT_METHOD } from "./layers-def.js";
+import { 
+    LAYER_TEMPLATES, 
+    DATASET_SOURCE_MAP, 
+    DATA_IMPORT_METHOD, 
+    ExcludeLayerGroups 
+} from "./layers-def.js";
 import { map } from "./map-init.js";
 import { EMPTY_FC } from "./layers-constants.js";
 
@@ -64,8 +69,11 @@ export function resetLoadedSources(updateWildfireNewsList) {
     
     // 1. [Fix] Force WebGL context to clear textures by feeding empty data 
     // before destroying the JS variables. This prevents Mapbox black screen crashes.
+    const liveKeys = ExcludeLayerGroups.liveKeys || [];
+    
     if (map && map.isStyleLoaded()) {
         Object.keys(loadedSources).forEach(sourceKey => {
+            if (liveKeys.includes(sourceKey)) return;
             const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
             const targetSourceId = (ds && ds.source) ? ds.source : sourceKey;
             
@@ -77,15 +85,18 @@ export function resetLoadedSources(updateWildfireNewsList) {
     }
     
     Object.keys(loadedSources).forEach(key => {
+        if (liveKeys.includes(key)) return;
         loadedSources[key] = null;
         delete loadedSources[key];
     });
     Object.keys(loadedGeoJSON).forEach(key => {
+        if (liveKeys.includes(key)) return;
         loadedGeoJSON[key] = null;
         delete loadedGeoJSON[key];
     });
     loadedNewsFeatures.length = 0;
     Object.keys(modelStatsCache).forEach(key => {
+        if (liveKeys.includes(key)) return;
         modelStatsCache[key] = null;
         delete modelStatsCache[key];
     });

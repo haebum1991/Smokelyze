@@ -3,125 +3,152 @@
  * 레이어 정의 및 템플릿: 각 데이터셋별 필드 정보, 렌더링 스타일, 데이터 시각화 규칙을 정의
  */
 export const ExcludeLayerGroups = {
-  
-  // ========= Common Groups =========
-  satelliteLayers: [
-      "burn", "smoke", "fire", 
-      "tempo-no2", "tempo-hcho", 
-      "tropomi-no2", "tropomi-hcho", 
-      "hrrr-colmd", "hrrr-massden",
-      "goes-aod-east", "goes-aod-west",
-      "goes-geocolor-east", "goes-geocolor-west",
-      "viirs-truecolor"
-  ],
 
-  // [layers-handler.js] > [addSourceIfMissing]
-  pngLayers: [
-      "tempo-no2", "tempo-hcho", 
-      "tropomi-no2", "tropomi-hcho", 
-      "hrrr-colmd", "hrrr-massden",
-      "goes-aod-east", "goes-aod-west",
-      "goes-geocolor-east", "goes-geocolor-west",
-      "viirs-truecolor"
-  ],
+    // =========================================================================
+    //  GROUP 1: UI & Map Layer Templates (Find by [key] - Uses hyphens "-")
+    // =========================================================================
 
-  // ========= Find by [key] =========
-  // [layers-handler.js] > [applyLayerToggles] > [EXCLUDED]
-  liveUpdateLayers: [
-      "wildfire-peri", "wildfire-inci", "wildfire-news", "MapPost"
-  ],
+    // 1-1. Satellite & Raster Layer Categories
+    satelliteLayers: [
+        "burn", "smoke", "fire",
+        "tempo-no2", "tempo-hcho",
+        "tropomi-no2", "tropomi-hcho",
+        "hrrr-colmd", "hrrr-massden",
+        "goes-aod-east", "goes-aod-west",
+        "goes-geocolor-east", "goes-geocolor-west",
+        "viirs-truecolor"
+    ],
 
-  // [layers-colors.js] > [updateStateShading] > [EXCLUDED]
-  stateShading: [
-      "smoke", 
-      "wildfire-peri", "wildfire-inci", "wildfire-news", "MapPost",
-      "tempo-no2", "tempo-hcho", 
-      "tropomi-no2", "tropomi-hcho",
-      "hysplit", 
-      "hrrr-colmd", "hrrr-massden",
-      "goes-aod-east", "goes-aod-west",
-      "goes-geocolor-east", "goes-geocolor-west",
-      "viirs-truecolor"
-  ],
+    // [layers-handler.js] > [addSourceIfMissing]
+    pngLayers: [
+        "tempo-no2", "tempo-hcho",
+        "tropomi-no2", "tropomi-hcho",
+        "hrrr-colmd", "hrrr-massden",
+        "goes-aod-east", "goes-aod-west",
+        "goes-geocolor-east", "goes-geocolor-west",
+        "viirs-truecolor"
+    ],
 
-  // [layers-tooltip.js] > [stateHoverHTML] > [EXCLUDED]
-  stateHover: [
-      "wildfire-peri", "wildfire-inci", "wildfire-news", "MapPost",
-      "tempo-no2", "tempo-hcho", 
-      "tropomi-no2", "tropomi-hcho", 
-      "hysplit", 
-      "hrrr-colmd", "hrrr-massden",
-      "goes-aod-east", "goes-aod-west",
-      "goes-geocolor-east", "goes-geocolor-west",
-      "viirs-truecolor"
-  ],
+    // 1-2. UI Feature & Chart Exclusions
+    // [layers-handler.js] > [applyLayerToggles] > [EXCLUDED]
+    liveUpdateLayers: [
+        "wildfire-peri-curr", "wildfire-inci-curr",
+        "wildfire-peri", "wildfire-inci",
+        "wildfire-news", "MapPost"
+    ],
 
-  // [stats-common.js] > [getActiveModelLayers] > [EXCLUDED]
-  modelTable: [
-      "burn", "smoke", "fire", 
-      "wildfire-peri", "wildfire-inci", "wildfire-news", "MapPost",
-      "hysplit", 
-      "goes-geocolor-east", "goes-geocolor-west",
-      "viirs-truecolor"
-  ],
+    // [layers-colors.js] > [updateStateShading] > [EXCLUDED]
+    stateShading: [
+        "smoke",
+        "wildfire-peri-curr", "wildfire-inci-curr",
+        "wildfire-peri", "wildfire-inci",
+        "wildfire-news", "MapPost",
+        "tempo-no2", "tempo-hcho",
+        "tropomi-no2", "tropomi-hcho",
+        "hysplit",
+        "hrrr-colmd", "hrrr-massden",
+        "goes-aod-east", "goes-aod-west",
+        "goes-geocolor-east", "goes-geocolor-west",
+        "viirs-truecolor"
+    ],
 
-  // [stats-data-search.js] > [updateVisibility] > [EXCLUDED]
-  // [loader.js] > [updateAllActiveSources] > [EXCLUDED]
-  searchSite: [
-      "burn", "smoke", "fire", 
-      "wildfire-peri", "wildfire-inci", "wildfire-news", "MapPost",
-      "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2", 
-      "airnow-daily-pm25", "airnow-daily-mda8", 
-      "tempo-no2", "tempo-hcho", 
-      "tropomi-no2", "tropomi-hcho", 
-      "hysplit", 
-      "hrrr-colmd", "hrrr-massden",
-      "goes-aod-east", "goes-aod-west",
-      "goes-geocolor-east", "goes-geocolor-west",
-      "viirs-truecolor"
-  ],
+    // [layers-tooltip.js] > [stateHoverHTML] > [EXCLUDED]
+    stateHover: [
+        "wildfire-peri-curr", "wildfire-inci-curr",
+        "wildfire-peri", "wildfire-inci",
+        "wildfire-news", "MapPost",
+        "tempo-no2", "tempo-hcho",
+        "tropomi-no2", "tropomi-hcho",
+        "hysplit",
+        "hrrr-colmd", "hrrr-massden",
+        "goes-aod-east", "goes-aod-west",
+        "goes-geocolor-east", "goes-geocolor-west",
+        "viirs-truecolor"
+    ],
 
-  // [stats-plot-dy-scatter.js] > [getActiveModelLayers] > [EXCLUDED]
-  plotScatter: [
-      "burn", "smoke", "fire", 
-      "wildfire-peri", "wildfire-inci", "wildfire-news", "MapPost",
-      "tempo-no2", "tempo-hcho", 
-      "tropomi-no2", "tropomi-hcho",
-      "hysplit", 
-      "hrrr-colmd", "hrrr-massden",
-      "goes-aod-east", "goes-aod-west",
-      "goes-geocolor-east", "goes-geocolor-west",
-      "viirs-truecolor"
-  ],
+    // [stats-common.js] > [getActiveModelLayers] > [EXCLUDED]
+    modelTable: [
+        "burn", "smoke", "fire",
+        "wildfire-peri-curr", "wildfire-inci-curr",
+        "wildfire-peri", "wildfire-inci",
+        "wildfire-news", "MapPost",
+        "hysplit",
+        "goes-geocolor-east", "goes-geocolor-west",
+        "viirs-truecolor"
+    ],
 
-  // ========= Find by [source] =========
-  // [loader.js] > [loadSourceData] > [GZIP_DATASETS]
-  formatGzip: [
-      "gam_v2", "gam_v1", "pm_cbsa", "epa_ember", 
-      "wildfire_news", "wildfire_inci", "wildfire_peri", 
-      "smoke", "fire", 
-      "airnow_daily", 
-      "gam_v2_pred", "pm_cbsa_pred"
-  ],
+    // [stats-data-search.js] > [updateVisibility] > [EXCLUDED]
+    // [loader.js] > [updateAllActiveSources] > [EXCLUDED]
+    searchSite: [
+        "burn", "smoke", "fire",
+        "wildfire-peri-curr", "wildfire-inci-curr",
+        "wildfire-peri", "wildfire-inci",
+        "wildfire-news", "MapPost",
+        "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2",
+        "airnow-daily-pm25", "airnow-daily-mda8",
+        "tempo-no2", "tempo-hcho",
+        "tropomi-no2", "tropomi-hcho",
+        "hysplit",
+        "hrrr-colmd", "hrrr-massden",
+        "goes-aod-east", "goes-aod-west",
+        "goes-geocolor-east", "goes-geocolor-west",
+        "viirs-truecolor"
+    ],
 
-  // [loader.js] > [loadSourceData] > Authentication required (Published data)
-  // [loader.js] > [updateAllActiveSources] > Clear on logout
-  restrictedSources: [
-      "gam_v2", "gam_v1", "pm_cbsa", "epa_ember", 
-      "gam_v2_pred", "pm_cbsa_pred",
-      "smoke", "fire", "burn", 
-      "tempo-no2", "tempo-hcho", 
-      "tropomi-no2", "tropomi-hcho", 
-      "hrrr-colmd", "hrrr-massden",
-      "goes-aod-east", "goes-aod-west",
-      "goes-geocolor-east", "goes-geocolor-west",
-      "viirs-truecolor"
-  ],
+    // [stats-plot-dy-scatter.js] > [getActiveModelLayers] > [EXCLUDED]
+    plotScatter: [
+        "burn", "smoke", "fire",
+        "wildfire-peri-curr", "wildfire-inci-curr",
+        "wildfire-peri", "wildfire-inci",
+        "wildfire-news", "MapPost",
+        "tempo-no2", "tempo-hcho",
+        "tropomi-no2", "tropomi-hcho",
+        "hysplit",
+        "hrrr-colmd", "hrrr-massden",
+        "goes-aod-east", "goes-aod-west",
+        "goes-geocolor-east", "goes-geocolor-west",
+        "viirs-truecolor"
+    ],
 
-  // [loader.js] > [loadSourceData] > Calculate state-level statistics (Public data)
-  publicStatsSources: [
-      "airnow_daily", "gam_v2_pred", "pm_cbsa_pred"
-  ]
+
+    // =========================================================================
+    //  GROUP 2: Server Datasets & Data Loader (Find by [source] - Uses underscores "_")
+    // =========================================================================
+
+    // 2-1. [loader.js] > [loadSourceData] > [GZIP_DATASETS]
+    formatGzip: [
+        "gam_v2", "gam_v1", "pm_cbsa", "epa_ember",
+        "wildfire_inci_curr", "wildfire_peri_curr",
+        "wildfire_inci", "wildfire_peri",
+        "wildfire_news",
+        "smoke", "fire",
+        "airnow_daily",
+        "gam_v2_pred", "pm_cbsa_pred"
+    ],
+
+    // 2-2. [loader.js] > [loadSourceData] > Authentication required (Published data)
+    //      [loader.js] > [updateAllActiveSources] > Clear on logout
+    restrictedSources: [
+        "gam_v2", "gam_v1", "pm_cbsa", "epa_ember",
+        "gam_v2_pred", "pm_cbsa_pred",
+        "smoke", "fire", "burn",
+        "tempo-no2", "tempo-hcho",
+        "tropomi-no2", "tropomi-hcho",
+        "hrrr-colmd", "hrrr-massden",
+        "goes-aod-east", "goes-aod-west",
+        "goes-geocolor-east", "goes-geocolor-west",
+        "viirs-truecolor"
+    ],
+
+    // 2-3. [loader.js] > [loadSourceData] > Calculate state-level statistics (Public data)
+    publicStatsSources: [
+        "airnow_daily", "gam_v2_pred", "pm_cbsa_pred"
+    ],
+
+    // 2-4. [loader-state.js] > [resetLoadedSources] > Preserve cache across date changes
+    liveKeys: [
+        "wildfire_inci_curr", "wildfire_peri_curr"
+    ]
 };
 
 import { generatePopupHTML } from "./layers-tooltip.js";
@@ -139,7 +166,19 @@ import {
 } from "./layers-constants.js";
 
 export const DATA_IMPORT_METHOD = {
-
+  
+  "wildfire-peri-curr": {
+      key: "wildfire-peri-curr",
+      source: "wildfire_peri_curr",
+      prefix: "wildfire_peri_curr_",
+      gzfileBaseUrlDate: "/realtime"
+  },
+  "wildfire-inci-curr": {
+      key: "wildfire-inci-curr",
+      source: "wildfire_inci_curr",
+      prefix: "wildfire_inci_curr_",
+      gzfileBaseUrlDate: "/realtime"
+  },
   "wildfire-peri": {
       key: "wildfire-peri",
       source: "wildfire_peri",
@@ -441,9 +480,11 @@ export const DATASET_SOURCE_MAP = {
     "airnow-daily-mda8": "airnow_daily",
     // ---- [External data] AirNow ----
     
-    "wildfire-news": "wildfire_news",
+    "wildfire-inci-curr": "wildfire_inci_curr",
+    "wildfire-peri-curr": "wildfire_peri_curr",
     "wildfire-inci": "wildfire_inci",
     "wildfire-peri": "wildfire_peri",
+    "wildfire-news": "wildfire_news",
     "MapPost": "MapPost",
     
     "tempo-no2": "tempo-no2",
@@ -607,8 +648,10 @@ export function getLayerDef(key, sourceKey, fieldName, breaks, colors, opts = {}
 
 export const LAYER_TEMPLATES = [
     // --- Real-time data ---
+    { duration: "daily", id: "wildfire-peri-curr", field: "poly_IncidentName", breaks: [], colors: ["red"], title: "WF perimeters (Live)", datasets: ["wildfire-peri-curr"], type: "fill", unit: "" },
+    { duration: "daily", id: "wildfire-inci-curr", field: "IncidentName", breaks: [], colors: ["orange"], title: "WF incidents (Live)", datasets: ["wildfire-inci-curr"], type: "symbol", iconImage: "pulsing-fire", unit: "" },
     { duration: "daily", id: "wildfire-peri", field: "poly_IncidentName", breaks: [], colors: ["red"], title: "WF perimeters", datasets: ["wildfire-peri"], type: "fill", unit: "" },
-    { duration: "daily", id: "wildfire-inci", field: "IncidentName", breaks: [], colors: ["orange"], title: "WF incident locations", datasets: ["wildfire-inci"], type: "symbol", iconImage: "pulsing-fire", unit: "" },
+    { duration: "daily", id: "wildfire-inci", field: "IncidentName", breaks: [], colors: ["orange"], title: "WF incidents", datasets: ["wildfire-inci"], type: "symbol", iconImage: "pulsing-fire", unit: "" },
     { duration: "daily", id: "wildfire-news", field: "title", breaks: [], colors: ["blue"], title: "Wildfire News", datasets: ["wildfire-news"], type: "symbol", iconImage: "pulsing-news", unit: "" },
     { duration: "daily", id: "MapPost", field: "title", breaks: [], colors: ["red"], title: "MapPost", datasets: ["MapPost"], type: "symbol", iconImage: "pulsing-alert", unit: "" },
 
