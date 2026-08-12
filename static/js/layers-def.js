@@ -28,13 +28,13 @@ export const ExcludeLayerGroups = {
   // ========= Find by [key] =========
   // [layers-handler.js] > [applyLayerToggles] > [EXCLUDED]
   liveUpdateLayers: [
-      "wildfire-news", "wildfire-nifc", "MapPost"
+      "wildfire-news", "wildfire-inci", "wildfire-peri", "MapPost"
   ],
 
   // [layers-colors.js] > [updateStateShading] > [EXCLUDED]
   stateShading: [
       "smoke", 
-      "wildfire-news", "wildfire-nifc", "MapPost", 
+      "wildfire-news", "wildfire-inci", "wildfire-peri", "MapPost",
       "tempo-no2", "tempo-hcho", 
       "tropomi-no2", "tropomi-hcho",
       "hysplit", 
@@ -46,7 +46,7 @@ export const ExcludeLayerGroups = {
 
   // [layers-tooltip.js] > [stateHoverHTML] > [EXCLUDED]
   stateHover: [
-      "wildfire-news", "wildfire-nifc", "MapPost", 
+      "wildfire-news", "wildfire-inci", "wildfire-peri", "MapPost",
       "tempo-no2", "tempo-hcho", 
       "tropomi-no2", "tropomi-hcho", 
       "hysplit", 
@@ -59,7 +59,7 @@ export const ExcludeLayerGroups = {
   // [stats-common.js] > [getActiveModelLayers] > [EXCLUDED]
   modelTable: [
       "burn", "smoke", "fire", 
-      "wildfire-news", "wildfire-nifc", "MapPost", 
+      "wildfire-news", "wildfire-inci", "wildfire-peri", "MapPost",
       "hysplit", 
       "goes-geocolor-east", "goes-geocolor-west",
       "viirs-truecolor"
@@ -69,7 +69,7 @@ export const ExcludeLayerGroups = {
   // [loader.js] > [updateAllActiveSources] > [EXCLUDED]
   searchSite: [
       "burn", "smoke", "fire", 
-      "wildfire-news", "wildfire-nifc", "MapPost", 
+      "wildfire-news", "wildfire-inci", "wildfire-peri", "MapPost",
       "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2", 
       "airnow-daily-pm25", "airnow-daily-mda8", 
       "tempo-no2", "tempo-hcho", 
@@ -84,7 +84,7 @@ export const ExcludeLayerGroups = {
   // [stats-plot-dy-scatter.js] > [getActiveModelLayers] > [EXCLUDED]
   plotScatter: [
       "burn", "smoke", "fire", 
-      "wildfire-news", "wildfire-nifc", "MapPost", 
+      "wildfire-news", "wildfire-inci", "wildfire-peri", "MapPost",
       "tempo-no2", "tempo-hcho", 
       "tropomi-no2", "tropomi-hcho",
       "hysplit", 
@@ -98,7 +98,7 @@ export const ExcludeLayerGroups = {
   // [loader.js] > [loadSourceData] > [GZIP_DATASETS]
   formatGzip: [
       "gam_v2", "gam_v1", "pm_cbsa", "epa_ember", 
-      "wildfire_news", "wildfire_nifc", 
+      "wildfire_news", "wildfire_inci", "wildfire_peri", 
       "smoke", "fire", 
       "airnow_daily", 
       "gam_v2_pred", "pm_cbsa_pred"
@@ -146,10 +146,16 @@ export const DATA_IMPORT_METHOD = {
       prefix: "wildfire_news_",
       gzfileBaseUrlDate: "/realtime"
   },
-  "wildfire-nifc": {
-      key: "wildfire-nifc",
-      source: "wildfire_nifc",
-      prefix: "wildfire_nifc_",
+  "wildfire-inci": {
+      key: "wildfire-inci",
+      source: "wildfire_inci",
+      prefix: "wildfire_inci_",
+      gzfileBaseUrlDate: "/realtime"
+  },
+  "wildfire-peri": {
+      key: "wildfire-peri",
+      source: "wildfire_peri",
+      prefix: "wildfire_peri_",
       gzfileBaseUrlDate: "/realtime"
   },
   "MapPost": {
@@ -436,7 +442,8 @@ export const DATASET_SOURCE_MAP = {
     // ---- [External data] AirNow ----
     
     "wildfire-news": "wildfire_news",
-    "wildfire-nifc": "wildfire_nifc",
+    "wildfire-inci": "wildfire_inci",
+    "wildfire-peri": "wildfire_peri",
     "MapPost": "MapPost",
     
     "tempo-no2": "tempo-no2",
@@ -515,6 +522,45 @@ export function getLayerDef(key, sourceKey, fieldName, breaks, colors, opts = {}
                 "icon-allow-overlap": opts.iconAllowOverlap !== undefined ? opts.iconAllowOverlap : true
             }
         };
+    } else if (type === "fill") {
+        const fillColor = (colors && colors.length > 0) ? colors[0] : "#ff0000";
+        const fillOpacity = opts.fillOpacity !== undefined ? opts.fillOpacity : 0.4;
+        const strokeColor = opts.strokeColor || "#800000";
+        const strokeWidth = opts.strokeWidth !== undefined ? opts.strokeWidth : 1.5;
+
+        const fillLayer = {
+            id: `${key}-fill`,
+            type: "fill",
+            source: sourceKey,
+            paint: {
+                "fill-color": fillColor,
+                "fill-opacity": fillOpacity
+            }
+        };
+
+        const lineLayer = {
+            id: `${key}-line`,
+            type: "line",
+            source: sourceKey,
+            paint: {
+                "line-color": strokeColor,
+                "line-width": strokeWidth
+            }
+        };
+
+        return {
+            layers: [fillLayer, lineLayer],
+            hoverHTML: (p) => generatePopupHTML(p, sourceKey),
+            hoverOn: `${key}-fill`,
+            legend: {
+                title: opts.title || fieldName,
+                breaks,
+                colors,
+                labels: opts.labels || null,
+                unit: opts.unit || ""
+            },
+            dsKey: opts.dsKey
+        };
     } else {
         const defaultRadius = [
             "interpolate", ["linear"], ["zoom"],
@@ -562,7 +608,8 @@ export function getLayerDef(key, sourceKey, fieldName, breaks, colors, opts = {}
 export const LAYER_TEMPLATES = [
     // --- Real-time data ---
     { duration: "daily", id: "wildfire-news", field: "title", breaks: [], colors: ["blue"], title: "Wildfire News", datasets: ["wildfire-news"], type: "symbol", iconImage: "pulsing-news", unit: "" },
-    { duration: "daily", id: "wildfire-nifc", field: "IncidentName", breaks: [], colors: ["orange"], title: "WF incident locations", datasets: ["wildfire-nifc"], type: "symbol", iconImage: "pulsing-fire", unit: "" },
+    { duration: "daily", id: "wildfire-inci", field: "IncidentName", breaks: [], colors: ["orange"], title: "WF incident locations", datasets: ["wildfire-inci"], type: "symbol", iconImage: "pulsing-fire", unit: "" },
+    { duration: "daily", id: "wildfire-peri", field: "poly_IncidentName", breaks: [], colors: ["red"], title: "WF perimeters", datasets: ["wildfire-peri"], type: "fill", unit: "" },
     { duration: "daily", id: "MapPost", field: "title", breaks: [], colors: ["red"], title: "MapPost", datasets: ["MapPost"], type: "symbol", iconImage: "pulsing-alert", unit: "" },
 
     // ---- [External data] AirNow ----

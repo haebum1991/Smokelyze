@@ -736,8 +736,8 @@ export function updateAverages() {
     });
     const activeRasterLayers = getActiveRasterLayers();
 
-    const isNifcActive = document.getElementById("layer-wildfire-nifc")?.checked &&
-        document.getElementById("layer-wildfire-nifc")?.closest("label")?.style.display !== "none";
+    const isNifcActive = document.getElementById("layer-wildfire-inci")?.checked &&
+        document.getElementById("layer-wildfire-inci")?.closest("label")?.style.display !== "none";
     const isFireActive = document.getElementById("layer-fire")?.checked &&
         document.getElementById("layer-fire")?.closest("label")?.style.display !== "none";
 
@@ -832,7 +832,7 @@ export function updateAverages() {
     
     // 1b. Process NIFC Wildfire Incidents (Count)
     if (isNifcActive) {
-        const fc = loadedGeoJSON["wildfire_nifc"];
+        const fc = loadedGeoJSON["wildfire_inci"];
         let wfCount = 0;
         if (fc && fc.features) {
             fc.features.forEach(feat => {

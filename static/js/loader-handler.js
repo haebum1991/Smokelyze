@@ -128,7 +128,7 @@ export async function loadSourceData(sourceKey, isoDate) {
             );
         }
 
-        if (sourceKey === "wildfire_nifc" && data.features) {
+        if (["wildfire_inci", "wildfire_peri"].includes(sourceKey) && data.features) {
             const stateMap = {
                 "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas", "CA": "California",
                 "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware", "DC": "District of Columbia", "FL": "Florida", "GA": "Georgia",
@@ -142,11 +142,15 @@ export async function loadSourceData(sourceKey, isoDate) {
                 "VA": "Virginia", "WA": "Washington", "WV": "West Virginia", "WI": "Wisconsin", "WY": "Wyoming"
             };
             data.features.forEach(f => {
-                if (f.properties && f.properties.POOState) {
-                    let s = f.properties.POOState;
-                    if (s.startsWith("US-")) {
-                        const abbr = s.split("-")[1];
-                        if (stateMap[abbr]) f.properties.state = stateMap[abbr];
+                if (!f.properties) return;
+                const rawSt = f.properties.attr_POOState || f.properties.POOState;
+                if (rawSt) {
+                    let s = String(rawSt).trim();
+                    const abbr = s.startsWith("US-") ? s.split("-")[1] : s;
+                    if (stateMap[abbr]) {
+                        f.properties.state = stateMap[abbr];
+                    } else if (!f.properties.state && abbr) {
+                        f.properties.state = abbr;
                     }
                 }
             });

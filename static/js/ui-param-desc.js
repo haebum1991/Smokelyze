@@ -151,7 +151,7 @@ export const DescData = {
     ],
     "desc-nifc": [
         {
-            id: "wildfire-nifc",
+            id: "wildfire-inci",
             title: "WF incident locations",
             desc: "<b>Wildfire (WF) incident locations </b> are retrieved from the " + 
                   "<b>NIFC (National Interagency Fire Center) WFIGS (Wildland Fire Interagency Geospatial Services)</b>. " + 
@@ -164,6 +164,20 @@ export const DescData = {
                   "<li>In our app, <b>" +
                   "this data is available starting from 2018-01-01. </b>" +
                   "The data is collected every 6 hours and the map is updated accordingly. </li></ul>"
+        },
+        {
+            id: "wildfire-peri",
+            title: "WF perimeters",
+            desc: "<b>Wildfire (WF) interagency perimeters </b> are retrieved from the " + 
+                  "<b>NIFC (National Interagency Fire Center) WFIGS (Wildland Fire Interagency Geospatial Services)</b>. " + 
+                  "This dataset provides official polygon perimeter boundaries of active and historical wildland fires based on " + 
+                  "<b>UTC time</b>, " + 
+                  "including <em>polygon incident name</em>, <em>GIS acres</em>, and <em>IRWIN ID</em>. " +
+                  "This spatial data captures the actual spatial extent and perimeter geometry as mapped by interagency fire management teams via the Integrated Reporting of Wildland-Fire Information (IRWIN)." +
+                  "<br><ul><li>Update cycle: <b>Every 6 hours</b> (at 0, 6, 12, 18 UTC)</li>" +
+                  "<li>In our app, <b>" +
+                  "this data is available starting from 2020-01-01. </b>" +
+                  "The polygon perimeter data is collected every 6 hours and the map is updated accordingly. </li></ul>"
         }
     ],
     "desc-airnow": [
@@ -614,7 +628,7 @@ export function renderParamDesc(dsKey) {
                     <p>${item.desc}</p>
                 </div>
             `;
-        } else if (item.id === "wildfire-nifc") {
+        } else if (item.id === "wildfire-inci") {
             html += `
                 <div class="Desc-item">
                     <h4>${safeTitle} <canvas class="ui-pulsing-icon" data-type="fire" width="30" height="30" style="vertical-align:middle; margin-left:0.4rem;"></canvas></h4>
@@ -848,7 +862,7 @@ export function appendAllLayerHelpIcons() {
           
         // 4. Add Download Button for specific layers (AirNow, NIFC, HMS-fire)
         const isAirNow = descId.startsWith("airnow-");
-        const isNIFC = descId === "wildfire-nifc";
+        const isNIFC = ["wildfire-inci", "wildfire-peri"].includes(descId);
         const isFire = descId === "fire";
 
         if (isAirNow || isNIFC || isFire) {

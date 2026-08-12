@@ -144,20 +144,49 @@ export function generatePopupHTML(p, dataSource, isLocked) {
         </div>`;
     }
 
-    if (dataSource === "wildfire_nifc") {
-        return `
-        ${closeBtn}
-        <div style="${rowStyleHead}"><b>Incident name:</b> ${ESML(p.IncidentName)}</div>
-        <hr style="${hrStyle}">
-        <div style="${rowStyle}"><b>ID:</b> ${ESML(p.UniqueFireIdentifier)}</div>
-        <div style="${rowStyle}"><b>Discovery time:</b> ${ESML(p.FireDiscoveryDateTime)} UTC</div>
-        <div style="${rowStyle}"><b>State:</b> ${ESML(p.state)}</div>
-        <div style="${rowStyle}"><b>County:</b> ${ESML(p.POOCounty)}</div>
-        <div style="${rowStyle}"><b>Type:</b> ${ESML(p.IncidentTypeCategory)}</div>
-        <div style="${rowStyle}"><b>Cause:</b> ${ESML(p.FireCause)}</div>
-        <div style="${rowStyle}"><b>Acres:</b> ${ESML(p.DiscoveryAcres)}</div>
-        <div style="${rowStyle}"><b>Latitude:</b> ${ESML(smartFmt(p.lat, "lat", dataSource, 3))}</div>
-        <div style="${rowStyle}"><b>Longitude:</b> ${ESML(smartFmt(p.lon, "lon", dataSource, 3))}</div>`;
+    const cleanVal = (v, suffix = "") => {
+      if (v === undefined || v === null) return "N/A";
+      const s = String(v).trim();
+      if (s === "" || s === "{}" || s === "{ }" || s.toUpperCase() === "NA") return "N/A";
+      return s + suffix;
+    };
+  
+    if (dataSource === "wildfire_inci") {
+      return `
+          ${closeBtn}
+          <div style="${rowStyleHead}">${ESML(cleanVal(p.IncidentName))}</div>
+          <hr style="${hrStyle}">
+          <div style="${rowStyle}"><b>ID:</b> ${ESML(cleanVal(p.UniqueFireIdentifier))}</div>
+          <div style="${rowStyle}"><b>IRWINID:</b> ${ESML(cleanVal(p.IrwinID))}</div>
+          <div style="${rowStyle}"><b>Discovery time:</b> ${ESML(cleanVal(p.FireDiscoveryDateTime, " UTC"))}</div>
+          <div style="${rowStyle}"><b>Fire Out time:</b> ${ESML(cleanVal(p.FireOutDateTime, " UTC"))}</div>
+          <div style="${rowStyle}"><b>Last modified:</b> ${ESML(cleanVal(p.ModifiedOnDateTime_dt, " UTC"))}</div>
+          <div style="${rowStyle}"><b>Percent contained:</b> ${ESML(cleanVal(p.PercentContained, "%"))}</div>
+          <div style="${rowStyle}"><b>State:</b> ${ESML(cleanVal(p.state || (p.POOState ? String(p.POOState).replace(/^US-/, "") : null)))}</div>
+          <div style="${rowStyle}"><b>County:</b> ${ESML(cleanVal(p.POOCounty))}</div>
+          <div style="${rowStyle}"><b>Type:</b> ${ESML(cleanVal(p.IncidentTypeCategory))}</div>
+          <div style="${rowStyle}"><b>Cause:</b> ${ESML(cleanVal(p.FireCause))}</div>
+          <div style="${rowStyle}"><b>Acres:</b> ${ESML(cleanVal(p.DiscoveryAcres))}</div>
+          <div style="${rowStyle}"><b>Latitude:</b> ${ESML(smartFmt(p.lat, "lat", dataSource, 3))}</div>
+          <div style="${rowStyle}"><b>Longitude:</b> ${ESML(smartFmt(p.lon, "lon", dataSource, 3))}</div>`;
+    }
+  
+    if (dataSource === "wildfire_peri") {
+      return `
+          ${closeBtn}
+          <div style="${rowStyleHead}">${ESML(cleanVal(p.poly_IncidentName))}</div>
+          <hr style="${hrStyle}">
+          <div style="${rowStyle}"><b>ID:</b> ${ESML(cleanVal(p.attr_UniqueFireIdentifier || p.UniqueFireIdentifier))}</div>
+          <div style="${rowStyle}"><b>IRWINID:</b> ${ESML(cleanVal(p.poly_IRWINID))}</div>
+          <div style="${rowStyle}"><b>Discovery time:</b> ${ESML(cleanVal(p.attr_FireDiscoveryDateTime, " UTC"))}</div>
+          <div style="${rowStyle}"><b>Fire Out time:</b> ${ESML(cleanVal(p.attr_FireOutDateTime, " UTC"))}</div>
+          <div style="${rowStyle}"><b>Last modified:</b> ${ESML(cleanVal(p.attr_ModifiedOnDateTime_dt || p.poly_DateCurrent, " UTC"))}</div>
+          <div style="${rowStyle}"><b>Percent contained:</b> ${ESML(cleanVal(p.attr_PercentContained, "%"))}</div>
+          <div style="${rowStyle}"><b>State:</b> ${ESML(cleanVal(p.state || (p.attr_POOState ? String(p.attr_POOState).replace(/^US-/, "") : null)))}</div>
+          <div style="${rowStyle}"><b>County:</b> ${ESML(cleanVal(p.attr_POOCounty))}</div>
+          <div style="${rowStyle}"><b>Type:</b> ${ESML(cleanVal(p.attr_IncidentTypeCategory))}</div>
+          <div style="${rowStyle}"><b>Cause:</b> ${ESML(cleanVal(p.attr_FireCause))}</div>
+          <div style="${rowStyle}"><b>Acres:</b> ${ESML(cleanVal(p.poly_GISAcres))}</div>`;
     }
     
     if (dataSource === "MapPost") {

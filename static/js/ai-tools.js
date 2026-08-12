@@ -237,8 +237,8 @@ export async function handleAiToolCall(functionName, args) {
                     rawSrcId = "hysplit";
                 } else if (props.link || props.published) {
                     rawSrcId = "wildfire_news";
-                } else if (props.IncidentName || props.UniqueFireIdentifier) {
-                    rawSrcId = "wildfire_nifc";
+                } else if (props.IncidentName || props.UniqueFireIdentifier || props.poly_IncidentName) {
+                    rawSrcId = props.poly_IncidentName ? "wildfire_peri" : "wildfire_inci";
                 } else if (props.fireCount || props.FRP) {
                     rawSrcId = "fire";
                 }

@@ -111,7 +111,7 @@ export function urlByDateGZfile(ds, isoDate) {
   if (["smoke", "fire", "airnow_daily", "airnow_hourly"].includes(ds.source)) {
     // /gzfileBaseUrlDate/YYYY/PREFIX_YYYY-MM-DD.geojson
     return `${ds.gzfileBaseUrlDate}/${yyyy}/${ds.prefix}${yyyy}-${mm}-${dd}.geojson.gz${cb}`;
-  } else if (["wildfire_news", "wildfire_nifc"].includes(ds.source)) {
+  } else if (["wildfire_news", "wildfire_inci", "wildfire_peri"].includes(ds.source)) {
     // /gzfileBaseUrlDate/source/YYYY/PREFIX_YYYY-MM-DD.geojson.gz
     return `${ds.gzfileBaseUrlDate}/${ds.source}/${yyyy}/${ds.prefix}${yyyy}-${mm}-${dd}.geojson.gz${cb}`;
   } else {
