@@ -7,6 +7,7 @@ import { activeLayerStack } from "./layers-state.js";
 import { clearAll, resetGlobalStateShading, resetGlobalPointLayers, resetGlobalNaShading } from "./ui-state.js";
 import { clearHighlight } from "./utils.js";
 import { resetLoadedSources } from "./loader.js";
+import { resetLookbackState } from "./loader-lookback.js";
 import { resetState as resetBarLine } from "./stats-plot-dy-barline.js";
 import { resetState as resetParCoords } from "./stats-plot-dy-parcoords.js";
 import { resetState as resetScatter } from "./stats-plot-dy-scatter.js";
@@ -40,8 +41,9 @@ export function resetUIAndData() {
   hideTimeControls?.();
   closeAllDrawersExceptAccordion();
 
-  // 2) Reset Loader cache
+  // 2) Reset Loader cache and Lookback states
   resetLoadedSources?.();
+  resetLookbackState?.();
 
   // 3) Clear plot drill-down states
   resetBarLine?.();

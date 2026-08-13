@@ -237,3 +237,29 @@ export function bindLookbackEvents(container) {
     });
 }
 
+/**
+ * Resets all lookback state, input elements, buttons, and range indicators to 0 days.
+ */
+export function resetLookbackState() {
+    Object.keys(wildfireLookbackMap).forEach(key => {
+        delete wildfireLookbackMap[key];
+    });
+
+    const datePickerVal = document.getElementById("datePicker")?.value || "LIVE";
+
+    document.querySelectorAll(".legend-lookback-input").forEach(input => {
+        input.value = 0;
+    });
+
+    document.querySelectorAll(".legend-lookback-range .range-text").forEach(span => {
+        span.textContent = calculateDateRange(datePickerVal, 0);
+    });
+
+    document.querySelectorAll(".legend-lookback-btn").forEach(btn => {
+        btn.textContent = "Update";
+        btn.style.backgroundColor = "";
+        btn.style.color = "";
+        btn.removeAttribute("data-is-synced");
+    });
+}
+

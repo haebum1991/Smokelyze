@@ -80,6 +80,7 @@ export async function loadSourceData(sourceKey, isoDate) {
     const liveKeys = ExcludeLayerGroups.liveKeys || [];
     if (liveKeys.includes(sourceKey)) {
         if (loadedGeoJSON[sourceKey]) {
+            ensureLayers();
             return;
         }
         isoDate = "LIVE";
