@@ -5,6 +5,80 @@ import { logUserAction } from "./fb-logging.js";
 import { airnowFetchData, airnowActivateHour, airnowGetCurrentTime } from "./airnow.js";
 import { convertToCSV, downloadFile, createExportButton } from "./ui-download.js";
 import { urlByDateGZfile, getEffectiveDataset } from "./utils.js";
+import { openLayerTableModal } from "./layers-table.js";
+
+/**
+ * Core Data Fetcher & Formatter for Layer Exports/Tables (Shared DRY Helper)
+ */
+export async function handleTableForLayer(dataset, options = {}) {
+    const title = options.title || dataset;
+    const dateInput = document.getElementById("datePicker");
+    const date = dateInput ? dateInput.value : "data";
+
+    let geoJSONData = null;
+
+    if (dataset.startsWith("airnow-hourly-")) {
+        // Hourly data is managed via daily bundles
+        const ds = DATA_IMPORT_METHOD["airnow_hourly"];
+        const url = urlByDateGZfile(ds, date);
+        geoJSONData = await airnowFetchData(url);
+    } else {
+        // Standard daily data
+        const sourceKey = DATASET_SOURCE_MAP[dataset] || dataset;
+        await loadSourceData(sourceKey, date);
+        geoJSONData = loadedGeoJSON[sourceKey];
+    }
+
+    if (!geoJSONData || !geoJSONData.features || geoJSONData.features.length === 0) {
+        alert(`No data available for ${title} on ${date}`);
+        return;
+    }
+
+    // Deep clone data to avoid modifying the original source in memory
+    geoJSONData = JSON.parse(JSON.stringify(geoJSONData));
+
+    // Flexible Filtering Logic: Remove specific undesired columns instead of whitelisting
+    if (dataset === "airnow-daily-mda8") {
+        geoJSONData.features.forEach(f => {
+            delete f.properties["PM2.5"]; // User only wants MDA8
+        });
+    } else if (dataset === "airnow-daily-pm25") {
+        geoJSONData.features.forEach(f => {
+            delete f.properties["MDA8O3"]; // User only wants PM2.5
+        });
+    } else if (dataset.startsWith("airnow-hourly-")) {
+        const utcHour = airnowGetCurrentTime();
+        airnowActivateHour(geoJSONData, utcHour);
+
+        const isO3 = dataset === "airnow-hourly-ozone";
+        const isPM = dataset === "airnow-hourly-pm25";
+        const isNO2 = dataset === "airnow-hourly-no2";
+
+        const hourStr = utcHour.toString().padStart(2, "0");
+
+        geoJSONData.features.forEach(f => {
+            const p = f.properties;
+            let suffix = `_T${hourStr}`;
+            if (Object.keys(p).some(k => k.endsWith(`_${hourStr}T`))) suffix = `_${hourStr}T`;
+
+            const targetVal = isO3 ? p["ozone(ppb)"] : isPM ? p["pm25(ug/m3)"] : p["no2(ppb)"];
+            const targetHeader = isO3 ? "O3" : isPM ? "PM2.5" : "NO2";
+
+            p.date = p["current_hour_str"] || p.date;
+
+            Object.keys(p).forEach(k => {
+                if (/_([0-2]\dT|T[0-2]\d)$/.test(k)) delete p[k];
+                if (k === "pm25(ug/m3)" || k === "ozone(ppb)" || k === "no2(ppb)" || k === "current_hour_str") delete p[k];
+            });
+
+            if (targetVal !== undefined && targetVal !== null) {
+                p[targetHeader] = targetVal;
+            }
+        });
+    }
+
+    return { data: geoJSONData, date, title };
+}
 
 /**
  * Generic dataset download with fetch-on-demand
@@ -12,75 +86,12 @@ import { urlByDateGZfile, getEffectiveDataset } from "./utils.js";
  */
 export async function handleDownloadForLayer(dataset, options = {}) {
     const title = options.title || dataset;
-    const dateInput = document.getElementById("datePicker");
-    const date = dateInput ? dateInput.value : "data";
 
     toggleSpinner(true, `Preparing ${title} data...`);
     try {
-        let geoJSONData = null;
-
-        if (dataset.startsWith("airnow-hourly-")) {
-            // Hourly data is managed via daily bundles
-            const ds = DATA_IMPORT_METHOD["airnow_hourly"];
-            const url = urlByDateGZfile(ds, date);
-            geoJSONData = await airnowFetchData(url);
-        } else {
-            // Standard daily data
-            const sourceKey = DATASET_SOURCE_MAP[dataset] || dataset;
-            await loadSourceData(sourceKey, date);
-            geoJSONData = loadedGeoJSON[sourceKey];
-        }
-
-        if (!geoJSONData || !geoJSONData.features || geoJSONData.features.length === 0) {
-            alert(`No data available for ${title} on ${date}`);
-            return;
-        }
-
-        // Deep clone data to avoid modifying the original source in memory (since we use delete p[k])
-        geoJSONData = JSON.parse(JSON.stringify(geoJSONData));
-
-        // Flexible Filtering Logic: Remove specific undesired columns instead of whitelisting
-        if (dataset === "airnow-daily-mda8") {
-            geoJSONData.features.forEach(f => {
-                delete f.properties["PM2.5"]; // User only wants MDA8
-            });
-        } else if (dataset === "airnow-daily-pm25") {
-            geoJSONData.features.forEach(f => {
-                delete f.properties["MDA8O3"]; // User only wants PM2.5
-            });
-        } else if (dataset.startsWith("airnow-hourly-")) {
-            const utcHour = airnowGetCurrentTime();
-            airnowActivateHour(geoJSONData, utcHour);
-
-            const isO3 = dataset === "airnow-hourly-ozone";
-            const isPM = dataset === "airnow-hourly-pm25";
-            const isNO2 = dataset === "airnow-hourly-no2";
-
-            const hourStr = utcHour.toString().padStart(2, "0");
-
-            geoJSONData.features.forEach(f => {
-                const p = f.properties;
-                // Identify the actual suffix format used in the source data (e.g., _T01 or _01T)
-                let suffix = `_T${hourStr}`; 
-                if (Object.keys(p).some(k => k.endsWith(`_${hourStr}T`))) suffix = `_${hourStr}T`;
-
-                const targetVal = isO3 ? p["ozone(ppb)"] : isPM ? p["pm25(ug/m3)"] : p["no2(ppb)"];
-                const targetHeader = isO3 ? "O3" : isPM ? "PM2.5" : "NO2";
-
-                // 1. Update date to be specific (includes hour) and clean up undesired columns
-                p.date = p["current_hour_str"] || p.date;
-
-                Object.keys(p).forEach(k => {
-                    if (/_([0-2]\dT|T[0-2]\d)$/.test(k)) delete p[k];
-                    if (k === "pm25(ug/m3)" || k === "ozone(ppb)" || k === "no2(ppb)" || k === "current_hour_str") delete p[k];
-                });
-
-                // 2. Add back the selected measurement with a clean header
-                if (targetVal !== undefined && targetVal !== null) {
-                    p[targetHeader] = targetVal;
-                }
-            });
-        }
+        const res = await handleTableForLayer(dataset, options);
+        if (!res) return;
+        const { data: geoJSONData, date } = res;
 
         const csv = convertToCSV(geoJSONData);
         if (csv) {
@@ -89,18 +100,18 @@ export async function handleDownloadForLayer(dataset, options = {}) {
                 const hourStr = airnowGetCurrentTime().toString().padStart(2, "0");
                 filename = `${dataset}_${date}-${hourStr}.csv`;
             }
-            
+
             downloadFile(filename, csv);
             const mapping = DATASET_SOURCE_MAP[dataset];
             const sourceKey = (mapping && typeof mapping === "object") ? mapping.source : (mapping || dataset);
 
-            logUserAction("download", { 
-                dataset: sourceKey, 
-                layer: dataset, 
-                date, 
-                filename 
+            logUserAction("download", {
+                dataset: sourceKey,
+                layer: dataset,
+                date,
+                filename
             });
-            
+
         } else {
             alert("Failed to convert data to CSV.");
         }
@@ -119,7 +130,7 @@ async function handleDownloadForPublished(e, btn) {
 
     const dataset = getEffectiveDataset();
     const title = select.options[select.selectedIndex]?.text || dataset;
-    await handleDownloadForLayer(dataset, { title });
+    await openLayerTableModal(dataset, { title });
 }
 
 
@@ -141,7 +152,7 @@ export function initExportButton() {
 
     const btn = createExportButton({
         id: "ExportBtnDaily",
-        label: "⬇ .CSV",
+        label: "Table",
         onClick: handleDownloadForPublished
     });
 

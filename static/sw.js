@@ -1,4 +1,4 @@
-const CACHE_NAME = "v-20260812-2246"; // R에서 자동으로 생성된 버전
+const CACHE_NAME = "v-20260813-1624"; // R에서 자동으로 생성된 버전
 const OFFLINE_URL = "/offline/";
 
 const requiredFiles = [
@@ -39,6 +39,7 @@ const requiredFiles = [
     "/js/fb-logging.js",
     "/js/geo-boundary.js",
     "/js/geo-utils.js",
+    "/js/layers-table.js",
     "/js/layers-colors.js",
     
     "/js/layers-constants.js",
@@ -50,11 +51,13 @@ const requiredFiles = [
     "/js/layers.js",
     "/js/loader-fetch.js",
     "/js/loader-handler.js",
+    "/js/loader-lookback.js",
     "/js/loader-state.js",
     
     "/js/loader-ui.js",
     "/js/loader.js",
     "/js/map-animate.js",
+    "/js/map-area-stats.js",
     "/js/map-capture.js",
     "/js/map-init.js",
     "/js/raster-loader.js",
@@ -70,6 +73,7 @@ const requiredFiles = [
     "/js/stats-plot-yr-heat.js",
     "/js/stats-plot-yr-line.js",
     "/js/stats-yearly.js",
+    "/js/ui-analytics.js",
     "/js/ui-btn-tooltip.js",
     "/js/ui-date.js",
     "/js/ui-download.js",
@@ -78,10 +82,11 @@ const requiredFiles = [
     "/js/ui-param-desc.js",
     "/js/ui-reset.js",
     "/js/ui-state.js",
+    "/js/ui-telemetry.js",
     "/js/ui-time.js",
     "/js/ui-toggles.js",
+    "/js/ui-tsplot.js",
     "/js/ui-tutorial.js",
-    "/js/ui-analytics.js",
     "/js/utils.js"
 ];
 

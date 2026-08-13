@@ -852,7 +852,7 @@ export function updateAverages() {
         }
         html += `
             <div class="draw-stats-panel-row">
-                <span class="label">WF incidents location</span>
+                <span class="label">WF incidents</span>
                 <span class="value">${wfCount}<span style="color: var(--text-main); font-weight: normal;"> incidents</span></span>
             </div>
         `;

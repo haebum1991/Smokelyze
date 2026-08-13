@@ -2,7 +2,7 @@
 import { ESML } from "./utils.js";
 import { initUIPulsingIcons } from "./layers-icon.js";
 import { createExportButton } from "./ui-download.js";
-import { handleDownloadForLayer } from "./stats-data-export.js";
+import { openLayerTableModal } from "./layers-table.js";
 
 export const DescData = {
     "desc-toggle-only": [
@@ -861,7 +861,7 @@ export function appendAllLayerHelpIcons() {
 
         if (isAirNow || isNIFC || isFire) {
             const dlBtn = createExportButton({
-                label: "⬇ .CSV",
+                label: "Table",
                 className: "layer-dl-btn",
                 style: {
                     position: "absolute",
@@ -880,7 +880,7 @@ export function appendAllLayerHelpIcons() {
                 onClick: (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    handleDownloadForLayer(descId, { title: foundItem.title });
+                    openLayerTableModal(descId, { title: foundItem.title });
                 }
             });
 
