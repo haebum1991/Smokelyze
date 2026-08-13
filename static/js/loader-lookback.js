@@ -10,6 +10,14 @@ import { logUserAction } from "./fb-logging.js";
 
 export const wildfireLookbackMap = {};
 
+// Ensure lookback button stays visible on mobile screens
+if (typeof document !== "undefined" && !document.getElementById("legend-lookback-style")) {
+    const styleEl = document.createElement("style");
+    styleEl.id = "legend-lookback-style";
+    styleEl.textContent = `.legend-lookback-btn { display: inline-block !important; }`;
+    document.head.appendChild(styleEl);
+}
+
 /**
  * Calculates date range string formatted as "YYYY-MM-DD ~ YYYY-MM-DD" or "YYYY-MM-DD" for 0 days.
  */
@@ -117,7 +125,15 @@ export function renderLookbackBoxHTML(id) {
     const isSynced = (loadedSources[sourceKey] === cacheKey);
 
     const btnText = isSynced ? "✓ Done" : "Update";
-    const btnStyle = isSynced ? `background:#059669; color:#ffffff;` : ``;
+    const btnStyle = isSynced
+        ? `
+            background: #059669;
+            color: #ffffff;
+            display: inline-block !important;
+        `
+        : `
+            display: inline-block !important;
+        `;
 
     return `<div class="legend-item" onclick="event.stopPropagation();" style="justify-content:space-between;">
                 <span>Lookback:</span>

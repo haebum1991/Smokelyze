@@ -353,6 +353,11 @@ export function applyLayerToggles() {
                 setLegendDrawer(true);
             }
         }
+    } else if (legendLayers.length === 0) {
+        const legendDrawer = document.getElementById("LegendDrawer");
+        if (legendDrawer && legendDrawer.classList.contains("open")) {
+            setLegendDrawer(false);
+        }
     }
 
     updateLegend(newStack);
