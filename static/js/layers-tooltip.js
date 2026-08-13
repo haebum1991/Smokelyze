@@ -146,8 +146,24 @@ export function generatePopupHTML(p, dataSource, isLocked) {
 
     const cleanVal = (v, suffix = "") => {
       if (v === undefined || v === null) return "N/A";
-      const s = String(v).trim();
+      let s = String(v).trim();
       if (s === "" || s === "{}" || s === "{ }" || s.toUpperCase() === "NA") return "N/A";
+
+      // Auto-format Unix Epoch Timestamp seconds (e.g. 1.7864064E9 or 1786406400)
+      const num = Number(v);
+      if (!isNaN(num) && num > 1000000000 && num < 3000000000) {
+        const d = new Date(num * 1000);
+        if (!isNaN(d.getTime())) {
+          const yyyy = d.getUTCFullYear();
+          const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+          const dd = String(d.getUTCDate()).padStart(2, "0");
+          const hh = String(d.getUTCHours()).padStart(2, "0");
+          const min = String(d.getUTCMinutes()).padStart(2, "0");
+          const ss = String(d.getUTCSeconds()).padStart(2, "0");
+          s = `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+        }
+      }
+
       return s + suffix;
     };
     

@@ -55,7 +55,10 @@ export async function loadSourceData(sourceKey, isoDate) {
         return;
     }
 
-    if (loadedSources[sourceKey] === isoDate && loadedGeoJSON[sourceKey] !== null) {
+    const isCachedForDate = loadedSources[sourceKey] === isoDate || 
+        (loadedSources[sourceKey] && loadedSources[sourceKey].startsWith(`${isoDate}_lookback_`));
+
+    if (isCachedForDate && loadedGeoJSON[sourceKey] !== null) {
         if (modelStatsCache[sourceKey]) {
             console.log("Restoring cached stats for:", sourceKey);
             mergeModelStats(modelStatsCache[sourceKey]);

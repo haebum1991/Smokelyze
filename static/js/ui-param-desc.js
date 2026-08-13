@@ -179,7 +179,7 @@ export const DescData = {
                 "This data includes <b>precise discovery coordinates</b> as reported by fire management agencies via the Integrated Reporting of Wildland-Fire Information (IRWIN). " +
                 "The system captures a wide range of incident types and categories, ensuring a comprehensive overview of fire events across the region." +
                 "<br><ul><li>Update cycle: <b>Every 6 hours</b> (at 0, 6, 12, 18 UTC)</li>" +
-                "<li><b>Filtering Note</b>: Historical data is queried and grouped based on <b>Discovery Time (FireDiscoveryDateTime)</b>.</li>" +
+                "<li><b>Filtering & Lookback Note</b>: Historical data is queried from BigQuery based on <b>Discovery Time (FireDiscoveryDateTime)</b>. Use the <b>Lookback (days)</b> control (0 to 15 days) in the legend drawer to include fires discovered within N days prior to the selected date.</li>" +
                 "<li>In our app, <b>this data is available starting from 2018-01-01. </b></li>" +
                 "<li>Data Source: <a href='https://services3.arcgis.com/T4QMspbfLg3qTGWY/ArcGIS/rest/services/WFIGS_Incident_Locations/FeatureServer/0' target='_blank' rel='noopener noreferrer'>NIFC WFIGS Incident Locations (ArcGIS REST)</a></li></ul>"
         },
@@ -193,7 +193,7 @@ export const DescData = {
                 "including <em>polygon incident name</em>, <em>GIS acres</em>, and <em>IRWIN ID</em>. " +
                 "This spatial data captures the actual spatial extent and perimeter geometry as mapped by interagency fire management teams via the Integrated Reporting of Wildland-Fire Information (IRWIN)." +
                 "<br><ul><li>Update cycle: <b>Every 6 hours</b> (at 0, 6, 12, 18 UTC)</li>" +
-                "<li><b>Filtering Note</b>: Historical perimeter data is queried and grouped based on <b>Discovery Time (attr_FireDiscoveryDateTime)</b>.</li>" +
+                "<li><b>Filtering & Lookback Note</b>: Historical perimeter data is queried from BigQuery based on <b>Discovery Time (attr_FireDiscoveryDateTime)</b>. Use the <b>Lookback (days)</b> control (0 to 15 days) in the legend drawer to include perimeters discovered within N days prior to the selected date.</li>" +
                 "<li>In our app, <b>this data is available starting from 2020-01-01. </b></li>" +
                 "<li>Data Source: <a href='https://services3.arcgis.com/T4QMspbfLg3qTGWY/ArcGIS/rest/services/WFIGS_Interagency_Perimeters/FeatureServer/0' target='_blank' rel='noopener noreferrer'>NIFC WFIGS Interagency Perimeters (ArcGIS REST)</a></li></ul>"
         }
@@ -856,7 +856,7 @@ export function appendAllLayerHelpIcons() {
           
         // 4. Add Download Button for specific layers (AirNow, NIFC, HMS-fire)
         const isAirNow = descId.startsWith("airnow-");
-        const isNIFC = ["wildfire-inci", "wildfire-peri"].includes(descId);
+        const isNIFC = ["wildfire-inci", "wildfire-peri"].some(p => descId.startsWith(p));
         const isFire = descId === "fire";
 
         if (isAirNow || isNIFC || isFire) {

@@ -33,7 +33,6 @@ export const ExcludeLayerGroups = {
     // [layers-handler.js] > [applyLayerToggles] > [EXCLUDED]
     liveUpdateLayers: [
         "wildfire-peri-curr", "wildfire-inci-curr",
-        "wildfire-peri", "wildfire-inci",
         "wildfire-news", "MapPost"
     ],
 
@@ -1128,6 +1127,14 @@ export const LAYER_DEFS = (() => {
             }
         };
     }
+    
+    // Configure headerOnly mode for NIFC Wildfire layers (wildfire-inci & wildfire-peri)
+    ["wildfire-inci", "wildfire-peri"].forEach(wfId => {
+        if (defs[wfId] && defs[wfId].legend) {
+            defs[wfId].legend.headerOnly = true;
+            defs[wfId].legend.hasLookback = true;
+        }
+    });
     
     return defs;
 })();

@@ -13,6 +13,7 @@ import {
   closedLegendIds 
 } from "./layers-state.js";
 import { getEffectiveDataset, currentDate } from "./utils.js";
+import { renderLookbackBoxHTML, bindLookbackEvents } from "./loader-lookback.js";
 
 
 /**
@@ -132,9 +133,15 @@ export function updateLegend(activeStack = activeLayerStack) {
                                 </div>`;
         }
 
-        // headerOnly mode: show toggle header but no color scale (for true-color imagery layers)
+        // headerOnly mode: show toggle header but no color scale (for true-color imagery layers or simple toggle layers)
         if (conf.headerOnly) {
             sectionHtml += opacitySliderHtml;
+
+            // Add Lookback Days control for layers configured with hasLookback: true
+            if (conf.hasLookback) {
+                sectionHtml += renderLookbackBoxHTML(id);
+            }
+
             sectionHtml += `</div></div>`;
             finalHtml += sectionHtml;
             return; // skip rest of this iteration
@@ -251,7 +258,12 @@ export function updateLegend(activeStack = activeLayerStack) {
                                  </div>`;
             });
         }
-
+        
+        // Add Lookback Days control for layers configured with hasLookback: true
+        if (conf.hasLookback) {
+            sectionHtml += `<hr class="legend-divider">` + renderLookbackBoxHTML(id);
+        }
+        
         // Add NA indicator if enabled
         const skipNALayers = [...(ExcludeLayerGroups.satelliteLayers || []), ...ExcludeLayerGroups.liveUpdateLayers];
         if (!skipNALayers.includes(id) && NaShadingEnabled) {
@@ -304,6 +316,9 @@ export function updateLegend(activeStack = activeLayerStack) {
             }, { passive: true });
         });
     });
+    
+    // Bind events to Lookback Update buttons
+    bindLookbackEvents(container);
 }
 
 /**
