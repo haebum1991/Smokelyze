@@ -46,6 +46,8 @@ export async function handleTableForLayer(dataset, options = {}) {
 
     // Deep clone data to avoid modifying the original source in memory
     geoJSONData = JSON.parse(JSON.stringify(geoJSONData));
+    geoJSONData.features.forEach(f => { f._originalProperties = { ...(f.properties || {}) }; });
+
 
     // Flexible Filtering Logic: Remove specific undesired columns instead of whitelisting
     if (dataset === "airnow-daily-mda8") {
@@ -59,6 +61,7 @@ export async function handleTableForLayer(dataset, options = {}) {
     } else if (dataset.startsWith("airnow-hourly-")) {
         const utcHour = airnowGetCurrentTime();
         airnowActivateHour(geoJSONData, utcHour);
+        geoJSONData.features.forEach(f => { f._originalProperties = { ...(f.properties || {}) }; });
 
         const isO3 = dataset === "airnow-hourly-ozone";
         const isPM = dataset === "airnow-hourly-pm25";

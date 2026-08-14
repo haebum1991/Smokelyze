@@ -5,7 +5,6 @@ import { ESML, highlightLocation, sanitizeDisplayValue } from "./utils.js";
 import { convertToCSV, downloadFile } from "./ui-download.js";
 import { airnowGetCurrentTime } from "./airnow.js";
 import { DATASET_SOURCE_MAP } from "./layers-def.js";
-import { loadedGeoJSON, loadedSources } from "./loader-state.js";
 import { logUserAction } from "./fb-logging.js";
 
 /**
@@ -125,7 +124,7 @@ function extractTabularRecords(features) {
         records.push(props);
     });
 
-    const baseKeys = Array.from(keySet).filter(k => k !== "dsKeyForFigure" && k !== "_rawFeature");
+    const baseKeys = Array.from(keySet);
     const priority = ["date", "IncidentName", "poly_IncidentName", "site_name", "state", "AQS", "AQS_O3", "AQS_PM", "lon", "lat"];
     const sortedKeys = [];
 
@@ -597,7 +596,7 @@ function renderTableModal({ datasetId, title, date, geoJSONData, records }) {
 
                 const cleanId = datasetId.replace(/^layer-/, "");
                 const sourceKey = (DATASET_SOURCE_MAP && DATASET_SOURCE_MAP[cleanId]) ? DATASET_SOURCE_MAP[cleanId] : cleanId;
-                const targetProps = row._rawFeature?.properties || row;
+                const targetProps = row._rawFeature?._originalProperties || row._rawFeature?.properties || row;
 
                 highlightLocation([lon, lat], targetProps, sourceKey, 10);
             });
