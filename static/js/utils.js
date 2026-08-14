@@ -1,4 +1,6 @@
 
+export const APP_DATA_VERSION = "utils-20260814"; // R에서 자동으로 생성된 버전
+
 import { map } from "./map-init.js";
 import { state } from "./ui-state.js";
 import { generatePopupHTML } from "./layers-tooltip.js";
@@ -11,10 +13,13 @@ export function getCacheBuster(isoDate) {
   const targetDate = new Date(isoDate);
   const daysDiff = Math.floor((now - targetDate) / (24 * 60 * 60 * 1000));
 
-  if (daysDiff <= 2) {
+  // 최근 7일치 데이터는 1시간마다 자동 갱신
+  if (daysDiff <= 7) {
     return `?v=${Math.floor(Date.now() / 3600000)}`;
   }
-  return "";
+  
+  // 과거 데이터는 APP_DATA_VERSION 변경 시 전 세계 강제 새로고침
+  return `?v=${APP_DATA_VERSION}`;
 }
 
 export let onSetNewsDrawer = null;
@@ -157,7 +162,7 @@ export function urlByYearJson(ds, isoDate) {
   const yyyy = d.getUTCFullYear();
 
   // /statsBaseUrlYear/PREFIX_YYYY.json
-  return `${ds.statsBaseUrlYear}/${ds.prefix}${yyyy}.json`;
+  return `${ds.statsBaseUrlYear}/${ds.prefix}${yyyy}.json${getCacheBuster(isoDate)}`;
 }
 
 // url generator for png of TEMPO
