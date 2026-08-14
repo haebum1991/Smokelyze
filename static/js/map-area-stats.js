@@ -736,8 +736,12 @@ export function updateAverages() {
     });
     const activeRasterLayers = getActiveRasterLayers();
 
-    const isNifcActive = document.getElementById("layer-wildfire-inci")?.checked &&
-        document.getElementById("layer-wildfire-inci")?.closest("label")?.style.display !== "none";
+    const isNifcActive = (
+        (document.getElementById("layer-wildfire-inci-curr")?.checked && document.getElementById("layer-wildfire-inci-curr")?.closest("label")?.style.display !== "none") ||
+        (document.getElementById("layer-wildfire-inci")?.checked && document.getElementById("layer-wildfire-inci")?.closest("label")?.style.display !== "none") ||
+        (document.getElementById("layer-wildfire-peri-curr")?.checked && document.getElementById("layer-wildfire-peri-curr")?.closest("label")?.style.display !== "none") ||
+        (document.getElementById("layer-wildfire-peri")?.checked && document.getElementById("layer-wildfire-peri")?.closest("label")?.style.display !== "none")
+    );
     const isFireActive = document.getElementById("layer-fire")?.checked &&
         document.getElementById("layer-fire")?.closest("label")?.style.display !== "none";
 
@@ -831,8 +835,16 @@ export function updateAverages() {
     });
     
     // 1b. Process NIFC Wildfire Incidents (Count)
-    if (isNifcActive) {
-        const fc = loadedGeoJSON["wildfire_inci"];
+    const nifcInciSources = [];
+    if (document.getElementById("layer-wildfire-inci-curr")?.checked && document.getElementById("layer-wildfire-inci-curr")?.closest("label")?.style.display !== "none") {
+        nifcInciSources.push({ key: "wildfire_inci_curr", label: "WF incidents (Live)" });
+    }
+    if (document.getElementById("layer-wildfire-inci")?.checked && document.getElementById("layer-wildfire-inci")?.closest("label")?.style.display !== "none") {
+        nifcInciSources.push({ key: "wildfire_inci", label: "WF incidents" });
+    }
+
+    nifcInciSources.forEach(({ key, label }) => {
+        const fc = loadedGeoJSON[key];
         let wfCount = 0;
         if (fc && fc.features) {
             fc.features.forEach(feat => {
@@ -852,11 +864,55 @@ export function updateAverages() {
         }
         html += `
             <div class="draw-stats-panel-row">
-                <span class="label">WF incidents</span>
+                <span class="label">${label}</span>
                 <span class="value">${wfCount}<span style="color: var(--text-main); font-weight: normal;"> incidents</span></span>
             </div>
         `;
+    });
+    
+    // 1c. Process NIFC Wildfire Perimeters (Total Acres)
+    const nifcPeriSources = [];
+    if (document.getElementById("layer-wildfire-peri-curr")?.checked && document.getElementById("layer-wildfire-peri-curr")?.closest("label")?.style.display !== "none") {
+        nifcPeriSources.push({ key: "wildfire_peri_curr", label: "WF perimeters (Live)" });
     }
+    if (document.getElementById("layer-wildfire-peri")?.checked && document.getElementById("layer-wildfire-peri")?.closest("label")?.style.display !== "none") {
+        nifcPeriSources.push({ key: "wildfire_peri", label: "WF perimeters" });
+    }
+
+    nifcPeriSources.forEach(({ key, label }) => {
+        const fc = loadedGeoJSON[key];
+        let totalAcres = 0;
+        if (fc && fc.features) {
+            fc.features.forEach(feat => {
+                if (!feat.geometry) return;
+                let coords = null;
+                if (feat.properties && (feat.properties.poly_lon !== undefined || feat.properties.lon !== undefined)) {
+                    coords = [parseFloat(feat.properties.poly_lon ?? feat.properties.lon), parseFloat(feat.properties.poly_lat ?? feat.properties.lat)];
+                } else if (feat.geometry.type === "Polygon" && feat.geometry.coordinates && feat.geometry.coordinates[0] && feat.geometry.coordinates[0][0]) {
+                    coords = feat.geometry.coordinates[0][0];
+                } else if (feat.geometry.type === "MultiPolygon" && feat.geometry.coordinates && feat.geometry.coordinates[0] && feat.geometry.coordinates[0][0] && feat.geometry.coordinates[0][0][0]) {
+                    coords = feat.geometry.coordinates[0][0][0];
+                } else if (feat.geometry.type === "Point") {
+                    coords = feat.geometry.coordinates;
+                }
+                if (!coords || isNaN(coords[0]) || isNaN(coords[1])) return;
+
+                if (pointInGeometry(coords, shape.geometry)) {
+                    const acres = parseFloat(feat.properties["poly_GISAcres"] || feat.properties["GISAcres"] || feat.properties["attr_GISAcres"]);
+                    if (!isNaN(acres) && acres > 0) {
+                        totalAcres += acres;
+                    }
+                }
+            });
+        }
+        const formattedAcres = Math.round(totalAcres).toLocaleString();
+        html += `
+            <div class="draw-stats-panel-row">
+                <span class="label">${label}</span>
+                <span class="value">${formattedAcres}<span style="color: var(--text-main); font-weight: normal;"> acres</span></span>
+            </div>
+        `;
+    });
 
     // 1c. Process HMS-fire Points (Count)
     if (isFireActive) {
