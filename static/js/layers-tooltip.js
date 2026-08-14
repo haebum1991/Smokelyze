@@ -3,7 +3,7 @@
  * 인터랙션 및 정보창: 지도 위 지점을 클릭하거나 호버(Hover)했을 때 보여줄 팝업 및 툴팁 내용을 생성
  */
  
-import { ESML, formatDate, getEffectiveDataset } from "./utils.js";
+import { ESML, formatDate, getEffectiveDataset, sanitizeDisplayValue } from "./utils.js";
 import { auth } from "./fb-init.js";
 import { ExcludeLayerGroups, LAYER_TEMPLATES } from "./layers-def.js";
 import { regionStats, closedLegendIds } from "./layers-state.js";
@@ -144,28 +144,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
         </div>`;
     }
 
-    const cleanVal = (v, suffix = "") => {
-      if (v === undefined || v === null) return "N/A";
-      let s = String(v).trim();
-      if (s === "" || s === "{}" || s === "{ }" || s.toUpperCase() === "NA") return "N/A";
-
-      // Auto-format Unix Epoch Timestamp seconds (e.g. 1.7864064E9 or 1786406400)
-      const num = Number(v);
-      if (!isNaN(num) && num > 1000000000 && num < 3000000000) {
-        const d = new Date(num * 1000);
-        if (!isNaN(d.getTime())) {
-          const yyyy = d.getUTCFullYear();
-          const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-          const dd = String(d.getUTCDate()).padStart(2, "0");
-          const hh = String(d.getUTCHours()).padStart(2, "0");
-          const min = String(d.getUTCMinutes()).padStart(2, "0");
-          const ss = String(d.getUTCSeconds()).padStart(2, "0");
-          s = `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
-        }
-      }
-
-      return s + suffix;
-    };
+    const cleanVal = (v, suffix = "") => sanitizeDisplayValue(v, "NA", suffix);
     
     const formatAcres = (v) => {
       if (v === undefined || v === null) return null;

@@ -1,16 +1,18 @@
 
-import { loadedGeoJSON, loadSourceData, toggleSpinner } from "./loader.js";
-import { DATASET_SOURCE_MAP, DATA_IMPORT_METHOD } from "./layers-def.js";
+import { loadedGeoJSON, loadedSources, loadSourceData, toggleSpinner } from "./loader.js";
+import { DATASET_SOURCE_MAP } from "./layers-def.js";
 import { logUserAction } from "./fb-logging.js";
-import { airnowFetchData, airnowActivateHour, airnowGetCurrentTime } from "./airnow.js";
+import { airnowActivateHour, airnowGetCurrentTime } from "./airnow.js";
+import { airnowLoadData } from "./airnow-loader.js";
 import { convertToCSV, downloadFile, createExportButton } from "./ui-download.js";
-import { urlByDateGZfile, getEffectiveDataset } from "./utils.js";
+import { getEffectiveDataset } from "./utils.js";
 import { openLayerTableModal } from "./layers-table.js";
 
 /**
  * Core Data Fetcher & Formatter for Layer Exports/Tables (Shared DRY Helper)
  */
 export async function handleTableForLayer(dataset, options = {}) {
+
     const title = options.title || dataset;
     const dateInput = document.getElementById("datePicker");
     const date = dateInput ? dateInput.value : "data";
@@ -18,15 +20,23 @@ export async function handleTableForLayer(dataset, options = {}) {
     let geoJSONData = null;
 
     if (dataset.startsWith("airnow-hourly-")) {
-        // Hourly data is managed via daily bundles
-        const ds = DATA_IMPORT_METHOD["airnow_hourly"];
-        const url = urlByDateGZfile(ds, date);
-        geoJSONData = await airnowFetchData(url);
+        const sourceKey = "airnow_hourly";
+        let actualDS = loadedSources?.[sourceKey];
+        if (!actualDS || !loadedGeoJSON[actualDS]) {
+            await airnowLoadData(date);
+            actualDS = loadedSources?.[sourceKey];
+        }
+        geoJSONData = loadedGeoJSON[actualDS] || loadedGeoJSON[sourceKey];
     } else {
-        // Standard daily data
         const sourceKey = DATASET_SOURCE_MAP[dataset] || dataset;
-        await loadSourceData(sourceKey, date);
-        geoJSONData = loadedGeoJSON[sourceKey];
+        const actualDS = loadedSources?.[sourceKey] || sourceKey;
+        if (loadedGeoJSON[actualDS]) {
+            geoJSONData = loadedGeoJSON[actualDS];
+        } else {
+            await loadSourceData(sourceKey, date);
+            const newActualDS = loadedSources?.[sourceKey] || sourceKey;
+            geoJSONData = loadedGeoJSON[newActualDS] || loadedGeoJSON[sourceKey];
+        }
     }
 
     if (!geoJSONData || !geoJSONData.features || geoJSONData.features.length === 0) {
@@ -98,7 +108,7 @@ export async function handleDownloadForLayer(dataset, options = {}) {
             let filename = `${dataset}_${date}.csv`;
             if (dataset.startsWith("airnow-hourly-")) {
                 const hourStr = airnowGetCurrentTime().toString().padStart(2, "0");
-                filename = `${dataset}_${date}-${hourStr}.csv`;
+                filename = `${dataset}_${date}_${hourStr}T.csv`;
             }
 
             downloadFile(filename, csv);

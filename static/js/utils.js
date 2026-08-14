@@ -515,3 +515,27 @@ export function ESML(str) {
     .replace(/'/g, "&#39;");
 }
 
+/**
+ * Global Unified Formatter for tabular cells, popups, and tooltips.
+ * Safely unwraps nested objects, removes [object Object], and cleans null/undefined/empty values for UI display.
+ */
+export function sanitizeDisplayValue(v, fallback = "-", suffix = "") {
+  if (v === undefined || v === null) return fallback;
+  if (typeof v === "object") {
+    if (Array.isArray(v)) return v.length ? v.join(", ") + suffix : fallback;
+    if (v.value !== undefined && v.value !== null) v = v.value;
+    else if (v.name !== undefined && v.name !== null) v = v.name;
+    else if (v.label !== undefined && v.label !== null) v = v.label;
+    else if (v.text !== undefined && v.text !== null) v = v.text;
+    else {
+      const keys = Object.keys(v);
+      if (keys.length === 0) return fallback;
+      v = JSON.stringify(v);
+    }
+  }
+  let s = String(v).trim();
+  if (s === "" || s === "{}" || s === "{ }" || s === "[object Object]" || s.toUpperCase() === "NA") return fallback;
+
+  return s + suffix;
+}
+
