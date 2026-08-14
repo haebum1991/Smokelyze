@@ -212,9 +212,18 @@ function renderTableModal({ datasetId, title, date, geoJSONData, records }) {
                 </div>
             </div>
             <div class="MapPost-modal-body" style="padding: 0; overflow: auto; flex: 1 1 auto;">
-                <table style="
+                <style>
+                    .layer-table-freeze tr:hover td {
+                        background-color: rgba(59, 130, 246, 0.14) !important;
+                    }
+                    .layer-table-freeze tr:hover td.sticky-map-col {
+                        background-color: color-mix(in srgb, #3b82f6 20%, var(--color-bg)) !important;
+                    }
+                </style>
+                <table class="layer-table-freeze" style="
                     width: 100%;
-                    border-collapse: collapse;
+                    border-collapse: separate;
+                    border-spacing: 0;
                     font-size: 1.3rem;
                 ">
                     <thead>
@@ -395,13 +404,17 @@ function renderTableModal({ datasetId, title, date, geoJSONData, records }) {
                 background: var(--map-toolbar-bg);
                 color: var(--text-heading);
                 border-bottom: 0.2rem solid var(--border-light);
+                border-right: 0.1rem solid var(--border-light);
                 position: sticky;
                 top: 0;
-                z-index: 3;
+                left: 0;
+                z-index: 10;
                 text-align: center;
                 font-weight: bold;
                 font-size: 1.3rem;
-                width: 6rem;
+                min-width: 6.5rem;
+                width: 6.5rem;
+                box-shadow: 0.2rem 0 0.5rem rgba(0, 0, 0, 0.2);
             ">Map</th>
         `;
 
@@ -528,13 +541,21 @@ function renderTableModal({ datasetId, title, date, geoJSONData, records }) {
 
         tbody.innerHTML = pageRecords.map((row, relativeIdx) => {
             const realIdx = startIdx + relativeIdx;
-            const rowBg = relativeIdx % 2 === 1 ? "rgba(255, 255, 255, 0.02)" : "transparent";
+            const rowBg = relativeIdx % 2 === 1 ? "var(--map-toolbar-bg)" : "var(--color-bg)";
             const mapCell = `
-                <td style="
+                <td class="sticky-map-col" style="
                     padding: 0.5rem 0.8rem;
                     text-align: center;
                     border-bottom: 0.1rem solid var(--border-light);
+                    border-right: 0.1rem solid var(--border-light);
+                    position: sticky;
+                    left: 0;
+                    background: ${rowBg};
+                    z-index: 2;
                     white-space: nowrap;
+                    min-width: 6.5rem;
+                    width: 6.5rem;
+                    box-shadow: 0.2rem 0 0.5rem rgba(0, 0, 0, 0.15);
                 ">
                     <button type="button"
                             class="table-map-locate-btn"
@@ -571,9 +592,7 @@ function renderTableModal({ datasetId, title, date, geoJSONData, records }) {
                 `;
             }).join("");
             return `
-                <tr style="background: ${rowBg}; transition: background 0.15s;"
-                    onmouseenter="this.style.background='rgba(255,255,255,0.07)'"
-                    onmouseleave="this.style.background='${rowBg}'">${mapCell}${cells}</tr>
+                <tr style="background: ${rowBg}; transition: background 0.15s;">${mapCell}${cells}</tr>
             `;
         }).join("");
         
