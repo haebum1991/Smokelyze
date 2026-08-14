@@ -7,15 +7,31 @@ import { loadedGeoJSON, loadedSources } from "./loader-state.js";
 import { DATA_IMPORT_METHOD } from "./layers-def.js";
 import { toggleSpinner } from "./loader-ui.js";
 import { logUserAction } from "./fb-logging.js";
+import { auth, onAuthStateChanged } from "./fb-init.js";
+import { showAuthOverlay } from "./utils.js";
 
 export const wildfireLookbackMap = {};
 
-// Ensure lookback button stays visible on mobile screens
-if (typeof document !== "undefined" && !document.getElementById("legend-lookback-style")) {
-    const styleEl = document.createElement("style");
-    styleEl.id = "legend-lookback-style";
-    styleEl.textContent = `.legend-lookback-btn { display: inline-block !important; }`;
-    document.head.appendChild(styleEl);
+// Ensure lookback button stays visible on mobile screens & sync with login state
+if (typeof document !== "undefined") {
+    if (!document.getElementById("legend-lookback-style")) {
+        const styleEl = document.createElement("style");
+        styleEl.id = "legend-lookback-style";
+        styleEl.textContent = `.legend-lookback-btn { display: inline-block !important; }`;
+        document.head.appendChild(styleEl);
+    }
+
+    onAuthStateChanged(auth, (user) => {
+        document.querySelectorAll(".legend-lookback-btn").forEach(btn => {
+            if (user) {
+                btn.classList.remove("disabled-auth");
+                btn.removeAttribute("title");
+            } else {
+                btn.classList.add("disabled-auth");
+                btn.title = "Please login to use BigQuery lookback";
+            }
+        });
+    });
 }
 
 /**
@@ -59,6 +75,13 @@ const pendingLookbackRequests = new Map();
  */
 export async function fetchLookbackNIFC(sourceKey, isoDate, lookbackDays = 0) {
     if (!map) return null;
+    
+    // Check login before initiating request
+    if (!auth?.currentUser) {
+        showAuthOverlay?.();
+        return null;
+    }
+    
     const cleanDate = isoDate || document.getElementById("datePicker")?.value || "LIVE";
     const cacheKey = `${cleanDate}_lookback_${lookbackDays}`;
 
@@ -78,8 +101,13 @@ export async function fetchLookbackNIFC(sourceKey, isoDate, lookbackDays = 0) {
 
     const fetchPromise = (async () => {
         try {
-            const url = `/.netlify/functions/gcs-bigquery?dataset=${encodeURIComponent(sourceKey)}&date=${encodeURIComponent(cleanDate)}&lookback=${lookbackDays}`;
-            const res = await fetch(url);
+            const idToken = await auth.currentUser.getIdToken();
+            const url = `/api/bg?dataset=${encodeURIComponent(sourceKey)}&date=${encodeURIComponent(cleanDate)}&lookback=${lookbackDays}`;
+            const res = await fetch(url, {
+                headers: {
+                    "Authorization": `Bearer ${idToken}`
+                }
+            });
             if (!res.ok) {
                 const errText = await res.text();
                 console.error(`[BQ-LOOKBACK] HTTP ${res.status} Details:`, errText);
@@ -123,6 +151,10 @@ export function renderLookbackBoxHTML(id) {
     const sourceKey = id.replace(/-/g, "_");
     const cacheKey = `${datePickerVal}_lookback_${curDays}`;
     const isSynced = (loadedSources[sourceKey] === cacheKey);
+    
+    const isLoggedIn = !!auth?.currentUser;
+    const authClass = isLoggedIn ? "" : "disabled-auth";
+    const authTitle = isLoggedIn ? "" : "Please login to use BigQuery lookback";
 
     const btnText = isSynced ? "✓ Done" : "Update";
     const btnStyle = isSynced
@@ -141,7 +173,7 @@ export function renderLookbackBoxHTML(id) {
                     <input type="number" class="legend-lookback-input" data-layer-id="${id}" min="0" max="15" value="${curDays}" style="width:4rem; text-align:center;">
                     <span>days</span>
                 </div>
-                <button class="export-btn-csv legend-lookback-btn" data-layer-id="${id}" data-is-synced="${isSynced ? "true" : "false"}" style="${btnStyle}">${btnText}</button>
+                <button class="legend-lookback-btn ${authClass}" title="${authTitle}" data-layer-id="${id}" data-is-synced="${isSynced ? "true" : "false"}" style="${btnStyle}">${btnText}</button>
             </div>
             <hr style="margin: 0.5rem;">
             <div class="legend-item legend-lookback-range" data-layer-id="${id}" style="justify-content:flex-end; color:var(--card-shadow);">
@@ -199,7 +231,7 @@ export function bindLookbackEvents(container) {
     // Update button click handler
     const btns = container.querySelectorAll(".legend-lookback-btn");
     btns.forEach(btn => {
-        // Instant press color swap isolated in loader-lookback.js
+        // Instant press color swap isolated in bq-lookback.js
         btn.addEventListener("pointerdown", () => {
             if (btn.getAttribute("data-is-synced") !== "true") {
                 btn.style.color = "var(--color-bg)";
@@ -218,6 +250,13 @@ export function bindLookbackEvents(container) {
         btn.addEventListener("click", async (e) => {
             e.stopPropagation();
             e.preventDefault();
+            
+            // Guard: If not logged in, show login overlay and DO NOT change button or state
+            if (!auth?.currentUser) {
+                showAuthOverlay?.();
+                return;
+            }
+            
             const layerId = btn.getAttribute("data-layer-id");
             const input = container.querySelector(`.legend-lookback-input[data-layer-id="${layerId}"]`);
             if (!input) return;
@@ -233,8 +272,6 @@ export function bindLookbackEvents(container) {
                 input.value = 15;
             }
 
-            wildfireLookbackMap[layerId] = days;
-
             const datePickerVal = document.getElementById("datePicker")?.value || "LIVE";
             const rangeSpan = container.querySelector(`.legend-lookback-range[data-layer-id="${layerId}"] .range-text`);
             if (rangeSpan) {
@@ -242,9 +279,12 @@ export function bindLookbackEvents(container) {
             }
 
             const sourceKey = layerId.replace(/-/g, "_");
-            await fetchLookbackNIFC(sourceKey, datePickerVal, days);
-            
-            // Mark button as Done (green) after successful sync to map
+            const result = await fetchLookbackNIFC(sourceKey, datePickerVal, days);
+            if (!result) return;
+
+            wildfireLookbackMap[layerId] = days;
+
+            // Mark button as Done (green) only after successful sync to map
             btn.textContent = "✓ Done";
             btn.style.backgroundColor = "#059669";
             btn.style.color = "#ffffff";

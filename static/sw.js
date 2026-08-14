@@ -1,4 +1,4 @@
-const CACHE_NAME = "v-20260814-0101"; // R에서 자동으로 생성된 버전
+const CACHE_NAME = "v-20260814-1136"; // R에서 자동으로 생성된 버전
 const OFFLINE_URL = "/offline/";
 
 const requiredFiles = [
@@ -51,7 +51,6 @@ const requiredFiles = [
     "/js/layers.js",
     "/js/loader-fetch.js",
     "/js/loader-handler.js",
-    "/js/loader-lookback.js",
     "/js/loader-state.js",
     
     "/js/loader-ui.js",
@@ -87,7 +86,9 @@ const requiredFiles = [
     "/js/ui-toggles.js",
     "/js/ui-tsplot.js",
     "/js/ui-tutorial.js",
-    "/js/utils.js"
+    "/js/utils.js",
+    
+    "/js/bq-lookback.js"
 ];
 
 self.addEventListener("install", event => {

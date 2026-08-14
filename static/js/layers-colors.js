@@ -13,7 +13,7 @@ import {
   closedLegendIds 
 } from "./layers-state.js";
 import { getEffectiveDataset, currentDate } from "./utils.js";
-import { renderLookbackBoxHTML, bindLookbackEvents } from "./loader-lookback.js";
+import { renderLookbackBoxHTML, bindLookbackEvents } from "./bq-lookback.js";
 
 
 /**

@@ -166,6 +166,12 @@
   force  = true
   
 [[redirects]]
+  from = "/api/bg"
+  to   = "https://fetch-bg-request-go-service-1068523865415.us-central1.run.app/"
+  status = 200
+  force  = true
+  
+[[redirects]]
   from = "/api/tsplot"
   to   = "/.netlify/functions/gcs-tsplot"
   status = 200
