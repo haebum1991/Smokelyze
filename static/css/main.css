@@ -148,8 +148,10 @@ body,
   transition: transform 0.3s ease-out, background 0.3s ease;
 }
 
-.theme-toggle-btn:hover {
-  transform: scale(1.08);
+@media (hover: hover) {
+  .theme-toggle-btn:hover {
+    transform: scale(1.08);
+  }
 }
 
 .theme-toggle-btn:active {
@@ -1222,10 +1224,6 @@ body.page-about .sidebar {
   
   html {
     font-size: 57.5%;
-  }
-
-  .theme-toggle-btn:hover {
-    transform: translate(-50%, -50%);
   }
 
   .container {
