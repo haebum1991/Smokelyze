@@ -1,4 +1,4 @@
-const CACHE_NAME = "v-20260818-2308"; // R에서 자동으로 생성된 버전
+const CACHE_NAME = "v-20260818-2348"; // R에서 자동으로 생성된 버전
 const OFFLINE_URL = "/offline/";
 
 const requiredFiles = [
@@ -35,7 +35,7 @@ const requiredFiles = [
     "/js/fb-MapPost-handler.js",
     "/js/fb-MapPost.js",
     "/js/fb-announcements.js",
-    "/js/fb-announcement-popup.js",
+    "/js/fb-announcements-popup.js",
     "/js/fb-init.js",
     "/js/fb-logging.js",
     "/js/geo-boundary.js",
