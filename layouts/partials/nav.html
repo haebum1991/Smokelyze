@@ -122,7 +122,7 @@
         <use id="ThemeToggleIcon" xlink:href="#icon-moon" />
       </svg>
     </button>
-    {{ if not .IsHome }}
+    {{ if or (eq .Section "map") (eq .RelPermalink "/map/") }}
     <button class="theme-toggle-btn" id="MapBtnAnnouncement" title="Announcements">
       <svg width="28" height="28">
         <use xlink:href="#icon-megaphone" />

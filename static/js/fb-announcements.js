@@ -196,27 +196,27 @@ function renderAnnouncementDetail(id) {
     const updatedDate = a.timestamp ? utils.formatDate(a.timestamp.toDate ? a.timestamp.toDate() : new Date(a.timestamp)) : "Just now";
 
     viewBody.innerHTML = `
-        <div class="MapPost-modal-body" style="overflow-y: auto;">
-            <div style="margin-bottom: 2rem;">
-                <h2 style="margin: 0; font-size: 2.4rem; color: var(--card-shadow);">${utils.ESML(a.title)}</h2>
-                <div style="font-size: 1.4rem; color: var(--text-main); opacity: 0.7; margin-top: 0.5rem;">
-                    Posted: ${utils.ESML(createdDate)} | Updated: ${utils.ESML(updatedDate)}
+        <div style="padding: 1.6rem 2rem 1.2rem 2rem; border-bottom: 0.1rem solid var(--border-main); flex-shrink: 0; background: var(--sidebar-widget-bg, var(--color-bg));">
+            <h2 style="margin: 0; font-size: 2rem; font-weight: bold; color: var(--card-shadow); line-height: 1.4; word-break: break-word;">${utils.ESML(a.title)}</h2>
+            <div style="font-size: 1.3rem; color: var(--card-shadow); opacity: 0.85; margin-top: 0.6rem;">
+                Posted: ${utils.ESML(createdDate)} | Updated: ${utils.ESML(updatedDate)}
+            </div>
+        </div>
+        <div class="cm-area-display" style="padding: 2rem; flex: 1 1 auto; overflow-y: auto; white-space: pre-wrap; word-break: break-word; font-size: 1.5rem; line-height: 1.65; color: var(--text-main); scrollbar-width: thin;">${utils.ESML(a.text)}</div>
+        
+        ${state.isAdmin ? `
+            <div class="MapPost-modal-footer" style="flex-shrink: 0; padding: 1.2rem 2rem; border-top: 0.1rem solid var(--border-main); background: var(--sidebar-widget-bg, var(--color-bg));">
+                <div class="reply-btn-wrapper" style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button class="reply-btn-submit reply-btn-edit-detail" data-id="${id}">Edit</button>
+                    <button class="reply-btn-cancel reply-btn-delete-detail" data-id="${id}">Delete</button>
                 </div>
             </div>
-            <div class="cm-area-display" style="white-space: pre-wrap; margin-bottom: 3rem;">${utils.ESML(a.text)}</div>
-            
-            ${state.isAdmin ? `
-                <div class="reply-btn-wrapper" style="border-top: 0.1rem solid var(--border-color); padding-top: 2rem;">
-                    <button class="reply-btn-edit-detail" data-id="${id}">Edit</button>
-                    <button class="reply-btn-delete-detail" data-id="${id}">Delete</button>
-                </div>
-            ` : ""}
-        </div>
+        ` : ""}
     `;
 
     document.getElementById("BoardModalOverlay").style.display = "flex";
     document.getElementById("BoardModalEditBody").style.display = "none";
-    viewBody.style.display = "block";
+    viewBody.style.display = "flex";
 
     const titleText = document.getElementById("BoardModalTitle");
     if (titleText) titleText.textContent = "Announcement Detail";
