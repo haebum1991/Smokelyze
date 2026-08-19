@@ -349,7 +349,7 @@ export const DescData = {
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
                   "<li>In our app, <b>" +
                   "this data is available starting from 2018-01-01, </b>" + 
-                  "and <b>spatially aggregated to 4 km</b> for visualization performance. (Original ABI AOD resolution is 2 km)</li>" +
+                  "and <b>spatially aggregated to 4 km</b> for visualization performance (Original ABI AOD resolution is 2 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li></ul>"
         },
@@ -362,7 +362,7 @@ export const DescData = {
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
                   "<li>In our app, <b>" +
                   "this data is available starting from 2019-01-01, </b>" + 
-                  "and <b>spatially aggregated to 4 km</b> for visualization performance. (Original ABI AOD resolution is 2 km)</li>" +
+                  "and <b>spatially aggregated to 4 km</b> for visualization performance (Original ABI AOD resolution is 2 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li></ul>"
         },
@@ -416,7 +416,7 @@ export const DescData = {
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
                   "<li>In our app, <b>" +
                   "this data is available starting from 2021-01-01, </b>" + 
-                  "and <b>spatially aggregated to 6-7 km</b> for visualization performance. (Original HRRR resolution is 3 km)</li>" +
+                  "and <b>spatially aggregated to 6-7 km</b> for visualization performance (Original HRRR resolution is 3 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://console.cloud.google.com/storage/browser/high-resolution-rapid-refresh' target='_blank' rel='noopener noreferrer'>NOAA High-Resolution Rapid Refresh (Google Cloud Storage)</a></li></ul>"
@@ -430,7 +430,7 @@ export const DescData = {
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
                   "<li>In our app, <b>" +
                   "this data is available starting from 2021-01-01, </b>" + 
-                  "and <b>spatially aggregated to 6-7 km</b> for visualization performance. (Original HRRR resolution is 3 km)</li>" +
+                  "and <b>spatially aggregated to 6-7 km</b> for visualization performance (Original HRRR resolution is 3 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://console.cloud.google.com/storage/browser/high-resolution-rapid-refresh' target='_blank' rel='noopener noreferrer'>NOAA High-Resolution Rapid Refresh (Google Cloud Storage)</a></li></ul>"
@@ -441,7 +441,7 @@ export const DescData = {
             desc: "<b>NASA GEOS-CF Surface Ozone (O3)</b> provides hourly surface ozone concentrations from the NASA GMAO GEOS-CF (Composition Forecasting) model system coupled with the full GEOS-Chem tropospheric chemistry mechanism. " +
                   "Ozone is reported in units of <b>ppb</b>. " +
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
-                  "<li>In our app, <b>this data is available starting from 2021-01-01.</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km)</li>" +
+                  "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
@@ -452,7 +452,7 @@ export const DescData = {
             desc: "<b>NASA GEOS-CF Surface Carbon Monoxide (CO)</b> provides hourly surface carbon monoxide concentrations from the NASA GMAO GEOS-CF model. " +
                   "CO is a primary combustion tracer emitted directly by wildfires and anthropogenic sources, reported in units of <b>ppb</b>. " +
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
-                  "<li>In our app, <b>this data is available starting from 2021-01-01.</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km)</li>" +
+                  "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
@@ -463,7 +463,7 @@ export const DescData = {
             desc: "<b>NASA GEOS-CF Surface Nitrogen Dioxide (NO2)</b> provides hourly ground-level nitrogen dioxide concentrations from the NASA GMAO GEOS-CF model with GEOS-Chem chemistry. " +
                   "NO2 is reported in units of <b>ppb</b>. " +
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
-                  "<li>In our app, <b>this data is available starting from 2021-01-01.</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km)</li>" +
+                  "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
@@ -474,7 +474,7 @@ export const DescData = {
             desc: "<b>NASA GEOS-CF Surface Formaldehyde (HCHO)</b> provides hourly surface formaldehyde concentrations from the NASA GMAO GEOS-CF model. " +
                   "HCHO is a critical intermediate in the oxidation of volatile organic compounds (VOCs) emitted by vegetation and wildfires, reported in units of <b>ppb</b>. " +
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
-                  "<li>In our app, <b>this data is available starting from 2021-01-01.</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km)</li>" +
+                  "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
@@ -485,7 +485,7 @@ export const DescData = {
             desc: "<b>NASA GEOS-CF Surface PM2.5</b> provides hourly fine particulate matter mass concentrations at 35% relative humidity (pm25_rh35) simulated by the NASA GMAO GEOS-CF model. " +
                   "PM2.5 is reported in units of <b>&micro;g m<sup>-3</sup></b>. " +
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
-                  "<li>In our app, <b>this data is available starting from 2021-01-01.</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km)</li>" +
+                  "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
@@ -496,7 +496,7 @@ export const DescData = {
             desc: "<b>NASA GEOS-CF Organic Carbon PM2.5 (PM2.5OC)</b> provides hourly organic carbon aerosol mass concentrations at 35% relative humidity (pm25oc_rh35) from the NASA GMAO GEOS-CF model. " +
                   "Organic carbon is the primary constituent of wildfire smoke particles, reported in units of <b>&micro;g m<sup>-3</sup></b>. " +
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
-                  "<li>In our app, <b>this data is available starting from 2021-01-01.</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km)</li>" +
+                  "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
