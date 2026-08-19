@@ -115,9 +115,21 @@
       height="{{ .Site.Params.logo.height }}" alt="{{ .Site.Params.logo.alt }}">
   </a>
 
-  <button id="ThemeToggleBtn" type="button" class="theme-toggle-btn">
-    Dark mode
-  </button>
+  <div
+    style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 1rem; z-index: var(--z-theme-toggle);">
+    <button class="theme-toggle-btn" id="ThemeToggleBtn" type="button" title="Switch theme">
+      <svg width="28" height="28">
+        <use id="ThemeToggleIcon" xlink:href="#icon-moon" />
+      </svg>
+    </button>
+    {{ if not .IsHome }}
+    <button class="theme-toggle-btn" id="MapBtnAnnouncement" title="Announcements">
+      <svg width="28" height="28">
+        <use xlink:href="#icon-megaphone" />
+      </svg>
+    </button>
+    {{ end }}
+  </div>
 
   <button class="nav-toggle" id="navToggle">☰</button>
 

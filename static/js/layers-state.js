@@ -9,7 +9,7 @@ export { map };
 export let activeLayerStack = [];
 export let regionStats = {};
 export let _cachedActiveLayerIds = [];
-export let StateShadingEnabled = true;
+export let StateShadingEnabled = false;
 export let PointLayersEnabled = true;
 export let NaShadingEnabled = true;
 export let closedLegendIds = new Set();

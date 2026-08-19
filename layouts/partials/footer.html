@@ -525,15 +525,14 @@
     const LIGHT_HREF = "/css/color-purple.css";
 
     function applyTheme(mode) {
-      if (mode === "dark") {
-        linkEl.setAttribute("href", DARK_HREF);
-        btn.textContent = "Dark mode";
-        document.documentElement.dataset.theme = "dark";
-      } else {
-        linkEl.setAttribute("href", LIGHT_HREF);
-        btn.textContent = "Light mode";
-        document.documentElement.dataset.theme = "light";
-      }
+      const iconUse = document.getElementById("ThemeToggleIcon");
+      const iconRef = mode === "dark" ? "#icon-moon" : "#icon-sun";
+      const cssHref = mode === "dark" ? DARK_HREF : LIGHT_HREF;
+
+      linkEl.setAttribute("href", cssHref);
+      if (iconUse) iconUse.setAttribute("xlink:href", iconRef);
+      document.documentElement.dataset.theme = mode;
+
       localStorage.setItem(THEME_KEY, mode);
       window.dispatchEvent(new CustomEvent("themeChanged", { detail: { theme: mode } }));
     }

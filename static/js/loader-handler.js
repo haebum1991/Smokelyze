@@ -33,7 +33,8 @@ import {
     tropomiLoadData, 
     hrrrLoadData, 
     goesLoadData,
-    viirsLoadData
+    viirsLoadData,
+    geoscfLoadData
 } from "./raster-loader.js";
 
 
@@ -596,7 +597,8 @@ export async function updateAllActiveSources() {
                     tropomiLoadData(isoDate),
                     hrrrLoadData(isoDate),
                     goesLoadData(isoDate),
-                    viirsLoadData(isoDate)
+                    viirsLoadData(isoDate),
+                    geoscfLoadData(isoDate)
                 ]);
             } catch (e) {
                 console.error("Hourly background load failed:", e);
@@ -614,7 +616,8 @@ export async function updateAllActiveSources() {
                     tropomiLoadData(isoDate),
                     hrrrLoadData(isoDate),
                     goesLoadData(isoDate),
-                    viirsLoadData(isoDate)
+                    viirsLoadData(isoDate),
+                    geoscfLoadData(isoDate)
                 ]);
             } catch (e) {
                 console.error("Hourly clear failed:", e);
@@ -755,6 +758,7 @@ function bindEventsLoaderHandler() {
             const hasHrrr = !!document.querySelector("input[id^='layer-hrrr-']:checked");
             const hasGoes = !!document.querySelector("input[id^='layer-goes-']:checked");
             const hasViirs = !!document.querySelector("input[id='layer-viirs-truecolor']:checked");
+            const hasGeoscf = !!document.querySelector("input[id^='layer-geoscf-']:checked");
             const isoDate = utils.currentDate();
 
             // Load all hourly data in parallel, properly awaited.
@@ -779,6 +783,10 @@ function bindEventsLoaderHandler() {
             
             if (hasViirs) {
                 promises.push(viirsLoadData(isoDate));
+            }
+            
+            if (hasGeoscf) {
+                promises.push(geoscfLoadData(isoDate));
             }
 
             if (promises.length > 0) {

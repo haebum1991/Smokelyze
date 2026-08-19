@@ -113,6 +113,73 @@ export const PALETTE_TRI = [
     "#FF0000" // Red
 ];
 
+
+// [GEOS-CF Palettes]
+export const PALETTE_GEOSCF_O3 = [
+    "#3a57ff", // Deep Blue (Pristine clean)
+    "#3ad9ff", // Cyan (Typical clean background)
+    "#3aff53", // Neon Green (Moderate background)
+    "#f6ff3a", // Yellow (Elevated photochemical)
+    "#ff893a", // Orange (High ozone / Pre-exceedance)
+    "#ff3a3a", // Red (NAAQS Exceedance)
+    "#31004a"  // Deep Maroon (Extreme plume)
+];
+
+// [GEOS-CF CO Palette] Earth tone ramp matching screenshot (Teal Green -> Sand Cream -> Amber -> Sienna Brown)
+export const PALETTE_GEOSCF_CO = [
+    "#054d38", // 0: Deep Forest Teal Green (Clean pristine)
+    "#288766", // 1: Teal Pine Green
+    "#7ec4a6", // 2: Soft Seafoam Green
+    "#f3e8c9", // 3: Pale Sand / Vanilla Cream (Mid-level transition)
+    "#d79844", // 4: Warm Golden Amber (Elevated plume)
+    "#a25d19", // 5: Rich Sienna Brown (Heavy pollution)
+    "#5c2e00"  // 6: Deep Chocolate/Chestnut Brown (Extreme fire core)
+];
+
+export const PALETTE_GEOSCF_NO2 = [
+    "#d0f0fd", // Pristine clean
+    "#74c0fc", // Light Blue (Rural)
+    "#38d9a9", // Mint/Green (Suburban)
+    "#ffd43b", // Yellow (Urban)
+    "#ff922b", // Orange (Industrial/Highway)
+    "#fa5252", // Red (High pollution)
+    "#67001f"  // Deep Burgundy
+];
+
+// [GEOS-CF HCHO Palette] Turquoise & Sapphire sequential colormap (Lime Cream -> Spring Mint -> Electric Turquoise -> Deep Sapphire)
+export const PALETTE_GEOSCF_HCHO = [
+    "#f7fcf0", // 0: Light Lime Cream (Clean baseline)
+    "#c7e9b4", // 1: Spring Mint (Vegetation background)
+    "#7fcdbb", // 2: Soft Turquoise
+    "#41b6c4", // 3: Electric Cyan-Turquoise (Photochemical active VOCs)
+    "#1d91c0", // 4: Bright Ocean Blue
+    "#225ea8", // 5: Deep Royal Blue (High VOC plume)
+    "#081d58"  // 6: Deep Sapphire / Midnight Navy (Extreme VOC core)
+];
+
+// [GEOS-CF PM2.5 Palette] Standard Viridis sequential colormap (Deep Purple -> Blue-Teal -> Emerald Green -> Lime -> Vivid Yellow)
+export const PALETTE_GEOSCF_PM = [
+    "#440154", // 0: Deep Purple / Indigo (Clean baseline)
+    "#443983", // 1: Dark Blue-Violet
+    "#31688e", // 2: Ocean Teal-Blue
+    "#21908d", // 3: Emerald Green
+    "#35b779", // 4: Light Viridian Green
+    "#8fd744", // 5: Chartreuse / Lime Green
+    "#fde725"  // 6: Bright Vivid Yellow (High PM2.5 concentration core)
+];
+
+// [GEOS-CF PM2.5 OC Palette] Standard Plasma Colormap (Midnight Blue -> Violet -> Hot Pink -> Coral -> Blazing Gold)
+export const PALETTE_GEOSCF_PMOC = [
+    "#0d0887", // 0: Deep Midnight Blue (Clean baseline)
+    "#5402a3", // 1: Electric Violet
+    "#8b0aa5", // 2: Vibrant Purple-Magenta
+    "#b93289", // 3: Hot Pink / Magenta
+    "#db5c68", // 4: Coral Red
+    "#f48849", // 5: Blazing Tangerine Orange
+    "#fece2f"  // 6: Glowing Gold (High smoke concentration core)
+];
+
+
 // --------------------------------------------------------
 // Breaks definitions
 // --------------------------------------------------------
@@ -139,6 +206,14 @@ export const BREAKS_TEMPO = [1, 25, 50, 75, 100, 125, 150]; // NASA Standard 7-s
 export const BREAKS_HRRR_ugm2 = [0, 1, 5, 10, 20, 40, 60];
 export const BREAKS_HRRR_ugm3 = [0, 5, 10, 20, 30, 40, 50];
 export const BREAKS_GOES_AOD = [0, 0.1, 0.2, 0.4, 0.6, 0.8, 1.0];
+
+// [GEOS-CF Breaks]
+export const BREAKS_GEOSCF_O3 = [15, 25, 35, 45, 55, 70, 90];
+export const BREAKS_GEOSCF_CO = [50, 75, 100, 150, 250, 500, 1000];
+export const BREAKS_GEOSCF_NO2 = [0, 0.5, 1.0, 2.0, 4.0, 7.0, 12.0];
+export const BREAKS_GEOSCF_HCHO = [0, 0.5, 1.0, 2.0, 4.0, 7.0, 12.0];
+export const BREAKS_GEOSCF_PM = [2, 5, 12, 25, 50, 100, 200];
+export const BREAKS_GEOSCF_PMOC = [0, 1, 5, 10, 20, 40, 60];
 
 // --------------------------------------------------------
 // Label definitions

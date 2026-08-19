@@ -120,7 +120,8 @@ onAuthStateChanged(auth, async (user) => {
             "AdminSettingsSection",
             "BoardBtnWrite",
             "BoardBtnEmail",
-            "TelemetryPanel"
+            "TelemetryPanel",
+            "AdminTestSection"
         ],
         drawers: []
     };

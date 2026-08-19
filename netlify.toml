@@ -145,6 +145,12 @@
   status = 200
   force  = true
 
+[[redirects]]
+  from = "/geoscf_date_png/*"
+  to   = "/.netlify/functions/gcs-proxy/geoscf_date_png/:splat"
+  status = 200
+  force  = true
+
 
 # ---- API approach -----
 [[redirects]]

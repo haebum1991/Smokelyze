@@ -83,7 +83,13 @@ export function resetUIAndData() {
     "goes-aod-west-raster",
     "goes-geocolor-east-raster", 
     "goes-geocolor-west-raster",
-    "viirs-truecolor-raster"
+    "viirs-truecolor-raster",
+    "geoscf-o3-raster",
+    "geoscf-co-raster",
+    "geoscf-no2-raster",
+    "geoscf-hcho-raster",
+    "geoscf-pm25-raster",
+    "geoscf-pm25oc-raster"
   ];
   rasterLayerIds.forEach(id => {
     if (map && map.getLayer(id)) {

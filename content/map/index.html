@@ -217,11 +217,11 @@ title: ""
       <!-- State Shading Toggle (Injected via JS) -->
       <div id="ToggleSwitchStateShading"></div>
 
-      <!-- Day/Night Shadow Toggle (Injected via JS) -->
-      <div id="ToggleSwitchDayNight"></div>
-
       <!-- NA Values Toggle (Injected via JS) -->
       <div id="ToggleSwitchNaShading"></div>
+
+      <!-- Day/Night Shadow Toggle (Injected via JS) -->
+      <div id="ToggleSwitchDayNight"></div>
 
       <!-- Base Map Selection -->
       <div id="BaseMapSelection" style="margin-top: 1rem; margin-bottom: 1rem;">
@@ -316,7 +316,7 @@ title: ""
       </details>
       
       <details>
-        <summary>Satellite & Model</summary>
+        <summary>Satellite-based</summary>
         <label><input type="checkbox" id="layer-smoke"> HMS-smoke</label>
         <label>
           <input type="checkbox" id="layer-fire"> HMS-fire
@@ -338,15 +338,7 @@ title: ""
           <input type="checkbox" id="layer-tropomi-hcho"> TROPOMI-HCHOVCD
           <hr style="margin-top: 0.2rem; margin-bottom: 0.2rem;">
         </label>
-        
-        <label>
-          <input type="checkbox" id="layer-hrrr-colmd"> HRRR-smokeVCD (hourly)
-        </label>
-        <label>
-          <input type="checkbox" id="layer-hrrr-massden"> HRRR-smoke8m (hourly)
-          <hr style="margin-top: 0.2rem; margin-bottom: 0.2rem;">
-        </label>
-        
+
         <label>
           <input type="checkbox" id="layer-goes-aod-east"> GOES-AOD-East (hourly)
         </label>
@@ -367,6 +359,31 @@ title: ""
           <input type="checkbox" id="layer-burn"> MODIS area burned
           <hr style="margin-top: 0.2rem; margin-bottom: 0.2rem;">
         </label>
+      </details>
+      
+      <details>
+        <summary>Model-based</summary>
+        <label>
+          <input type="checkbox" id="layer-hrrr-colmd"> HRRR-smokeVCD (hourly)
+        </label>
+        <label>
+          <input type="checkbox" id="layer-hrrr-massden"> HRRR-smoke8m (hourly)
+          <hr style="margin-top: 0.2rem; margin-bottom: 0.2rem;">
+        </label>
+
+        <!-- Admin Only Test Section -->
+        <div id="AdminTestSection" style="display: none;">
+          <label><input type="checkbox" id="layer-geoscf-o3"> GEOS-CF-O3 (hourly)</label>
+          <label><input type="checkbox" id="layer-geoscf-co"> GEOS-CF-CO (hourly)</label>
+          <label><input type="checkbox" id="layer-geoscf-no2"> GEOS-CF-NO2 (hourly)</label>
+          <label><input type="checkbox" id="layer-geoscf-hcho"> GEOS-CF-HCHO (hourly)</label>
+          <label><input type="checkbox" id="layer-geoscf-pm25"> GEOS-CF-PM2.5 (hourly)</label>
+          <label>
+            <input type="checkbox" id="layer-geoscf-pm25oc"> GEOS-CF-PM2.5OC (hourly)
+            <hr style="margin-top: 0.2rem; margin-bottom: 0.2rem;">
+          </label>
+        </div>
+        
       </details>
 
       <details>
@@ -471,7 +488,8 @@ title: ""
   <div class="Desc-tab-main">
     <button class="Desc-tab-main-btn active" Desc-group="LyrGroupNIFC">NIFC</button>
     <button class="Desc-tab-main-btn" Desc-group="LyrGroupAirnow">AirNow</button>
-    <button class="Desc-tab-main-btn" Desc-group="LyrGroupSatellite">Satellite & Model</button>
+    <button class="Desc-tab-main-btn" Desc-group="LyrGroupSatellite">Satellite-based</button>
+    <button class="Desc-tab-main-btn" Desc-group="LyrGroupModel">Model-based</button>
     <button class="Desc-tab-main-btn" Desc-group="LyrGroupPublished">Published & Latest</button>
   </div>
 
@@ -876,6 +894,7 @@ title: ""
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <script type="module" src="/js/ui-analytics.js"></script>
 <script type="module" src="/js/ui-tsplot.js"></script>
+<script type="module" src="/js/fb-announcement-popup.js"></script>
 
 <!-- MapPost Context Menu -->
 <div class="MapPost-context-menu" id="MapPostContextMenu" style="display:none;">

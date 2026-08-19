@@ -300,7 +300,7 @@ export function initAccordion() {
         appendSwitch(StateShadingContainer, {
             id: "MapBtnStateShading",
             label: "Show State Shading",
-            checked: true
+            checked: false
         });
         initStateShadingToggle();
         appendDrawerHelpIcon("ToggleSwitchStateShading", "show-state-shading");

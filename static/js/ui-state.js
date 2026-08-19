@@ -74,7 +74,7 @@ export function restoreUI() {
   }
 
   // State Shading
-  setStateShadingEnabled(typeof s.StateShadingEnabled === "boolean" ? s.StateShadingEnabled : true);
+  setStateShadingEnabled(typeof s.StateShadingEnabled === "boolean" ? s.StateShadingEnabled : false);
 
   // Point Layers
   setPointLayersEnabled(typeof s.PointLayersEnabled === "boolean" ? s.PointLayersEnabled : true);
@@ -304,11 +304,11 @@ export function resetGlobalNaShading() {
 export function resetGlobalStateShading() {
   const btn = document.getElementById("MapBtnStateShading");
   if (btn) {
-    if (btn.type === "checkbox") btn.checked = true;
-    else btn.classList.remove("disabled");
+    if (btn.type === "checkbox") btn.checked = false;
+    else btn.classList.add("disabled");
   }
 
-  setStateShadingEnabled(true);
+  setStateShadingEnabled(false);
   updateStateShading?.();
 }
 

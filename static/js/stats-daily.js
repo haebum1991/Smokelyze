@@ -364,7 +364,8 @@ export function computeRasterStateAverages(isoDate, regionIDs, modelStats) {
 
                             if (pointInGeometry([lng, lat], feat.geometry)) {
                                 const gray = store.grayscale[pxY * store.imgW + pxX];
-                                if (gray && gray !== 0) {
+                                const isGeoscf = rasterLayer.sourceId.includes("geoscf");
+                                if (gray !== null && gray !== undefined && (gray !== 0 || isGeoscf)) {
                                     const realValue = store.metadata.min_val + (gray / 255) * (store.metadata.max_val - store.metadata.min_val);
                                     let displayValue = realValue;
                                     if (rasterLayer.sourceId.includes("tempo") || rasterLayer.sourceId.includes("tropomi")) {

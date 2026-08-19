@@ -229,6 +229,19 @@ export function urlPngVIIRS(isoDate, productId) {
   };
 }
 
+// url generator for png of NASA GEOS-CF
+export function urlPngGEOSCF(isoDate, hour, productId) {
+  const [y, m, d] = isoDate.split("-");
+  const formattedHour = String(hour).padStart(2, "0");
+  const folder = `/geoscf_date_png/${productId}/${y}/${m}/${d}`;
+  const baseName = `GEOS_CF_${productId}_${isoDate}_${formattedHour}T`;
+
+  return {
+    jsonUrl: `${folder}/${baseName}.json`,
+    pngUrl: `${folder}/${baseName}.png`
+  };
+}
+
 // Convert EPSG:3857 (Web Mercator meters) to EPSG:4326 (LngLat degrees)
 export function mercatorToLngLat(x, y) {
   const lon = (x / 20037508.34) * 180;
@@ -395,8 +408,31 @@ export function highlightLocation(coords, p, dataSource, targetZoom = 8) {
   const mapLocal = map;
   if (!mapLocal) return;
 
-  // Close drawers on mobile
-  if (window.innerWidth <= 1024) {
+  const currentZoom = mapLocal.getZoom();
+  let inBounds = false;
+  try {
+    const point = mapLocal.project(coords);
+    const canvas = mapLocal.getCanvas();
+    const width = canvas.clientWidth || (canvas.width / (window.devicePixelRatio || 1));
+    const height = canvas.clientHeight || (canvas.height / (window.devicePixelRatio || 1));
+    const padX = width * 0.10; // 10% horizontal margin
+    const padY = height * 0.10; // 10% vertical margin
+
+    inBounds = (
+      point.x >= padX &&
+      point.x <= width - padX &&
+      point.y >= padY &&
+      point.y <= height - padY
+    );
+  } catch (e) {
+    inBounds = false;
+  }
+
+  // Fly if the location is outside the central 80% viewport, OR if current zoom is less than targetZoom
+  const shouldFly = !inBounds || (currentZoom < targetZoom);
+
+  // Close drawers on mobile only when flying to a new location
+  if (shouldFly && window.innerWidth <= 1024) {
     triggerDrawerClose();
   }
 
@@ -426,28 +462,32 @@ export function highlightLocation(coords, p, dataSource, targetZoom = 8) {
     idVal
   };
 
-  const flyOptions = {
-    center: coords,
-    zoom: targetZoom,
-    essential: true,
-    speed: 2.4,
-    curve: 1.0
-  };
+  if (shouldFly) {
+    // If moving to an off-screen target while already zoomed in, retain current high zoom level
+    const zoomToUse = inBounds ? targetZoom : Math.max(currentZoom, targetZoom);
 
+    const flyOptions = {
+      center: coords,
+      zoom: zoomToUse,
+      essential: true,
+      speed: 2.4,
+      curve: 1.0
+    };
 
-  if (window.innerWidth <= 1024) {
-    flyOptions.padding = { top: 325, bottom: 0, left: 200, right: 0 };
-  } else {
-    if (document.body.classList.contains("FigurePage-drawer-open")) {
-      const drawer = document.getElementById("FigurePageDrawer");
-      const sidebarWidth = drawer ? drawer.getBoundingClientRect().width : (window.innerWidth * 0.4);
-      flyOptions.padding = { top: 0, bottom: 0, left: sidebarWidth + 50, right: 0 };
+    if (window.innerWidth <= 1024) {
+      flyOptions.padding = { top: 325, bottom: 0, left: 200, right: 0 };
     } else {
-      flyOptions.padding = { top: 0, bottom: 0, left: 250, right: 0 };
+      if (document.body.classList.contains("FigurePage-drawer-open")) {
+        const drawer = document.getElementById("FigurePageDrawer");
+        const sidebarWidth = drawer ? drawer.getBoundingClientRect().width : (window.innerWidth * 0.4);
+        flyOptions.padding = { top: 0, bottom: 0, left: sidebarWidth + 50, right: 0 };
+      } else {
+        flyOptions.padding = { top: 0, bottom: 0, left: 250, right: 0 };
+      }
     }
-  }
 
-  mapLocal.flyTo(flyOptions);
+    mapLocal.flyTo(flyOptions);
+  }
 
   // Clear any existing highlight first
   clearHighlight();

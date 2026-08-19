@@ -133,26 +133,29 @@ body,
 }
 
 .theme-toggle-btn {
-  z-index: var(--z-theme-toggle);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   max-width: max-content;
-
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
   color: var(--color-white);
   background: var(--map-accordion-gradient-start);
   border: 0.1rem solid var(--map-accordion-gradient-end);
-  padding: 0.6rem 1.4rem;
+  padding: 0.5rem 0.7rem;
   border-radius: var(--border-radius-0p8rem);
   cursor: pointer;
-
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease-out, background 0.3s ease;
 }
 
 .theme-toggle-btn:hover {
-  transform: translate(-50%, -50%) scale(1.10);
+  transform: scale(1.08);
+}
+
+.theme-toggle-btn:active {
+  background-color: var(--accent-highlight);
+  color: var(--text-main);
+  border-color: var(--accent-highlight);
 }
 
 #NavBtnAuth,

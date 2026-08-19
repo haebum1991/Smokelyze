@@ -16,7 +16,8 @@ export const ExcludeLayerGroups = {
         "hrrr-colmd", "hrrr-massden",
         "goes-aod-east", "goes-aod-west",
         "goes-geocolor-east", "goes-geocolor-west",
-        "viirs-truecolor"
+        "viirs-truecolor",
+        "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc"
     ],
 
     // [layers-handler.js] > [addSourceIfMissing]
@@ -26,7 +27,8 @@ export const ExcludeLayerGroups = {
         "hrrr-colmd", "hrrr-massden",
         "goes-aod-east", "goes-aod-west",
         "goes-geocolor-east", "goes-geocolor-west",
-        "viirs-truecolor"
+        "viirs-truecolor",
+        "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc"
     ],
 
     // 1-2. UI Feature & Chart Exclusions
@@ -48,7 +50,8 @@ export const ExcludeLayerGroups = {
         "hrrr-colmd", "hrrr-massden",
         "goes-aod-east", "goes-aod-west",
         "goes-geocolor-east", "goes-geocolor-west",
-        "viirs-truecolor"
+        "viirs-truecolor",
+        "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc"
     ],
 
     // [layers-tooltip.js] > [stateHoverHTML] > [EXCLUDED]
@@ -62,7 +65,8 @@ export const ExcludeLayerGroups = {
         "hrrr-colmd", "hrrr-massden",
         "goes-aod-east", "goes-aod-west",
         "goes-geocolor-east", "goes-geocolor-west",
-        "viirs-truecolor"
+        "viirs-truecolor",
+        "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc"
     ],
 
     // [stats-common.js] > [getActiveModelLayers] > [EXCLUDED]
@@ -91,7 +95,8 @@ export const ExcludeLayerGroups = {
         "hrrr-colmd", "hrrr-massden",
         "goes-aod-east", "goes-aod-west",
         "goes-geocolor-east", "goes-geocolor-west",
-        "viirs-truecolor"
+        "viirs-truecolor",
+        "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc"
     ],
 
     // [stats-plot-dy-scatter.js] > [getActiveModelLayers] > [EXCLUDED]
@@ -106,7 +111,8 @@ export const ExcludeLayerGroups = {
         "hrrr-colmd", "hrrr-massden",
         "goes-aod-east", "goes-aod-west",
         "goes-geocolor-east", "goes-geocolor-west",
-        "viirs-truecolor"
+        "viirs-truecolor",
+        "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc"
     ],
 
 
@@ -136,7 +142,8 @@ export const ExcludeLayerGroups = {
         "hrrr-colmd", "hrrr-massden",
         "goes-aod-east", "goes-aod-west",
         "goes-geocolor-east", "goes-geocolor-west",
-        "viirs-truecolor"
+        "viirs-truecolor",
+        "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc"
     ],
 
     // 2-3. [loader.js] > [loadSourceData] > Calculate state-level statistics (Public data)
@@ -156,11 +163,15 @@ import {
     PALETTE_BIN_1, PALETTE_BIN_2, PALETTE_BIN_3, PALETTE_TRI, 
     PALETTE_BURN, PALETTE_SMOKE, PALETTE_SMOKE_PM,
     PALETTE_GOES_AOD,
+    PALETTE_GEOSCF_O3, PALETTE_GEOSCF_CO, PALETTE_GEOSCF_NO2,
+    PALETTE_GEOSCF_HCHO, PALETTE_GEOSCF_PM, PALETTE_GEOSCF_PMOC,
     BREAKS_O3, BREAKS_RESI, BREAKS_SMO_EMBER, BREAKS_PM, BREAKS_SMOKE_PM, BREAKS_PM_CRIT,
     BREAKS_TMAX, BREAKS_T2MAX, BREAKS_SRAD, BREAKS_QUANT, BREAKS_R2,
     BREAKS_BIN, BREAKS_TRI, BREAKS_NO2, BREAKS_FIRE, BREAKS_SMOKE, 
     BREAKS_BURN, BREAKS_FRP, BREAKS_TEMPO, BREAKS_HRRR_ugm2, BREAKS_HRRR_ugm3,
     BREAKS_GOES_AOD,
+    BREAKS_GEOSCF_O3, BREAKS_GEOSCF_CO, BREAKS_GEOSCF_NO2,
+    BREAKS_GEOSCF_HCHO, BREAKS_GEOSCF_PM, BREAKS_GEOSCF_PMOC,
     LABEL_SMOKE, LABEL_BIN, LABEL_SMO, LABEL_SMP
 } from "./layers-constants.js";
 
@@ -329,6 +340,43 @@ export const DATA_IMPORT_METHOD = {
       hourly: false
   },
   
+  "geoscf-o3": {
+        key: "geoscf-o3",
+        source: "geoscf-o3",
+        duration: "hourly",
+        hourly: true
+    },
+    "geoscf-co": {
+        key: "geoscf-co",
+        source: "geoscf-co",
+        duration: "hourly",
+        hourly: true
+    },
+    "geoscf-no2": {
+        key: "geoscf-no2",
+        source: "geoscf-no2",
+        duration: "hourly",
+        hourly: true
+    },
+    "geoscf-hcho": {
+        key: "geoscf-hcho",
+        source: "geoscf-hcho",
+        duration: "hourly",
+        hourly: true
+    },
+    "geoscf-pm25": {
+        key: "geoscf-pm25",
+        source: "geoscf-pm25",
+        duration: "hourly",
+        hourly: true
+    },
+    "geoscf-pm25oc": {
+        key: "geoscf-pm25oc",
+        source: "geoscf-pm25oc",
+        duration: "hourly",
+        hourly: true
+    },
+  
   "gam_v2": {
       key: "gam_v2",
       source: "gam_v2",
@@ -496,7 +544,14 @@ export const DATASET_SOURCE_MAP = {
     "hrrr-massden": "hrrr-massden",
 
     "goes-aod-east": "goes-aod-east",
-    "goes-aod-west": "goes-aod-west"
+    "goes-aod-west": "goes-aod-west",
+
+    "geoscf-o3": "geoscf-o3",
+    "geoscf-co": "geoscf-co",
+    "geoscf-no2": "geoscf-no2",
+    "geoscf-hcho": "geoscf-hcho",
+    "geoscf-pm25": "geoscf-pm25",
+    "geoscf-pm25oc": "geoscf-pm25oc"
 };
 
 export function makeStepExpr(valueField, breaks, colors, nullVal) {
@@ -737,7 +792,14 @@ export const LAYER_TEMPLATES = [
     { duration: "hourly", id: "goes-geocolor-east", field: "goes-geocolor", title: "GOES-GeoColor-East", breaks: BREAKS_GOES_AOD, colors: PALETTE_GOES_AOD, decimals: 0, manualLayer: true, hourly: true, unit: "" },
     { duration: "hourly", id: "goes-geocolor-west", field: "goes-geocolor", title: "GOES-GeoColor-West", breaks: BREAKS_GOES_AOD, colors: PALETTE_GOES_AOD, decimals: 0, manualLayer: true, hourly: true, unit: "" },
     
-    { duration: "daily", id: "viirs-truecolor", field: "viirs", title: "VIIRS-TrueColor", breaks: BREAKS_GOES_AOD, colors: PALETTE_GOES_AOD, decimals: 0, manualLayer: true, hourly: false, unit: "" }
+    { duration: "daily", id: "viirs-truecolor", field: "viirs", title: "VIIRS-TrueColor", breaks: BREAKS_GOES_AOD, colors: PALETTE_GOES_AOD, decimals: 0, manualLayer: true, hourly: false, unit: "" },
+
+    { duration: "hourly", id: "geoscf-o3", field: "geoscf-o3", title: "GEOS-CF-O3", breaks: BREAKS_GEOSCF_O3, colors: PALETTE_GEOSCF_O3, decimals: 1, manualLayer: true, hourly: true, unit: "ppb" },
+    { duration: "hourly", id: "geoscf-co", field: "geoscf-co", title: "GEOS-CF-CO", breaks: BREAKS_GEOSCF_CO, colors: PALETTE_GEOSCF_CO, decimals: 0, manualLayer: true, hourly: true, unit: "ppb" },
+    { duration: "hourly", id: "geoscf-no2", field: "geoscf-no2", title: "GEOS-CF-NO2", breaks: BREAKS_GEOSCF_NO2, colors: PALETTE_GEOSCF_NO2, decimals: 2, manualLayer: true, hourly: true, unit: "ppb" },
+    { duration: "hourly", id: "geoscf-hcho", field: "geoscf-hcho", title: "GEOS-CF-HCHO", breaks: BREAKS_GEOSCF_HCHO, colors: PALETTE_GEOSCF_HCHO, decimals: 2, manualLayer: true, hourly: true, unit: "ppb" },
+    { duration: "hourly", id: "geoscf-pm25", field: "geoscf-pm25", title: "GEOS-CF-PM2.5", breaks: BREAKS_GEOSCF_PM, colors: PALETTE_GEOSCF_PM, decimals: 1, manualLayer: true, hourly: true, unit: "ug m⁻³" },
+    { duration: "hourly", id: "geoscf-pm25oc", field: "geoscf-pm25oc", title: "GEOS-CF-PM2.5OC", breaks: BREAKS_GEOSCF_PMOC, colors: PALETTE_GEOSCF_PMOC, decimals: 1, manualLayer: true, hourly: true, unit: "ug m⁻³" }
 ];
 
 export const LAYER_DEFS = (() => {
@@ -1127,6 +1189,33 @@ export const LAYER_DEFS = (() => {
             }
         };
     }
+    
+    // GEOS-CF Layers
+    ["geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc"].forEach(id => {
+        const tmpl = LAYER_TEMPLATES.find(t => t.id === id);
+        if (tmpl) {
+            defs[id] = {
+                layers: [
+                    {
+                        id: `${id}-raster`,
+                        type: "raster",
+                        source: id,
+                        paint: {
+                            "raster-opacity": 0.9,
+                            "raster-resampling": "nearest"
+                        }
+                    }
+                ],
+                legend: {
+                    title: tmpl.title,
+                    breaks: tmpl.breaks,
+                    colors: tmpl.colors,
+                    continuous: true,
+                    unit: tmpl.unit
+                }
+            };
+        }
+    });
     
     // Configure headerOnly mode for NIFC Wildfire layers (wildfire-inci & wildfire-peri)
     ["wildfire-inci", "wildfire-peri"].forEach(wfId => {

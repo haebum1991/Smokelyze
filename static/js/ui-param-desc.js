@@ -341,38 +341,12 @@ export const DescData = {
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li></ul>"
         },
         {
-            id: "hrrr-colmd",
-            title: "HRRR-smokeVCD (hourly)",
-            desc: "<b>HRRR-smokeVCD (Smoke Vertically Integrated)</b> provides column-integrated smoke mass density from the NOAA High-Resolution Rapid Refresh (HRRR) model. " +
-                  "This dataset represents the total mass of smoke in the atmospheric column from the surface to the top of the atmosphere, measured in units of <b>&micro;g m<sup>-2</sup></b>. " +
-                  "It is particularly useful for understanding the total overhead smoke load and long-range transport of smoke plumes. " +
-                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
-                  "<li>In our app, <b>" +
-                  "this data is available starting from 2021-01-01, </b>" + 
-                  "and <b>spatially aggregated to 6-7 km</b> for visualization performance. (Original HRRR resolution is 3 km)</li>" +
-                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li>" +
-                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li></ul>"
-        },
-        {
-            id: "hrrr-massden",
-            title: "HRRR-smoke8m (hourly)",
-            desc: "<b>HRRR-smoke8m (Smoke 8-m above ground)</b> provides near-surface (8 m) smoke mass concentration from the NOAA High-Resolution Rapid Refresh (HRRR) model. " +
-                  "This dataset estimates the concentration of smoke particles at 8 meters above ground level, measured in units of <b>&micro;g m<sup>-3</sup></b>. " +
-                  "It is highly relevant for assessing ground-level air quality impacts and potential health risks associated with wildfire smoke. " +
-                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
-                  "<li>In our app, <b>" +
-                  "this data is available starting from 2021-01-01, </b>" + 
-                  "and <b>spatially aggregated to 6-7 km</b> for visualization performance. (Original HRRR resolution is 3 km)</li>" +
-                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li>" +
-                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li></ul>"
-        },
-        {
             id: "goes-aod-east",
             title: "GOES-AOD-East (hourly)",
             desc: "<b>GOES-AOD-East (hourly) (L2)</b> provides hourly Aerosol Optical Depth (AOD) measurements from the GOES-East geostationary satellite (GOES-16 for dates before 2025-01-01; GOES-19 for dates after 2025-01-01) over North America. AOD is a dimensionless measure of light extinction by aerosols (e.g., smoke, dust, haze) in the atmospheric column. " +
                   "This dataset is processed through a cloud-based automated pipeline that extracts raw sub-hourly netCDF files from NOAA's public Google Cloud Storage bucket. " +
                   "Due to quality control filtering, only high-quality pixels (<b>Data Quality Flag DQF = 0</b>) within the <b>valid range (-0.05 to 5.0)</b> are retained. " +
-                  "<br><ul><li>Update cycle: <b>Daily (at 12 UTC)</b></li>" +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
                   "<li>In our app, <b>" +
                   "this data is available starting from 2018-01-01, </b>" + 
                   "and <b>spatially aggregated to 4 km</b> for visualization performance. (Original ABI AOD resolution is 2 km)</li>" +
@@ -385,7 +359,7 @@ export const DescData = {
             desc: "<b>GOES-AOD-West (hourly) (L2)</b> provides hourly Aerosol Optical Depth (AOD) measurements from the GOES-West geostationary satellite (GOES-17 for dates before 2023-01-01; GOES-18 for dates after 2023-01-01) over Western North America. AOD is a dimensionless measure of light extinction by aerosols (e.g., smoke, dust, haze) in the atmospheric column. " +
                   "This dataset is processed through a cloud-based automated pipeline that extracts raw sub-hourly netCDF files from NOAA's public Google Cloud Storage bucket. " +
                   "Due to quality control filtering, only high-quality pixels (<b>Data Quality Flag DQF = 0</b>) within the <b>valid range (-0.05 to 5.0)</b> are retained. " +
-                  "<br><ul><li>Update cycle: <b>Daily (at 12 UTC)</b></li>" +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
                   "<li>In our app, <b>" +
                   "this data is available starting from 2019-01-01, </b>" + 
                   "and <b>spatially aggregated to 4 km</b> for visualization performance. (Original ABI AOD resolution is 2 km)</li>" +
@@ -399,7 +373,7 @@ export const DescData = {
                 "GeoColor is a multi-band composite that blends visible and infrared channels to produce a near-true-color image during daytime and a city lights / infrared cloud composite at nighttime. " +
                 "<br><i>* Source Note</i>: For dates before <b>2026-04-08</b>, the imagery is fetched via the <b>NOAA NESDIS OGC Tiles API</b> (<code>fire.data.nesdis.noaa.gov</code>). For dates on or after <b>2026-04-08</b>, it is fetched via the <b>NASA Worldview API</b> (<code>gibs.earthdata.nasa.gov</code>). " +
                 "Each frame is downloaded as a single composite PNG/WebP, reprojected to Web Mercator (EPSG:3857), and auto-cropped to remove transparent borders. " +
-                "<br><ul><li>Update cycle: <b>Daily (at 12 UTC)</b></li>" +
+                "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
                 "<li>In our app, <b>" +
                 "this data is available starting from 2025-06-26, </b>" +
                 "and <b>spatially aggregated to 4 km</b> for visualization performance.</li>" +
@@ -412,7 +386,7 @@ export const DescData = {
                 "GeoColor is a multi-band composite that blends visible and infrared channels to produce a near-true-color image during daytime and a city lights / infrared cloud composite at nighttime. " +
                 "<br><i>* Source Note</i>: For dates before <b>2026-04-08</b>, the imagery is fetched via the <b>NOAA NESDIS OGC Tiles API</b> (<code>fire.data.nesdis.noaa.gov</code>). For dates on or after <b>2026-04-08</b>, it is fetched via the <b>NASA Worldview API</b> (<code>gibs.earthdata.nasa.gov</code>). " +
                 "Each frame is downloaded as a single composite PNG/WebP, reprojected to Web Mercator (EPSG:3857), and auto-cropped to remove transparent borders. " +
-                "<br><ul><li>Update cycle: <b>Daily (at 12 UTC)</b></li>" +
+                "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
                 "<li>In our app, <b>" +
                 "this data is available starting from 2025-06-26, </b>" +
                 "and <b>spatially aggregated to 4 km</b> for visualization performance.</li>" +
@@ -425,11 +399,107 @@ export const DescData = {
                 "Unlike geostationary GOES imagery, VIIRS is a polar-orbiting sensor that captures high-resolution swath data once per day over each location, offering superior spatial detail at the cost of temporal frequency. " +
                 "This dataset is fetched via the <b>NASA Worldview WMS API</b> (<code>gibs.earthdata.nasa.gov</code>) using the <code>VIIRS_NOAA21_CorrectedReflectance_TrueColor</code> layer. " +
                 "Each daily composite is downloaded as a single PNG, and areas outside the satellite swath are transparent. " +
-                "<br><ul><li>Update cycle: <b>Daily (at 12 UTC)</b></li>" +
+                "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
                 "<li>In our app, <b>" +
                 "this data is available starting from 2023-02-10, </b>" +
                 "and <b>spatially aggregated to 4 km</b> for visualization performance.</li>" +
                 "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li></ul>"
+        }
+    ],
+    "desc-model": [
+        {
+            id: "hrrr-colmd",
+            title: "HRRR-smokeVCD (hourly)",
+            desc: "<b>HRRR-smokeVCD (Smoke Vertically Integrated)</b> provides column-integrated smoke mass density from the NOAA High-Resolution Rapid Refresh (HRRR) model. " +
+                  "This dataset represents the total mass of smoke in the atmospheric column from the surface to the top of the atmosphere, measured in units of <b>&micro;g m<sup>-2</sup></b>. " +
+                  "It is particularly useful for understanding the total overhead smoke load and long-range transport of smoke plumes. " +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
+                  "<li>In our app, <b>" +
+                  "this data is available starting from 2021-01-01, </b>" + 
+                  "and <b>spatially aggregated to 6-7 km</b> for visualization performance. (Original HRRR resolution is 3 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li></ul>" +
+                  "<li>Data Source: <a href='https://console.cloud.google.com/storage/browser/high-resolution-rapid-refresh' target='_blank' rel='noopener noreferrer'>NOAA High-Resolution Rapid Refresh (Google Cloud Storage)</a></li></ul>"
+        },
+        {
+            id: "hrrr-massden",
+            title: "HRRR-smoke8m (hourly)",
+            desc: "<b>HRRR-smoke8m (Smoke 8-m above ground)</b> provides near-surface (8 m) smoke mass concentration from the NOAA High-Resolution Rapid Refresh (HRRR) model. " +
+                  "This dataset estimates the concentration of smoke particles at 8 meters above ground level, measured in units of <b>&micro;g m<sup>-3</sup></b>. " +
+                  "It is highly relevant for assessing ground-level air quality impacts and potential health risks associated with wildfire smoke. " +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
+                  "<li>In our app, <b>" +
+                  "this data is available starting from 2021-01-01, </b>" + 
+                  "and <b>spatially aggregated to 6-7 km</b> for visualization performance. (Original HRRR resolution is 3 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li></ul>" +
+                  "<li>Data Source: <a href='https://console.cloud.google.com/storage/browser/high-resolution-rapid-refresh' target='_blank' rel='noopener noreferrer'>NOAA High-Resolution Rapid Refresh (Google Cloud Storage)</a></li></ul>"
+        },
+        {
+            id: "geoscf-o3",
+            title: "GEOS-CF-O3 (hourly)",
+            desc: "<b>NASA GEOS-CF Surface Ozone (O3)</b> provides hourly surface ozone concentrations from the NASA GMAO GEOS-CF (Composition Forecasting) model system coupled with the full GEOS-Chem tropospheric chemistry mechanism. " +
+                  "Ozone is reported in units of <b>ppb</b>. " +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
+                  "<li>In our app, <b>this data is available starting from 2021-01-01.</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
+        },
+        {
+            id: "geoscf-co",
+            title: "GEOS-CF-CO (hourly)",
+            desc: "<b>NASA GEOS-CF Surface Carbon Monoxide (CO)</b> provides hourly surface carbon monoxide concentrations from the NASA GMAO GEOS-CF model. " +
+                  "CO is a primary combustion tracer emitted directly by wildfires and anthropogenic sources, reported in units of <b>ppb</b>. " +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
+                  "<li>In our app, <b>this data is available starting from 2021-01-01.</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
+        },
+        {
+            id: "geoscf-no2",
+            title: "GEOS-CF-NO2 (hourly)",
+            desc: "<b>NASA GEOS-CF Surface Nitrogen Dioxide (NO2)</b> provides hourly ground-level nitrogen dioxide concentrations from the NASA GMAO GEOS-CF model with GEOS-Chem chemistry. " +
+                  "NO2 is reported in units of <b>ppb</b>. " +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
+                  "<li>In our app, <b>this data is available starting from 2021-01-01.</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
+        },
+        {
+            id: "geoscf-hcho",
+            title: "GEOS-CF-HCHO (hourly)",
+            desc: "<b>NASA GEOS-CF Surface Formaldehyde (HCHO)</b> provides hourly surface formaldehyde concentrations from the NASA GMAO GEOS-CF model. " +
+                  "HCHO is a critical intermediate in the oxidation of volatile organic compounds (VOCs) emitted by vegetation and wildfires, reported in units of <b>ppb</b>. " +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
+                  "<li>In our app, <b>this data is available starting from 2021-01-01.</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
+        },
+        {
+            id: "geoscf-pm25",
+            title: "GEOS-CF-PM2.5 (hourly)",
+            desc: "<b>NASA GEOS-CF Surface PM2.5</b> provides hourly fine particulate matter mass concentrations at 35% relative humidity (pm25_rh35) simulated by the NASA GMAO GEOS-CF model. " +
+                  "PM2.5 is reported in units of <b>&micro;g m<sup>-3</sup></b>. " +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
+                  "<li>In our app, <b>this data is available starting from 2021-01-01.</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
+        },
+        {
+            id: "geoscf-pm25oc",
+            title: "GEOS-CF-PM2.5OC (hourly)",
+            desc: "<b>NASA GEOS-CF Organic Carbon PM2.5 (PM2.5OC)</b> provides hourly organic carbon aerosol mass concentrations at 35% relative humidity (pm25oc_rh35) from the NASA GMAO GEOS-CF model. " +
+                  "Organic carbon is the primary constituent of wildfire smoke particles, reported in units of <b>&micro;g m<sup>-3</sup></b>. " +
+                  "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
+                  "<li>In our app, <b>this data is available starting from 2021-01-01.</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km)</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
         }
     ],
     "desc-published-intro": [
@@ -677,6 +747,9 @@ function switchGroup(group) {
     } else if (group === "LyrGroupSatellite") {
         subTabContainer.style.display = "none";
         renderParamDesc("desc-satellite");
+    } else if (group === "LyrGroupModel") {
+        subTabContainer.style.display = "none";
+        renderParamDesc("desc-model");
     }
 }
 

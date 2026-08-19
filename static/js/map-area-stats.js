@@ -10,7 +10,8 @@ import {
     TEMPO_CONFIG,
     TROPOMI_CONFIG,
     HRRR_CONFIG,
-    GOES_CONFIG
+    GOES_CONFIG,
+    GEOSCF_CONFIG
 } from "./raster-loader.js";
 
 let draw = null;
@@ -691,7 +692,8 @@ export function getActiveRasterLayers() {
         ...Object.values(TEMPO_CONFIG),
         ...Object.values(TROPOMI_CONFIG),
         ...Object.values(HRRR_CONFIG),
-        ...Object.values(GOES_CONFIG)
+        ...Object.values(GOES_CONFIG),
+        ...Object.values(GEOSCF_CONFIG)
     ];
 
     configs.forEach(cfg => {
@@ -710,6 +712,13 @@ export function getActiveRasterLayers() {
                 label = cfg.sourceId.includes("colmd") ? "HRRR-smokeVCD (hourly)" : "HRRR-smoke8m (hourly)";
             } else if (cfg.sourceId.includes("goes")) {
                 label = cfg.sourceId === "goes-aod-east" ? "GOES-AOD-East (hourly)" : "GOES-AOD-West (hourly)";
+            } else if (cfg.sourceId.includes("geoscf")) {
+                if (cfg.sourceId === "geoscf-o3") label = "GEOS-CF-O3 (hourly)";
+                else if (cfg.sourceId === "geoscf-co") label = "GEOS-CF-CO (hourly)";
+                else if (cfg.sourceId === "geoscf-no2") label = "GEOS-CF-NO2 (hourly)";
+                else if (cfg.sourceId === "geoscf-hcho") label = "GEOS-CF-HCHO (hourly)";
+                else if (cfg.sourceId === "geoscf-pm25") label = "GEOS-CF-PM2.5 (hourly)";
+                else if (cfg.sourceId === "geoscf-pm25oc") label = "GEOS-CF-PM2.5OC (hourly)";
             }
             list.push({ sourceId: cfg.sourceId, label });
         }
@@ -732,7 +741,7 @@ export function updateAverages() {
     const shape = selectedFeatures[selectedFeatures.length - 1];
     const activeLayers = getActiveModelLayers().filter(layer => {
         const id = layer.id;
-        return !id.startsWith("tempo-") && !id.startsWith("tropomi-") && !id.startsWith("hrrr-") && !id.startsWith("goes-");
+        return !id.startsWith("tempo-") && !id.startsWith("tropomi-") && !id.startsWith("hrrr-") && !id.startsWith("goes-") && !id.startsWith("geoscf-");
     });
     const activeRasterLayers = getActiveRasterLayers();
 
@@ -1012,7 +1021,8 @@ export function updateAverages() {
 
                 if (pointInGeometry([lng, lat], shape.geometry)) {
                     const gray = store.grayscale[pxY * store.imgW + pxX];
-                    if (gray && gray !== 0) {
+                    const isGeoscf = rasterLayer.sourceId.includes("geoscf");
+                    if (gray !== null && gray !== undefined && (gray !== 0 || isGeoscf)) {
                         const realValue = store.metadata.min_val + (gray / 255) * (store.metadata.max_val - store.metadata.min_val);
                         let displayValue = realValue;
                         if (rasterLayer.sourceId.includes("tempo") || rasterLayer.sourceId.includes("tropomi")) {

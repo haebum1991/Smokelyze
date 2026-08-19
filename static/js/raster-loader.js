@@ -5,21 +5,33 @@
  * and updating the MapLibre Canvas Source.
  */
 import { map } from "./map-init.js";
-import { 
-  BREAKS_TEMPO, 
-  BREAKS_HRRR_ugm2, 
-  BREAKS_HRRR_ugm3,
-  BREAKS_GOES_AOD,
-  PALETTE_TEMPO, 
-  PALETTE_HRRR_SMOKE,
-  PALETTE_GOES_AOD
-} from "./layers-constants.js";
 import * as utils from "./utils.js";
 import { showLoaderError } from "./loader-ui.js";
 import { logUserAction } from "./fb-logging.js";
 import { state } from "./ui-state.js";
 import { auth } from "./fb-init.js";
 import { LAYER_TEMPLATES } from "./layers-def.js";
+import {
+    BREAKS_TEMPO,
+    BREAKS_HRRR_ugm2,
+    BREAKS_HRRR_ugm3,
+    BREAKS_GOES_AOD,
+    BREAKS_GEOSCF_O3,
+    BREAKS_GEOSCF_CO,
+    BREAKS_GEOSCF_NO2,
+    BREAKS_GEOSCF_HCHO,
+    BREAKS_GEOSCF_PM,
+    BREAKS_GEOSCF_PMOC,
+    PALETTE_TEMPO,
+    PALETTE_HRRR_SMOKE,
+    PALETTE_GOES_AOD,
+    PALETTE_GEOSCF_O3,
+    PALETTE_GEOSCF_CO,
+    PALETTE_GEOSCF_NO2,
+    PALETTE_GEOSCF_HCHO,
+    PALETTE_GEOSCF_PM,
+    PALETTE_GEOSCF_PMOC
+} from "./layers-constants.js";
 
 export const TEMPO_CONFIG = {
     "no2": {
@@ -102,6 +114,45 @@ export const VIIRS_CONFIG = {
     }
 };
 
+export const GEOSCF_CONFIG = {
+    "o3": {
+        productId: "o3",
+        sourceId: "geoscf-o3",
+        layerId: "layer-geoscf-o3",
+        mapLayerId: "geoscf-o3-raster"
+    },
+    "co": {
+        productId: "co",
+        sourceId: "geoscf-co",
+        layerId: "layer-geoscf-co",
+        mapLayerId: "geoscf-co-raster"
+    },
+    "no2": {
+        productId: "no2",
+        sourceId: "geoscf-no2",
+        layerId: "layer-geoscf-no2",
+        mapLayerId: "geoscf-no2-raster"
+    },
+    "hcho": {
+        productId: "hcho",
+        sourceId: "geoscf-hcho",
+        layerId: "layer-geoscf-hcho",
+        mapLayerId: "geoscf-hcho-raster"
+    },
+    "pm25": {
+        productId: "pm25_rh35",
+        sourceId: "geoscf-pm25",
+        layerId: "layer-geoscf-pm25",
+        mapLayerId: "geoscf-pm25-raster"
+    },
+    "pm25oc": {
+        productId: "pm25oc_rh35",
+        sourceId: "geoscf-pm25oc",
+        layerId: "layer-geoscf-pm25oc",
+        mapLayerId: "geoscf-pm25oc-raster"
+    }
+};
+
 /**
  * Stores raw pixel data and metadata for hover value sampling
  */
@@ -116,7 +167,13 @@ export const rasterDataStore = {
     "goes-aod-west": { grayscale: null, metadata: null, coordinates: null },
     "goes-geocolor-east": { grayscale: null, metadata: null, coordinates: null },
     "goes-geocolor-west": { grayscale: null, metadata: null, coordinates: null },
-    "viirs-truecolor": { grayscale: null, metadata: null, coordinates: null }
+    "viirs-truecolor": { grayscale: null, metadata: null, coordinates: null },
+    "geoscf-o3": { grayscale: null, metadata: null, coordinates: null },
+    "geoscf-co": { grayscale: null, metadata: null, coordinates: null },
+    "geoscf-no2": { grayscale: null, metadata: null, coordinates: null },
+    "geoscf-hcho": { grayscale: null, metadata: null, coordinates: null },
+    "geoscf-pm25": { grayscale: null, metadata: null, coordinates: null },
+    "geoscf-pm25oc": { grayscale: null, metadata: null, coordinates: null }
 };
 
 function hexToRgb(hex) {
@@ -224,14 +281,30 @@ function colorizeRasterImage(imgUrl, metadata, source, sourceId) {
                 if (sourceId === "hrrr-colmd") {
                     breaks = BREAKS_HRRR_ugm2;
                     colorsHex = PALETTE_HRRR_SMOKE;
-                }
-                if (sourceId === "hrrr-massden") {
+                } else if (sourceId === "hrrr-massden") {
                     breaks = BREAKS_HRRR_ugm3;
                     colorsHex = PALETTE_HRRR_SMOKE;
-                }
-                if (sourceId.startsWith("goes-")) {
+                } else if (sourceId.startsWith("goes-")) {
                     breaks = BREAKS_GOES_AOD;
                     colorsHex = PALETTE_GOES_AOD;
+                } else if (sourceId === "geoscf-o3") {
+                    breaks = BREAKS_GEOSCF_O3;
+                    colorsHex = PALETTE_GEOSCF_O3;
+                } else if (sourceId === "geoscf-no2") {
+                    breaks = BREAKS_GEOSCF_NO2;
+                    colorsHex = PALETTE_GEOSCF_NO2;
+                } else if (sourceId === "geoscf-co") {
+                    breaks = BREAKS_GEOSCF_CO;
+                    colorsHex = PALETTE_GEOSCF_CO;
+                } else if (sourceId === "geoscf-hcho") {
+                    breaks = BREAKS_GEOSCF_HCHO;
+                    colorsHex = PALETTE_GEOSCF_HCHO;
+                } else if (sourceId === "geoscf-pm25") {
+                    breaks = BREAKS_GEOSCF_PM;
+                    colorsHex = PALETTE_GEOSCF_PM;
+                } else if (sourceId === "geoscf-pm25oc") {
+                    breaks = BREAKS_GEOSCF_PMOC;
+                    colorsHex = PALETTE_GEOSCF_PMOC;
                 }
                 
                 const colors = colorsHex.map(hexToRgb);
@@ -255,20 +328,32 @@ function colorizeRasterImage(imgUrl, metadata, source, sourceId) {
                 };
 
                 if (!isTrueColor) {
+                    
+                    const isHrrr = sourceId.includes("hrrr");
+                    const isGoes = sourceId.includes("goes");
+                    const isGeoscf = sourceId.includes("geoscf");
+                    const isModel = isHrrr || isGeoscf;
+
+                    const tmpl = LAYER_TEMPLATES.find(t => t.id === sourceId);
+                    const decimals = tmpl?.decimals !== undefined ? tmpl.decimals : 2;
+                    const zeroThreshold = Math.pow(10, -decimals) / 2;
+                    
                     for (let i = 0; i < rawData.length; i += 4) {
                         const px = rawData[i];
-                        if (px === 0) {
+                        if (px === 0 && !isModel) {
                             rawData[i + 3] = 0;
                         } else {
                             const realValue = min_val + (px / 255) * (max_val - min_val);
                             const displayValue = getDisplayValue(sourceId, realValue);
 
-                            const isHrrr = sourceId.includes("hrrr");
-                            const isGoes = sourceId.includes("goes");
+                            // 1. Satellite Observations (GOES AOD): Filter out natural background optical noise
+                            if (isGoes && displayValue < breaks[0]) {
+                                rawData[i + 3] = 0;
+                                continue;
+                            }
 
-                            // For HRRR-smoke and GOES AOD, make values below the lowest break transparent 
-                            // to prevent painting a solid box over the entire map.
-                            if ((isHrrr || isGoes) && displayValue < breaks[0]) {
+                            // 2. Model-based Simulations (HRRR & GEOS-CF): Transparent when rounding to 0 at configured decimals
+                            if ((isHrrr || isGeoscf) && displayValue < zeroThreshold) {
                                 rawData[i + 3] = 0;
                                 continue;
                             }
@@ -379,7 +464,8 @@ export function clearAllRaster() {
         ...Object.values(TROPOMI_CONFIG),
         ...Object.values(HRRR_CONFIG),
         ...Object.values(GOES_CONFIG),
-        ...Object.values(VIIRS_CONFIG)
+        ...Object.values(VIIRS_CONFIG),
+        ...Object.values(GEOSCF_CONFIG)
     ]) {
         const source = map?.getSource(cfg.sourceId);
         if (source) clearRasterSource(source, cfg.sourceId);
@@ -424,13 +510,14 @@ function initRasterHover() {
             return;
         }
         
-        // Find visible TEMPO or TROPOMI or HRRR or GOES layers
+        // Find visible TEMPO or TROPOMI or HRRR or GOES or GEOS-CF layers
         const activeRasterLayer = [
             ...Object.values(TEMPO_CONFIG),
             ...Object.values(TROPOMI_CONFIG),
             ...Object.values(HRRR_CONFIG),
             ...Object.values(GOES_CONFIG),
-            ...Object.values(VIIRS_CONFIG)
+            ...Object.values(VIIRS_CONFIG),
+            ...Object.values(GEOSCF_CONFIG)
         ].find(cfg => {
             if (!map.getLayer(cfg.mapLayerId)) return false;
             return map.getLayoutProperty(cfg.mapLayerId, "visibility") === "visible";
@@ -467,7 +554,12 @@ function initRasterHover() {
             if (pxX >= 0 && pxX < store.imgW && pxY >= 0 && pxY < store.imgH) {
                 const gray = store.grayscale[pxY * store.imgW + pxX];
 
-                if (!gray) {
+                if (gray === null || gray === undefined) {
+                    hideRasterTooltip();
+                    return;
+                }
+
+                if (gray === 0) {
                     hideRasterTooltip();
                     return;
                 }
@@ -481,6 +573,7 @@ function initRasterHover() {
                 const isTropomi = sourceId.includes("tropomi");
                 const isHrrr = sourceId.includes("hrrr");
                 const isGoes = sourceId.includes("goes");
+                const isGeoscf = sourceId.includes("geoscf");
                 const isHrrrColmd = sourceId.includes("hrrr-colmd");
                 
                 let layerTitle = "";
@@ -507,12 +600,12 @@ function initRasterHover() {
                             <span>Version: <b>${utils.ESML(metadata.version) || "NA"}</b></span>
                         </div>
                     `;
-                } else if (isHrrr || isGoes) {
+                } else if (isHrrr || isGoes || isGeoscf) {
                     let timestamp = utils.ESML(metadata.datetime) || "NA";
 
                     const pngUrl = store.pngUrl || "";
                     const match = pngUrl.match(/[t_](\d{2})[zT]/);
-                    if (match) {
+                    if (match && !timestamp.includes(":")) {
                         timestamp += ` ${match[1]}:00:00`;
                     }
 
@@ -719,5 +812,9 @@ export async function goesLoadData(isoDate) {
 
 export async function viirsLoadData(isoDate) {
     return loadRasterData(isoDate, VIIRS_CONFIG, utils.urlPngVIIRS, "VIIRS");
+}
+
+export async function geoscfLoadData(isoDate) {
+    return loadRasterData(isoDate, GEOSCF_CONFIG, utils.urlPngGEOSCF, "GEOSCF");
 }
 
