@@ -322,9 +322,9 @@ export const DescData = {
                   "<li>In our app, <b>" +
                   "this data is available starting from 2018-05-01. </b>" +
                   "and, <b>spatially aggregated to 0.044&deg; (~ 5 km)</b> for visualization performance.</li>" +
-                  "<li>Map Portal: <a href='https://maps.s5p-pal.com/no2-tropospheric/' target='_blank'>S5P-PAL NO2 Map</a></li>" +
                   "<li>Due to the S5P-PAL data processing cycle, the most recent dataset is available with <b>approximately 2-week latency</b>.</li>" +
-                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li></ul>"
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li>Data Source: <a href='https://maps.s5p-pal.com/no2-tropospheric/' target='_blank' rel='noopener noreferrer'>S5P-PAL NO2 Map</a></li></ul>"
         },
         {
             id: "tropomi-hcho",
@@ -336,9 +336,9 @@ export const DescData = {
                   "<li>In our app, <b>" +
                   "this data is available starting from 2018-05-07. </b>" +
                   "and, <b>spatially aggregated to 0.044&deg; (~ 5 km)</b> for visualization performance.</li>" +
-                  "<li>Map Portal: <a href='https://maps.s5p-pal.com/hcho/' target='_blank'>S5P-PAL HCHO Map</a></li>" +
                   "<li>Due to the S5P-PAL data processing cycle, the most recent dataset is available with <b>approximately 2-week latency</b>.</li>" +
-                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li></ul>"
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li>Data Source: <a href='https://maps.s5p-pal.com/no2-tropospheric/' target='_blank' rel='noopener noreferrer'>S5P-PAL NO2 Map</a></li></ul>"
         },
         {
             id: "goes-aod-east",
@@ -418,7 +418,7 @@ export const DescData = {
                   "this data is available starting from 2021-01-01, </b>" + 
                   "and <b>spatially aggregated to 6-7 km</b> for visualization performance. (Original HRRR resolution is 3 km)</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li>" +
-                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li></ul>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://console.cloud.google.com/storage/browser/high-resolution-rapid-refresh' target='_blank' rel='noopener noreferrer'>NOAA High-Resolution Rapid Refresh (Google Cloud Storage)</a></li></ul>"
         },
         {
@@ -432,7 +432,7 @@ export const DescData = {
                   "this data is available starting from 2021-01-01, </b>" + 
                   "and <b>spatially aggregated to 6-7 km</b> for visualization performance. (Original HRRR resolution is 3 km)</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li>" +
-                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li></ul>" +
+                  "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://console.cloud.google.com/storage/browser/high-resolution-rapid-refresh' target='_blank' rel='noopener noreferrer'>NOAA High-Resolution Rapid Refresh (Google Cloud Storage)</a></li></ul>"
         },
         {

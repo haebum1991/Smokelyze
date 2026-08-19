@@ -211,9 +211,6 @@ function ensureModalDOM() {
 
     closeBtn?.addEventListener("click", closeModal);
     confirmBtn?.addEventListener("click", closeModal);
-    overlay.addEventListener("click", (e) => {
-        if (e.target === overlay) closeModal();
-    });
 
     // Keyboard accessibility: ESC key to close
     window.addEventListener("keydown", (e) => {
