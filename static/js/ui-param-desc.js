@@ -442,7 +442,7 @@ export const DescData = {
                   "Ozone is reported in units of <b>ppb</b>. " +
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
                   "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
-                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-2.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
         },
@@ -453,7 +453,7 @@ export const DescData = {
                   "CO is a primary combustion tracer emitted directly by wildfires and anthropogenic sources, reported in units of <b>ppb</b>. " +
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
                   "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
-                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-2.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
         },
@@ -464,7 +464,7 @@ export const DescData = {
                   "NO2 is reported in units of <b>ppb</b>. " +
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
                   "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
-                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-2.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
         },
@@ -475,7 +475,7 @@ export const DescData = {
                   "HCHO is a critical intermediate in the oxidation of volatile organic compounds (VOCs) emitted by vegetation and wildfires, reported in units of <b>ppb</b>. " +
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
                   "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
-                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-2.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
         },
@@ -486,7 +486,7 @@ export const DescData = {
                   "PM2.5 is reported in units of <b>&micro;g m<sup>-3</sup></b>. " +
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
                   "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
-                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-2.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
         },
@@ -497,7 +497,7 @@ export const DescData = {
                   "Organic carbon is the primary constituent of wildfire smoke particles, reported in units of <b>&micro;g m<sup>-3</sup></b>. " +
                   "<br><ul><li>Update cycle: <b>Daily</b> (at 12 UTC)</li>" +
                   "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
-                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1.</li>" +
+                  "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-2.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
         }

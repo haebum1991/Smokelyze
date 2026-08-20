@@ -156,7 +156,14 @@ function mapUpdateGeoJSON() {
             return {
                 type: "Feature",
                 geometry: { type: "Point", coordinates: [data.lon, data.lat] },
-                properties: { ...data, docId: id }
+                properties: {
+                    docId: id,
+                    title: data.title || "No Title",
+                    text: data.text || "",
+                    userName: data.userName || "Anonymous",
+                    date: data.date || "",
+                    dataSource: data.dataSource || ""
+                }
             };
         })
         .filter(f => f !== null);

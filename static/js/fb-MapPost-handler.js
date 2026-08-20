@@ -406,7 +406,14 @@ async function handleMapRestore(element) {
         dateChanged = true;
     }
 
-    // 3. Restore Layers
+    // 3. Restore Data Source
+    const dsSelect = document.getElementById("MapDataSelect");
+    if (dsSelect && ms.dataSource && dsSelect.value !== ms.dataSource) {
+        dsSelect.value = ms.dataSource;
+        layersChanged = true;
+    }
+
+    // 4. Restore Layers
     if (ms.layers) {
         document.querySelectorAll("input[type=checkbox][id^='layer-']").forEach(cb => {
             const shouldBeChecked = ms.layers.includes(cb.id);
@@ -417,22 +424,15 @@ async function handleMapRestore(element) {
         });
     }
 
-    // 4. Restore Data Source
-    const dsSelect = document.getElementById("MapDataSelect");
-    if (dsSelect) {
-        const targetDS = ms.dataSource || "gam-v2";
-        if (dsSelect.value !== targetDS) {
-            dsSelect.value = targetDS;
-            layersChanged = true;
-        }
-    }
-
     if (dateChanged || layersChanged) {
         if (dateChanged && resetLoadedSources) {
             resetLoadedSources();
         }
         if (updateAllActiveSources) {
             updateAllActiveSources();
+        }
+        if (dsSelect) {
+            dsSelect.dispatchEvent(new Event("change", { bubbles: true }));
         }
     }
     

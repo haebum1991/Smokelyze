@@ -105,6 +105,9 @@ function bindClick(layerId, dataSource) {
 
     // Register a one-time global click listener if not already present
     if (!map._globalInteractionBound) {
+    
+        const ExcludeHighlight = ["smoke"];
+        
         map.on("click", (e) => {
             
             if (window.isDrawActive?.()) return;
@@ -124,7 +127,7 @@ function bindClick(layerId, dataSource) {
                 if (!coords && topF.geometry.coordinates) {
                     coords = (topF.geometry.type === "Polygon") ? topF.geometry.coordinates[0][0] : topF.geometry.coordinates[0][0][0];
                 }
-                if (coords) {
+                if (coords && !ExcludeHighlight.includes(sourceKey)) {
                     highlightLocation?.(coords, topF.properties, sourceKey);
                 }
                 e.preventDefault();
