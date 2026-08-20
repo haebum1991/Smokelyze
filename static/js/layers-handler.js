@@ -20,7 +20,7 @@ import {
 } from "./layers-state.js";
 import { logUserAction } from "./fb-logging.js";
 import { setLegendDrawer } from "./ui-toggles.js";
-import { getRasterTooltipInfo } from "./raster-loader.js";
+import { getRasterTooltipInfo, updateRasterHoverBox } from "./raster-loader.js";
 
 function addSourceIfMissing(sourceId) {
     if (!map.getSource(sourceId)) {
@@ -129,6 +129,7 @@ function bindClick(layerId, dataSource) {
                     coords = (topF.geometry.type === "Polygon") ? topF.geometry.coordinates[0][0] : topF.geometry.coordinates[0][0][0];
                 }
                 if (coords && !ExcludeHighlight.includes(sourceKey)) {
+                    updateRasterHoverBox?.(null);
                     highlightLocation?.(coords, topF.properties, sourceKey);
                 }
                 e.preventDefault();
@@ -160,6 +161,8 @@ function bindClick(layerId, dataSource) {
                     if (info) {
                         const coords = [info.gridLon, info.gridLat];
                         highlightLocation?.(coords, { lon: coords[0], lat: coords[1], _rawHtml: info.html }, topRaster);
+                        updateRasterHoverBox?.(info, true);
+                        e.preventDefault();
                         break;
                     }
                 }

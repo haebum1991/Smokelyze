@@ -12,6 +12,7 @@ import { state } from "./ui-state.js";
 import { auth } from "./fb-init.js";
 import { LAYER_TEMPLATES, ExcludeLayerGroups } from "./layers-def.js";
 import { activeLayerStack } from "./layers-state.js";
+import { generatePopupHTML } from "./layers-tooltip.js";
 import {
     BREAKS_TEMPO,
     BREAKS_HRRR_ugm2,
@@ -606,7 +607,7 @@ export function getRasterTooltipInfo(sourceId, lng, lat) {
 }
 
 let lastHoverBoxKey = null;
-function updateRasterHoverBox(info) {
+export function updateRasterHoverBox(info, force = false) {
     if (!map) return;
     if (!map.getSource("raster-hover-box")) {
         map.addSource("raster-hover-box", {
@@ -630,15 +631,13 @@ function updateRasterHoverBox(info) {
     if (!src) return;
 
     if (!info) {
-        if (lastHoverBoxKey !== null) {
-            src.setData({ type: "FeatureCollection", features: [] });
-            lastHoverBoxKey = null;
-        }
+        src.setData({ type: "FeatureCollection", features: [] });
+        lastHoverBoxKey = null;
         return;
     }
 
     const key = `${info.sourceId}_${info.pxX}_${info.pxY}`;
-    if (key === lastHoverBoxKey) return;
+    if (!force && key === lastHoverBoxKey) return;
     lastHoverBoxKey = key;
 
     src.setData({
@@ -867,7 +866,7 @@ async function loadRasterData(isoDate, config, urlFn, labelType) {
                     const info = getRasterTooltipInfo(cfg.sourceId, h.coords[0], h.coords[1]);
                     const tooltip = document.getElementById("MapTooltip");
                     if (info && tooltip) {
-                        tooltip.innerHTML = `<div style="padding-right: 2rem;"><button class="popup-close-btn" style="position: absolute; top: 0.5rem; right: 0.5rem; border: none; background: transparent; font-size: 1.4rem; cursor: pointer; color: var(--card-shadow); line-height: 1; padding: 0.2rem 0.5rem; z-index: 10;">×</button>${info.html}</div>`;
+                        tooltip.innerHTML = generatePopupHTML({ ...h, _rawHtml: info.html }, cfg.sourceId, true);
                         tooltip.style.display = "block";
                     } else {
                         utils.clearHighlight();

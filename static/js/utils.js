@@ -330,6 +330,11 @@ export function clearHighlight() {
     if (mapLocal) mapLocal.off("click", state.mapClickListener);
     state.mapClickListener = null;
   }
+  
+  // Clear raster hover bounding box
+  if (mapLocal?.getSource("raster-hover-box")) {
+    mapLocal.getSource("raster-hover-box").setData({ type: "FeatureCollection", features: [] });
+  }
 }
 
 export function refreshHighlight() {
