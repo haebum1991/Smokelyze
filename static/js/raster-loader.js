@@ -586,6 +586,7 @@ export function getRasterTooltipInfo(sourceId, lng, lat) {
     ];
 
     const hrStyle = "border: 0.1rem solid black; margin-top: 0.3rem; margin-bottom: 0.3rem;";
+    const decimals = tmpl?.decimals !== undefined ? tmpl.decimals : 2;
 
     const html = `
         <div>
@@ -593,7 +594,7 @@ export function getRasterTooltipInfo(sourceId, lng, lat) {
         </div>
         <hr style="${hrStyle}">
         <div>
-            <div>Value: <b style="font-size: 1.6rem; color: var(--card-shadow);">${displayValue.toFixed(isHrrr && !isHrrrColmd ? 1 : 2)}</b> 
+            <div>Value: <b style="font-size: 1.6rem; color: var(--card-shadow);">${displayValue.toFixed(decimals)}</b> 
             ${unitHtml}</div>
             <div>Latitude: ${gridLat.toFixed(3)}</div>
             <div>Longitude: ${gridLon.toFixed(3)}</div>
