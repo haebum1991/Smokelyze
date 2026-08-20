@@ -10,7 +10,8 @@ import { showLoaderError } from "./loader-ui.js";
 import { logUserAction } from "./fb-logging.js";
 import { state } from "./ui-state.js";
 import { auth } from "./fb-init.js";
-import { LAYER_TEMPLATES } from "./layers-def.js";
+import { LAYER_TEMPLATES, ExcludeLayerGroups } from "./layers-def.js";
+import { activeLayerStack } from "./layers-state.js";
 import {
     BREAKS_TEMPO,
     BREAKS_HRRR_ugm2,
@@ -471,12 +472,187 @@ export function clearAllRaster() {
         if (source) clearRasterSource(source, cfg.sourceId);
         rasterDataStore[cfg.sourceId] = { grayscale: null, metadata: null, coordinates: null, cleared: true };
     }
+    
+    updateRasterHoverBox(null);
 }
 
 /**
  * Global mousemove handler for TEMPO layers
  */
 let tempoHoverBound = false;
+export function getRasterTooltipInfo(sourceId, lng, lat) {
+    const store = rasterDataStore[sourceId];
+    if (!store || !store.grayscale) return null;
+
+    if (lng < store.xmin || lng > store.xmax || lat < store.ymin || lat > store.ymax) return null;
+
+    const xPct = (lng - store.xmin) / store.lngRange;
+    const mercYLat = Math.log(Math.tan((Math.PI / 4) + (lat * Math.PI / 360)));
+    const yPct = (store.mercYMax - mercYLat) / store.mercYRange;
+
+    const pxX = (xPct * store.imgW) | 0;
+    const pxY = (yPct * store.imgH) | 0;
+
+    if (pxX < 0 || pxX >= store.imgW || pxY < 0 || pxY >= store.imgH) return null;
+
+    const gray = store.grayscale[pxY * store.imgW + pxX];
+    if (gray === null || gray === undefined || gray === 0) return null;
+
+    const { metadata } = store;
+    const realValue = metadata.min_val + (gray / 255) * (metadata.max_val - metadata.min_val);
+    const displayValue = getDisplayValue(sourceId, realValue);
+
+    const isTempo = sourceId.includes("tempo");
+    const isTropomi = sourceId.includes("tropomi");
+    const isHrrr = sourceId.includes("hrrr");
+    const isGoes = sourceId.includes("goes");
+    const isGeoscf = sourceId.includes("geoscf");
+    const isHrrrColmd = sourceId.includes("hrrr-colmd");
+
+    let layerTitle = "";
+    let unitHtml = "";
+
+    const tmpl = LAYER_TEMPLATES.find(t => t.id === sourceId);
+    if (tmpl) {
+        layerTitle = tmpl.title;
+        if (tmpl.hourly && !layerTitle.includes(" (hourly)")) {
+            layerTitle += " (hourly)";
+        }
+        if (tmpl.unit) {
+            const unitText = tmpl.unit.startsWith("10") ? `× ${tmpl.unit}` : tmpl.unit;
+            unitHtml = `<span style="color: ${sourceId.includes("goes") ? "var(--text-soft)" : "var(--text-main)"}; font-weight: normal;"> ${unitText}</span>`;
+        }
+    }
+
+    let metaHtml = "";
+    if (isTempo) {
+        metaHtml = `
+            <div style="display: flex; flex-direction: column;">
+                <span>Timestamp: <b>${utils.ESML(metadata.datetime) || "NA"} UTC</b></span>
+                <span>Scan No.: <b>${utils.ESML(metadata.scan_nos) || "NA"}</b></span>
+                <span>Version: <b>${utils.ESML(metadata.version) || "NA"}</b></span>
+            </div>
+        `;
+    } else if (isHrrr || isGoes || isGeoscf) {
+        let timestamp = utils.ESML(metadata.datetime) || "NA";
+        const pngUrl = store.pngUrl || "";
+        const match = pngUrl.match(/[t_](\d{2})[zT]/);
+        if (match && !timestamp.includes(":")) {
+            timestamp += ` ${match[1]}:00:00`;
+        }
+
+        let datasetName = utils.ESML(metadata.id) || "NA";
+        if (isGoes && datasetName !== "NA") {
+            const parts = datasetName.split("_");
+            if (parts[0] === "OR" && parts.length >= 3) {
+                datasetName = `${parts[1]} (${parts[2]})`;
+            } else if (parts.length >= 2) {
+                datasetName = `${parts[0]} (${parts[1]})`;
+            }
+        }
+
+        metaHtml = `
+            <div style="display: flex; flex-direction: column;">
+                <span>Timestamp: <b>${timestamp} UTC</b></span>
+                <span>Dataset: <b>${datasetName}</b></span>
+            </div>
+        `;
+    }
+
+    // Calculate grid cell center coordinates and bounding box
+    const u0 = pxX / store.imgW;
+    const u1 = (pxX + 1) / store.imgW;
+    const v0 = pxY / store.imgH;
+    const v1 = (pxY + 1) / store.imgH;
+
+    const lon0 = store.xmin + u0 * store.lngRange;
+    const lon1 = store.xmin + u1 * store.lngRange;
+    const gridLon = store.xmin + ((pxX + 0.5) / store.imgW) * store.lngRange;
+
+    const mercY0 = store.mercYMax - v0 * store.mercYRange;
+    const mercY1 = store.mercYMax - v1 * store.mercYRange;
+    const centerMercY = store.mercYMax - ((pxY + 0.5) / store.imgH) * store.mercYRange;
+
+    const lat0 = (2 * Math.atan(Math.exp(mercY0)) - Math.PI / 2) * (180 / Math.PI);
+    const lat1 = (2 * Math.atan(Math.exp(mercY1)) - Math.PI / 2) * (180 / Math.PI);
+    const gridLat = (2 * Math.atan(Math.exp(centerMercY)) - Math.PI / 2) * (180 / Math.PI);
+
+    const bboxPolygon = [
+        [lon0, lat0],
+        [lon1, lat0],
+        [lon1, lat1],
+        [lon0, lat1],
+        [lon0, lat0]
+    ];
+
+    const hrStyle = "border: 0.1rem solid black; margin-top: 0.3rem; margin-bottom: 0.3rem;";
+
+    const html = `
+        <div>
+            <strong style="color: var(--card-shadow);">${layerTitle}</strong>
+        </div>
+        <hr style="${hrStyle}">
+        <div>
+            <div>Value: <b style="font-size: 1.6rem; color: var(--card-shadow);">${displayValue.toFixed(isHrrr && !isHrrrColmd ? 1 : 2)}</b> 
+            ${unitHtml}</div>
+            <div>Latitude: ${gridLat.toFixed(3)}</div>
+            <div>Longitude: ${gridLon.toFixed(3)}</div>
+            ${metaHtml}
+        </div>
+    `;
+
+    return { html, gridLon, gridLat, bboxPolygon, pxX, pxY, sourceId };
+}
+
+let lastHoverBoxKey = null;
+function updateRasterHoverBox(info) {
+    if (!map) return;
+    if (!map.getSource("raster-hover-box")) {
+        map.addSource("raster-hover-box", {
+            type: "geojson",
+            data: { type: "FeatureCollection", features: [] }
+        });
+    }
+    if (!map.getLayer("raster-hover-box-line")) {
+        map.addLayer({
+            id: "raster-hover-box-line",
+            type: "line",
+            source: "raster-hover-box",
+            paint: {
+                "line-color": "#ff0000",
+                "line-width": 2
+            }
+        });
+    }
+
+    const src = map.getSource("raster-hover-box");
+    if (!src) return;
+
+    if (!info) {
+        if (lastHoverBoxKey !== null) {
+            src.setData({ type: "FeatureCollection", features: [] });
+            lastHoverBoxKey = null;
+        }
+        return;
+    }
+
+    const key = `${info.sourceId}_${info.pxX}_${info.pxY}`;
+    if (key === lastHoverBoxKey) return;
+    lastHoverBoxKey = key;
+
+    src.setData({
+        type: "FeatureCollection",
+        features: [{
+            type: "Feature",
+            geometry: {
+                type: "Polygon",
+                coordinates: [info.bboxPolygon]
+            },
+            properties: {}
+        }]
+    });
+}
+
 function initRasterHover() {
     if (tempoHoverBound || !map) return;
 
@@ -484,14 +660,15 @@ function initRasterHover() {
     if (!tooltip) return;
 
     map.on("mousemove", (e) => {
-        
+
         if (window.isDrawActive?.()) {
             tooltip.style.display = "none";
             map.getCanvas().style.cursor = "";
+            updateRasterHoverBox(null);
             if (tempoHoverBound) tempoHoverBound.isShowing = false;
             return;
         }
-        
+
         // [UX Fix]: Dont interfere if the tooltip is locked by a click
         if (state?.tooltipLocked) return;
 
@@ -499,165 +676,68 @@ function initRasterHover() {
         const topFeatures = map.queryRenderedFeatures(e.point);
         const isVectorOnTop = topFeatures.some(f => {
             const s = f.source || "";
-            return s === "smoke" || s === "fire" || s === "burn" || 
-                   s.includes("wildfire") || s === "MapPost" || 
-                   s.includes("airnow") || s.includes("gam_") || 
-                   s.includes("pm_cbsa") || s === "epa_ember";
+            return s === "smoke" || s === "fire" || s === "burn" ||
+                s.includes("wildfire") || s === "MapPost" ||
+                s.includes("airnow") || s.includes("gam_") ||
+                s.includes("pm_cbsa") || s === "epa_ember";
         });
 
         if (isVectorOnTop) {
+            updateRasterHoverBox(null);
             tempoHoverBound.isShowing = false;
             return;
         }
-        
-        // Find visible TEMPO or TROPOMI or HRRR or GOES or GEOS-CF layers
-        const activeRasterLayer = [
+
+        const wrapped = e.lngLat.wrap();
+
+        // Find visible raster layers in top-to-bottom order (using activeLayerStack)
+        const rasterStack = (activeLayerStack || []).slice().reverse().filter(id => ExcludeLayerGroups.pngLayers.includes(id));
+
+        const allRasterConfigs = [
             ...Object.values(TEMPO_CONFIG),
             ...Object.values(TROPOMI_CONFIG),
             ...Object.values(HRRR_CONFIG),
             ...Object.values(GOES_CONFIG),
             ...Object.values(VIIRS_CONFIG),
             ...Object.values(GEOSCF_CONFIG)
-        ].find(cfg => {
-            if (!map.getLayer(cfg.mapLayerId)) return false;
-            return map.getLayoutProperty(cfg.mapLayerId, "visibility") === "visible";
-        });
+        ];
 
-        if (!activeRasterLayer) {
-            if (!tempoHoverBound.isShowing) return;
-            tooltip.style.display = "none";
-            map.getCanvas().style.cursor = "";
-            tempoHoverBound.isShowing = false;
+        const orderedSources = rasterStack.length > 0 ? rasterStack : allRasterConfigs
+            .filter(cfg => map.getLayer(cfg.mapLayerId) && map.getLayoutProperty(cfg.mapLayerId, "visibility") === "visible")
+            .map(cfg => cfg.sourceId);
+
+        let activeInfo = null;
+        for (const sourceId of orderedSources) {
+            const info = getRasterTooltipInfo(sourceId, wrapped.lng, wrapped.lat);
+            if (info) {
+                activeInfo = info;
+                break;
+            }
+        }
+
+        if (!activeInfo) {
+            hideRasterTooltip();
             return;
         }
 
-        const sourceId = activeRasterLayer.sourceId;
-        const store = rasterDataStore[sourceId];
-        if (!store || !store.grayscale) return;
+        updateRasterHoverBox(activeInfo);
 
-        const wrapped = e.lngLat.wrap();
-        const { lng, lat } = wrapped;
+        tooltip.innerHTML = activeInfo.html;
+        tooltip.style.display = "block";
+        map.getCanvas().style.cursor = "pointer";
+        tempoHoverBound.isShowing = true;
 
-        // Check if cursor is within extent (Quick check using pre-stored constants)
-        if (lng >= store.xmin && lng <= store.xmax && lat >= store.ymin && lat <= store.ymax) {
+        let x = e.originalEvent.clientX + 15;
+        let y = e.originalEvent.clientY + 15;
+        if (x + 250 > window.innerWidth) x = e.originalEvent.clientX - 260;
+        if (y + 100 > window.innerHeight) y = e.originalEvent.clientY - 110;
 
-            // X is linear: (lng - xmin) / lngRange
-            const xPct = (lng - store.xmin) / store.lngRange;
-
-            // Y is Mercator: (mercYMax - mercYLat) / mercYRange
-            const mercYLat = Math.log(Math.tan((Math.PI / 4) + (lat * Math.PI / 360)));
-            const yPct = (store.mercYMax - mercYLat) / store.mercYRange;
-
-            const pxX = (xPct * store.imgW) | 0; // Bitwise OR 0 is faster than Math.floor
-            const pxY = (yPct * store.imgH) | 0;
-
-            if (pxX >= 0 && pxX < store.imgW && pxY >= 0 && pxY < store.imgH) {
-                const gray = store.grayscale[pxY * store.imgW + pxX];
-
-                if (gray === null || gray === undefined) {
-                    hideRasterTooltip();
-                    return;
-                }
-
-                if (gray === 0) {
-                    hideRasterTooltip();
-                    return;
-                }
-
-                // Restoration logic: Map 0-255 back to [min_val, max_val]
-                const { metadata } = store;
-                const realValue = metadata.min_val + (gray / 255) * (metadata.max_val - metadata.min_val);
-                const displayValue = getDisplayValue(sourceId, realValue);
-                
-                const isTempo = sourceId.includes("tempo");
-                const isTropomi = sourceId.includes("tropomi");
-                const isHrrr = sourceId.includes("hrrr");
-                const isGoes = sourceId.includes("goes");
-                const isGeoscf = sourceId.includes("geoscf");
-                const isHrrrColmd = sourceId.includes("hrrr-colmd");
-                
-                let layerTitle = "";
-                let unitHtml = "";
-                
-                const tmpl = LAYER_TEMPLATES.find(t => t.id === sourceId);
-                if (tmpl) {
-                    layerTitle = tmpl.title;
-                    if (tmpl.hourly && !layerTitle.includes(" (hourly)")) {
-                        layerTitle += " (hourly)";
-                    }
-                    if (tmpl.unit) {
-                        const unitText = tmpl.unit.startsWith("10") ? `× ${tmpl.unit}` : tmpl.unit;
-                        unitHtml = `<span style="color: ${sourceId.includes("goes") ? "var(--text-soft)" : "var(--text-main)"}; font-weight: normal;"> ${unitText}</span>`;
-                    }
-                }
-
-                let metaHtml = "";
-                if (isTempo) {
-                    metaHtml = `
-                        <div style="display: flex; flex-direction: column;">
-                            <span>Timestamp: <b>${utils.ESML(metadata.datetime) || "NA"} UTC</b></span>
-                            <span>Scan No.: <b>${utils.ESML(metadata.scan_nos) || "NA"}</b></span>
-                            <span>Version: <b>${utils.ESML(metadata.version) || "NA"}</b></span>
-                        </div>
-                    `;
-                } else if (isHrrr || isGoes || isGeoscf) {
-                    let timestamp = utils.ESML(metadata.datetime) || "NA";
-
-                    const pngUrl = store.pngUrl || "";
-                    const match = pngUrl.match(/[t_](\d{2})[zT]/);
-                    if (match && !timestamp.includes(":")) {
-                        timestamp += ` ${match[1]}:00:00`;
-                    }
-
-                    let datasetName = utils.ESML(metadata.id) || "NA";
-                    if (isGoes && datasetName !== "NA") {
-                        const parts = datasetName.split("_");
-                        if (parts[0] === "OR" && parts.length >= 3) {
-                            datasetName = `${parts[1]} (${parts[2]})`;
-                        } else if (parts.length >= 2) {
-                            datasetName = `${parts[0]} (${parts[1]})`;
-                        }
-                    }
-
-                    metaHtml = `
-                        <div style="display: flex; flex-direction: column;">
-                            <span>Timestamp: <b>${timestamp} UTC</b></span>
-                            <span>Dataset: <b>${datasetName}</b></span>
-                        </div>
-                    `;
-                }
-
-                tooltip.innerHTML = `
-                    <div>
-                        <strong style="color: var(--card-shadow);">${layerTitle}</strong>
-                    </div>
-                    <div>
-                        <div>Value: <b style="font-size: 1.6rem; color: var(--card-shadow);">${displayValue.toFixed(isHrrr && !isHrrrColmd ? 1 : 2)}</b> 
-                        ${unitHtml}</div>
-                        ${metaHtml}
-                    </div>
-                `;
-                
-                tooltip.style.display = "block";
-                map.getCanvas().style.cursor = "pointer";
-                tempoHoverBound.isShowing = true;
-
-                let x = e.originalEvent.clientX + 15;
-                let y = e.originalEvent.clientY + 15;
-                if (x + 250 > window.innerWidth) x = e.originalEvent.clientX - 260;
-                if (y + 100 > window.innerHeight) y = e.originalEvent.clientY - 110;
-
-                tooltip.style.left = `${x / 10}rem`;
-                tooltip.style.top = `${y / 10}rem`;
-            } else {
-                hideRasterTooltip();
-            }
-        } else {
-            hideRasterTooltip();
-        }
+        tooltip.style.left = `${x / 10}rem`;
+        tooltip.style.top = `${y / 10}rem`;
     });
 
     function hideRasterTooltip() {
+        updateRasterHoverBox(null);
         if (!tempoHoverBound.isShowing) return;
         tooltip.style.display = "none";
         map.getCanvas().style.cursor = "";
@@ -779,6 +859,19 @@ async function loadRasterData(isoDate, config, urlFn, labelType) {
                 });
 
                 initRasterHover();
+                
+                // Refresh locked highlight tooltip for this raster if active
+                const h = state?.currentHighlight;
+                if (h && h.dataSource === cfg.sourceId && state.tooltipLocked) {
+                    const info = getRasterTooltipInfo(cfg.sourceId, h.coords[0], h.coords[1]);
+                    const tooltip = document.getElementById("MapTooltip");
+                    if (info && tooltip) {
+                        tooltip.innerHTML = `<div style="padding-right: 2rem;"><button class="popup-close-btn" style="position: absolute; top: 0.5rem; right: 0.5rem; border: none; background: transparent; font-size: 1.4rem; cursor: pointer; color: var(--card-shadow); line-height: 1; padding: 0.2rem 0.5rem; z-index: 10;">×</button>${info.html}</div>`;
+                        tooltip.style.display = "block";
+                    } else {
+                        utils.clearHighlight();
+                    }
+                }
             } else {
                 throw new Error("No data");
             }
@@ -786,6 +879,11 @@ async function loadRasterData(isoDate, config, urlFn, labelType) {
             console.error(`${labelType} ${key} load error:`, e);
             if (rasterDataStore[cfg.sourceId]) rasterDataStore[cfg.sourceId].cleared = false;
             clearRasterSource(source, cfg.sourceId);
+            
+            // Clear highlight if this raster has no data for the new date/time
+            if (state?.currentHighlight?.dataSource === cfg.sourceId) {
+                utils.clearHighlight();
+            }
 
             if (cb && cb.checked) {
                 showLoaderError(cfg.sourceId, isoDate, isHourly);

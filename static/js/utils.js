@@ -338,6 +338,10 @@ export function refreshHighlight() {
   if (!state.tooltipLocked) return;
 
   const h = state.currentHighlight;
+  
+  if (ExcludeLayerGroups.pngLayers.includes(h.dataSource)) {
+    return;
+  }
 
   // Resolve actual data key (helpful for versioned data like AirNow)
   let actualDS = h.dataSource;

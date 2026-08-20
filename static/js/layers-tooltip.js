@@ -233,6 +233,11 @@ export function generatePopupHTML(p, dataSource, isLocked) {
       `;
     }
     
+    // ---- Raster (.png) data ----
+    if (ExcludeLayerGroups.pngLayers.includes(dataSource)) {
+      return `<div style="padding-right: 2rem;">${closeBtn}${p._rawHtml || ""}</div>`;
+    }
+    
     // ---- [External data] ----
     if (dataSource === "hysplit" || dataSource.startsWith("hysplit-")) {
         

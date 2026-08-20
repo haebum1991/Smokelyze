@@ -20,6 +20,7 @@ import {
 } from "./layers-state.js";
 import { logUserAction } from "./fb-logging.js";
 import { setLegendDrawer } from "./ui-toggles.js";
+import { getRasterTooltipInfo } from "./raster-loader.js";
 
 function addSourceIfMissing(sourceId) {
     if (!map.getSource(sourceId)) {
@@ -151,6 +152,17 @@ function bindClick(layerId, dataSource) {
                     });
                 }
                 
+            } else if (e.lngLat) {
+                // Raster layer fallback: iterate visible raster layers from top to bottom
+                const rasterStack = (activeLayerStack || []).slice().reverse().filter(id => ExcludeLayerGroups.pngLayers.includes(id));
+                for (const topRaster of rasterStack) {
+                    const info = getRasterTooltipInfo?.(topRaster, e.lngLat.lng, e.lngLat.lat);
+                    if (info) {
+                        const coords = [info.gridLon, info.gridLat];
+                        highlightLocation?.(coords, { lon: coords[0], lat: coords[1], _rawHtml: info.html }, topRaster);
+                        break;
+                    }
+                }
             }
         });
         map._globalInteractionBound = true;
