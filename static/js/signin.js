@@ -121,7 +121,8 @@ onAuthStateChanged(auth, async (user) => {
             "BoardBtnWrite",
             "BoardBtnEmail",
             "TelemetryPanel",
-            "AdminTestSection"
+            "AdminTestSectionAirfuse",
+            "AdminTestSectionGeoscf"
         ],
         drawers: []
     };

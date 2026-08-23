@@ -7,6 +7,14 @@ import { ESML, formatDate, getEffectiveDataset, sanitizeDisplayValue } from "./u
 import { auth } from "./fb-init.js";
 import { ExcludeLayerGroups, LAYER_TEMPLATES } from "./layers-def.js";
 import { regionStats, closedLegendIds } from "./layers-state.js";
+import {
+  PALETTE_AIRFUSE_PM25,
+  PALETTE_AIRFUSE_O3,
+  BREAKS_AIRFUSE_PM25,
+  BREAKS_AIRFUSE_O3,
+  LABEL_AIRFUSE_PM25,
+  LABEL_AIRFUSE_O3
+} from "./layers-constants.js";
 
 
 /**
@@ -331,6 +339,38 @@ export function generatePopupHTML(p, dataSource, isLocked) {
         <hr style="${hrStyle}">
         <div style="${rowStyle}"><b>Region:</b> ${ESML(p.ID)}</div>
         <div style="${rowStyle}"><b>Area burned (km²):</b> <b style="color: var(--card-shadow)";>${ESML(p.area_km2)}</b></div>`;
+    }
+    
+    if (dataSource === "airfuse_pm25") {
+      const val = Number(p["AQIC"]);
+      let idx = isNaN(val) ? 0 : BREAKS_AIRFUSE_PM25.findIndex(b => val < b);
+      if (idx === -1) idx = PALETTE_AIRFUSE_PM25.length - 1;
+      const color = PALETTE_AIRFUSE_PM25[idx];
+      const rangeName = LABEL_AIRFUSE_PM25[idx];
+      const colorBox = `<span style="display:inline-block; width:1.2rem; height:1.2rem; background:${color}; border:1px solid rgba(255,255,255,0.6); vertical-align:middle; margin-right:0.4rem;"></span>`;
+  
+      return `
+          ${closeBtn}
+          <div style="${rowStyleHead}"><b>AirFuse PM2.5 (hourly)</b></div>
+          <hr style="${hrStyle}">
+          <div style="${rowStyle}"><b>Conc.:</b> ${colorBox}<b>${ESML(rangeName)} µg m⁻³</b></div>
+      `;
+    }
+  
+    if (dataSource === "airfuse_o3") {
+      const val = Number(p["AQIC"]);
+      let idx = isNaN(val) ? 0 : BREAKS_AIRFUSE_O3.findIndex(b => val < b);
+      if (idx === -1) idx = PALETTE_AIRFUSE_O3.length - 1;
+      const color = PALETTE_AIRFUSE_O3[idx];
+      const rangeName = LABEL_AIRFUSE_O3[idx];
+      const colorBox = `<span style="display:inline-block; width:1.2rem; height:1.2rem; background:${color}; border:1px solid rgba(255,255,255,0.6); vertical-align:middle; margin-right:0.4rem;"></span>`;
+  
+      return `
+          ${closeBtn}
+          <div style="${rowStyleHead}"><b>AirFuse Ozone (hourly)</b></div>
+          <hr style="${hrStyle}">
+          <div style="${rowStyle}"><b>Conc.:</b> ${colorBox}<b>${ESML(rangeName)} ppb</b></div>
+      `;
     }
 
     let bodyHtml = `<div style="${rowStyle}">Data source: ${ESML(p.source || dataSource)}</div>

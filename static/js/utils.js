@@ -113,6 +113,21 @@ export function urlByDateGZfile(ds, isoDate) {
     return `${ds.gzfileBaseUrlDate}/${ds.source}/${ds.prefix}latest.geojson.gz${cb}`;
   }
   
+  if (["airfuse_pm25", "airfuse_o3"].includes(ds?.source)) {
+    const prod = ds.source === "airfuse_pm25" ? "pm25" : "o3";
+    const timeVal = parseInt(document.getElementById("timePicker")?.value || "12", 10);
+    const localHour = isNaN(timeVal) ? 12 : timeVal;
+    const [y, m, day] = (isoDate || "").split("-").map(Number);
+    if (!y || !m || !day) return null;
+    const localDate = new Date(y, m - 1, day, localHour);
+    const uYear = localDate.getUTCFullYear();
+    const uMonth = pad2(localDate.getUTCMonth() + 1);
+    const uDay = pad2(localDate.getUTCDate());
+    const utcHour = pad2(localDate.getUTCHours());
+    const utcIsoDate = `${uYear}-${uMonth}-${uDay}`;
+    return `${ds.gzfileBaseUrlDate}/${prod}/${uYear}/${uMonth}/${uDay}/AirFuse_${prod.toUpperCase()}_${utcIsoDate}_${utcHour}T.geojson.gz${cb}`;
+  }
+  
   const d = new Date(isoDate);
   if (isNaN(d.getTime())) return null;
   const yyyy = d.getUTCFullYear();

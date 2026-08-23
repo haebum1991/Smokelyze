@@ -56,7 +56,12 @@ export async function loadSourceData(sourceKey, isoDate) {
         return;
     }
 
-    const isCachedForDate = loadedSources[sourceKey] === isoDate || 
+    const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
+    const isHourly = ds?.duration === "hourly";
+    const timeVal = document.getElementById("timePicker")?.value || "12";
+    const effectiveCacheKey = isHourly ? `${isoDate}_h${timeVal}` : isoDate;
+
+    const isCachedForDate = loadedSources[sourceKey] === effectiveCacheKey ||
         (loadedSources[sourceKey] && loadedSources[sourceKey].startsWith(`${isoDate}_lookback_`));
 
     if (isCachedForDate && loadedGeoJSON[sourceKey] !== null) {
@@ -75,7 +80,6 @@ export async function loadSourceData(sourceKey, isoDate) {
         return;
     }
 
-    const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
     if (!ds) return;
     
     const liveKeys = ExcludeLayerGroups.liveKeys || [];
@@ -98,8 +102,8 @@ export async function loadSourceData(sourceKey, isoDate) {
         return;
     }
 
-    const GZIP_DATASETS = ExcludeLayerGroups.formatGzip
-    const isGzipDataset = GZIP_DATASETS.includes(sourceKey);
+    const GZIP_DATASETS = ExcludeLayerGroups.formatGzip;
+    const isGzipDataset = GZIP_DATASETS.includes(sourceKey) || GZIP_DATASETS.includes(ds.source) || Boolean(ds.gzfileBaseUrlDate);
 
     let url;
     if (isGzipDataset) {
@@ -213,7 +217,7 @@ export async function loadSourceData(sourceKey, isoDate) {
                 mapSource.setData(data);
             }
 
-            loadedSources[sourceKey] = isoDate;
+            loadedSources[sourceKey] = effectiveCacheKey;
             loadedGeoJSON[sourceKey] = data;
             
             // [Refined] Identify which UI toggles (checkboxes) are using this source
@@ -572,13 +576,9 @@ export async function updateAllActiveSources() {
 
         sourcesToLoad.forEach(sourceKey => {
             const ds = DATA_IMPORT_METHOD[sourceKey] || Object.values(DATA_IMPORT_METHOD).find(d => d.source === sourceKey);
-            const duration = ds ? ds.duration : "daily";
+            if (ds?.duration === "hourly") hasHourly = true;
 
-            if (duration === "hourly") {
-                hasHourly = true;
-            } else if (ExcludeLayerGroups.pngLayers.includes(sourceKey)) {
-                // TROPOMI (daily) and TEMPO (hourly) use shared loaders below
-            } else {
+            if (!ExcludeLayerGroups.pngLayers.includes(sourceKey)) {
                 promises.push(loadSourceData(sourceKey, isoDate));
             }
         });
@@ -764,6 +764,16 @@ function bindEventsLoaderHandler() {
             // Load all hourly data in parallel, properly awaited.
             // Each loader manages its own spinner internally.
             const promises = [];
+            
+            // Automatically reload active hourly vector sources (e.g. AirFuse)
+            const activeHourlyVectors = Array.from(document.querySelectorAll("input[type=checkbox][id^='layer-']:checked"))
+                .map(cb => cb.id.replace("layer-", ""))
+                .filter(shortId => {
+                    const ds = DATA_IMPORT_METHOD[shortId];
+                    return ds?.duration === "hourly" && !ExcludeLayerGroups.pngLayers.includes(shortId);
+                });
+
+            activeHourlyVectors.forEach(key => promises.push(loadSourceData(key, isoDate)));
 
             if (airnowHasActiveLayers()) {
                 promises.push(airnowLoadData(isoDate));

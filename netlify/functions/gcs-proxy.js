@@ -34,6 +34,7 @@ const PUBLIC_PREFIXES = [
   "realtime",
   "airnow_date_geojson",
   "airnow_hourly_geojson",
+  "airfuse_date_geojson",
   "smokeday"
 ];
 
@@ -116,6 +117,7 @@ function extractGcsPath(event) {
     "noaa_hms_fire_year_json",
     "airnow_date_geojson",
     "airnow_hourly_geojson",
+    "airfuse_date_geojson",
     "smokeday",
     "tempo_date_png",
     "tropomi_date_png",

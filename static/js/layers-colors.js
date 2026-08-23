@@ -106,17 +106,20 @@ export function updateLegend(activeStack = activeLayerStack) {
 
         sectionHtml += `<div class="legend-content">`;
         
-        // Setup opacity slider HTML if it is a raster layer
+        // Setup opacity slider HTML if it is a raster or airfuse layer
         const isRaster = layerDef?.layers?.[0]?.type === "raster";
+        const isAirfuse = id.startsWith("airfuse-");
+        const hasOpacitySlider = isRaster || isAirfuse;
         let opacitySliderHtml = "";
-        if (isRaster) {
-            const mapLayerId = layerDef?.layers?.[0]?.id || `${id}-raster`;
-            let currentOpacity = 0.9;
+        if (hasOpacitySlider) {
+            const mapLayerId = layerDef?.layers?.[0]?.id || (isRaster ? `${id}-raster` : `${id}-fill`);
+            let currentOpacity = isAirfuse ? 0.5 : 0.9;
             if (map && map.getLayer(mapLayerId)) {
                 try {
-                    const val = map.getPaintProperty(mapLayerId, "raster-opacity");
+                    const prop = isRaster ? "raster-opacity" : "fill-opacity";
+                    const val = map.getPaintProperty(mapLayerId, prop);
                     if (typeof val === "number") currentOpacity = val;
-                } catch (e) {}
+                } catch (e) { }
             }
             const pct = Math.round(currentOpacity * 100);
 
@@ -151,7 +154,48 @@ export function updateLegend(activeStack = activeLayerStack) {
         const isCircleLayer = layerDef?.layers?.[0]?.type === "circle" && !conf.sizeLegend;
         const swatchClass = isCircleLayer ? "legend-color-circle" : "legend-color-rect";
 
-        if (conf.continuous) {
+        if (conf.horizontalBar) {
+            const { colors, keyTicks } = conf;
+            const total = colors.length;
+
+            const segmentsHtml = colors.map((c, i) => {
+                return `<div style="flex:1; height:1.6rem; background:${c}; border-right:${i < total - 1 ? "1px solid rgba(0,0,0,0.15)" : "none"};"></div>`;
+            }).join("");
+
+            let ticksHtml = "";
+            if (keyTicks && keyTicks.length > 0) {
+                ticksHtml = `<div style="position:relative; width:100%; height:2.0rem; margin-top:0.2rem;">`;
+                keyTicks.forEach(t => {
+                    let pct = (t.index / total) * 100;
+                    let transform = "translateX(-50%)";
+                    if (t.index === 0) {
+                        pct = 0;
+                        transform = "translateX(0%)";
+                    } else if (t.index >= total - 1) {
+                        pct = 100;
+                        transform = "translateX(-100%)";
+                    }
+                    ticksHtml += `
+                        <div style="position:absolute; left:${pct}%; transform:${transform}; text-align:center; display:flex; flex-direction:column; align-items:center;">
+                            <div style="width:1px; height:0.4rem; background:var(--text-main); opacity:0.85;"></div>
+                            <span style="font-size:1.1rem; color:var(--text-main); white-space:nowrap; margin-top:0.1rem; font-weight:500;">${t.label}</span>
+                        </div>
+                    `;
+                });
+                ticksHtml += `</div>`;
+            }
+
+            sectionHtml += `
+                <div class="legend-item-continuous" style="padding:0.4rem 0.2rem;">
+                    <!-- Segmented Stepped Color Bar -->
+                    <div style="display:flex; width:100%; border: 0.1rem solid var(--text-main); border-radius: 0.2rem; overflow:hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+                        ${segmentsHtml}
+                    </div>
+                    <!-- Ticks and Numbers -->
+                    ${ticksHtml}
+                </div>
+            `;
+        } else if (conf.continuous) {
             const { min, max, colors, breaks, unit } = conf;
             const legendBreaks = breaks || [];
             const grad = `linear-gradient(to right, ${colors.join(", ")})`;
@@ -265,8 +309,13 @@ export function updateLegend(activeStack = activeLayerStack) {
         }
         
         // Add NA indicator if enabled
-        const skipNALayers = [...(ExcludeLayerGroups.satelliteLayers || []), ...ExcludeLayerGroups.liveUpdateLayers];
-        if (!skipNALayers.includes(id) && NaShadingEnabled) {
+        const skipNALayers = [
+            ...(ExcludeLayerGroups.satelliteLayers || []),
+            ...ExcludeLayerGroups.liveUpdateLayers,
+            "airfuse-pm25",
+            "airfuse-o3"
+        ];
+        if (!skipNALayers.includes(id) && !conf.horizontalBar && NaShadingEnabled) {
             sectionHtml += `<hr class="legend-divider">
                              <div class="legend-item">
                                <span class="${swatchClass}" style="background:#ffffff; border: 0.1rem solid var(--text-main);"></span>
@@ -274,8 +323,8 @@ export function updateLegend(activeStack = activeLayerStack) {
                              </div>`;
         }
         
-        // Add opacity slider for all other raster layers
-        if (isRaster && !conf.headerOnly) {
+        // Add opacity slider for all raster and airfuse layers
+        if (hasOpacitySlider && !conf.headerOnly) {
             sectionHtml += `<hr class="legend-divider">`;
             sectionHtml += opacitySliderHtml;
         }
@@ -297,9 +346,18 @@ export function updateLegend(activeStack = activeLayerStack) {
 
             if (map && map.getLayer(lyrId)) {
                 try {
-                    map.setPaintProperty(lyrId, "raster-opacity", val);
+                    const lyr = map.getLayer(lyrId);
+                    if (lyr.type === "raster") {
+                        map.setPaintProperty(lyrId, "raster-opacity", val);
+                    } else if (lyr.type === "fill") {
+                        map.setPaintProperty(lyrId, "fill-opacity", val);
+                        const lineLyrId = lyrId.replace("-fill", "-line");
+                        if (map.getLayer(lineLyrId)) {
+                            map.setPaintProperty(lineLyrId, "line-opacity", val * 0.5);
+                        }
+                    }
                 } catch (err) {
-                    console.error("Failed to set raster opacity", err);
+                    console.error("Failed to set opacity", err);
                 }
             }
 

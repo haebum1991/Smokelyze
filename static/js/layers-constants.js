@@ -124,8 +124,6 @@ export const PALETTE_GEOSCF_O3 = [
     "#ff3a3a", // Red (NAAQS Exceedance)
     "#31004a"  // Deep Maroon (Extreme plume)
 ];
-
-// [GEOS-CF CO Palette] Earth tone ramp matching screenshot (Teal Green -> Sand Cream -> Amber -> Sienna Brown)
 export const PALETTE_GEOSCF_CO = [
     "#054d38", // 0: Deep Forest Teal Green (Clean pristine)
     "#288766", // 1: Teal Pine Green
@@ -135,7 +133,6 @@ export const PALETTE_GEOSCF_CO = [
     "#a25d19", // 5: Rich Sienna Brown (Heavy pollution)
     "#5c2e00"  // 6: Deep Chocolate/Chestnut Brown (Extreme fire core)
 ];
-
 export const PALETTE_GEOSCF_NO2 = [
     "#d0f0fd", // Pristine clean
     "#74c0fc", // Light Blue (Rural)
@@ -145,8 +142,6 @@ export const PALETTE_GEOSCF_NO2 = [
     "#fa5252", // Red (High pollution)
     "#67001f"  // Deep Burgundy
 ];
-
-// [GEOS-CF HCHO Palette] Turquoise & Sapphire sequential colormap (Lime Cream -> Spring Mint -> Electric Turquoise -> Deep Sapphire)
 export const PALETTE_GEOSCF_HCHO = [
     "#f7fcf0", // 0: Light Lime Cream (Clean baseline)
     "#c7e9b4", // 1: Spring Mint (Vegetation background)
@@ -156,8 +151,6 @@ export const PALETTE_GEOSCF_HCHO = [
     "#225ea8", // 5: Deep Royal Blue (High VOC plume)
     "#081d58"  // 6: Deep Sapphire / Midnight Navy (Extreme VOC core)
 ];
-
-// [GEOS-CF PM2.5 Palette] Standard Viridis sequential colormap (Deep Purple -> Blue-Teal -> Emerald Green -> Lime -> Vivid Yellow)
 export const PALETTE_GEOSCF_PM = [
     "#440154", // 0: Deep Purple / Indigo (Clean baseline)
     "#443983", // 1: Dark Blue-Violet
@@ -167,8 +160,6 @@ export const PALETTE_GEOSCF_PM = [
     "#8fd744", // 5: Chartreuse / Lime Green
     "#fde725"  // 6: Bright Vivid Yellow (High PM2.5 concentration core)
 ];
-
-// [GEOS-CF PM2.5 OC Palette] Standard Plasma Colormap (Midnight Blue -> Violet -> Hot Pink -> Coral -> Blazing Gold)
 export const PALETTE_GEOSCF_PMOC = [
     "#0d0887", // 0: Deep Midnight Blue (Clean baseline)
     "#5402a3", // 1: Electric Violet
@@ -177,6 +168,18 @@ export const PALETTE_GEOSCF_PMOC = [
     "#db5c68", // 4: Coral Red
     "#f48849", // 5: Blazing Tangerine Orange
     "#fece2f"  // 6: Glowing Gold (High smoke concentration core)
+];
+
+// [AirFuse Palettes]
+export const PALETTE_AIRFUSE_PM25 = [
+    "#c8ffc8", "#00e400", "#007d00", "#ffffc8", "#ffff00", "#c8c800",
+    "#ffbe78", "#ff7e00", "#c86400", "#ff6464", "#ff0000", "#990000",
+    "#dca0dc", "#8f3f97", "#4d004d", "#800000", "#500000", "#330000", "#000000"
+];
+export const PALETTE_AIRFUSE_O3 = [
+    "#c8ffc8", "#00e400", "#007d00", "#ffffc8", "#ffff00", "#c8c800",
+    "#ffbe78", "#ff7e00", "#c86400", "#ff6464", "#ff0000", "#990000",
+    "#dca0dc", "#8f3f97", "#4d004d", "#000000"
 ];
 
 
@@ -215,6 +218,17 @@ export const BREAKS_GEOSCF_HCHO = [0, 0.5, 1.0, 2.0, 4.0, 7.0, 12.0];
 export const BREAKS_GEOSCF_PM = [2, 5, 12, 25, 50, 100, 200];
 export const BREAKS_GEOSCF_PMOC = [0, 1, 5, 10, 20, 40, 60];
 
+// [AirFuse Breaks]
+export const BREAKS_AIRFUSE_PM25 = [
+    3.0, 6.0, 9.1, 15.0, 25.0, 35.5, 40.0, 50.0, 55.5,
+    75.0, 100.0, 125.5, 150.0, 200.0, 225.5, 325.0, 500.0, 750.0
+];
+export const BREAKS_AIRFUSE_O3 = [
+    30.0, 45.0, 55.0, 60.0, 65.0, 71.0, 75.0, 80.0, 86.0,
+    90.0, 100.0, 106.0, 125.0, 175.0, 201.0
+];
+
+
 // --------------------------------------------------------
 // Label definitions
 // --------------------------------------------------------
@@ -222,4 +236,19 @@ export const LABEL_SMOKE = ["light", "medium", "heavy"];
 export const LABEL_BIN = ["No", "Yes"];
 export const LABEL_SMO = ["No", "with minimal SMO", "with significant SMO"];
 export const LABEL_SMP = ["No", "with smoke PM2.5=0", "with smoke PM2.5>0"];
+
+// [AirFuse Label]
+export const LABEL_AIRFUSE_PM25 = [
+    "< 3.0", "3.0 to < 6.0", "6.0 to < 9.1", "9.1 to < 15.0",
+    "15.0 to < 25.0", "25.0 to < 35.5", "35.5 to < 40.0", "40.0 to < 50.0",
+    "50.0 to < 55.5", "55.5 to < 75.0", "75.0 to < 100.0", "100.0 to < 125.5",
+    "125.5 to < 150.0", "150.0 to < 200.0", "200.0 to < 225.5", "225.5 to < 325.0",
+    "325.0 to < 500.0", "500.0 to < 750.0", "> 750.0"
+];
+export const LABEL_AIRFUSE_O3 = [
+    "< 30.0", "30.0 to < 45.0", "45.0 to < 55.0", "55.0 to < 60.0",
+    "60.0 to < 65.0", "65.0 to < 71.0", "71.0 to < 75.0", "75.0 to < 80.0",
+    "80.0 to < 86.0", "86.0 to < 90.0", "90.0 to < 100.0", "100.0 to < 106.0",
+    "106.0 to < 125.0", "125.0 to < 175.0", "175.0 to < 201.0", "> 201.0"
+];
 

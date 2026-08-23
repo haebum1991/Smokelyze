@@ -98,6 +98,21 @@ export function resetUIAndData() {
       } catch (e) {}
     }
   });
+  
+  
+  const airfuseLayerIds = ["airfuse-pm25-fill", "airfuse-o3-fill"];
+  airfuseLayerIds.forEach(id => {
+    if (map && map.getLayer(id)) {
+      try {
+        map.setPaintProperty(id, "fill-opacity", 0.5);
+        const lineId = id.replace("-fill", "-line");
+        if (map.getLayer(lineId)) {
+          map.setPaintProperty(lineId, "line-opacity", 0.25);
+        }
+      } catch (e) {}
+    }
+  });
+
 
   // 6) Visibility & Data Synchronization
   applyLayerToggles?.();

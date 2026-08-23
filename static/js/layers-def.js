@@ -51,7 +51,8 @@ export const ExcludeLayerGroups = {
         "goes-aod-east", "goes-aod-west",
         "goes-geocolor-east", "goes-geocolor-west",
         "viirs-truecolor",
-        "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc"
+        "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc",
+        "airfuse-pm25", "airfuse-o3"
     ],
 
     // [layers-tooltip.js] > [stateHoverHTML] > [EXCLUDED]
@@ -66,7 +67,8 @@ export const ExcludeLayerGroups = {
         "goes-aod-east", "goes-aod-west",
         "goes-geocolor-east", "goes-geocolor-west",
         "viirs-truecolor",
-        "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc"
+        "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc",
+        "airfuse-pm25", "airfuse-o3"
     ],
 
     // [stats-common.js] > [getActiveModelLayers] > [EXCLUDED]
@@ -77,7 +79,8 @@ export const ExcludeLayerGroups = {
         "wildfire-news", "MapPost",
         "hysplit",
         "goes-geocolor-east", "goes-geocolor-west",
-        "viirs-truecolor"
+        "viirs-truecolor",
+        "airfuse-pm25", "airfuse-o3"
     ],
 
     // [stats-data-search.js] > [updateVisibility] > [EXCLUDED]
@@ -96,7 +99,8 @@ export const ExcludeLayerGroups = {
         "goes-aod-east", "goes-aod-west",
         "goes-geocolor-east", "goes-geocolor-west",
         "viirs-truecolor",
-        "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc"
+        "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc",
+        "airfuse-pm25", "airfuse-o3"
     ],
 
     // [stats-plot-dy-scatter.js] > [getActiveModelLayers] > [EXCLUDED]
@@ -112,7 +116,8 @@ export const ExcludeLayerGroups = {
         "goes-aod-east", "goes-aod-west",
         "goes-geocolor-east", "goes-geocolor-west",
         "viirs-truecolor",
-        "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc"
+        "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc",
+        "airfuse-pm25", "airfuse-o3"
     ],
 
 
@@ -128,6 +133,7 @@ export const ExcludeLayerGroups = {
         "wildfire_news",
         "smoke", "fire",
         "airnow_daily",
+        "airfuse_pm25", "airfuse_o3",
         "gam_v2_pred", "pm_cbsa_pred"
     ],
 
@@ -165,13 +171,15 @@ import {
     PALETTE_GOES_AOD,
     PALETTE_GEOSCF_O3, PALETTE_GEOSCF_CO, PALETTE_GEOSCF_NO2,
     PALETTE_GEOSCF_HCHO, PALETTE_GEOSCF_PM, PALETTE_GEOSCF_PMOC,
+    PALETTE_AIRFUSE_PM25, PALETTE_AIRFUSE_O3,
     BREAKS_O3, BREAKS_RESI, BREAKS_SMO_EMBER, BREAKS_PM, BREAKS_SMOKE_PM, BREAKS_PM_CRIT,
     BREAKS_TMAX, BREAKS_T2MAX, BREAKS_SRAD, BREAKS_QUANT, BREAKS_R2,
     BREAKS_BIN, BREAKS_TRI, BREAKS_NO2, BREAKS_FIRE, BREAKS_SMOKE, 
     BREAKS_BURN, BREAKS_FRP, BREAKS_TEMPO, BREAKS_HRRR_ugm2, BREAKS_HRRR_ugm3,
     BREAKS_GOES_AOD,
     BREAKS_GEOSCF_O3, BREAKS_GEOSCF_CO, BREAKS_GEOSCF_NO2,
-    BREAKS_GEOSCF_HCHO, BREAKS_GEOSCF_PM, BREAKS_GEOSCF_PMOC,
+    BREAKS_GEOSCF_HCHO, BREAKS_GEOSCF_PM, BREAKS_GEOSCF_PMOC, 
+    BREAKS_AIRFUSE_PM25, BREAKS_AIRFUSE_O3,
     LABEL_SMOKE, LABEL_BIN, LABEL_SMO, LABEL_SMP
 } from "./layers-constants.js";
 
@@ -214,6 +222,15 @@ export const DATA_IMPORT_METHOD = {
   },
   
   // ---- [External data] AirNow ----
+  "airnow_daily": {
+      key: "airnow_daily",
+      source: "airnow_daily",
+      prefix: "airnow_",
+      gzfileBaseUrlDate: "/airnow_date_geojson"
+  },
+  "airnow-daily-pm25": { key: "airnow-daily-pm25", source: "airnow_daily" },
+  "airnow-daily-mda8": { key: "airnow-daily-mda8", source: "airnow_daily" },
+  
   "airnow_hourly": {
       key: "airnow_hourly",
       source: "airnow_hourly",
@@ -221,21 +238,29 @@ export const DATA_IMPORT_METHOD = {
       gzfileBaseUrlDate: "/airnow_hourly_geojson",
       hourly: true
   },
-  "airnow_daily": {
-      key: "airnow_daily",
-      source: "airnow_daily",
-      prefix: "airnow_",
-      gzfileBaseUrlDate: "/airnow_date_geojson"
-  },
-  // ---- [External data] AirNow ----
-  
   "airnow-hourly-pm25": { key: "airnow-hourly-pm25", source: "airnow_hourly" },
   "airnow-hourly-ozone": { key: "airnow-hourly-ozone", source: "airnow_hourly" },
   "airnow-hourly-no2": { key: "airnow-hourly-no2", source: "airnow_hourly" },
-    
-  "airnow-daily-pm25": { key: "airnow-daily-pm25", source: "airnow_daily" },
-  "airnow-daily-mda8": { key: "airnow-daily-mda8", source: "airnow_daily" },
-    
+  
+  "airfuse-pm25": {
+      key: "airfuse-pm25",
+      source: "airfuse_pm25",
+      prefix: "AirFuse_PM25_",
+      duration: "hourly",
+      hourly: true,
+      gzfileBaseUrlDate: "/airfuse_date_geojson"
+  },
+  "airfuse-o3": {
+      key: "airfuse-o3",
+      source: "airfuse_o3",
+      prefix: "AirFuse_O3_",
+      duration: "hourly",
+      hourly: true,
+      gzfileBaseUrlDate: "/airfuse_date_geojson"
+  },
+  // ---- [External data] AirNow ----
+  
+  
   "smoke": {
       key: "smoke",
       source: "smoke",
@@ -341,41 +366,41 @@ export const DATA_IMPORT_METHOD = {
   },
   
   "geoscf-o3": {
-        key: "geoscf-o3",
-        source: "geoscf-o3",
-        duration: "hourly",
-        hourly: true
-    },
-    "geoscf-co": {
-        key: "geoscf-co",
-        source: "geoscf-co",
-        duration: "hourly",
-        hourly: true
-    },
-    "geoscf-no2": {
-        key: "geoscf-no2",
-        source: "geoscf-no2",
-        duration: "hourly",
-        hourly: true
-    },
-    "geoscf-hcho": {
-        key: "geoscf-hcho",
-        source: "geoscf-hcho",
-        duration: "hourly",
-        hourly: true
-    },
-    "geoscf-pm25": {
-        key: "geoscf-pm25",
-        source: "geoscf-pm25",
-        duration: "hourly",
-        hourly: true
-    },
-    "geoscf-pm25oc": {
-        key: "geoscf-pm25oc",
-        source: "geoscf-pm25oc",
-        duration: "hourly",
-        hourly: true
-    },
+      key: "geoscf-o3",
+      source: "geoscf-o3",
+      duration: "hourly",
+      hourly: true
+  },
+  "geoscf-co": {
+      key: "geoscf-co",
+      source: "geoscf-co",
+      duration: "hourly",
+      hourly: true
+  },
+  "geoscf-no2": {
+      key: "geoscf-no2",
+      source: "geoscf-no2",
+      duration: "hourly",
+      hourly: true
+  },
+  "geoscf-hcho": {
+      key: "geoscf-hcho",
+      source: "geoscf-hcho",
+      duration: "hourly",
+      hourly: true
+  },
+  "geoscf-pm25": {
+      key: "geoscf-pm25",
+      source: "geoscf-pm25",
+      duration: "hourly",
+      hourly: true
+  },
+  "geoscf-pm25oc": {
+      key: "geoscf-pm25oc",
+      source: "geoscf-pm25oc",
+      duration: "hourly",
+      hourly: true
+  },
   
   "gam_v2": {
       key: "gam_v2",
@@ -519,12 +544,15 @@ export const DATASET_SOURCE_MAP = {
     "pm-cbsa-pred": "pm_cbsa_pred",
     
     // ---- [External data] AirNow ----
+    "airnow-daily-pm25": "airnow_daily",
+    "airnow-daily-mda8": "airnow_daily",
+    
     "airnow-hourly-pm25": "airnow_hourly",
     "airnow-hourly-ozone": "airnow_hourly",
     "airnow-hourly-no2": "airnow_hourly",
     
-    "airnow-daily-pm25": "airnow_daily",
-    "airnow-daily-mda8": "airnow_daily",
+    "airfuse-pm25": "airfuse_pm25",
+    "airfuse-o3": "airfuse_o3",
     // ---- [External data] AirNow ----
     
     "wildfire-inci-curr": "wildfire_inci_curr",
@@ -709,7 +737,6 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "wildfire-news", field: "title", breaks: [], colors: ["blue"], title: "Wildfire News", datasets: ["wildfire-news"], type: "symbol", iconImage: "pulsing-news", unit: "" },
     { duration: "daily", id: "MapPost", field: "title", breaks: [], colors: ["red"], title: "MapPost", datasets: ["MapPost"], type: "symbol", iconImage: "pulsing-alert", unit: "" },
 
-    // ---- [External data] AirNow ----
     // ---- [External data] AirNow ----
     { duration: "hourly", id: "airnow-hourly-pm25", field: "pm25(ug/m3)", breaks: BREAKS_PM, colors: PALETTE_EPA, title: "AirNow Obs PM2.5 (hourly)", decimals: 1, datasets: ["airnow-hourly-pm25"], hourly: true, unit: "ug m⁻³" },
     { duration: "hourly", id: "airnow-hourly-ozone", field: "ozone(ppb)", breaks: BREAKS_O3, colors: PALETTE_EPA, title: "AirNow Obs O3 (hourly)", decimals: 1, datasets: ["airnow-hourly-ozone"], hourly: true, unit: "ppb" },
@@ -1216,6 +1243,70 @@ export const LAYER_DEFS = (() => {
             };
         }
     });
+    
+    // AirFuse Layers (Directly styled from GeoJSON OGR_STYLE & EPA AirFuse Horizontal Discrete Colorbar)
+    defs["airfuse-pm25"] = {
+        layers: [
+            {
+                id: "airfuse-pm25-fill",
+                type: "fill",
+                source: "airfuse_pm25",
+                paint: {
+                    "fill-color": makeStepExpr("AQIC", BREAKS_AIRFUSE_PM25, PALETTE_AIRFUSE_PM25),
+                    "fill-opacity": 0.5
+                }
+            }
+        ],
+        hoverHTML: (p) => generatePopupHTML(p, "airfuse_pm25"),
+        hoverOn: "airfuse-pm25-fill",
+        legend: {
+            title: "AirFuse PM2.5",
+            horizontalBar: true,
+            colors: PALETTE_AIRFUSE_PM25,
+            breaks: BREAKS_AIRFUSE_PM25,
+            keyTicks: [
+                { label: "0", index: 0 },
+                { label: "9.1", index: 3 },
+                { label: "35.5", index: 6 },
+                { label: "55.5", index: 9 },
+                { label: "125.5", index: 12 },
+                { label: "225.5", index: 15 },
+                { label: "750", index: 18 }
+            ],
+            unit: "ug m⁻³"
+        }
+    };
+
+    defs["airfuse-o3"] = {
+        layers: [
+            {
+                id: "airfuse-o3-fill",
+                type: "fill",
+                source: "airfuse_o3",
+                paint: {
+                    "fill-color": makeStepExpr("AQIC", BREAKS_AIRFUSE_O3, PALETTE_AIRFUSE_O3),
+                    "fill-opacity": 0.5
+                }
+            }
+        ],
+        hoverHTML: (p) => generatePopupHTML(p, "airfuse_o3"),
+        hoverOn: "airfuse-o3-fill",
+        legend: {
+            title: "AirFuse O3",
+            horizontalBar: true,
+            colors: PALETTE_AIRFUSE_O3,
+            breaks: BREAKS_AIRFUSE_O3,
+            keyTicks: [
+                { label: "0", index: 0 },
+                { label: "55", index: 3 },
+                { label: "71", index: 6 },
+                { label: "86", index: 9 },
+                { label: "106", index: 12 },
+                { label: "201", index: 15 }
+            ],
+            unit: "ppb"
+        }
+    };
     
     // Configure headerOnly mode for NIFC Wildfire layers (wildfire-inci & wildfire-peri)
     ["wildfire-inci", "wildfire-peri"].forEach(wfId => {

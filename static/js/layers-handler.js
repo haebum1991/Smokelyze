@@ -35,6 +35,16 @@ function addSourceIfMissing(sourceId) {
                     [-1, 1], [-0.9, 1], [-0.9, 0.9], [-1, 0.9]
                 ]
             });
+        } else if (sourceId.startsWith("airfuse_")) {
+            // [Performance Fix] Optimize large AirFuse contour polygon dataset
+            map.addSource(sourceId, {
+                type: "geojson",
+                data: EMPTY_FC,
+                generateId: true,
+                tolerance: 0.75, // Douglas-Peucker simplification for smooth panning/zooming
+                buffer: 0,       // Eliminate boundary tile padding overhead
+                maxzoom: 9       // Prevent over-tessellation at deep zoom levels
+            });
         } else {
             map.addSource(sourceId, { type: "geojson", data: EMPTY_FC, generateId: true });
         }
@@ -54,6 +64,9 @@ function addLayerIfMissing(layerSpec, sourceId) {
     }
 }
 
+
+const layerDataMap = {}; // Tracks { layerId: dataSource } for global interaction
+
 function bindHover(layerId, getHTML) {
     const tooltip = document.getElementById("MapTooltip");
     if (!tooltip) return;
@@ -65,6 +78,13 @@ function bindHover(layerId, getHTML) {
             map.getCanvas().style.cursor = "";
             tooltip.style.display = "none";
             return;
+        }
+        
+        // Only show tooltip for the physically top-most interactive layer under the cursor
+        const interactiveLayers = Object.keys(layerDataMap);
+        if (interactiveLayers.length > 0) {
+            const topInteractive = map.queryRenderedFeatures(e.point, { layers: interactiveLayers })?.[0];
+            if (topInteractive && topInteractive.layer.id !== layerId) return;
         }
         
         map.getCanvas().style.cursor = "pointer";
@@ -98,7 +118,6 @@ function bindHover(layerId, getHTML) {
 }
 
 
-const layerDataMap = {}; // Tracks { layerId: dataSource } for global click detection
 function bindClick(layerId, dataSource) {
     // [Refactored] Instead of per-layer listeners, we register the layer as "interactive"
     // and handle clicks globally once to ensure top-most accuracy.
@@ -155,7 +174,16 @@ function bindClick(layerId, dataSource) {
                 
             } else if (e.lngLat) {
                 // Raster layer fallback: iterate visible raster layers from top to bottom
-                const rasterStack = (activeLayerStack || []).slice().reverse().filter(id => ExcludeLayerGroups.pngLayers.includes(id));
+                const rasterStack = (activeLayerStack || [])
+                    .slice()
+                    .reverse()
+                    .filter(id => {
+                        if (!ExcludeLayerGroups.pngLayers.includes(id)) return false;
+                        if (closedLegendIds && closedLegendIds.has(id)) return false;
+                        const mapLayerId = `${id}-raster`;
+                        return map?.getLayer(mapLayerId) && map.getLayoutProperty(mapLayerId, "visibility") === "visible";
+                    });
+                
                 for (const topRaster of rasterStack) {
                     const info = getRasterTooltipInfo?.(topRaster, e.lngLat.lng, e.lngLat.lat);
                     if (info) {
@@ -247,25 +275,10 @@ export function applyLayerToggles() {
     
     setCachedActiveLayerIds(currentCheckedIds.map(id => `layer-${id}`));
 
-    // 3. Handle Special Background Layers
-    const EXCLUDED = ExcludeLayerGroups.liveUpdateLayers;
-    EXCLUDED.forEach(key => {
-        if (currentCheckedIds.includes(key) && LAYER_DEFS[key]) {
-            LAYER_DEFS[key].layers.forEach(l => {
-                if (map.getLayer(l.id)) {
-                    map.setLayoutProperty(l.id, "visibility", "visible");
-                    map.moveLayer(l.id);
-                }
-            });
-        }
-    });
-
-    // 4. Update Drawers Logic (removed)
-
-    // 5. Build and Update Active Layer Stack
+    // 3. Build and Update Active Layer Stack (All layers stack in the order they were selected)
     const newStack = activeLayerStack.filter(id => currentCheckedIds.includes(id));
     currentCheckedIds.forEach(id => {
-        if (!EXCLUDED.includes(id) && !newStack.includes(id)) newStack.push(id);
+        if (!newStack.includes(id)) newStack.push(id);
     });
     setActiveLayerStack(newStack);
 
@@ -310,7 +323,7 @@ export function applyLayerToggles() {
 
                     map.setLayoutProperty(l.id, "visibility", shouldShow ? "visible" : "none");
                     if (shouldShow) {
-                        if (l.type === "raster") {
+                        if (l.type === "raster" || l.id.startsWith("airfuse-")) {
                             const anchorId = map.getStyle().layers.find(ly => 
                                 ly.type === "symbol" || ly.id.includes("road") || ly.id.includes("bridge") || ly.id.includes("highway") || 
                                 ly.id === "states-line" || ly.id === "states-fill" || ly.id === "states-hover"

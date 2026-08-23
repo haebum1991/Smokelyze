@@ -11,7 +11,7 @@ import { logUserAction } from "./fb-logging.js";
 import { state } from "./ui-state.js";
 import { auth } from "./fb-init.js";
 import { LAYER_TEMPLATES, ExcludeLayerGroups } from "./layers-def.js";
-import { activeLayerStack } from "./layers-state.js";
+import { activeLayerStack, closedLegendIds } from "./layers-state.js";
 import { generatePopupHTML } from "./layers-tooltip.js";
 import {
     BREAKS_TEMPO,
@@ -690,24 +690,19 @@ function initRasterHover() {
 
         const wrapped = e.lngLat.wrap();
 
-        // Find visible raster layers in top-to-bottom order (using activeLayerStack)
-        const rasterStack = (activeLayerStack || []).slice().reverse().filter(id => ExcludeLayerGroups.pngLayers.includes(id));
-
-        const allRasterConfigs = [
-            ...Object.values(TEMPO_CONFIG),
-            ...Object.values(TROPOMI_CONFIG),
-            ...Object.values(HRRR_CONFIG),
-            ...Object.values(GOES_CONFIG),
-            ...Object.values(VIIRS_CONFIG),
-            ...Object.values(GEOSCF_CONFIG)
-        ];
-
-        const orderedSources = rasterStack.length > 0 ? rasterStack : allRasterConfigs
-            .filter(cfg => map.getLayer(cfg.mapLayerId) && map.getLayoutProperty(cfg.mapLayerId, "visibility") === "visible")
-            .map(cfg => cfg.sourceId);
+        // Find visible raster layers in top-to-bottom order (filtering out closed/hidden layers)
+        const visibleRasterStack = (activeLayerStack || [])
+            .slice()
+            .reverse()
+            .filter(id => {
+                if (!ExcludeLayerGroups.pngLayers.includes(id)) return false;
+                if (closedLegendIds && closedLegendIds.has(id)) return false;
+                const mapLayerId = `${id}-raster`;
+                return map?.getLayer(mapLayerId) && map.getLayoutProperty(mapLayerId, "visibility") === "visible";
+            });
 
         let activeInfo = null;
-        for (const sourceId of orderedSources) {
+        for (const sourceId of visibleRasterStack) {
             const info = getRasterTooltipInfo(sourceId, wrapped.lng, wrapped.lat);
             if (info) {
                 activeInfo = info;
