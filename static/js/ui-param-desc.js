@@ -250,12 +250,11 @@ export const DescData = {
                   "<li>Typically has up to a <b>6-hr reporting delay</b> from the current local time.</li></ul>"
         },
         {
-            id: "airfuse-pm25",
-            title: "AirFuse PM2.5 (hourly)",
-            desc: "<b>US EPA AirNow Data Fusion (AirFuse) PM2.5</b> starts with a geophysical model and adjusts it to match observations. " +
+            id: "airfuse-o3",
+            title: "AirFuse O3 (hourly)",
+            desc: "<b>US EPA AirNow Data Fusion (AirFuse) O3</b> starts with a geophysical model and adjusts it to match observations. " +
                 "The model (NOAA's Air Quality forecast) explicitly accounts for emissions, meteorology, and topography. " +
-                "AirFuse then bias-corrects the model by blending the accuracy of AirNow monitors and the prevalence of PurpleAir low-cost sensors. " +
-                "Using each dataset (AirNow Monitors and PurpleAir), the bias of the NOAA Forecast model is calculated at multiple points and interpolated to the grid centroids to create blended, bias-corrected continuous contour surfaces." +
+                "AirFuse then bias-corrects the model by blending the accuracy of AirNow regulatory ozone monitors, interpolating point biases to every model grid centroid to produce blended continuous surface ozone contours in ppb." +
                 "<br><ul><li>Update cycle: <b>Every 6 hours</b> (at 3, 9, 15, 21 UTC)</li>" +
                 "<li>In our app, <b>" +
                 "this data is available starting from 2024-03-01. </b></li>" +
@@ -263,11 +262,12 @@ export const DescData = {
                 "<li>Documentation: <a href='https://airnowtech.org/Resources/AirNowAirFuseLayersDocumentation.pdf' target='_blank' rel='noopener noreferrer'>AirFuse Documentation</a></li></ul>"
         },
         {
-            id: "airfuse-o3",
-            title: "AirFuse Ozone (hourly)",
-            desc: "<b>US EPA AirNow Data Fusion (AirFuse) Ozone</b> starts with a geophysical model and adjusts it to match observations. " +
+            id: "airfuse-pm25",
+            title: "AirFuse PM2.5 (hourly)",
+            desc: "<b>US EPA AirNow Data Fusion (AirFuse) PM2.5</b> starts with a geophysical model and adjusts it to match observations. " +
                 "The model (NOAA's Air Quality forecast) explicitly accounts for emissions, meteorology, and topography. " +
-                "AirFuse then bias-corrects the model by blending the accuracy of AirNow regulatory ozone monitors, interpolating point biases to every model grid centroid to produce blended continuous surface ozone contours in ppb." +
+                "AirFuse then bias-corrects the model by blending the accuracy of AirNow monitors and the prevalence of PurpleAir low-cost sensors. " +
+                "Using each dataset (AirNow Monitors and PurpleAir), the bias of the NOAA Forecast model is calculated at multiple points and interpolated to the grid centroids to create blended, bias-corrected continuous contour surfaces." +
                 "<br><ul><li>Update cycle: <b>Every 6 hours</b> (at 3, 9, 15, 21 UTC)</li>" +
                 "<li>In our app, <b>" +
                 "this data is available starting from 2024-03-01. </b></li>" +
