@@ -185,6 +185,25 @@ export async function loadSourceData(sourceKey, isoDate) {
                     f.geometry.coordinates = f.geometry.coordinates.map(ring => [ring]);
                 }
             });
+            
+            // [Z-Index Stacking Fix] Sort features by bounding box area (largest base sheets first, smallest detail islands on top)
+            const getArea = g => {
+                if (!g?.coordinates) return 0;
+                let minX = 180, maxX = -180, minY = 90, maxY = -90;
+                const scan = arr => {
+                    if (typeof arr[0] === "number") {
+                        const x = arr[0], y = arr[1];
+                        if (x < minX) minX = x; if (x > maxX) maxX = x;
+                        if (y < minY) minY = y; if (y > maxY) maxY = y;
+                    } else if (Array.isArray(arr)) {
+                        arr.forEach(scan);
+                    }
+                };
+                scan(g.coordinates);
+                return (maxX - minX) * (maxY - minY) || 0;
+            };
+
+            data.features.sort((a, b) => getArea(b.geometry) - getArea(a.geometry));
         }
 
         if (sourceKey === "wildfire_news" && data.features) {

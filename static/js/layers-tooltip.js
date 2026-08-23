@@ -367,7 +367,7 @@ export function generatePopupHTML(p, dataSource, isLocked) {
   
       return `
           ${closeBtn}
-          <div style="${rowStyleHead}"><b>AirFuse Ozone (hourly)</b></div>
+          <div style="${rowStyleHead}"><b>AirFuse O3 (hourly)</b></div>
           <hr style="${hrStyle}">
           <div style="${rowStyle}"><b>Conc.:</b> ${colorBox}<b>${ESML(rangeName)} ppb</b></div>
       `;
