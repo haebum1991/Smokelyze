@@ -6,7 +6,7 @@ import { state } from "./ui-state.js";
 import { generatePopupHTML } from "./layers-tooltip.js";
 import { auth } from "./fb-init.js";
 import { loadedGeoJSON, loadedSources } from "./loader-state.js";
-import { DATA_IMPORT_METHOD } from "./layers-def.js";
+import { DATA_IMPORT_METHOD, ExcludeLayerGroups } from "./layers-def.js";
 
 export function getCacheBuster(isoDate) {
   const now = new Date();

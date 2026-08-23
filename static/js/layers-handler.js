@@ -67,6 +67,26 @@ function addLayerIfMissing(layerSpec, sourceId) {
 
 const layerDataMap = {}; // Tracks { layerId: dataSource } for global interaction
 
+export function getTopSpatialLayer(lng, lat) {
+    return (activeLayerStack || []).slice().reverse().find(id => {
+        if (closedLegendIds?.has(id)) return false;
+        if (ExcludeLayerGroups.pngLayers.includes(id)) {
+            const mapLayerId = `${id}-raster`;
+            if (!map?.getLayer(mapLayerId) || map.getLayoutProperty(mapLayerId, "visibility") !== "visible") return false;
+            // If coordinate is provided, check if raster actually has valid non-null data (not clouds/transparent)
+            if (lng !== undefined && lat !== undefined) {
+                return !!getRasterTooltipInfo?.(id, lng, lat);
+            }
+            return true;
+        }
+        if (id.startsWith("airfuse-")) {
+            const mapLayerId = `${id}-fill`;
+            return map?.getLayer(mapLayerId) && map.getLayoutProperty(mapLayerId, "visibility") === "visible";
+        }
+        return false;
+    });
+}
+
 function bindHover(layerId, getHTML) {
     const tooltip = document.getElementById("MapTooltip");
     if (!tooltip) return;
@@ -86,6 +106,9 @@ function bindHover(layerId, getHTML) {
             const topInteractive = map.queryRenderedFeatures(e.point, { layers: interactiveLayers })?.[0];
             if (topInteractive && topInteractive.layer.id !== layerId) return;
         }
+        
+        // Yield AirFuse hover only if a raster layer covers this coordinate with valid data
+        if (layerId.startsWith("airfuse-") && ExcludeLayerGroups.pngLayers.includes(getTopSpatialLayer(e.lngLat?.lng, e.lngLat?.lat))) return;
         
         map.getCanvas().style.cursor = "pointer";
 
@@ -134,9 +157,13 @@ function bindClick(layerId, dataSource) {
             const interactiveLayerIds = Object.keys(layerDataMap);
             const features = map.queryRenderedFeatures(e.point, { layers: interactiveLayerIds });
 
-            if (features.length > 0) {
-                // Mapbox guarantees features[0] is the top-most rendered feature
-                const topF = features[0];
+            // If AirFuse is clicked but a raster layer has valid data on top, yield click to raster
+            let topF = features[0];
+            if (topF?.layer.id.startsWith("airfuse-") && ExcludeLayerGroups.pngLayers.includes(getTopSpatialLayer(e.lngLat?.lng, e.lngLat?.lat))) {
+                topF = null;
+            }
+
+            if (topF) {
                 const fullKey = layerDataMap[topF.layer.id];
                 const def = LAYER_DEFS[fullKey];
                 const dsKey = def?.dsKey || fullKey;

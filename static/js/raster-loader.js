@@ -12,6 +12,7 @@ import { state } from "./ui-state.js";
 import { auth } from "./fb-init.js";
 import { LAYER_TEMPLATES, ExcludeLayerGroups } from "./layers-def.js";
 import { activeLayerStack, closedLegendIds } from "./layers-state.js";
+import { getTopSpatialLayer } from "./layers-handler.js";
 import { generatePopupHTML } from "./layers-tooltip.js";
 import {
     BREAKS_TEMPO,
@@ -672,9 +673,9 @@ function initRasterHover() {
         // [UX Fix]: Dont interfere if the tooltip is locked by a click
         if (state?.tooltipLocked) return;
 
-        // [UX Fix]: Yield tooltip to specifically OUR vector layers (AirNow, Smoke, Fire, etc.) on top
+        // [UX Fix]: Yield tooltip to discrete point/event vector layers (AirNow, Smoke, Fire, etc.)
         const topFeatures = map.queryRenderedFeatures(e.point);
-        const isVectorOnTop = topFeatures.some(f => {
+        const isPointVectorOnTop = topFeatures.some(f => {
             const s = f.source || "";
             return s === "smoke" || s === "fire" || s === "burn" ||
                 s.includes("wildfire") || s === "MapPost" ||
@@ -682,13 +683,23 @@ function initRasterHover() {
                 s.includes("pm_cbsa") || s === "epa_ember";
         });
 
-        if (isVectorOnTop) {
+        if (isPointVectorOnTop) {
             updateRasterHoverBox(null);
             tempoHoverBound.isShowing = false;
             return;
         }
 
         const wrapped = e.lngLat.wrap();
+        
+        // [Z-Order Hierarchy]: If AirFuse is above raster in activeLayerStack, ONLY yield if mouse is ACTUALLY over an AirFuse polygon!
+        if (getTopSpatialLayer(wrapped.lng, wrapped.lat)?.startsWith("airfuse-")) {
+            const hasAirfuseUnderCursor = topFeatures.some(f => f.source?.includes("airfuse") || f.layer?.id.startsWith("airfuse-"));
+            if (hasAirfuseUnderCursor) {
+                updateRasterHoverBox(null);
+                tempoHoverBound.isShowing = false;
+                return;
+            }
+        }
 
         // Find visible raster layers in top-to-bottom order (filtering out closed/hidden layers)
         const visibleRasterStack = (activeLayerStack || [])
