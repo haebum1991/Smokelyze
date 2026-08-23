@@ -177,6 +177,15 @@ export async function loadSourceData(sourceKey, isoDate) {
                 }
             });
         }
+        
+        if (sourceKey.includes("airfuse") && data.features) {
+            data.features.forEach(f => {
+                if (f.geometry?.type === "Polygon" && f.geometry.coordinates?.length > 1) {
+                    f.geometry.type = "MultiPolygon";
+                    f.geometry.coordinates = f.geometry.coordinates.map(ring => [ring]);
+                }
+            });
+        }
 
         if (sourceKey === "wildfire_news" && data.features) {
             data.features.forEach(f => {
