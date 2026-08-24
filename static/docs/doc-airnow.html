@@ -11,7 +11,8 @@
     <ul>
         <li><strong>Purpose:</strong> Retrieve daily mean PM2.5 and MDA8 O3 concentrations from the EPA/AirNow
             monitoring network across the US, Canada, and Mexico.</li>
-        <li><strong>Source:</strong> AirNow S3 public buckets
+        <li><strong>Source:</strong> <a href="https://www.airnowtech.org/" target="_blank"
+                rel="noopener noreferrer">AirNow-Tech</a> &amp; AirNow S3 public buckets
             (<code>s3-us-west-1.amazonaws.com/files.airnowtech.org</code>).</li>
         <li><strong>Environment:</strong> Designed for Docker and Google Cloud Run.</li>
         <li><strong>Output:</strong> Compressed GeoJSON (.gz) files uploaded to Google Cloud Storage (GCS).</li>
@@ -30,7 +31,7 @@
         <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>Format:</strong> Cleans, pivots variables
             (PM2.5 and O3), assigns AQS codes, and converts to GeoJSON (RFC 7946).</div>
         <div class="doc-flow-step"><span class="doc-step-num">5</span><strong>Upload:</strong> Saves compressed (.gz)
-            GeoJSON files to the <code>smokelyze_bucket</code>.</div>
+            GeoJSON files to Google Cloud Storage (GCS).</div>
     </div>
 
     <h3>3. R Libraries Used</h3>

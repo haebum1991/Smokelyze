@@ -1,28 +1,23 @@
 
-<h2>NIFC Incident Location Tracking</h2>
-<p>Last Updated: 2026-07-24</p>
+<h2>NIFC Incident Locations & Perimeters</h2>
+<p>Last Updated: 2026-08-24</p>
 <hr>
 
 <section id="wildfire-nifc">
-    <p>6-hourly tracker for new wildfire incidents using official government sources, providing site-specific situational
-        awareness.</p>
+    <p>6-hourly tracker for new wildfire incidents and active fire perimeter boundaries using official government sources, providing site-specific situational awareness across the United States.</p>
 
     <h3>1. Key Information</h3>
     <ul>
-        <li><strong>Purpose:</strong> Aggregate current wildfire events for the US.</li>
-        <li><strong>Source (NIFC):</strong> WFIGS Incident Locations via the ArcGIS REST API (FeatureServer).</li>
-        <li><strong>Output:</strong> GeoJSON files (NIFC) uploaded daily to GCS.</li>
+        <li><strong>Purpose:</strong> Aggregate current wildfire point locations and active burn perimeters for the US.</li>
+        <li><strong>Source (NIFC):</strong> WFIGS (Wildland Fire Interagency Geospatial Services) <code>Incident Locations</code> &amp; <code>Interagency Perimeters</code> via the ArcGIS REST API (FeatureServer).</li>
+        <li><strong>Output:</strong> GeoJSON files (NIFC Incidents &amp; Perimeters) uploaded daily to GCS.</li>
     </ul>
 
     <h3>2. Main Workflow</h3>
     <div class="doc-flow">
-        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>Daily Polling:</strong> Queries the NIFC
-            WFIGS ArcGIS endpoint filtering by <code>FireDiscoveryDateTime</code> for the target date.</div>
-        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>Data Extraction:</strong> Retrieves key
-            fields
-            such as Incident Name, Discovery Acres, and Incident Type.</div>
-        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Archiving:</strong> Saves finalized
-            GeoJSON FeatureCollections to GCS, organized by year.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>Daily Polling:</strong> Queries NIFC WFIGS ArcGIS endpoints for both point incidents and polygon perimeters for the target date.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>Data Extraction:</strong> Retrieves key attributes such as Incident Name, Discovery Acres, Fire Cause, and geometry coordinates/polygons.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Archiving:</strong> Saves finalized GeoJSON FeatureCollections to GCS organized by year for interactive map visualization.</div>
     </div>
 
     <h3>3. R Libraries Used</h3>
@@ -34,9 +29,8 @@ library(googleCloudStorageR)</code></pre>
 
     <h3>4. Technical Implementation</h3>
     <h4>- NIFC ArcGIS REST API Query</h4>
-    <p>Directly interfaces with the WFIGS (Wildland Fire Interagency Geospatial Services) ArcGIS REST API to pull
-        real-time fire incident locations for a specific date range.</p>
-    <pre><code># ArcGIS REST API Query
+    <p>Directly interfaces with the WFIGS ArcGIS REST FeatureServer endpoints to query real-time wildfire data for a target date. Below is a representative example querying incident point locations (a similar REST query structure is used for active fire perimeter boundaries).</p>
+    <pre><code># Example: WFIGS Incident Locations Query
 base_url <- "https://services3.arcgis.com/T4QMspbfLg3qTGWY/ArcGIS/rest/services/WFIGS_Incident_Locations/FeatureServer/0/query"
 where_clause <- sprintf("FireDiscoveryDateTime >= DATE '%s' AND FireDiscoveryDateTime < DATE '%s'",
                          target_date, target_date + 1)

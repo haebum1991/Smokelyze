@@ -17,7 +17,7 @@ title: ""
         </div>
         <ul class="doc-toc" id="DocToc">
 
-            <li class="doc-sidebar-divider">App Information</li>
+            <li class="doc-sidebar-divider" style="padding-top: 0;">App Information</li>
             <li class="doc-toc-h1 active" data-doc="doc-citation"><a href="#">Citation</a></li>
             <li class="doc-toc-h1" data-doc="doc-arch"><a href="#">Technical Stack</a></li>
             <li class="doc-toc-h1" data-doc="doc-mappost"><a href="#">MapPost</a></li>
@@ -32,14 +32,16 @@ title: ""
             <li class="doc-toc-h1" data-doc="doc-wildfire-news"><a href="#">News</a></li>
             <li class="doc-toc-h1" data-doc="doc-wildfire-nifc"><a href="#">NIFC</a></li>
             <li class="doc-toc-h1" data-doc="doc-airnow"><a href="#">EPA/AirNow</a></li>
+            <li class="doc-toc-h1" data-doc="doc-airfuse" id="AdminTestSectionAirfuse"><a href="#">EPA/AirFuse</a></li>
             <li class="doc-toc-h1" data-doc="doc-hms"><a href="#">NOAA/HMS</a></li>
-            <li class="doc-toc-h1" data-doc="doc-merra2"><a href="#">NASA/MERRA-2</a></li>
-            <li class="doc-toc-h1" data-doc="doc-tropomi"><a href="#">S5P/TROPOMI</a></li>
-            <li class="doc-toc-h1" data-doc="doc-tempo"><a href="#">NASA/TEMPO</a></li>
             <li class="doc-toc-h1" data-doc="doc-goes"><a href="#">NOAA/GOES</a></li>
             <li class="doc-toc-h1" data-doc="doc-hrrr"><a href="#">NOAA/HRRR</a></li>
             <li class="doc-toc-h1" data-doc="doc-viirs"><a href="#">NOAA/VIIRS</a></li>
             <li class="doc-toc-h1" data-doc="doc-hysplit"><a href="#">NOAA/HYSPLIT</a></li>
+            <li class="doc-toc-h1" data-doc="doc-merra2"><a href="#">NASA/MERRA-2</a></li>
+            <li class="doc-toc-h1" data-doc="doc-tempo"><a href="#">NASA/TEMPO</a></li>
+            <li class="doc-toc-h1" data-doc="doc-geoscf" id="AdminTestSectionGeoscf"><a href="#">NASA/GEOS-CF</a></li>
+            <li class="doc-toc-h1" data-doc="doc-tropomi"><a href="#">S5P/TROPOMI</a></li>
             <li class="doc-toc-h1" data-doc="doc-pred-gam-v2"><a href="#">UW GAM-v2 pred.</a></li>
         </ul>
     </nav>
@@ -118,7 +120,8 @@ title: ""
     }
 
     .doc-sidebar-divider {
-        padding: 2rem 1.5rem 0.5rem;
+        padding-top: 2rem;
+        padding-left: 1.5rem;
         font-size: var(--fs-divider);
         font-weight: bold;
         color: var(--card-shadow);
@@ -134,7 +137,7 @@ title: ""
 
     .doc-toc li a {
         display: block;
-        padding: 0.5rem 1.5rem;
+        padding: 0;
         font-size: var(--fs-s);
         color: var(--text-main);
         text-decoration: none;
@@ -160,7 +163,8 @@ title: ""
         font-weight: bold !important;
         font-size: var(--fs-m) !important;
         padding-left: 2rem !important;
-        padding-top: 0.5rem !important;
+        padding-top: 0.2rem !important;
+        padding-bottom: 0.2rem !important;
     }
 
     .doc-toc-h2>a {
@@ -196,6 +200,7 @@ title: ""
     /* Main */
     .doc-main {
         flex: 1;
+        min-width: 0;
         max-width: 100%;
         padding: 1rem 2rem 6rem;
         line-height: 1.75;
@@ -429,9 +434,12 @@ title: ""
             padding: 1.5rem 1.6rem;
         }
 
-        .doc-sidebar-title,
-        .doc-sidebar-divider {
+        .doc-sidebar-title {
             color: var(--color-white) !important;
+        }
+
+        .doc-sidebar-divider {
+            color: var(--card-shadow) !important;
         }
 
         #DocSidebarClose {
@@ -475,14 +483,16 @@ title: ""
             "doc-wildfire-news": "/docs/doc-wildfire-news.html",
             "doc-wildfire-nifc": "/docs/doc-wildfire-nifc.html",
             "doc-airnow": "/docs/doc-airnow.html",
+            "doc-airfuse": "/docs/doc-airfuse.html",
             "doc-hms": "/docs/doc-hms.html",
-            "doc-merra2": "/docs/doc-merra2.html",
-            "doc-tropomi": "/docs/doc-tropomi.html",
-            "doc-tempo": "/docs/doc-tempo.html",
             "doc-goes": "/docs/doc-goes.html",
             "doc-hrrr": "/docs/doc-hrrr.html",
             "doc-viirs": "/docs/doc-viirs.html",
             "doc-hysplit": "/docs/doc-hysplit.html",
+            "doc-merra2": "/docs/doc-merra2.html",
+            "doc-tempo": "/docs/doc-tempo.html",
+            "doc-geoscf": "/docs/doc-geoscf.html",
+            "doc-tropomi": "/docs/doc-tropomi.html",
             "doc-pred-gam-v2": "/docs/doc-pred-gam-v2.html"
         };
 

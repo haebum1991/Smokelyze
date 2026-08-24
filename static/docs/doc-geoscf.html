@@ -1,0 +1,88 @@
+
+<h2>NASA GEOS-CF Model Retrieval</h2>
+<p>Last Updated: 2026-08-24</p>
+<hr>
+
+<section id="geoscf">
+    <p>Retrieves high-resolution surface atmospheric composition fields from NASA's <strong>GEOS-CF</strong> (Goddard
+        Earth Observing System Composition Forecast) system. GEOS-CF provides real-time, global 1-hour analyses and
+        forecasts of atmospheric chemistry at ~28 km resolution (0.25&deg; &times; 0.25&deg;), covering surface ozone
+        (O3), nitrogen dioxide (NO2), particulate matter (PM2.5), carbon monoxide (CO), and other trace gas species.</p>
+
+    <h3>1. Key Information</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Ingest high-resolution global atmospheric chemistry model forecasts to evaluate
+            regional smoke, photochemical smog, and background pollutant distributions.</li>
+        <li><strong>Source:</strong> <a href="https://gmao.gsfc.nasa.gov/geos-cf/" target="_blank"
+                rel="noopener noreferrer">NASA Global Modeling and Assimilation Office (GMAO)</a> &amp; <a
+                href="https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/" target="_blank"
+                rel="noopener noreferrer">NASA NCCS OPeNDAP Server</a>.</li>
+        <li><strong>Collection:</strong> <code>chm_tavg_1hr_glo_L1440x721_slv</code> (Full 2D Surface Atmospheric
+            Chemistry, Hourly).</li>
+        <li><strong>Target Species:</strong>
+            <code>o3</code>, <code>co</code>, <code>no2</code>, <code>hcho</code>,
+            (auto-converted to ppb) and
+            <code>pm25_rh35</code>, <code>pm25oc_rh35</code> (in &mu;g m<sup>-3</sup>).
+        </li>
+        <li><strong>Grid Resolution:</strong> 0.25&deg; &times; 0.25&deg; (1440 &times; 721 global grid), converted and
+            rendered to Web Mercator PNG tiles / GeoTIFF.</li>
+    </ul>
+
+    <h3>2. Main Workflow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>OPeNDAP Subsetting:</strong> Calculates
+            time index offsets and spatial grid indices for the North American bounding box (lon: -179&deg; to -13&deg;,
+            lat: 14&deg; to 73&deg;) to query remote OPeNDAP endpoints.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>Matrix Streaming &amp; Parsing:</strong>
+            Streams 2D ASCII grid matrices directly over HTTP without downloading multi-gigabyte NetCDF files,
+            minimizing memory overhead.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Unit Transformation:</strong> Converts
+            gaseous species from molar mixing ratios (mol mol<sup>-1</sup>) to parts per billion (ppb; factor
+            10<sup>9</sup>), while retaining particulate mass in &mu;g m<sup>-3</sup>.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>SpatRaster Alignment:</strong> Aligns
+            0.125&deg; half-cell offsets with <code>terra</code>, reprojects to EPSG:3857, and encodes values into 8-bit
+            PNG images with JSON scaling metadata.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">5</span><strong>Cloud Sync:</strong> Synchronizes
+            generated raster tiles and metadata to Google Cloud Storage (GCS).</div>
+    </div>
+
+    <h3>3. R Libraries Used</h3>
+    <pre><code>library(tidyr)
+library(dplyr)
+library(lubridate)
+library(stringr)
+library(httr)
+library(terra)
+library(jsonlite)
+library(googleCloudStorageR)
+library(foreach)
+library(doSNOW)</code></pre>
+
+    <h3>4. Technical Implementation</h3>
+    <h4>- Remote OPeNDAP Query with Spatial Slicing</h4>
+    <p>Constructs coordinate-indexed OPeNDAP ASCII query strings for on-the-fly server-side spatial sub-setting.</p>
+    <pre><code># OPeNDAP Query URL Construction for Spatial Window
+query_url <- paste0(
+  "https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/", collection, ".ascii?",
+  product, "[", time_idx, "][0][", lat_idx_min, ":", lat_idx_max, "][", lon_idx_min, ":", lon_idx_max, "]"
+)
+
+# Stream 2D ASCII matrix
+raw_lines <- readLines(query_url, warn = FALSE)
+val_lines <- grep("^\[\d+\]", raw_lines, value = TRUE)</code></pre>
+
+    <h4>- Raster Reconstruction &amp; Reprojection</h4>
+    <p>Reconstructs native spatial grids using <code>terra::rast</code> with half-cell centering offsets before
+        reprojecting to Web Mercator.</p>
+    <pre><code># Half-cell offset (0.25 / 2 = 0.125) for exact grid boundaries
+dres <- 0.25 / 2
+i_rast <- terra::rast(
+  mat[nrow(mat):1, ],
+  extent = terra::ext(actual_lon_min - dres, actual_lon_max + dres, actual_lat_min - dres, actual_lat_max + dres),
+  crs = "EPSG:4326"
+)
+
+# Reproject to Web Mercator (EPSG:3857) for web tile rendering
+i_rast_3857 <- terra::project(i_rast, "EPSG:3857")</code></pre>
+</section>
+

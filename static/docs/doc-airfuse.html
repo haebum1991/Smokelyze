@@ -1,0 +1,95 @@
+
+<h2>EPA/AirFuse Data Processing</h2>
+<p>Last Updated: 2026-08-24</p>
+<hr>
+
+<section id="airfuse">
+    <p>Fetches and processes EPA/AirNow-Tech <strong>AirFuse</strong> (NAQFC Data Fusion) hourly air quality datasets.
+        AirFuse integrates numerical chemical transport model simulations (NOAA NAQFC) with in-situ AirNow monitoring
+        station observations using residual bias correction, producing continuous high-resolution ground-level
+        concentration surfaces for PM2.5 and Ozone across North America.</p>
+
+    <h3>1. Key Information</h3>
+    <ul>
+        <li><strong>Purpose:</strong> Provide continuous, gap-filled spatial surface fields of fine particulate matter
+            (PM2.5) and surface ozone (O3) by fusing monitoring network data with numerical forecast models.</li>
+        <li><strong>Source:</strong> <a href="https://www.airnowtech.org/" target="_blank"
+                rel="noopener noreferrer">AirNow-Tech</a> &amp; AirNow S3 public buckets
+            (<code>airnow-navigator-layers.s3.us-east-2.amazonaws.com</code>).</li>
+        <li><strong>Products:</strong>
+            <code>Fusion_PM25_NAQFC</code> (PM2.5 Fusion in &mu;g m<sup>-3</sup>) and
+            <code>Fusion_O3_NAQFC_airnow</code> (Ozone Fusion in ppb).
+        </li>
+        <li><strong>Temporal Resolution:</strong> Hourly continuous updates (00:00 &ndash; 23:00 UTC).</li>
+        <li><strong>Output:</strong> Compressed GeoJSON (<code>.geojson.gz</code>) uploaded to Google Cloud Storage
+            (GCS).</li>
+    </ul>
+
+    <h3>2. Main Workflow</h3>
+    <div class="doc-flow">
+        <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>Hourly URL Construction:</strong>
+            Generates target S3 endpoints for each date (YYYY/MM/DD) and UTC hour (00&ndash;23) for PM2.5 and O3 fusion
+            layers.</div>
+        <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>Parallel Ingestion:</strong> Downloads
+            multi-hourly GeoJSON payloads concurrently using a multi-core cluster (<code>foreach</code> with
+            <code>doSNOW</code>).
+        </div>
+        <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Vector Validation &amp;
+                Formatting:</strong>
+            Parses vector geometries with <code>sf</code>, verifies feature integrity, and formats standard GeoJSON
+            (<code>RFC7946=YES</code>).</div>
+        <div class="doc-flow-step"><span class="doc-step-num">4</span><strong>Gzip Compression &amp; GCS
+                Upload:</strong>
+            Compresses finalized GeoJSON files into <code>.geojson.gz</code> and uploads them to Google Cloud Storage
+            (GCS).</div>
+    </div>
+
+    <h3>3. R Libraries Used</h3>
+    <pre><code>library(dplyr)
+library(lubridate)
+library(stringr)
+library(httr)
+library(sf)
+library(terra)
+library(jsonlite)
+library(data.table)
+library(googleCloudStorageR)
+library(foreach)
+library(doSNOW)</code></pre>
+
+    <h3>4. Technical Implementation</h3>
+    <h4>- S3 Direct Fetch &amp; Hourly Grid Generation</h4>
+    <p>Constructs dynamic S3 object endpoints for NAQFC data fusion products across all 24 UTC hourly intervals.</p>
+    <pre><code># Hourly Grid & Target AWS Endpoint Construction
+awsroot <- "https://airnow-navigator-layers.s3.us-east-2.amazonaws.com"
+
+# Example URL pattern for PM2.5 fusion
+url <- paste0(
+  awsroot, "/fusion/PM25/", i_year, "/", i_month, "/", i_day, "/", i_time,
+  "/Fusion_PM25_NAQFC_", i_year, "-", i_month, "-", i_day, "T", i_time, "Z.geojson"
+)
+
+# Resilient HTTP GET
+temp_geojson <- tempfile(fileext = ".geojson")
+res <- httr::GET(url, httr::write_disk(temp_geojson, overwrite = TRUE))</code></pre>
+
+    <h4>- Parallel Processing &amp; Compression</h4>
+    <p>Spawns parallel workers to validate vector layers, write standard RFC7946 GeoJSON, and gzip-compress files prior
+        to cloud object storage delivery.</p>
+    <pre><code># Multi-core execution for 24-hour batch
+cl <- makeCluster(cpu_cores)
+registerDoSNOW(cl)
+
+foreach(i = 1:nrow(date_list), .packages = c("dplyr", "httr", "sf", "jsonlite")) %dopar% {
+  i_output <- sf::st_read(temp_geojson, quiet = TRUE)
+  sf::st_write(obj = i_output, dsn = i_file_main_path, driver = "GeoJSON",
+               layer_options = c("RFC7946=YES"), delete_dsn = TRUE, quiet = TRUE)
+  
+  # Gzip compression
+  con <- gzfile(i_file_main_path_gzip, "w")
+  writeLines(readLines(i_file_main_path), con = con)
+  close(con)
+  unlink(i_file_main_path)
+}</code></pre>
+</section>
+
