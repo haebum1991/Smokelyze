@@ -167,7 +167,7 @@ export const ExcludeLayerGroups = {
 
 import { generatePopupHTML } from "./layers-tooltip.js";
 import {
-    PALETTE_EPA, PALETTE_JET, PALETTE_TEMPO, PALETTE_HRRR_SMOKE, 
+    PALETTE_EPA, PALETTE_JET, PALETTE_TEMPO, PALETTE_HRRR_COLMD, PALETTE_HRRR_SMOKE, 
     PALETTE_BIN_1, PALETTE_BIN_2, PALETTE_BIN_3, PALETTE_TRI, 
     PALETTE_BURN, PALETTE_SMOKE, PALETTE_SMOKE_PM,
     PALETTE_GOES_AOD,
@@ -732,12 +732,22 @@ export function getLayerDef(key, sourceKey, fieldName, breaks, colors, opts = {}
     };
 }
 
+// Icon size specifically calibrated for fire marker symbols (0.2 ~ 1.0)
+const ICON_SIZE_FIRE = [
+    "interpolate", ["linear"], ["zoom"],
+    1, 0.2,
+    3, 0.4,
+    6, 0.6,
+    9, 0.8,
+    12, 1.0
+];
+
 export const LAYER_TEMPLATES = [
     // --- Real-time data ---
     { duration: "daily", id: "wildfire-peri-curr", field: "poly_IncidentName", breaks: [], colors: ["red"], title: "WF perimeters (Live)", datasets: ["wildfire-peri-curr"], type: "fill", unit: "" },
-    { duration: "daily", id: "wildfire-inci-curr", field: "IncidentName", breaks: [], colors: ["orange"], title: "WF incidents (Live)", datasets: ["wildfire-inci-curr"], type: "symbol", iconImage: "pulsing-fire", unit: "" },
+    { duration: "daily", id: "wildfire-inci-curr", field: "IncidentName", breaks: [], colors: ["orange"], title: "WF incidents (Live)", datasets: ["wildfire-inci-curr"], type: "symbol", iconImage: "pulsing-fire", iconSize: ICON_SIZE_FIRE, unit: "" },
     { duration: "daily", id: "wildfire-peri", field: "poly_IncidentName", breaks: [], colors: ["red"], title: "WF perimeters", datasets: ["wildfire-peri"], type: "fill", unit: "" },
-    { duration: "daily", id: "wildfire-inci", field: "IncidentName", breaks: [], colors: ["orange"], title: "WF incidents", datasets: ["wildfire-inci"], type: "symbol", iconImage: "pulsing-fire", unit: "" },
+    { duration: "daily", id: "wildfire-inci", field: "IncidentName", breaks: [], colors: ["orange"], title: "WF incidents", datasets: ["wildfire-inci"], type: "symbol", iconImage: "pulsing-fire", iconSize: ICON_SIZE_FIRE, unit: "" },
     { duration: "daily", id: "wildfire-news", field: "title", breaks: [], colors: ["blue"], title: "Wildfire News", datasets: ["wildfire-news"], type: "symbol", iconImage: "pulsing-news", unit: "" },
     { duration: "daily", id: "MapPost", field: "title", breaks: [], colors: ["red"], title: "MapPost", datasets: ["MapPost"], type: "symbol", iconImage: "pulsing-alert", unit: "" },
 
@@ -814,7 +824,7 @@ export const LAYER_TEMPLATES = [
     { duration: "daily", id: "tropomi-no2", field: "tropomi-no2", title: "TROPOMI-NO2VCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true, unit: "10¹⁴ molecules cm⁻²" },
     { duration: "daily", id: "tropomi-hcho", field: "tropomi-hcho", title: "TROPOMI-HCHOVCD", breaks: BREAKS_TEMPO, colors: PALETTE_TEMPO, decimals: 1, manualLayer: true, unit: "10¹⁴ molecules cm⁻²" },
 
-    { duration: "hourly", id: "hrrr-colmd", field: "hrrr-colmd", title: "HRRR-smokeVCD", breaks: BREAKS_HRRR_ugm2, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "10³ ug m⁻²" },
+    { duration: "hourly", id: "hrrr-colmd", field: "hrrr-colmd", title: "HRRR-smokeVCD", breaks: BREAKS_HRRR_ugm2, colors: PALETTE_HRRR_COLMD, decimals: 1, manualLayer: true, hourly: true, unit: "10³ ug m⁻²" },
     { duration: "hourly", id: "hrrr-massden", field: "hrrr-massden", title: "HRRR-smoke8m", breaks: BREAKS_HRRR_ugm3, colors: PALETTE_HRRR_SMOKE, decimals: 1, manualLayer: true, hourly: true, unit: "ug m⁻³" },
 
     { duration: "hourly", id: "goes-aod-east", field: "goes-aod-east", title: "GOES-AOD-East", breaks: BREAKS_GOES_AOD, colors: PALETTE_GOES_AOD, decimals: 3, manualLayer: true, hourly: true, unit: "AOD" },

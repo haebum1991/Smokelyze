@@ -741,7 +741,15 @@ export function updateAverages() {
     const shape = selectedFeatures[selectedFeatures.length - 1];
     const activeLayers = getActiveModelLayers().filter(layer => {
         const id = layer.id;
-        return !id.startsWith("tempo-") && !id.startsWith("tropomi-") && !id.startsWith("hrrr-") && !id.startsWith("goes-") && !id.startsWith("geoscf-");
+        return (
+            !id.startsWith("tempo-") &&
+            !id.startsWith("tropomi-") &&
+            !id.startsWith("hrrr-") &&
+            !id.startsWith("goes-") &&
+            !id.startsWith("geoscf-") &&
+            !id.startsWith("airfuse-") &&
+            !id.startsWith("viirs-")
+        );
     });
     const activeRasterLayers = getActiveRasterLayers();
 

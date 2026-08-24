@@ -26,6 +26,7 @@ import {
     BREAKS_GEOSCF_PM,
     BREAKS_GEOSCF_PMOC,
     PALETTE_TEMPO,
+    PALETTE_HRRR_COLMD,
     PALETTE_HRRR_SMOKE,
     PALETTE_GOES_AOD,
     PALETTE_GEOSCF_O3,
@@ -283,7 +284,7 @@ function colorizeRasterImage(imgUrl, metadata, source, sourceId) {
 
                 if (sourceId === "hrrr-colmd") {
                     breaks = BREAKS_HRRR_ugm2;
-                    colorsHex = PALETTE_HRRR_SMOKE;
+                    colorsHex = PALETTE_HRRR_COLMD;
                 } else if (sourceId === "hrrr-massden") {
                     breaks = BREAKS_HRRR_ugm3;
                     colorsHex = PALETTE_HRRR_SMOKE;

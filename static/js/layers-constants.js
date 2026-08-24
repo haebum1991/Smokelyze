@@ -54,6 +54,17 @@ export const PALETTE_GOES_AOD = [
     "#2c105c"  // Deep twilight purple (Hazardous plume)
 ];
 
+// [HRRR Smoke Column Mass Density (VCD) Palette] Deep Emerald / Forest Green complementary ramp
+export const PALETTE_HRRR_COLMD = [
+    "#fde0ef", // 1: Baby Pink (연한 핑크)
+    "#f1b6da", // 5: Soft Rose (로즈 핑크)
+    "#de77ae", // 10: Vibrant Pink (비비드 핑크)
+    "#c51b7d", // 20: Hot Magenta (핫 마젠타)
+    "#8e0152", // 40: Rich Ruby (리치 루비)
+    "#540030", // 60: Deep Plum (딥 플럼)
+    "#290017"  // >= 60: Dark Velvet (다크 벨벳)
+];
+
 // [HRRR Palette] Custom smoke color ramp (Gray -> Pale Yellow -> Orange -> Dark Brown)
 export const PALETTE_HRRR_SMOKE = [
     "#dcdcdc", // Light Gray
@@ -207,7 +218,7 @@ export const BREAKS_SMOKE = [1000, 5000, 20000, 50000, 100000];
 export const BREAKS_BURN = [10, 50, 100, 500, 1000];
 export const BREAKS_TEMPO = [1, 25, 50, 75, 100, 125, 150]; // NASA Standard 7-step linear scale
 export const BREAKS_HRRR_ugm2 = [0, 1, 5, 10, 20, 40, 60];
-export const BREAKS_HRRR_ugm3 = [0, 5, 10, 20, 30, 40, 50];
+export const BREAKS_HRRR_ugm3 = [0, 1, 5, 10, 20, 40, 60];
 export const BREAKS_GOES_AOD = [0, 0.1, 0.2, 0.4, 0.6, 0.8, 1.0];
 
 // [GEOS-CF Breaks]

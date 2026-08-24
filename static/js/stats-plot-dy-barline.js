@@ -78,10 +78,17 @@ function getStyleMap(theme) {
     "tempo-hcho": { type: "scatter", color: "#FF1493", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#FF1493" } } },
     "tropomi-no2": { type: "scatter", color: "#BA55D3", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#BA55D3" } } },
     "tropomi-hcho": { type: "scatter", color: "#EE82EE", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#EE82EE" } } },
-    "hrrr-colmd": { type: "scatter", color: "#A52A2A", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#A52A2A" } } },
+    "hrrr-colmd": { type: "scatter", color: "#c51b7d", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#c51b7d" } } },
     "hrrr-massden": { type: "scatter", color: "#D2691E", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#D2691E" } } },
     "goes-aod-east": { type: "scatter", color: "#FF8C00", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#FF8C00" } } },
-    "goes-aod-west": { type: "scatter", color: "#FFA500", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#FFA500" } } }
+    "goes-aod-west": { type: "scatter", color: "#FFA500", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#FFA500" } } },
+
+    "geoscf-o3": { type: "scatter", color: "#3a57ff", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#3a57ff" } } },
+    "geoscf-co": { type: "scatter", color: "#d79844", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#d79844" } } },
+    "geoscf-no2": { type: "scatter", color: "#ff922b", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#ff922b" } } },
+    "geoscf-hcho": { type: "scatter", color: "#1d91c0", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#1d91c0" } } },
+    "geoscf-pm25": { type: "scatter", color: "#35b779", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#35b779" } } },
+    "geoscf-pm25oc": { type: "scatter", color: "#b93289", dash: "solid", marker: { symbol: "circle", size: 8, color: "white", line: { width: 2, color: "#b93289" } } }
   };
 }
 
@@ -96,7 +103,8 @@ const GROUPS = [
       "airnow-hourly-pm25", "airnow-hourly-ozone", "airnow-hourly-no2",
       "pm25-obs", "pm25-crit",
       "pm25-crit-m0p5m", "pm25-crit-m1p0m",
-      "pm25-smoke-m0p5m", "pm25-smoke-m1p0m"
+      "pm25-smoke-m0p5m", "pm25-smoke-m1p0m",
+      "geoscf-o3", "geoscf-co", "geoscf-no2", "geoscf-hcho", "geoscf-pm25", "geoscf-pm25oc"
     ],
     side: "left"
   },

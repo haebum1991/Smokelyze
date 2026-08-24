@@ -187,6 +187,15 @@ export function getActiveModelLayers() {
             } else if (shortId.startsWith("goes-")) {
                 group = "GOES";
                 rawLabel = rawLabel.replace(/^goes-/i, "").replace(/^goes\s+/i, "");
+            } else if (shortId.startsWith("geoscf-") || shortId.startsWith("geos-")) {
+                group = "GEOS-CF";
+                rawLabel = rawLabel.replace(/^geos-cf-/i, "").replace(/^geoscf-/i, "").replace(/^geos-cf\s+/i, "");
+            } else if (shortId.startsWith("airfuse-")) {
+                group = "AirFuse";
+                rawLabel = rawLabel.replace(/^airfuse-/i, "").replace(/^airfuse\s+/i, "");
+            } else if (shortId.startsWith("viirs-")) {
+                group = "VIIRS";
+                rawLabel = rawLabel.replace(/^viirs-/i, "").replace(/^viirs\s+/i, "");
             } else if (shortId.startsWith("airnow-")) {
                 group = "AirNow";
                 rawLabel = rawLabel.replace(/^airnow-/i, "").replace(/^airnow\s+/i, "");
