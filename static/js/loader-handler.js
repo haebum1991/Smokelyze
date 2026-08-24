@@ -60,10 +60,23 @@ export async function loadSourceData(sourceKey, isoDate) {
     const isHourly = ds?.duration === "hourly";
     const timeVal = document.getElementById("timePicker")?.value || "12";
     const effectiveCacheKey = isHourly ? `${isoDate}_h${timeVal}` : isoDate;
-
     const isCachedForDate = loadedSources[sourceKey] === effectiveCacheKey ||
         (loadedSources[sourceKey] && loadedSources[sourceKey].startsWith(`${isoDate}_lookback_`));
-
+    const liveKeys = ExcludeLayerGroups.liveKeys || [];
+    
+    if (liveKeys.includes(sourceKey)) {
+        if (loadedGeoJSON[sourceKey]) {
+            const targetSourceId = (ds && ds.source) ? ds.source : sourceKey;
+            const mapSource = map.getSource(targetSourceId);
+            if (mapSource && typeof mapSource.setData === "function") {
+                mapSource.setData(loadedGeoJSON[sourceKey]);
+            }
+            ensureLayers();
+            return;
+        }
+        isoDate = "LIVE";
+    }
+    
     if (isCachedForDate && loadedGeoJSON[sourceKey] !== null) {
         if (modelStatsCache[sourceKey]) {
             console.log("Restoring cached stats for:", sourceKey);
@@ -81,20 +94,6 @@ export async function loadSourceData(sourceKey, isoDate) {
     }
 
     if (!ds) return;
-    
-    const liveKeys = ExcludeLayerGroups.liveKeys || [];
-    if (liveKeys.includes(sourceKey)) {
-        if (loadedGeoJSON[sourceKey]) {
-            const targetSourceId = (ds && ds.source) ? ds.source : sourceKey;
-            const mapSource = map.getSource(targetSourceId);
-            if (mapSource && typeof mapSource.setData === "function") {
-                mapSource.setData(loadedGeoJSON[sourceKey]);
-            }
-            ensureLayers();
-            return;
-        }
-        isoDate = "LIVE";
-    }
 
     ensureLayers();
 

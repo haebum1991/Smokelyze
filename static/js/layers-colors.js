@@ -14,6 +14,7 @@ import {
 } from "./layers-state.js";
 import { getEffectiveDataset, currentDate } from "./utils.js";
 import { renderLookbackBoxHTML, bindLookbackEvents } from "./bq-lookback.js";
+import { drawIconCoreFire, drawIconCoreNews, drawIconCoreAlert } from "./layers-icon.js";
 
 
 /**
@@ -153,8 +154,18 @@ export function updateLegend(activeStack = activeLayerStack) {
         // Point data (circle layers) → round swatches, others (fill/polygon) → square
         const isCircleLayer = layerDef?.layers?.[0]?.type === "circle" && !conf.sizeLegend;
         const swatchClass = isCircleLayer ? "legend-color-circle" : "legend-color-rect";
-
-        if (conf.horizontalBar) {
+        const iconImg = conf.iconImage || (
+            layerDef?.layers?.[0]?.type === "symbol"
+                ? layerDef?.layers?.[0]?.layout?.["icon-image"]
+                : null
+        );
+        
+        if (iconImg) {
+            sectionHtml += `<div class="legend-item" style="display:flex; align-items:center;">
+                                <canvas class="legend-icon-canvas" data-icon="${iconImg}" width="48" height="48" style="width:2.0rem; height:2.0rem; margin-right:0.8rem; flex-shrink:0; vertical-align:middle;"></canvas>
+                                <span>${conf.title}</span>
+                            </div>`;
+        } else if (conf.horizontalBar) {
             const { colors, keyTicks } = conf;
             const total = colors.length;
 
@@ -311,9 +322,7 @@ export function updateLegend(activeStack = activeLayerStack) {
         // Add NA indicator if enabled
         const skipNALayers = [
             ...(ExcludeLayerGroups.satelliteLayers || []),
-            ...ExcludeLayerGroups.liveUpdateLayers,
-            "airfuse-pm25",
-            "airfuse-o3"
+            ...(ExcludeLayerGroups.legendSkipNA || [])
         ];
         if (!skipNALayers.includes(id) && !conf.horizontalBar && NaShadingEnabled) {
             sectionHtml += `<hr class="legend-divider">
@@ -335,6 +344,20 @@ export function updateLegend(activeStack = activeLayerStack) {
 
     container.innerHTML = finalHtml;
     container.style.display = "block";
+    
+    // Draw icons onto legend icon canvases
+    container.querySelectorAll(".legend-icon-canvas").forEach(canvas => {
+        const iconType = canvas.getAttribute("data-icon");
+        const ctx = canvas.getContext("2d");
+        const size = canvas.width;
+        if (iconType === "pulsing-fire" || iconType === "fire") {
+            drawIconCoreFire(ctx, size);
+        } else if (iconType === "pulsing-news" || iconType === "news") {
+            drawIconCoreNews(ctx, size);
+        } else if (iconType === "pulsing-alert" || iconType === "alert") {
+            drawIconCoreAlert(ctx, size);
+        }
+    });
     
     // Bind events to opacity sliders
     const sliders = container.querySelectorAll(".legend-opacity-slider");

@@ -32,10 +32,12 @@ export const ExcludeLayerGroups = {
     ],
 
     // 1-2. UI Feature & Chart Exclusions
-    // [layers-handler.js] > [applyLayerToggles] > [EXCLUDED]
-    liveUpdateLayers: [
+    // [layers-colors.js] > [updateLegend] > [EXCLUDED FROM N/A SWATCH]
+    legendSkipNA: [
         "wildfire-peri-curr", "wildfire-inci-curr",
-        "wildfire-news", "MapPost"
+        "wildfire-peri", "wildfire-inci",
+        "wildfire-news", "MapPost",
+        "airfuse-pm25", "airfuse-o3"
     ],
 
     // [layers-colors.js] > [updateStateShading] > [EXCLUDED]
@@ -680,7 +682,8 @@ export function getLayerDef(key, sourceKey, fieldName, breaks, colors, opts = {}
                 breaks,
                 colors,
                 labels: opts.labels || null,
-                unit: opts.unit || ""
+                unit: opts.unit || "",
+                iconImage: opts.iconImage || null
             },
             dsKey: opts.dsKey
         };
@@ -722,7 +725,8 @@ export function getLayerDef(key, sourceKey, fieldName, breaks, colors, opts = {}
             breaks,
             colors,
             labels: opts.labels || null,
-            unit: opts.unit || ""
+            unit: opts.unit || "",
+            iconImage: opts.iconImage || null
         },
         dsKey: opts.dsKey
     };

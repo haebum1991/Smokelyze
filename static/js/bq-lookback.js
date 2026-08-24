@@ -4,7 +4,7 @@
  */
 import { map } from "./layers-state.js";
 import { loadedGeoJSON, loadedSources } from "./loader-state.js";
-import { DATA_IMPORT_METHOD } from "./layers-def.js";
+import { DATA_IMPORT_METHOD, LAYER_DEFS } from "./layers-def.js";
 import { toggleSpinner } from "./loader-ui.js";
 import { logUserAction } from "./fb-logging.js";
 import { auth, onAuthStateChanged } from "./fb-init.js";
@@ -140,6 +140,10 @@ export async function fetchLookbackNIFC(sourceKey, isoDate, lookbackDays = 0) {
     return fetchPromise;
 }
 
+// SVG Icons for Lookback Action Button (from svg-symbols.html sprite)
+const SVG_UPDATE = `<svg width="15" height="15"><use xlink:href="#icon-refresh" /></svg>`;
+const SVG_DONE = `<svg width="15" height="15"><use xlink:href="#icon-check" /></svg>`;
+
 /**
  * Generates HTML string for the Lookback control box in legend drawer with dynamic date range text
  */
@@ -154,29 +158,36 @@ export function renderLookbackBoxHTML(id) {
     
     const isLoggedIn = !!auth?.currentUser;
     const authClass = isLoggedIn ? "" : "disabled-auth";
-    const authTitle = isLoggedIn ? "" : "Please login to use BigQuery lookback";
+    const authTitle = isLoggedIn ? (isSynced ? "Data is up to date" : "Fetch lookback data") : "Please login to use BigQuery lookback";
 
-    const btnText = isSynced ? "✓ Done" : "Update";
+    const btnIcon = isSynced ? SVG_DONE : SVG_UPDATE;
     const btnStyle = isSynced
-        ? `
-            background: #059669;
-            color: #ffffff;
-            display: inline-block !important;
-        `
-        : `
-            display: inline-block !important;
-        `;
+        ? `background: #059669; color: #ffffff; display: inline-flex !important; align-items: center; justify-content: center; width: 3.2rem; height: 2.6rem; padding: 0;`
+        : `display: inline-flex !important; align-items: center; justify-content: center; width: 3.2rem; height: 2.6rem; padding: 0;`;
 
-    return `<div class="legend-item" onclick="event.stopPropagation();" style="justify-content:space-between;">
-                <span>Lookback:</span>
-                <div>
-                    <input type="number" class="legend-lookback-input" data-layer-id="${id}" min="0" max="15" value="${curDays}" style="width:4rem; text-align:center;">
-                    <span>days</span>
+    // Layer icon preview on the left of Lookback (flame symbol / perimeter swatch)
+    const layerDef = LAYER_DEFS?.[id];
+    const iconImg = layerDef?.legend?.iconImage;
+    let iconHtml = "";
+    if (iconImg) {
+        iconHtml = `<canvas class="legend-icon-canvas" data-icon="${iconImg}" width="48" height="48" style="width:1.8rem; height:1.8rem; margin-right:0.6rem; vertical-align:middle; flex-shrink:0; display:inline-block;"></canvas>`;
+    } else if (layerDef?.legend?.colors?.[0]) {
+        iconHtml = `<span class="legend-color-rect" style="background:${layerDef.legend.colors[0]}; width:1.2rem; height:1.2rem; margin-right:0.6rem; vertical-align:middle; flex-shrink:0; display:inline-block; border:0.1rem solid var(--text-main);"></span>`;
+    }
+
+    return `<div class="legend-item" onclick="event.stopPropagation();" style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center;">
+                    ${iconHtml}
+                    <span>Lookback:</span>
                 </div>
-                <button class="legend-lookback-btn ${authClass}" title="${authTitle}" data-layer-id="${id}" data-is-synced="${isSynced ? "true" : "false"}" style="${btnStyle}">${btnText}</button>
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                    <input type="number" class="legend-lookback-input" data-layer-id="${id}" min="0" max="15" value="${curDays}" style="width:3.8rem; text-align:center; padding:0.2rem; border-radius:0.3rem;">
+                    <span style="font-size:1.2rem;">days</span>
+                </div>
+                <button class="legend-lookback-btn ${authClass}" title="${authTitle}" aria-label="Update lookback query" data-layer-id="${id}" data-is-synced="${isSynced ? "true" : "false"}" style="${btnStyle}">${btnIcon}</button>
             </div>
-            <hr style="margin: 0.5rem;">
-            <div class="legend-item legend-lookback-range" data-layer-id="${id}" style="justify-content:flex-end; color:var(--card-shadow);">
+            <hr style="margin: 0.5rem 0;">
+            <div class="legend-item legend-lookback-range" data-layer-id="${id}" style="justify-content:flex-end; color:var(--card-shadow); font-size:1.2rem;">
                 Range:&nbsp;<span class="range-text" style="font-weight:bold;">${rangeStr}</span>
             </div>`;
 }
@@ -210,16 +221,19 @@ export function bindLookbackEvents(container) {
 
             const btn = container.querySelector(`.legend-lookback-btn[data-layer-id="${layerId}"]`);
             if (btn) {
+                const isLoggedIn = !!auth?.currentUser;
                 if (isSynced) {
-                    btn.textContent = "✓ Done";
+                    btn.innerHTML = SVG_DONE;
                     btn.style.backgroundColor = "#059669";
                     btn.style.color = "#ffffff";
                     btn.setAttribute("data-is-synced", "true");
+                    btn.setAttribute("title", "Data is up to date");
                 } else {
-                    btn.textContent = "Update";
+                    btn.innerHTML = SVG_UPDATE;
                     btn.style.backgroundColor = "";
                     btn.style.color = "";
                     btn.setAttribute("data-is-synced", "false");
+                    btn.setAttribute("title", isLoggedIn ? "Fetch lookback data" : "Please login to use BigQuery lookback");
                 }
             }
         };
@@ -285,10 +299,11 @@ export function bindLookbackEvents(container) {
             wildfireLookbackMap[layerId] = days;
 
             // Mark button as Done (green) only after successful sync to map
-            btn.textContent = "✓ Done";
+            btn.innerHTML = SVG_DONE;
             btn.style.backgroundColor = "#059669";
             btn.style.color = "#ffffff";
             btn.setAttribute("data-is-synced", "true");
+            btn.setAttribute("title", "Data is up to date");
         });
     });
 }
@@ -312,10 +327,11 @@ export function resetLookbackState() {
     });
 
     document.querySelectorAll(".legend-lookback-btn").forEach(btn => {
-        btn.textContent = "Update";
+        btn.innerHTML = SVG_UPDATE;
         btn.style.backgroundColor = "";
         btn.style.color = "";
         btn.removeAttribute("data-is-synced");
+        btn.setAttribute("title", "Fetch lookback data");
     });
 }
 
