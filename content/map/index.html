@@ -202,8 +202,14 @@ title: ""
   <!-- topright: accordion panel -->
   <div class="accordion-page collapsed" id="AccordionPage">
     <div class="accordion">
-      <div class="accordion-header">
+      <div class="accordion-header" style="position: relative;">
         <span class="accordion-title">Layers</span>
+        <button id="LayerScheduleBtn" class="layer-schedule-btn"
+          title="View Layer Ingestion & Update Schedule (Time Table)">
+          <svg width="24" height="24">
+            <use xlink:href="#icon-timetable" />
+          </svg>
+        </button>
         <button id="AccordionClose" class="ui-btn-close">
           <svg width="20" height="20">
             <use xlink:href="#icon-close" />

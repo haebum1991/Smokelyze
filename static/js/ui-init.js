@@ -13,6 +13,7 @@ import { initHysplit } from "./aws-hysplit.js";
 import { initLoaderRuntime } from "./loader.js";
 import { initMapAnimate } from "./map-animate.js";
 import { initMapDrawStats } from "./map-area-stats.js";
+import { initLayerScheduleModal } from "./ui-layer-schedule.js";
 
 const datePicker = document.getElementById("datePicker");
 
@@ -54,4 +55,5 @@ initHysplit?.();
 initLoaderRuntime?.();
 initMapAnimate?.();
 initMapDrawStats?.();
+initLayerScheduleModal?.();
 

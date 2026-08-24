@@ -592,7 +592,7 @@ body.FigurePage-drawer-open .toolbar-date-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s, background-color 0.3s, color 0.3s, border-color 0.3s;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 #AccordionToggle {
@@ -613,7 +613,7 @@ body.FigurePage-drawer-open .toolbar-date-page {
   max-height: calc((100vh - var(--header-height-total) - var(--footer-height)) - (6rem));
   max-height: calc((100dvh - var(--header-height-total) - var(--footer-height)) - (6rem));
 
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
 
   padding-top: 0.3rem;
@@ -653,18 +653,20 @@ body.FigurePage-drawer-open .toolbar-date-page {
   border-radius: var(--border-radius-0p8rem);
   background: var(--map-accordion-gradient-start);
   color: var(--color-white);
-  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 @media (hover: hover) {
 
   .accordion-toggle:hover {
     background-color: var(--map-accordion-gradient-start);
+    color: var(--text-strong);
+    border-color: var(--map-accordion-gradient-start);
   }
 
-  .accordion-toggle:hover,
   .accordion summary:hover {
-    transform: scale(1.05);
+    background-color: var(--card-shadow);
+    color: var(--color-bg);
   }
 }
 
