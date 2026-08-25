@@ -411,8 +411,7 @@ function generateContext(userInput = "") {
         }
     }
 
-    return contextLines.join("
-");
+    return contextLines.join("\n");
 }
 
 // Auto init if directly included
