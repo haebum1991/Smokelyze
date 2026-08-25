@@ -7,6 +7,7 @@ import { showAuthOverlay } from "./utils.js";
 import { addSwipeClose } from "./ui-toggles.js";
 import { regionStats } from "./layers-state.js";
 import { logUserAction } from "./fb-logging.js";
+import { loadedGeoJSON } from "./loader.js";
 
 // Expose regionStats and generateContext for AI tools/API to access summary/UI data
 window.getRegionStats = () => regionStats;
@@ -22,16 +23,57 @@ const aiChatInput = document.getElementById("AiChatInput");
 const aiChatSubmitBtn = document.getElementById("AiChatSubmitBtn");
 
 let hasShownKeyWarning = false;
-  
+
+function initModelSelector() {
+    if (!aiChatList || document.getElementById("AiModelBar")) return;
+
+    const modelBar = document.createElement("div");
+    modelBar.id = "AiModelBar";
+    modelBar.style.cssText = "padding: 0.5rem 1rem; display: flex; align-items: center; gap: 0.5rem;";
+
+    modelBar.innerHTML = `
+        <label for="AiModelSelect">Model:</label>
+        <select id="AiModelSelect" style="flex: 1;">
+            <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite</option>
+            <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite</option>
+        </select>
+    `;
+
+    aiChatList.parentNode.insertBefore(modelBar, aiChatList);
+
+    const hr = document.createElement("hr");
+    hr.style.cssText = "margin: 0;";
+    aiChatList.parentNode.insertBefore(hr, aiChatList);
+
+    const selectEl = modelBar.querySelector("#AiModelSelect");
+    const savedModel =
+        localStorage.getItem("smokelyze_gemini_model") ||
+        "gemini-3.5-flash-lite";
+
+    if (savedModel === "gemini-3.1-flash-lite") {
+        selectEl.value = "gemini-3.1-flash-lite";
+    } else {
+        selectEl.value = "gemini-3.5-flash-lite";
+    }
+
+    selectEl.addEventListener("change", () => {
+        const selectedVal = selectEl.value;
+        localStorage.setItem("smokelyze_gemini_model", selectedVal);
+    });
+}
+
 export function initAiChat() {
     if (!aiToggleBtn || !aiDrawer) return;
 
+    // Dynamically inject and bind Model Selector (Gemini 3.5 & 3.1)
+    initModelSelector();
+
     // Build the initial state
     resetToWelcome();
-    
+
     // Toggle Drawer Open/Close
     aiToggleBtn.addEventListener("click", () => {
-    
+
         // Check Login Status First
         if (!auth.currentUser) {
             showAuthOverlay();
@@ -74,7 +116,7 @@ export function initAiChat() {
     }
 
     aiDrawerCloseBtn.addEventListener("click", closeDrawer);
-    
+
     const chatBtnClear = document.getElementById("AiChatClearBtn");
     if (chatBtnClear) {
         chatBtnClear.addEventListener("click", () => {
@@ -83,7 +125,7 @@ export function initAiChat() {
             }
         });
     }
-    
+
     aiChatSubmitBtn.addEventListener("click", handleChatSubmit);
     aiChatInput.addEventListener("keypress", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -94,7 +136,7 @@ export function initAiChat() {
 
     // Make it draggable
     makeDraggable(aiDrawer, document.getElementById("AiChatHeaderDraggable"));
-    
+
     // Add Swipe to close for mobile
     addSwipeClose(aiDrawer, {
         direction: "down",
@@ -178,9 +220,9 @@ async function handleChatSubmit() {
     // Append visually immediately
     appendMessage("user", text);
     aiChatInput.value = "";
-    
-    logUserAction("chat", { 
-        dataset: "ai_assistant", 
+
+    logUserAction("chat", {
+        dataset: "ai_assistant",
         filename: text.substring(0, 50) // Store a snippet of the query for context
     });
 
@@ -336,51 +378,41 @@ function generateContext(userInput = "") {
     }
 
     // 3. Simple list of visible checkboxes
+    // 3. Active & Available Layers in UI (Dynamic Discovery)
     const activeLayers = [];
+    const availableLayers = [];
     document.querySelectorAll(".accordion-page input[type='checkbox']").forEach(cb => {
-        if (cb.checked && cb.parentElement.style.display !== "none") {
-            const labelText = cb.parentElement.innerText.trim() || cb.id;
-            activeLayers.push(`${cb.id} ("${labelText}")`);
+        if (cb.id.startsWith("layer-")) {
+            // Check if element or its parent containers are hidden
+            const isHidden = cb.closest("[style*='display: none'], [style*='display:none']");
+            if (!isHidden) {
+                const labelText = (cb.parentElement ? cb.parentElement.textContent : "").replace(/\s+/g, " ").trim() || cb.id;
+                availableLayers.push(`${cb.id}("${labelText}")`);
+                if (cb.checked) {
+                    activeLayers.push(`${cb.id}("${labelText}")`);
+                }
+            }
         }
     });
-    if (activeLayers.length > 0) {
-        contextLines.push(`Active Layers: ${activeLayers.join(", ")}`);
-    } else {
-        contextLines.push(`Active Layers: None`);
-    }
-    
-    // 4. HYSPLIT History (Staged injection to balance tokens & intelligence)
-    const hysplitCount = (typeof window.getHysplitHistoryCount === "function") ? window.getHysplitHistoryCount() : 0;
-    const isHysplitQuery = /hysplit|trajectory|run|path|history|궤적|트라젝토리/i.test(userInput);
 
-    if (hysplitCount > 0) {
-        const fullHistory = (typeof window.getHysplitHistoryData === "function") ? window.getHysplitHistoryData() : [];
-        const summarizedHistory = fullHistory.map(run => {
-            // Always include basic metadata
-            const entry = {
-                id: run.id,
-                visible: run.visible,
-                params: run.params,
-                pointsCount: run.points?.length || 0
-            };
+    contextLines.push(`Available Layers in UI: [${availableLayers.join(", ")}]`);
+    contextLines.push(`Active Layers: ${activeLayers.length > 0 ? activeLayers.join(", ") : "None"}`);
 
-            // Only add detailed points if the run is visible on map OR user is asking about it
-            if (run.visible || isHysplitQuery) {
-                entry.start = run.points?.[0];
-                entry.end = run.points?.[run.points.length - 1];
+    // 4. In-Memory Loaded GeoJSON Datasets (Available for extract_summary_aqs)
+    if (loadedGeoJSON && typeof loadedGeoJSON === "object") {
+        const loadedList = [];
+        for (const [key, data] of Object.entries(loadedGeoJSON)) {
+            if (data && data.features && data.features.length > 0) {
+                loadedList.push(`${key} (${data.features.length} sites)`);
             }
-            return entry;
-        });
-
-        contextLines.push(`HYSPLIT Summary (Visible/Requested detailed): Count=${hysplitCount}, Data=${JSON.stringify(summarizedHistory)}`);
-    } else {
-        contextLines.push(`HYSPLIT History: None`);
+        }
+        if (loadedList.length > 0) {
+            contextLines.push(`Loaded Map GeoJSON Data: [${loadedList.join(", ")}]`);
+        }
     }
-    
-    // AI Mapping Hint: Helps AI correlate display IDs to internal source names
-    contextLines.push(`[System Note] Model ID "gam-v2" maps to source "gam_v2". If a layer like "layer-smo-gam-v2" is active, it means "gam-v2" data is present.`);
 
-    return contextLines.join("\n");
+    return contextLines.join("
+");
 }
 
 // Auto init if directly included

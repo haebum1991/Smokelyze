@@ -6,8 +6,6 @@
  */
 
 import { handleAiToolCall } from "./ai-tools.js";
-import { getMapCaptureDataUrl } from "./map-capture.js";
-import { toggleSpinner } from "./loader-ui.js";
 
 // 사용할 AI 백엔드 주소 (배포 후 Cloud Run URL로 교체 필요)
 const API_URL_AI = "/api/chat";
@@ -26,33 +24,6 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
     // 2. 초기 대화 기록 구성 + 이전 대화 기억(컨텍스트 유지)
     let userParts = [{ text: userMessage }];
 
-    // [Vision Feature] Check if visual context is needed
-    const visualKeywords = ["지도", "이미지", "모양", "분계", "보여", "분석", "보고", "look", "map", "image", "visual", "패턴"];
-    const needsVision = visualKeywords.some(kw => userMessage.toLowerCase().includes(kw));
-
-    if (needsVision) {
-        console.log("[AI Vision] Capturing map for visual context...");
-        
-        // Show existing spinner with message during Map Capture
-        if (typeof toggleSpinner === "function") toggleSpinner(true, "Capturing current map...", true);
-
-        try {
-            const imageDataUrl = await getMapCaptureDataUrl();
-            if (imageDataUrl) {
-                const base64Data = imageDataUrl.split(",")[1];
-                userParts.push({
-                    inlineData: {
-                        mimeType: "image/png",
-                        data: base64Data
-                    }
-                });
-            }
-        } finally {
-            // Hide spinner after Capture is complete (or if it fails)
-            if (typeof toggleSpinner === "function") toggleSpinner(false);
-        }
-    }
-    
     let contents = [
         ...sessionHistory,
         {
@@ -64,13 +35,14 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
     try {
         // 최대 15번까지 핑퐁(Function Calling -> 결과 응답 -> 다시 질문)을 반복할 수 있는 에이전트 루프
         for (let turn = 0; turn < 15; turn++) {
-            // [중요] 매 턴마다 최신 대시보드 상태(Context)를 다시 생성하여 AI에게 전달
-            // 그래야 AI가 방금 수행한 도구 호출(날짜 변경 등)의 결과를 인지할 수 있음
+            console.log(`[AI Network] Sending Turn ${turn + 1} request to backend...`);
             const currentContext = typeof generateContext === "function" ? generateContext() : dashboardContext;
+            const selectedModel = localStorage.getItem("smokelyze_gemini_model");
 
             const requestBody = {
                 contents: contents,
-                dashboardContext: currentContext
+                dashboardContext: currentContext,
+                model: selectedModel
             };
 
             const response = await fetch(API_URL_AI, {
@@ -92,7 +64,7 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                 } catch (e) {
                     console.error("[Gemini API] Failed to parse error response JSON:", e);
                 }
-                
+
                 const errMsg = errorData?.error?.message || response.statusText || "Unknown Error";
                 throw new Error(`[Gemini API Error] ${errMsg}`);
             }
@@ -130,7 +102,7 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
             if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
                 if (candidate.finishReason === "STOP") {
                     // [Fix] 만약 도구 호출을 이미 수행했다면, 비어있는 응답이라도 성공으로 간주
-                    const hasToolResponse = contents.some(msg => msg.role === "tool");
+                    const hasToolResponse = contents.some(msg => msg.parts && msg.parts.some(p => p.functionResponse));
                     if (hasToolResponse) {
                         return {
                             type: "text",
@@ -166,6 +138,7 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                     });
                 }
 
+                const extraUserParts = [];
                 for (const part of functionCallParts) {
                     const funcName = part.functionCall.name;
                     const funcArgs = part.functionCall.args;
@@ -180,6 +153,12 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                         resultMsg = await handleAiToolCall(funcName, funcArgs);
                     }
 
+                    if (resultMsg && typeof resultMsg === "object" && resultMsg.inlineData) {
+                        extraUserParts.push({ inlineData: resultMsg.inlineData });
+                        const { inlineData, ...cleanResult } = resultMsg;
+                        resultMsg = cleanResult;
+                    }
+
                     functionResponseParts.push({
                         functionResponse: {
                             name: funcName,
@@ -190,74 +169,54 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
 
                 // [Fix] Ensure map has a moment to process transitions
                 if (functionCallParts.some(p => p.functionCall.name === "move_to_location")) {
-                    await new Promise(r => setTimeout(r, 600));
+                    await new Promise(r => setTimeout(r, 100));
                 }
-                
+
                 // [Safety Net] If backend passed BQ coordinates (because AI may skip move_to_location),
                 // execute move_to_location NOW before the next loop iteration sends a new HTTP request.
                 if (data.autoMoveCoords && !functionCallParts.some(p => p.functionCall.name === "move_to_location")) {
                     console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}]`);
                     await handleAiToolCall("move_to_location", data.autoMoveCoords);
                 }
-                
+
                 // AI의 "함수 쓸게!"라는 메시지를 대화 기록에 추가
                 contents.push(modelResponseContent);
 
-                // [Standard] Gemini API expects "tool" role for tool responses. 
+                // [Standard] Gemini API expects "user" role with functionResponse parts. 
                 contents.push({
-                    role: "tool",
-                    parts: functionResponseParts
+                    role: "user",
+                    parts: [...functionResponseParts, ...extraUserParts]
                 });
 
                 continue;
             }
-            
+
             // 4-1b. Safety net: if backend detected AI skipped move_to_location, auto-execute it
             if (data.autoMoveCoords) {
                 console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}]`);
                 await handleAiToolCall("move_to_location", data.autoMoveCoords);
             }
-            
+
             // 4-2. 최종 일반 텍스트 대답일 경우 (모든 텍스트 파트를 합쳐서 반환)
             const textParts = parts.filter(p => p.text);
             if (textParts.length > 0) {
                 const combinedText = textParts.map(p => p.text).join("");
 
-                // 성공적으로 응답을 받았으므로, 현재까지의 대화(contents)를 세션 히스토리에 저장
-                contents.push(modelResponseContent);
-
-                // [Intelligent Compaction]: Clean up heavy function results from older turns
-                let trimmedHistory = [...contents];
-
-                // Keep last 20 messages to avoid losing the initial user request during tool calls
-                if (trimmedHistory.length > 20) {
-                    trimmedHistory = trimmedHistory.slice(trimmedHistory.length - 20);
-                }
-
-                while (trimmedHistory.length > 0 && trimmedHistory[0].role !== "user") {
-                    trimmedHistory.shift();
-                }
-
-                // Summarize old data extraction results to save tokens in future turns
-                sessionHistory = trimmedHistory.map((msg, idx) => {
-                    if (idx >= trimmedHistory.length - 2) return msg;
-
-                    if (msg.role === "tool") {
-                        const compactedParts = msg.parts.map(p => {
-                            if (p.functionResponse && p.functionResponse.name === "extract_summary_aqs") {
-                                return {
-                                    functionResponse: {
-                                        name: "extract_summary_aqs",
-                                        response: { result: "[Old data result pruned to save tokens]" }
-                                    }
-                                };
-                            }
-                            return p;
-                        });
-                        return { ...msg, parts: compactedParts };
-                    }
-                    return msg;
+                // 성공적으로 응답을 받았으므로, 현재 턴의 순수 질문과 최종 답변을 세션 히스토리에 저장
+                // 중간 함수 호출 찌꺼기를 제거하여 다음 턴에서 Gemini 400 에러를 원천 방지하고 토큰을 80% 절약합니다.
+                sessionHistory.push({
+                    role: "user",
+                    parts: [{ text: userMessage }]
                 });
+                sessionHistory.push({
+                    role: "model",
+                    parts: [{ text: combinedText }]
+                });
+
+                // 최근 10개 대화(5쌍)만 유지하여 토큰 최적화
+                if (sessionHistory.length > 10) {
+                    sessionHistory = sessionHistory.slice(sessionHistory.length - 10);
+                }
 
                 return {
                     type: "text",

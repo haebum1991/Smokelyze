@@ -1,64 +1,12 @@
 
 import { map } from "./layers-state.js";
-import { ExcludeLayerGroups } from "./layers-def.js";
 import { highlightLocation } from "./utils.js";
 import { loadedGeoJSON, activeSources, loadedSources } from "./loader.js";
-import { 
-    setStatsDrawer, setDescDrawer, setNewsDrawer, setMapPostDrawer, 
-    setLegendDrawer, setHysplitDrawer, setAccordionCollapsed 
+import {
+    setStatsDrawer, setDescDrawer, setNewsDrawer, setMapPostDrawer,
+    setLegendDrawer, setHysplitDrawer, setAccordionCollapsed
 } from "./ui-toggles.js";
-
-/**
- * 지도의 데이터 로딩이나 렌더링이 완료될 때까지 대기하는 헬퍼 함수
- * 땜질식 타이머가 아니라 실제 화면의 로딩 스피너(MapLoadingOverlay)를 완벽하게 감시합니다.
- */
-function waitForMapIdle(timeout = 10000) {
-    return new Promise((resolve) => {
-        // 프론트엔드의 Debounce(300ms) 이벤트가 스피너를 켤 시간을 주기 위해 300ms 먼저 대기
-        setTimeout(() => {
-            const overlay = document.getElementById("MapLoadingOverlay");
-
-            // 데바운스가 끝났는데도 오버레이가 안 켜졌거나 이미 꺼졌다면 (데이터가 필요 없는 로컬 조작 등) 즉시 완료
-            if (!overlay || overlay.style.display === "none" || overlay.style.display === "") {
-                resolve();
-                return;
-            }
-
-            let resolved = false;
-            let timeoutId;
-
-            const finalize = () => {
-                if (resolved) return;
-                resolved = true;
-                if (observer) observer.disconnect();
-                clearTimeout(timeoutId);
-                resolve();
-            };
-
-            // 오버레이의 스타일 변경을 실시간 감지
-            const observer = new MutationObserver((mutations) => {
-                for (let mutation of mutations) {
-                    if (mutation.attributeName === "style") {
-                        if (overlay.style.display === "none") {
-                            finalize();
-                            return;
-                        }
-                    }
-                }
-            });
-
-            // 감시 시작
-            observer.observe(overlay, { attributes: true, attributeFilter: ["style"] });
-
-            // 최후의 안전 방어막 (10초 이상 스피너가 안 꺼지는 무한 로딩 대비)
-            timeoutId = setTimeout(() => {
-                console.warn("[System] waitForMapIdle timeout reached. Forcing resolve.");
-                finalize();
-            }, timeout);
-
-        }, 300);
-    });
-}
+import { getMapCaptureDataUrl } from "./map-capture.js";
 
 export async function handleAiToolCall(functionName, args) {
     let resultMessage = "";
@@ -76,27 +24,19 @@ export async function handleAiToolCall(functionName, args) {
                 if (datePicker && targetDate) {
                     datePicker.value = targetDate;
                     datePicker.dispatchEvent(new Event("change", { bubbles: true }));
-
-                    // 데이터가 로딩될 때까지 기다림
-                    await waitForMapIdle();
-
-                    resultMessage = `[System] Changed date to ${targetDate} and waited for data loading. You can now analyze new data using "extract_summary_aqs".`;
+                    resultMessage = `[System] Changed date to ${targetDate}.`;
                 } else {
                     resultMessage = "[System Error] Could not find the date picker element on the screen.";
                 }
                 break;
-                
+
             case "change_hour":
                 const targetHour = args?.hour; // Expecting "00" to "23" as string
                 const timePicker = document.getElementById("timePicker");
                 if (timePicker && targetHour) {
                     timePicker.value = targetHour;
                     timePicker.dispatchEvent(new Event("change", { bubbles: true }));
-
-                    // Wait for background load
-                    await waitForMapIdle();
-
-                    resultMessage = `[System] Changed hour to ${targetHour}:00 and waited for data loading.`;
+                    resultMessage = `[System] Changed hour to ${targetHour}:00.`;
                 } else {
                     resultMessage = "[System Error] Could not find the time picker element on the screen.";
                 }
@@ -105,45 +45,65 @@ export async function handleAiToolCall(functionName, args) {
             case "extract_summary_aqs":
                 let rawSourceId = args?.sourceId || "gam_v2";
 
-                if (!map) {
-                    return "[System Error] Map 인스턴스를 불러올 수 없습니다.";
+                // 1. First priority: Search in loadedGeoJSON (in-memory GeoJSON objects)
+                let features = null;
+                let resolvedSourceId = rawSourceId;
+
+                const findInGeoJSON = (keys) => {
+                    for (const key of keys) {
+                        const data = loadedGeoJSON[key] || (loadedSources && loadedSources[key] ? loadedGeoJSON[loadedSources[key]] : null);
+                        if (data && data.features && data.features.length > 0) {
+                            return { features: data.features, id: key };
+                        }
+                    }
+                    return null;
+                };
+
+                // Candidate source IDs to try
+                const candidates = [
+                    rawSourceId,
+                    rawSourceId.replace(/-/g, "_"),
+                    rawSourceId.replace(/_/g, "-"),
+                    rawSourceId + "_pred",
+                    rawSourceId.replace("_pred", ""),
+                    ...(activeSources || []),
+                    ...Object.keys(loadedGeoJSON || {})
+                ];
+
+                const geoMatch = findInGeoJSON(candidates);
+                if (geoMatch) {
+                    features = geoMatch.features;
+                    resolvedSourceId = geoMatch.id;
                 }
 
-                // Agnostic Lookup: Try exact, underscore, and hyphen variations
-                let source = map.getSource(rawSourceId) ||
-                    map.getSource(rawSourceId.replace(/-/g, "_")) ||
-                    map.getSource(rawSourceId.replace(/_/g, "-"));
+                // 2. Fallback: MapLibre Source check (e.g. HYSPLIT or direct source)
+                if (!features && map) {
+                    let source = map.getSource(rawSourceId) ||
+                        map.getSource(rawSourceId.replace(/-/g, "_")) ||
+                        map.getSource(rawSourceId.replace(/_/g, "-"));
 
-                // If source was found but has NO data, discard it and try fallbacks
-                const hasData = source && source._data && source._data.features && source._data.features.length > 0;
-                if (!hasData) {
-                    source = null; // Reset so fallback kicks in
-                }
-
-                // Fallback check for Dataset list
-                if (!source) {
-                    const possibleSources = ExcludeLayerGroups.restrictedSources || [];
-                    source = possibleSources.map(s => map.getSource(s))
-                        .find(s => s && s._data && s._data.features && s._data.features.length > 0);
-                }
-
-                // [New] Special Handling for HYSPLIT (Trajectory Data)
-                if ((!source || rawSourceId.toLowerCase().includes("hysplit")) && map.getStyle().sources) {
-                    const hysplitSources = Object.keys(map.getStyle().sources).filter(id => id.startsWith("hysplit-src-traj-"));
-                    if (hysplitSources.length > 0) {
-                        // Use the most recent/relevant HYSPLIT source
-                        source = map.getSource(hysplitSources[hysplitSources.length - 1]);
+                    if (source && source._data && source._data.features && source._data.features.length > 0) {
+                        features = source._data.features;
+                        resolvedSourceId = source.id;
+                    } else if (map.getStyle()?.sources) {
+                        const hysplitKeys = Object.keys(map.getStyle().sources).filter(id => id.startsWith("hysplit-src-traj-"));
+                        if (hysplitKeys.length > 0) {
+                            const hSrc = map.getSource(hysplitKeys[hysplitKeys.length - 1]);
+                            if (hSrc && hSrc._data && hSrc._data.features) {
+                                features = hSrc._data.features;
+                                resolvedSourceId = "hysplit";
+                            }
+                        }
                     }
                 }
 
-                if (!source || !source._data || !source._data.features || source._data.features.length === 0) {
-                    resultMessage = `[System Event] The requested source (${rawSourceId}) is not loaded on the map. Current Active Dataset might be different. Please ensure the user has selected the layer and wait for data to load.`;
+                if (!features || features.length === 0) {
+                    resultMessage = `[System Event] The requested source (${rawSourceId}) is not loaded on the map. Current Active Sources: [${(activeSources || []).join(", ")}]. Please ensure the layer is turned on.`;
                     break;
                 }
 
-                const sourceId = source.id; // Corrected ID found in map
-                const features = source._data.features;
-                const field = args.target_field;
+                const sourceId = resolvedSourceId;
+                const field = args.target_field || "SMO";
                 const isDesc = args.sort_desc !== false; // default true
                 const limit = args.limit || 10;
 
@@ -183,9 +143,13 @@ export async function handleAiToolCall(functionName, args) {
                     return isDesc ? -diff : diff;
                 });
 
+                // Calculate generic aggregates (count > 0, sum, min, max)
+                const positiveCount = validFeatures.filter(f => f.properties[finalField] > 0 || f.properties[finalField] === true).length;
                 const topFeatures = validFeatures.slice(0, Math.min(limit, 20)); // Max 20 to protect tokens
-                let resultText = `[Data Extraction Success: ${sourceId} / Showing Top ${topFeatures.length} out of ${validFeatures.length} found]`;
-                
+
+                let resultText = `[Data Extraction Success: ${sourceId} / Field: "${finalField}"] Total: ${validFeatures.length} sites, Positive Count (>0): ${positiveCount}, Max: ${validFeatures[0]?.properties[finalField]}, Min: ${validFeatures[validFeatures.length - 1]?.properties[finalField]} | Showing Top ${topFeatures.length}:
+`;
+
                 topFeatures.forEach((f, idx) => {
                     const lat = f.geometry?.coordinates?.[1] || "unknown";
                     const lon = f.geometry?.coordinates?.[0] || "unknown";
@@ -244,9 +208,6 @@ export async function handleAiToolCall(functionName, args) {
                 }
 
                 if (targetLat && targetLon) {
-                    // [Sync] Wait for map to be idle
-                    await waitForMapIdle(1500);
-
                     // Agnostic source ID lookup
                     let actualSrcId = (map && map.getSource(rawSrcId)) ? rawSrcId :
                         (map.getSource(rawSrcId.replace(/-/g, "_")) ? rawSrcId.replace(/-/g, "_") :
@@ -294,7 +255,7 @@ export async function handleAiToolCall(functionName, args) {
                         if (matchResult) {
                             foundMetadata = matchResult.props;
                             console.log("[AI-API Sync] Found Map Highlight Metadata:", foundMetadata);
-                            
+
                             // [Added] If we found a HYSPLIT match, ensure tooltip engine uses HYSPLIT layout
                             if (matchResult.srcId && matchResult.srcId.startsWith("hysplit")) {
                                 actualSrcId = "hysplit";
@@ -344,11 +305,7 @@ export async function handleAiToolCall(functionName, args) {
                     if (optionExists) {
                         dataSelect.value = targetDataset;
                         dataSelect.dispatchEvent(new Event("change", { bubbles: true }));
-
-                        // 데이터가 로딩될 때까지 기다림
-                        await waitForMapIdle();
-
-                        resultMessage = `[System] Changed dataset to "${targetDataset}" and waited for loading. New data is now available for analysis.`;
+                        resultMessage = `[System] Changed dataset to "${targetDataset}".`;
                     } else {
                         resultMessage = `[System Error] Unsupported dataset value: ${targetDataset}`;
                     }
@@ -370,7 +327,7 @@ export async function handleAiToolCall(functionName, args) {
                     if (checkbox.checked !== turnOn) {
                         checkbox.checked = turnOn;
                         checkbox.dispatchEvent(new Event("change", { bubbles: true }));
-                        resultMessage = `[System] Layer "${checkbox.id}" turned ${turnOn ? "ON" : "OFF"}. Data is loading. Inform the user.`;
+                        resultMessage = `[System] Layer "${checkbox.id}" turned ${turnOn ? "ON" : "OFF"}. Inform the user.`;
                     } else {
                         resultMessage = `[System] Layer "${checkbox.id}" is already ${turnOn ? "ON" : "OFF"}.`;
                     }
@@ -378,10 +335,10 @@ export async function handleAiToolCall(functionName, args) {
                     resultMessage = `[System Error] Could not find layer checkbox with ID "${rawLayerId}". Verify the ID naming (hyphens/underscores).`;
                 }
                 break;
-            
+
             case "clear_all_layers":
                 document.querySelectorAll(".accordion-page input[type='checkbox']").forEach(cb => {
-                    
+
                     // Do not turn off Map Settings toggles
                     if (cb.id === "MapBtnStateShading" || cb.id === "MapBtnPointLayers" || cb.id === "MapBtnNaShading") return;
                     if (cb.checked && cb.parentElement.style.display !== "none") {
@@ -389,21 +346,19 @@ export async function handleAiToolCall(functionName, args) {
                         cb.dispatchEvent(new Event("change", { bubbles: true }));
                     }
                 });
-                await waitForMapIdle(1500); // Wait a little bit for sources to clear
                 resultMessage = "[System] Successfully cleared all active layers. The map is now fresh.";
                 break;
-                
+
             case "reset_map":
                 const resetBtn = document.getElementById("MapBtnReset");
                 if (resetBtn) {
                     resetBtn.click();
-                    await waitForMapIdle();
                     resultMessage = "[System] Map has been reset to its initial state.";
                 } else {
                     resultMessage = "[System Error] Could not find the Reset button on the screen.";
                 }
                 break;
-                
+
             case "set_drawer_visibility": {
                 const drawerId = args?.drawer_id;
                 const visible = args?.visible !== false;
@@ -432,7 +387,7 @@ export async function handleAiToolCall(functionName, args) {
                 }
                 break;
             }
-            
+
             case "set_hysplit_visibility":
                 const runId = args?.run_id || "all";
                 const visible = args?.visible !== false; // default true
@@ -443,7 +398,7 @@ export async function handleAiToolCall(functionName, args) {
                     resultMessage = "[System Error] HYSPLIT visibility controller is not loaded.";
                 }
                 break;
-                
+
             case "extract_summary_state":
                 const targetField = args?.target_field || "SMO";
                 const stats = typeof getRegionStats === "function" ? getRegionStats() : (window.regionStats || {});
@@ -472,7 +427,7 @@ export async function handleAiToolCall(functionName, args) {
 
                 resultMessage = summaryText + " [System Info] This data represents state-level aggregates. Use this for broad geographic analysis.";
                 break;
-            
+
             case "get_enhanced_region_context": {
                 // [Global Multi-Source Data Extraction - MiroFish Framework]
                 // 지도에 로드된 모든 과학적 데이터 소스(GAM, HYSPLIT, AirNow, Smoke 등)를 종합 수집하여 AI 전문가 그룹에 넘깁니다.
@@ -483,11 +438,11 @@ export async function handleAiToolCall(functionName, args) {
                     const s = map.getSource(id);
                     if (s && s._data && s._data.features && s._data.features.length > 0) {
                         const features = s._data.features;
-                        
+
                         // HYSPLIT Trajectory context: Provides height/time/receptor information
                         if (id === "hysplit") {
                             summaryParts.push(`HYSPLIT: ${features.length} trajectory points active.`);
-                        } 
+                        }
                         // HMS Smoke/Fire context: Provides spatial plume visualization
                         else if (id === "smoke" || id === "fire") {
                             summaryParts.push(`${id.toUpperCase()}: Active spatial layers detected.`);
@@ -514,6 +469,27 @@ export async function handleAiToolCall(functionName, args) {
                 // AI에게는 수치적 맥락만 전달하며, 해석은 백엔드에 감춰진 비밀 전략 그룹이 수행합니다.
                 resultMessage = `[Unified Region Context Data: ${dataSummary}] 
 Please apply the specialized Strategic Inter-Sectoral Committee protocols to interpret this multi-source data for the user. Cross-validate between models (GAM) and real-time sensors (AirNow/HYSPLIT) if both are provided.`;
+                break;
+            }
+
+            case "capture_map_screen": {
+                try {
+                    const imgUrl = await getMapCaptureDataUrl();
+                    if (imgUrl) {
+                        const base64 = imgUrl.split(",")[1];
+                        resultMessage = {
+                            result: "Map viewport captured successfully.",
+                            inlineData: {
+                                mimeType: "image/png",
+                                data: base64
+                            }
+                        };
+                    } else {
+                        resultMessage = { error: "Map canvas capture returned empty data." };
+                    }
+                } catch (err) {
+                    resultMessage = { error: `Failed to capture map: ${err.message}` };
+                }
                 break;
             }
 
