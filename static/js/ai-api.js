@@ -172,8 +172,15 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                     await new Promise(r => setTimeout(r, 100));
                 }
 
-                // [Safety Net] If backend passed BQ coordinates (because AI may skip move_to_location),
-                // execute move_to_location NOW before the next loop iteration sends a new HTTP request.
+                // [Safety Net] If backend passed BQ coordinates or date (because AI may skip UI calls),
+                // execute them NOW before the next loop iteration sends a new HTTP request.
+                if (data.autoChangeDate) {
+                    const datePicker = document.getElementById("datePicker");
+                    if (datePicker && datePicker.value !== data.autoChangeDate) {
+                        console.log(`[AI Safety Net] Auto-changing date to ${data.autoChangeDate}`);
+                        await handleAiToolCall("change_date", { date: data.autoChangeDate });
+                    }
+                }
                 if (data.autoMoveCoords && !functionCallParts.some(p => p.functionCall.name === "move_to_location")) {
                     console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}]`);
                     await handleAiToolCall("move_to_location", data.autoMoveCoords);
@@ -191,7 +198,14 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                 continue;
             }
 
-            // 4-1b. Safety net: if backend detected AI skipped move_to_location, auto-execute it
+            // 4-1b. Safety net: if backend detected AI skipped date or move_to_location, auto-execute it
+            if (data.autoChangeDate) {
+                const datePicker = document.getElementById("datePicker");
+                if (datePicker && datePicker.value !== data.autoChangeDate) {
+                    console.log(`[AI Safety Net] Auto-changing date to ${data.autoChangeDate}`);
+                    await handleAiToolCall("change_date", { date: data.autoChangeDate });
+                }
+            }
             if (data.autoMoveCoords) {
                 console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}]`);
                 await handleAiToolCall("move_to_location", data.autoMoveCoords);

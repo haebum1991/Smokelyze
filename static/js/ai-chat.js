@@ -265,6 +265,10 @@ function appendMessage(role, text, usage = null) {
     // Parse Markdown for AI answers
     if (role === "ai" && typeof marked !== "undefined") {
         content.innerHTML = DOMPurify.sanitize(marked.parse(text));
+        content.querySelectorAll("a").forEach(a => {
+            a.setAttribute("target", "_blank");
+            a.setAttribute("rel", "noopener noreferrer");
+        });
     } else {
         content.innerText = text;
     }
