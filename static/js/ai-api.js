@@ -168,12 +168,21 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                 }
 
                 // [Fix] Ensure map has a moment to process transitions
-                if (functionCallParts.some(p => p.functionCall.name === "move_to_location")) {
-                    await new Promise(r => setTimeout(r, 100));
+                // [Safety Net] Automatically activate dataset, layer, date, and coordinates with full metadata
+                if (data.autoDataset) {
+                    const dataSelect = document.getElementById("MapDataSelect");
+                    if (dataSelect && dataSelect.value !== data.autoDataset) {
+                        console.log(`[AI Safety Net] Auto-changing dataset to ${data.autoDataset}`);
+                        await handleAiToolCall("change_dataset", { dataset_value: data.autoDataset });
+                    }
                 }
-
-                // [Safety Net] If backend passed BQ coordinates or date (because AI may skip UI calls),
-                // execute them NOW before the next loop iteration sends a new HTTP request.
+                if (data.autoLayer) {
+                    const layerCb = document.getElementById(data.autoLayer);
+                    if (layerCb && !layerCb.checked) {
+                        console.log(`[AI Safety Net] Auto-turning on layer ${data.autoLayer}`);
+                        await handleAiToolCall("change_layer", { layer_id: data.autoLayer, turn_on: true });
+                    }
+                }
                 if (data.autoChangeDate) {
                     const datePicker = document.getElementById("datePicker");
                     if (datePicker && datePicker.value !== data.autoChangeDate) {
@@ -182,8 +191,12 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                     }
                 }
                 if (data.autoMoveCoords && !functionCallParts.some(p => p.functionCall.name === "move_to_location")) {
-                    console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}]`);
-                    await handleAiToolCall("move_to_location", data.autoMoveCoords);
+                    console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}] with full props`);
+                    await handleAiToolCall("move_to_location", {
+                        lat: data.autoMoveCoords.lat,
+                        lon: data.autoMoveCoords.lon,
+                        properties: data.autoMoveProps || {}
+                    });
                 }
 
                 // AI의 "함수 쓸게!"라는 메시지를 대화 기록에 추가
@@ -198,7 +211,21 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                 continue;
             }
 
-            // 4-1b. Safety net: if backend detected AI skipped date or move_to_location, auto-execute it
+            // 4-1b. Safety net: if backend detected AI skipped dataset, layer, date, or move_to_location, auto-execute it
+            if (data.autoDataset) {
+                const dataSelect = document.getElementById("MapDataSelect");
+                if (dataSelect && dataSelect.value !== data.autoDataset) {
+                    console.log(`[AI Safety Net] Auto-changing dataset to ${data.autoDataset}`);
+                    await handleAiToolCall("change_dataset", { dataset_value: data.autoDataset });
+                }
+            }
+            if (data.autoLayer) {
+                const layerCb = document.getElementById(data.autoLayer);
+                if (layerCb && !layerCb.checked) {
+                    console.log(`[AI Safety Net] Auto-turning on layer ${data.autoLayer}`);
+                    await handleAiToolCall("change_layer", { layer_id: data.autoLayer, turn_on: true });
+                }
+            }
             if (data.autoChangeDate) {
                 const datePicker = document.getElementById("datePicker");
                 if (datePicker && datePicker.value !== data.autoChangeDate) {
@@ -207,8 +234,12 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                 }
             }
             if (data.autoMoveCoords) {
-                console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}]`);
-                await handleAiToolCall("move_to_location", data.autoMoveCoords);
+                console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}] with full props`);
+                await handleAiToolCall("move_to_location", {
+                    lat: data.autoMoveCoords.lat,
+                    lon: data.autoMoveCoords.lon,
+                    properties: data.autoMoveProps || {}
+                });
             }
 
             // 4-2. 최종 일반 텍스트 대답일 경우 (모든 텍스트 파트를 합쳐서 반환)
