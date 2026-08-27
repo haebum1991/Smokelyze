@@ -6,6 +6,115 @@ import { getPlotTheme } from "./stats-common.js";
 import { LAYER_TEMPLATES } from "./layers-def.js";
 
 
+// Self-contained Modular TSPlot Modal DOM injection
+function ensureTSplotModalDOM() {
+    if (document.getElementById("TSplotModalOverlay")) return;
+
+    const modalHTML = `
+<div class="MapPost-modal-overlay" 
+     id="TSplotModalOverlay" 
+     style="display:none; z-index: 2000;">
+  <div class="MapPost-modal" 
+       style="max-width: 80rem; width: 95%;">
+    <div class="MapPost-modal-header">
+      <h3 id="TSplotModalTitle">Time-Series Plot</h3>
+      <button class="ui-btn-close" id="TSplotModalClose">
+        <svg width="20" height="20">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
+    </div>
+    <div class="MapPost-modal-body">
+      <div id="TSplotControls" 
+           style="display:none; 
+                  align-items:center; 
+                  justify-content:flex-start; 
+                  flex-wrap:wrap; 
+                  padding:0.6rem 1rem; 
+                  border-radius:0.4rem; 
+                  margin-bottom:1rem; 
+                  gap:1.5rem; 
+                  color:var(--text-main); 
+                  font-size:1.3rem;">
+        <div style="display:flex; flex-direction:column; gap:0.4rem;">
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <span style="min-width: 9rem;">Lookback:</span>
+            <input type="number" 
+                   id="TSplotLookbackInput" 
+                   class="legend-lookback-input" 
+                   min="0" 
+                   max="15" 
+                   value="4" 
+                   style="width:3.8rem; text-align:center; padding:0.2rem; border-radius:0.3rem;">
+            <span style="color:var(--card-shadow); font-size:1.2rem;">days, from</span>
+            <span id="TSplotLBDateText" 
+                  style="font-weight:bold; color:var(--text-main); font-size:1.25rem;"></span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <span style="min-width: 9rem;">Lookforward:</span>
+            <input type="number" 
+                   id="TSplotLookforwardInput" 
+                   class="legend-lookback-input" 
+                   min="0" 
+                   max="15" 
+                   value="4" 
+                   style="width:3.8rem; text-align:center; padding:0.2rem; border-radius:0.3rem;">
+            <span style="color:var(--card-shadow); font-size:1.2rem;">days, to</span>
+            <span id="TSplotLFDateText" 
+                  style="font-weight:bold; color:var(--text-main); font-size:1.25rem;"></span>
+          </div>
+        </div>
+        <button id="TSplotUpdateBtn" 
+                title="Data is up to date" 
+                aria-label="Update time-series query" 
+                data-is-synced="true" 
+                style="cursor:pointer; 
+                       font-size:1.4rem; 
+                       font-weight:bold; 
+                       border-radius:0.4rem; 
+                       display:inline-flex !important; 
+                       align-items:center; 
+                       justify-content:center; 
+                       width:3.4rem; 
+                       height:3.4rem; 
+                       padding:0; 
+                       background-color:#059669; 
+                       color:#ffffff; 
+                       border:0.1rem solid #059669; 
+                       transition:transform 0.2s ease;">
+          <svg width="16" height="16"><use xlink:href="#icon-check" /></svg>
+        </button>
+      </div>
+      <div id="TSplotChartContainer" 
+           style="width: 100%; height: 100%; display: none;"></div>
+      <div id="TSplotLoading" 
+           style="display:none; text-align:center; padding: 5rem 2rem;">
+        <div id="TSplotSpinner" 
+             style="margin: 0 auto 1.5rem auto; 
+                    width: 4rem; 
+                    height: 4rem; 
+                    border: 4px solid var(--border-soft); 
+                    border-top: 4px solid var(--card-shadow); 
+                    border-radius: 50%; 
+                    animation: spin 1s linear infinite;">
+        </div>
+        <span id="TSplotLoadingText" 
+              style="font-size: 1.4rem; color: var(--text-soft);">Loading hourly data...</span>
+      </div>
+      <div id="TSplotError" 
+           style="display:none; 
+                  color:var(--color-invalid, red); 
+                  padding:2rem; 
+                  text-align:center; 
+                  font-size: 1.4rem;">
+      </div>
+    </div>
+  </div>
+</div>`;
+    document.body.insertAdjacentHTML("beforeend", modalHTML);
+}
+ensureTSplotModalDOM();
+
 // DOM Elements
 const modal = document.getElementById("TSplotModalOverlay");
 const closeBtn = document.getElementById("TSplotModalClose");
@@ -14,16 +123,110 @@ const loadingEl = document.getElementById("TSplotLoading");
 const loadingTextEl = document.getElementById("TSplotLoadingText");
 const errorEl = document.getElementById("TSplotError");
 
+// TSPlot Controls DOM Elements
+const controlsEl = document.getElementById("TSplotControls");
+const lookbackInput = document.getElementById("TSplotLookbackInput");
+const lookforwardInput = document.getElementById("TSplotLookforwardInput");
+const updateBtn = document.getElementById("TSplotUpdateBtn");
+const lbDateTextEl = document.getElementById("TSplotLBDateText");
+const lfDateTextEl = document.getElementById("TSplotLFDateText");
+
 // Initialize listeners
 if (closeBtn) {
     closeBtn.addEventListener("click", hideTSplotModal);
 }
 
 const state = {
-    pendingLngLat: null
+    pendingLngLat: null,
+    currentTSContext: null,
+    activeLookback: 4,
+    activeLookforward: 4
 };
 
 let activeChart = null;
+
+/**
+ * Calculates start and end dates from a center date string and lookback/lookforward offsets
+ */
+function calculateTSDates(centerDateStr, lookbackDays, lookforwardDays) {
+    if (!centerDateStr || centerDateStr === "LIVE") {
+        const now = new Date();
+        centerDateStr = now.toISOString().slice(0, 10);
+    }
+    const [y, m, d] = centerDateStr.split("-").map(Number);
+    const start = new Date(Date.UTC(y, m - 1, d - lookbackDays));
+    const end = new Date(Date.UTC(y, m - 1, d + lookforwardDays));
+    return {
+        startDateStr: start.toISOString().slice(0, 10),
+        endDateStr: end.toISOString().slice(0, 10)
+    };
+}
+
+const SVG_UPDATE = `<svg width="15" height="15"><use xlink:href="#icon-refresh" /></svg>`;
+const SVG_DONE = `<svg width="15" height="15"><use xlink:href="#icon-check" /></svg>`;
+
+function setTSPlotBtnSynced(isSynced) {
+    if (!updateBtn) return;
+    if (isSynced) {
+        updateBtn.innerHTML = SVG_DONE;
+        updateBtn.style.backgroundColor = "#059669";
+        updateBtn.style.color = "#ffffff";
+        updateBtn.style.borderColor = "#059669";
+        updateBtn.setAttribute("data-is-synced", "true");
+        updateBtn.setAttribute("title", "Data is up to date");
+    } else {
+        updateBtn.innerHTML = SVG_UPDATE;
+        updateBtn.style.backgroundColor = "var(--color-bg)";
+        updateBtn.style.color = "var(--text-strong)";
+        updateBtn.style.borderColor = "var(--card-shadow)";
+        updateBtn.setAttribute("data-is-synced", "false");
+        updateBtn.setAttribute("title", "Fetch time-series data");
+    }
+}
+
+function updateTSRangePreview() {
+    if (!state.currentTSContext) return;
+    const lb = Math.max(0, Math.min(15, parseInt(lookbackInput?.value, 10) || 0));
+    const lf = Math.max(0, Math.min(15, parseInt(lookforwardInput?.value, 10) || 0));
+    const dates = calculateTSDates(state.currentTSContext.queryDateStr, lb, lf);
+    if (lbDateTextEl) lbDateTextEl.textContent = dates.startDateStr;
+    if (lfDateTextEl) lfDateTextEl.textContent = dates.endDateStr;
+    const isSynced = (state.activeLookback === lb && state.activeLookforward === lf);
+    setTSPlotBtnSynced(isSynced);
+}
+
+if (lookbackInput) {
+    lookbackInput.addEventListener("input", updateTSRangePreview);
+    lookbackInput.addEventListener("change", updateTSRangePreview);
+}
+if (lookforwardInput) {
+    lookforwardInput.addEventListener("input", updateTSRangePreview);
+    lookforwardInput.addEventListener("change", updateTSRangePreview);
+}
+if (updateBtn) {
+    updateBtn.addEventListener("pointerdown", () => {
+        if (updateBtn.getAttribute("data-is-synced") !== "true") {
+            updateBtn.style.color = "var(--color-bg)";
+            updateBtn.style.backgroundColor = "var(--card-shadow)";
+        }
+    });
+    const resetStyle = () => {
+        if (updateBtn.getAttribute("data-is-synced") !== "true") {
+            updateBtn.style.color = "var(--text-strong)";
+            updateBtn.style.backgroundColor = "var(--color-bg)";
+            updateBtn.style.borderColor = "var(--card-shadow)";
+        }
+    };
+    updateBtn.addEventListener("pointerup", resetStyle);
+    updateBtn.addEventListener("pointerleave", resetStyle);
+
+    updateBtn.addEventListener("click", () => {
+        if (!state.currentTSContext) return;
+        const lb = Math.max(0, Math.min(15, parseInt(lookbackInput?.value, 10) || 0));
+        const lf = Math.max(0, Math.min(15, parseInt(lookforwardInput?.value, 10) || 0));
+        showTSProfile(state.currentTSContext.lng, state.currentTSContext.lat, lb, lf);
+    });
+}
 
 // Auto-resize active chart with window once at the module level
 window.addEventListener("resize", () => {
@@ -190,7 +393,7 @@ function getDisplayScale(sourceId, realValue) {
     return realValue;
 }
 
-async function showTSProfile(lng, lat) {
+async function showTSProfile(lng, lat, customLookback = null, customLookforward = null) {
     if (!modal) return;
 
     modal.style.display = "block";
@@ -204,32 +407,49 @@ async function showTSProfile(lng, lat) {
         showError("Please toggle on a layer first.");
         return;
     }
-    
+
     // Direct check for visual-only imagery layers to avoid hitting the backend API
     if (activeConfig.productId.includes("geocolor") || activeConfig.productId.includes("truecolor")) {
         showError("Time-series profile is not supported for imagery layers.");
         return;
     }
 
-    const localSelectedDateStr = utils.currentDate(); // Date picker date, e.g. "2026-06-01"
+    const selectedDateStr = utils.currentDate();
+    let queryDateStr = selectedDateStr;
+    let chartDateStr = selectedDateStr;
+    const localSelectedDateStr = selectedDateStr;
 
-    // Parse active date/hour and convert to UTC for hourly datasets if needed
-    const timePicker = document.getElementById("timePicker");
-    let queryDateStr = localSelectedDateStr;
-    let chartDateStr = localSelectedDateStr;
+    state.currentTSContext = {
+        lng,
+        lat,
+        activeConfig,
+        queryDateStr
+    };
+
+    const isVectorDaily = (activeConfig.type === "airnow_daily" || activeConfig.type === "daily_vector");
+    const isDaily = isVectorDaily || activeConfig.sourceId.includes("tropomi");
+    if (controlsEl) {
+        controlsEl.style.display = isVectorDaily ? "flex" : "none";
+    }
+
+    // Determine target local hour for reference line
     let targetX = null;
+    if (activeConfig.type === "hourly_raster" || activeConfig.type === "airnow_hourly") {
+        const timeInput = document.getElementById("timePicker");
+        if (timeInput && timeInput.value) {
+            targetX = timeInput.value;
+        } else {
+            targetX = "12:00";
+        }
+    }
 
-    const isDaily = activeConfig.type === "airnow_daily" || activeConfig.type === "daily_vector" || activeConfig.sourceId.includes("tropomi");
-    const isHourlyRaster = activeConfig.type === "raster";
+    // For raster and hourly datasets, compute the corresponding UTC date
+    if (activeConfig.type === "hourly_raster" || activeConfig.type === "airnow_hourly" || activeConfig.type === "raster") {
+        const isHourlyRaster = activeConfig.type === "hourly_raster";
+        const selectedHour = isHourlyRaster && targetX ? parseInt(targetX.split(":")[0], 10) : 12;
+        const [ly, lm, ld] = selectedDateStr.split("-").map(Number);
+        const localDate = new Date(ly, lm - 1, ld, selectedHour, 0, 0);
 
-    if (!isDaily && timePicker) {
-        const localHour = parseInt(timePicker.value);
-        const [y, m, d] = localSelectedDateStr.split("-").map(Number);
-        const localDate = new Date(y, m - 1, d, localHour);
-        const targetUtcHour = localDate.getUTCHours();
-        targetX = `${String(targetUtcHour).padStart(2, "0")}:00`;
-
-        // Shift chart date to the actual UTC date of the selected hour (since hourly data files/buffers are partitioned by UTC date)
         const utcY = localDate.getUTCFullYear();
         const utcM = String(localDate.getUTCMonth() + 1).padStart(2, "0");
         const utcD = String(localDate.getUTCDate()).padStart(2, "0");
@@ -237,7 +457,7 @@ async function showTSProfile(lng, lat) {
 
         chartDateStr = utcIsoDateStr;
 
-        if (isHourlyRaster) {
+        if (activeConfig.type === "raster") {
             // For hourly rasters, we also shift the query date for GCS fetch
             queryDateStr = utcIsoDateStr;
         }
@@ -308,7 +528,7 @@ async function showTSProfile(lng, lat) {
         let url = `/api/tsplot?date=${queryDateStr}&product=${activeConfig.productId}&lat=${lat}&lon=${lng}`;
         let locationLabel = `(${lng.toFixed(4)}, ${lat.toFixed(4)})`;
 
-        // Add AQS parameter for daily vector data (Airnow or Model Predictions)
+        // Daily vector data (AirNow Daily or Model Predictions) -> Fast BigQuery TSPlot query
         if (activeConfig.type === "airnow_daily" || activeConfig.type === "daily_vector") {
             const point = map.project(new maplibregl.LngLat(lng, lat));
             const bbox = [[point.x - 15, point.y - 15], [point.x + 15, point.y + 15]];
@@ -324,15 +544,23 @@ async function showTSProfile(lng, lat) {
                 showError("AQS identifier not found for the selected station.");
                 return;
             }
-            url += `&aqs=${aqs}`;
-
-            if (activeConfig.type === "daily_vector") {
-                url += `&dataset=${activeConfig.dataset}&metric=${activeConfig.metric}`;
-            }
 
             const siteName = props.site_name || props.site || "Unknown Station";
             const stateCode = props.state || "";
             locationLabel = stateCode ? `${siteName} (${aqs}), ${stateCode}` : `${siteName} (${aqs})`;
+
+            const lookback = (customLookback !== null) ? customLookback : (parseInt(lookbackInput?.value, 10) || 4);
+            const lookforward = (customLookforward !== null) ? customLookforward : (parseInt(lookforwardInput?.value, 10) || 4);
+
+            if (lookbackInput) lookbackInput.value = lookback;
+            if (lookforwardInput) lookforwardInput.value = lookforward;
+            const dates = calculateTSDates(queryDateStr, lookback, lookforward);
+            if (lbDateTextEl) lbDateTextEl.textContent = dates.startDateStr;
+            if (lfDateTextEl) lfDateTextEl.textContent = dates.endDateStr;
+
+            const bqDataset = activeConfig.dataset || (activeConfig.type === "airnow_daily" ? "airnow_date_geojson" : activeConfig.productId);
+            const bqMetric = activeConfig.metric || (activeConfig.productId === "airnow-daily-pm25" ? "PM25" : "MDA8O3");
+            url = `/api/bg?mode=tsplot&dataset=${encodeURIComponent(bqDataset)}&date=${encodeURIComponent(queryDateStr)}&aqs=${encodeURIComponent(aqs)}&metric=${encodeURIComponent(bqMetric)}&lookback=${lookback}&lookforward=${lookforward}`;
         }
 
         const response = await fetch(url, { headers });
@@ -363,6 +591,12 @@ async function showTSProfile(lng, lat) {
         chartContainer.style.display = "block";
 
         renderChart(finalData, activeConfig, localSelectedDateStr, chartDateStr, targetX, locationLabel, isDaily, false);
+
+        if (isVectorDaily) {
+            state.activeLookback = (customLookback !== null) ? customLookback : (parseInt(lookbackInput?.value, 10) || 4);
+            state.activeLookforward = (customLookforward !== null) ? customLookforward : (parseInt(lookforwardInput?.value, 10) || 4);
+            setTSPlotBtnSynced(true);
+        }
 
     } catch (err) {
         console.error("Time-series profile fetch failed:", err);
@@ -431,7 +665,7 @@ function renderChart(data, activeConfig, localSelectedDateStr, utcDateStr, targe
 
     const displayName = activeConfig.title || activeConfig.productId;
     const titleText = isDaily
-        ? `${displayName} 9-Day Profile`
+        ? `${displayName} Daily Profile`
         : `${displayName} Time-Series Plot`;
     const subTitleText = isDaily
         ? `Selected: ${localSelectedDateStr} at ${locationLabel}`
