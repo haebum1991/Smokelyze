@@ -186,17 +186,20 @@ export async function handleAiToolCall(functionName, args) {
                 break;
 
             case "move_to_location":
+                // >>> [MODIFIED] Removed hardcoded "gam_v2" default & Added dynamic sourceId routing <<<
                 const targetLat = args?.lat;
                 const targetLon = args?.lon;
-                let rawSrcId = args?.sourceId || "gam_v2";
+                let rawSrcId = args?.sourceId || "";
                 let props = args?.properties || {};
 
-                // [Remapping] Normalize common AI-used names to internal source IDs
+                // [Remapping] Normalize common AI-used names to internal source IDs (AirNow Daily vs Hourly)
                 if (rawSrcId.includes("fire") || rawSrcId.includes("hms-fire")) rawSrcId = "fire";
-                if (rawSrcId.includes("smoke")) rawSrcId = "smoke";
-                if (rawSrcId.includes("burn")) rawSrcId = "burn";
+                else if (rawSrcId.includes("smoke")) rawSrcId = "smoke";
+                else if (rawSrcId.includes("burn")) rawSrcId = "burn";
+                else if (rawSrcId.includes("airnow_daily") || rawSrcId.includes("airnow-daily") || rawSrcId.includes("airnow_date")) rawSrcId = "airnow_daily";
+                else if (rawSrcId.includes("airnow_hourly") || rawSrcId.includes("airnow-hourly")) rawSrcId = "airnow_hourly";
 
-                // [Heuristic] If properties look like HYSPLIT, prioritize it
+                // [Heuristic] If properties look like HYSPLIT, News, Incident, or Fire, prioritize them
                 if (props.height !== undefined || props.pressure !== undefined || props.date2 !== undefined) {
                     rawSrcId = "hysplit";
                 } else if (props.link || props.published) {

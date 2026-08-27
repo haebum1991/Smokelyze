@@ -191,10 +191,12 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                     }
                 }
                 if (data.autoMoveCoords && !functionCallParts.some(p => p.functionCall.name === "move_to_location")) {
-                    console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}] with full props`);
+                    // >>> [MODIFIED] Pass autoSourceId to move_to_location <<<
+                    console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}] with source ${data.autoSourceId || "auto"}`);
                     await handleAiToolCall("move_to_location", {
                         lat: data.autoMoveCoords.lat,
                         lon: data.autoMoveCoords.lon,
+                        sourceId: data.autoSourceId,
                         properties: data.autoMoveProps || {}
                     });
                 }
@@ -234,10 +236,11 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                 }
             }
             if (data.autoMoveCoords) {
-                console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}] with full props`);
+                console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}] with source ${data.autoSourceId || "auto"}`);
                 await handleAiToolCall("move_to_location", {
                     lat: data.autoMoveCoords.lat,
                     lon: data.autoMoveCoords.lon,
+                    sourceId: data.autoSourceId,
                     properties: data.autoMoveProps || {}
                 });
             }
