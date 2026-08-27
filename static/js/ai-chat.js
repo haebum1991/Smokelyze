@@ -345,20 +345,35 @@ function scrollToBottom() {
 function generateContext(userInput = "") {
     const contextLines = [];
 
-    // 0. Current Real-world Time (Local)
+    // 0. Current Real-world Time & Timezone (Local)
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
     const localToday = `${year}-${month}-${day}`;
 
-    contextLines.push(`Current Local Time: ${now.toLocaleString()}`);
-    contextLines.push(`Today's Local Date: ${localToday}`);
+    // Get Timezone info (e.g. "America/Los_Angeles", "PDT", offset -420 min -> UTC-7)
+    const timeZoneName = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+    const tzMatch = now.toTimeString().match(/\((.+)\)$/);
+    const tzAbbr = tzMatch ? tzMatch[1] : "";
+    const offsetMin = -now.getTimezoneOffset();
+    const offsetHours = offsetMin / 60;
+    const offsetStr = `UTC${offsetHours >= 0 ? "+" : ""}${offsetHours}`;
 
-    // 1. Date (Dashboard View Date)
+    contextLines.push(`User Local Time: ${now.toLocaleString()}`);
+    contextLines.push(`User Timezone: ${timeZoneName} (${tzAbbr ? tzAbbr + ", " : ""}${offsetStr})`);
+    contextLines.push(`Today\'s Local Date: ${localToday}`);
+
+    // 1. Date & Time (Dashboard View Date & Time)
     const datePicker = document.getElementById("datePicker");
     if (datePicker && datePicker.value) {
         contextLines.push(`View Date (Map Active Date): ${datePicker.value}`);
+    }
+    const timePicker = document.getElementById("timePicker");
+    const timezoneLabel = document.getElementById("timezoneLabel");
+    if (timePicker && timePicker.value) {
+        const tzText = timezoneLabel ? timezoneLabel.textContent.trim() : (tzAbbr || "Local");
+        contextLines.push(`Active Map Time: ${timePicker.value}:00 ${tzText}`);
     }
 
     // 2. Published Dataset Model

@@ -7,6 +7,7 @@ import {
     setLegendDrawer, setHysplitDrawer, setAccordionCollapsed
 } from "./ui-toggles.js";
 import { getMapCaptureDataUrl } from "./map-capture.js";
+import { utcToLocal } from "./ui-time.js";
 
 export async function handleAiToolCall(functionName, args) {
     let resultMessage = "";
@@ -31,12 +32,17 @@ export async function handleAiToolCall(functionName, args) {
                 break;
 
             case "change_hour":
-                const targetHour = args?.hour; // Expecting "00" to "23" as string
+                const targetHour = args?.hour; // Expecting "00" to "23" as UTC hour string or int
                 const timePicker = document.getElementById("timePicker");
-                if (timePicker && targetHour) {
-                    timePicker.value = targetHour;
+                if (timePicker && targetHour !== undefined && targetHour !== null && targetHour !== "") {
+                    const rawH = parseInt(targetHour, 10);
+                    // Convert UTC hour from AI/BigQuery to Browser Local Hour for timePicker
+                    const localH = (typeof utcToLocal === "function" && !isNaN(rawH)) ? utcToLocal(rawH) : rawH;
+                    const formattedLocalHour = String(localH).padStart(2, "0");
+
+                    timePicker.value = formattedLocalHour;
                     timePicker.dispatchEvent(new Event("change", { bubbles: true }));
-                    resultMessage = `[System] Changed hour to ${targetHour}:00.`;
+                    resultMessage = `[System] Changed UI hour to local ${formattedLocalHour}:00 (UTC ${String(rawH).padStart(2, "0")}:00).`;
                 } else {
                     resultMessage = "[System Error] Could not find the time picker element on the screen.";
                 }
