@@ -167,40 +167,6 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                     });
                 }
 
-                // [Fix] Ensure map has a moment to process transitions
-                // [Safety Net] Automatically activate dataset, layer, date, and coordinates with full metadata
-                if (data.autoDataset) {
-                    const dataSelect = document.getElementById("MapDataSelect");
-                    if (dataSelect && dataSelect.value !== data.autoDataset) {
-                        console.log(`[AI Safety Net] Auto-changing dataset to ${data.autoDataset}`);
-                        await handleAiToolCall("change_dataset", { dataset_value: data.autoDataset });
-                    }
-                }
-                if (data.autoLayer) {
-                    const layerCb = document.getElementById(data.autoLayer);
-                    if (layerCb && !layerCb.checked) {
-                        console.log(`[AI Safety Net] Auto-turning on layer ${data.autoLayer}`);
-                        await handleAiToolCall("change_layer", { layer_id: data.autoLayer, turn_on: true });
-                    }
-                }
-                if (data.autoChangeDate) {
-                    const datePicker = document.getElementById("datePicker");
-                    if (datePicker && datePicker.value !== data.autoChangeDate) {
-                        console.log(`[AI Safety Net] Auto-changing date to ${data.autoChangeDate}`);
-                        await handleAiToolCall("change_date", { date: data.autoChangeDate });
-                    }
-                }
-                if (data.autoMoveCoords && !functionCallParts.some(p => p.functionCall.name === "move_to_location")) {
-                    // >>> [MODIFIED] Pass autoSourceId to move_to_location <<<
-                    console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}] with source ${data.autoSourceId || "auto"}`);
-                    await handleAiToolCall("move_to_location", {
-                        lat: data.autoMoveCoords.lat,
-                        lon: data.autoMoveCoords.lon,
-                        sourceId: data.autoSourceId,
-                        properties: data.autoMoveProps || {}
-                    });
-                }
-
                 // AI의 "함수 쓸게!"라는 메시지를 대화 기록에 추가
                 contents.push(modelResponseContent);
 
@@ -213,30 +179,16 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                 continue;
             }
 
-            // 4-1b. Safety net: if backend detected AI skipped dataset, layer, date, or move_to_location, auto-execute it
-            if (data.autoDataset) {
-                const dataSelect = document.getElementById("MapDataSelect");
-                if (dataSelect && dataSelect.value !== data.autoDataset) {
-                    console.log(`[AI Safety Net] Auto-changing dataset to ${data.autoDataset}`);
-                    await handleAiToolCall("change_dataset", { dataset_value: data.autoDataset });
-                }
-            }
+            // 4-1b. Fallback: if backend detected active layer or coordinates that AI skipped, execute it
             if (data.autoLayer) {
                 const layerCb = document.getElementById(data.autoLayer);
                 if (layerCb && !layerCb.checked) {
-                    console.log(`[AI Safety Net] Auto-turning on layer ${data.autoLayer}`);
+                    console.log(`[AI Auto-Layer] Activating layer ${data.autoLayer}`);
                     await handleAiToolCall("change_layer", { layer_id: data.autoLayer, turn_on: true });
                 }
             }
-            if (data.autoChangeDate) {
-                const datePicker = document.getElementById("datePicker");
-                if (datePicker && datePicker.value !== data.autoChangeDate) {
-                    console.log(`[AI Safety Net] Auto-changing date to ${data.autoChangeDate}`);
-                    await handleAiToolCall("change_date", { date: data.autoChangeDate });
-                }
-            }
             if (data.autoMoveCoords) {
-                console.log(`[AI Safety Net] Auto-moving to [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}] with source ${data.autoSourceId || "auto"}`);
+                console.log(`[AI Auto-Move] Highlighting [${data.autoMoveCoords.lat}, ${data.autoMoveCoords.lon}] with source ${data.autoSourceId || "auto"}`);
                 await handleAiToolCall("move_to_location", {
                     lat: data.autoMoveCoords.lat,
                     lon: data.autoMoveCoords.lon,

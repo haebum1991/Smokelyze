@@ -7,7 +7,6 @@ import {
     setLegendDrawer, setHysplitDrawer, setAccordionCollapsed
 } from "./ui-toggles.js";
 import { getMapCaptureDataUrl } from "./map-capture.js";
-import { utcToLocal } from "./ui-time.js";
 
 export async function handleAiToolCall(functionName, args) {
     let resultMessage = "";
@@ -32,17 +31,22 @@ export async function handleAiToolCall(functionName, args) {
                 break;
 
             case "change_hour":
-                const targetHour = args?.hour; // Expecting "00" to "23" as UTC hour string or int
+                const targetHour = args?.hour; // Expecting UTC hour ("00" to "23")
                 const timePicker = document.getElementById("timePicker");
                 if (timePicker && targetHour !== undefined && targetHour !== null && targetHour !== "") {
-                    const rawH = parseInt(targetHour, 10);
-                    // Convert UTC hour from AI/BigQuery to Browser Local Hour for timePicker
-                    const localH = (typeof utcToLocal === "function" && !isNaN(rawH)) ? utcToLocal(rawH) : rawH;
-                    const formattedLocalHour = String(localH).padStart(2, "0");
+                    const rawUtcHour = parseInt(targetHour, 10);
+                    if (!isNaN(rawUtcHour)) {
+                        // Calculate Local Hour matching the target UTC hour for the currently selected date
+                        const dateStr = document.getElementById("datePicker")?.value || new Date().toISOString().split("T")[0];
+                        const [y, m, d] = dateStr.split("-").map(Number);
+                        const utcDate = new Date(Date.UTC(y, m - 1, d, rawUtcHour, 0, 0));
+                        const localHour = utcDate.getHours();
+                        const hourVal = String(localHour).padStart(2, "0");
 
-                    timePicker.value = formattedLocalHour;
-                    timePicker.dispatchEvent(new Event("change", { bubbles: true }));
-                    resultMessage = `[System] Changed UI hour to local ${formattedLocalHour}:00 (UTC ${String(rawH).padStart(2, "0")}:00).`;
+                        timePicker.value = hourVal;
+                        timePicker.dispatchEvent(new Event("change", { bubbles: true }));
+                        resultMessage = `[System] Changed UI hour to local ${hourVal}:00 (matches ${String(rawUtcHour).padStart(2, "0")}:00 UTC).`;
+                    }
                 } else {
                     resultMessage = "[System Error] Could not find the time picker element on the screen.";
                 }
@@ -192,42 +196,51 @@ export async function handleAiToolCall(functionName, args) {
                 break;
 
             case "move_to_location":
-                // >>> [MODIFIED] Removed hardcoded "gam_v2" default & Added dynamic sourceId routing <<<
                 const targetLat = args?.lat;
                 const targetLon = args?.lon;
                 let rawSrcId = args?.sourceId || "";
                 let props = args?.properties || {};
 
-                // [Remapping] Normalize common AI-used names to internal source IDs (AirNow Daily vs Hourly)
-                if (rawSrcId.includes("fire") || rawSrcId.includes("hms-fire")) rawSrcId = "fire";
-                else if (rawSrcId.includes("smoke")) rawSrcId = "smoke";
-                else if (rawSrcId.includes("burn")) rawSrcId = "burn";
-                else if (rawSrcId.includes("airnow_daily") || rawSrcId.includes("airnow-daily") || rawSrcId.includes("airnow_date")) rawSrcId = "airnow_daily";
-                else if (rawSrcId.includes("airnow_hourly") || rawSrcId.includes("airnow-hourly")) rawSrcId = "airnow_hourly";
+                // Helper to normalize data source names for layers-tooltip.js
+                const normalizeSrcId = (s) => {
+                    if (!s) return "";
+                    const lower = String(s).toLowerCase().replace(/-/g, "_");
+                    if (lower.includes("fire") || lower.includes("hms_fire")) return "fire";
+                    if (lower.includes("smoke") || lower.includes("hms_smoke")) return "smoke";
+                    if (lower.includes("burn")) return "burn";
+                    if (lower.includes("hourly") || lower.includes("airnow_hourly")) return "airnow_hourly";
+                    if (lower.includes("airnow") || lower.includes("airnow_daily") || lower.includes("airnow_date")) return "airnow_daily";
+                    if (lower.includes("gam_v2")) return "gam_v2";
+                    if (lower.includes("gam_v1")) return "gam_v1";
+                    if (lower.includes("pm_cbsa")) return "pm_cbsa";
+                    if (lower.includes("ember")) return "epa_ember";
+                    if (lower.includes("hysplit")) return "hysplit";
+                    if (lower.includes("news")) return "wildfire_news";
+                    if (lower.includes("peri")) return "wildfire_peri";
+                    if (lower.includes("inci")) return "wildfire_inci";
+                    return lower;
+                };
+
+                let actualSrcId = normalizeSrcId(rawSrcId);
 
                 // [Heuristic] If properties look like HYSPLIT, News, Incident, or Fire, prioritize them
                 if (props.height !== undefined || props.pressure !== undefined || props.date2 !== undefined) {
-                    rawSrcId = "hysplit";
+                    actualSrcId = "hysplit";
                 } else if (props.link || props.published) {
-                    rawSrcId = "wildfire_news";
+                    actualSrcId = "wildfire_news";
                 } else if (props.IncidentName || props.UniqueFireIdentifier || props.poly_IncidentName) {
-                    rawSrcId = props.poly_IncidentName ? "wildfire_peri" : "wildfire_inci";
+                    actualSrcId = props.poly_IncidentName ? "wildfire_peri" : "wildfire_inci";
                 } else if (props.fireCount || props.FRP) {
-                    rawSrcId = "fire";
+                    actualSrcId = "fire";
                 }
 
                 if (targetLat && targetLon) {
-                    // Agnostic source ID lookup
-                    let actualSrcId = (map && map.getSource(rawSrcId)) ? rawSrcId :
-                        (map.getSource(rawSrcId.replace(/-/g, "_")) ? rawSrcId.replace(/-/g, "_") :
-                            (map.getSource(rawSrcId.replace(/_/g, "-")) ? rawSrcId.replace(/_/g, "-") : rawSrcId));
-
                     let foundMetadata = null;
 
-                    // [BRAIN] Search loadedGeoJSON for full properties — prioritize ACTIVE sources
+                    // Search loadedGeoJSON for full properties — prioritize ACTIVE sources
                     if (loadedGeoJSON) {
                         const EPSILON = 0.0001; // ~11m
-                        const currentDate = document.getElementById("datePicker")?.value;
+                        const targetUtcDate = props.date || document.getElementById("datePicker")?.value;
 
                         const findMatch = (sourceList) => {
                             for (const srcId of sourceList) {
@@ -238,7 +251,11 @@ export async function handleAiToolCall(functionName, args) {
                                 const idKeys = ["AQS", "AQS_O3", "AQS_PM", "site_name"];
                                 for (const key of idKeys) {
                                     if (props[key]) {
-                                        const match = data.features.find(f => f.properties[key] === props[key]);
+                                        const match = data.features.find(f => {
+                                            if (f.properties[key] !== props[key]) return false;
+                                            if (targetUtcDate && f.properties.date && String(f.properties.date) !== String(targetUtcDate)) return false;
+                                            return true;
+                                        });
                                         if (match) return { props: match.properties, srcId: srcId };
                                     }
                                 }
@@ -250,34 +267,108 @@ export async function handleAiToolCall(functionName, args) {
                                 });
 
                                 if (match) {
-                                    // Validate: skip if this data is from a different date
                                     const matchDate = match.properties?.date;
-                                    if (currentDate && matchDate && String(matchDate) !== currentDate) continue;
+                                    if (targetUtcDate && matchDate && String(matchDate) !== String(targetUtcDate)) continue;
                                     return { props: match.properties, srcId: srcId };
                                 }
                             }
                             return null;
                         };
 
-                        // 1st priority: active sources (current model)
                         const matchResult = findMatch(activeSources || []) || findMatch(Object.keys(loadedGeoJSON));
                         if (matchResult) {
                             foundMetadata = matchResult.props;
                             console.log("[AI-API Sync] Found Map Highlight Metadata:", foundMetadata);
 
-                            // [Added] If we found a HYSPLIT match, ensure tooltip engine uses HYSPLIT layout
-                            if (matchResult.srcId && matchResult.srcId.startsWith("hysplit")) {
-                                actualSrcId = "hysplit";
+                            if (!actualSrcId || actualSrcId === "") {
+                                actualSrcId = normalizeSrcId(matchResult.srcId);
                             }
                         }
                     }
 
+                    // Fallback to currently selected UI dataset if source ID is still undetermined
+                    if (!actualSrcId || actualSrcId === "") {
+                        const activeUiDataset = document.getElementById("MapDataSelect")?.value;
+                        actualSrcId = normalizeSrcId(activeUiDataset) || "gam_v2";
+                    }
+
                     // Merge: Map-found data (base) + AI-provided data (overrides)
                     const finalProps = { ...foundMetadata, ...props };
+
+                    // Hourly AirNow Normalization: Map DB columns (MDA8O3_Txx, PM25_Txx, NO2_Txx) to tooltip keys
+                    if (actualSrcId === "airnow_hourly" || actualSrcId.includes("hourly")) {
+                        // 1. Determine target hour string (from AI props or current UI timePicker)
+                        let hourStr = null;
+                        const matchedPropKey = Object.keys(props).find(k => k.includes("_T"));
+                        if (matchedPropKey) {
+                            const m = matchedPropKey.match(/_T(\d+)/);
+                            if (m) hourStr = m[1];
+                        }
+
+                        if (!hourStr) {
+                            const timePicker = document.getElementById("timePicker");
+                            const localHour = timePicker ? parseInt(timePicker.value, 10) : new Date().getHours();
+                            const dateStr = document.getElementById("datePicker")?.value || new Date().toISOString().split("T")[0];
+                            const [y, m, d] = dateStr.split("-").map(Number);
+                            const localDate = new Date(y, m - 1, d, localHour);
+                            hourStr = String(localDate.getUTCHours()).padStart(2, "0");
+                        }
+
+                        // 2. Uniform mapping for all 3 pollutants (Prioritize direct BigQuery props)
+                        const mappings = [
+                            { dbKey: `MDA8O3_T${hourStr}`, tooltipKey: "ozone(ppb)" },
+                            { dbKey: `PM25_T${hourStr}`,   tooltipKey: "pm25(ug/m3)" },
+                            { dbKey: `NO2_T${hourStr}`,    tooltipKey: "no2(ppb)" }
+                        ];
+
+                        mappings.forEach(({ dbKey, tooltipKey }) => {
+                            const val = (props[dbKey] !== undefined && props[dbKey] !== null) ? props[dbKey] : finalProps[dbKey];
+                            if (val !== undefined && val !== null) {
+                                finalProps[tooltipKey] = val;
+                            }
+                        });
+
+                        // 3. Format timestamp string (UTC)
+                        const utcDateStr = props.date || finalProps.date || document.getElementById("datePicker")?.value || "";
+                        finalProps["current_hour_str"] = `${utcDateStr} ${hourStr}:00 UTC`;
+
+                        // 4. Auto-sync UI DatePicker and TimePicker (Convert UTC DateTime -> Local DateTime)
+                        let localDateStr = utcDateStr;
+                        let localHourStr = null;
+
+                        if (utcDateStr && hourStr) {
+                            const rawUtcHour = parseInt(hourStr, 10);
+                            if (!isNaN(rawUtcHour)) {
+                                const [y, m, d] = utcDateStr.split("-").map(Number);
+                                const utcObj = new Date(Date.UTC(y, m - 1, d, rawUtcHour, 0, 0));
+                                localDateStr = `${utcObj.getFullYear()}-${String(utcObj.getMonth() + 1).padStart(2, "0")}-${String(utcObj.getDate()).padStart(2, "0")}`;
+                                localHourStr = String(utcObj.getHours()).padStart(2, "0");
+                            }
+                        }
+
+                        const datePicker = document.getElementById("datePicker");
+                        if (datePicker && localDateStr && datePicker.value !== localDateStr) {
+                            datePicker.value = localDateStr;
+                            datePicker.dispatchEvent(new Event("change", { bubbles: true }));
+                        }
+
+                        const timePicker = document.getElementById("timePicker");
+                        if (timePicker && localHourStr && timePicker.value !== localHourStr) {
+                            timePicker.value = localHourStr;
+                            timePicker.dispatchEvent(new Event("change", { bubbles: true }));
+                        }
+                    } else if (props.date) {
+                        const datePicker = document.getElementById("datePicker");
+                        if (datePicker && datePicker.value !== props.date) {
+                            datePicker.value = props.date;
+                            datePicker.dispatchEvent(new Event("change", { bubbles: true }));
+                        }
+                    }
+
                     console.log("[AI-API Sync] Final Properties for Tooltip:", { finalProps, actualSrcId });
 
                     highlightLocation([targetLon, targetLat], finalProps, actualSrcId);
-                    resultMessage = `[System] Moved map to [lat: ${targetLat}, lon: ${targetLon}] and highlighted using ${foundMetadata ? "full GeoJSON metadata" : "AI-provided metadata"}.`;
+                    resultMessage = `[System] Moved map to [lat: ${targetLat}, lon: ${targetLon}] and highlighted (${actualSrcId}) using ${foundMetadata ? "full GeoJSON metadata" : "AI-provided metadata"}.`;
                 } else {
                     resultMessage = `[System Error] Missing lat or lon coordinates.`;
                 }
@@ -333,6 +424,26 @@ export async function handleAiToolCall(functionName, args) {
                     document.getElementById(rawLayerId.replace(/_/g, "-"));
 
                 if (checkbox) {
+                    if (turnOn) {
+                        // Mutually exclusive sibling sublayers for AirNow Hourly and Daily
+                        const hourlySiblings = ["layer-airnow-hourly-pm25", "layer-airnow-hourly-ozone", "layer-airnow-hourly-no2"];
+                        const dailySiblings = ["layer-airnow-daily-mda8", "layer-airnow-daily-pm25"];
+
+                        let siblings = [];
+                        if (hourlySiblings.includes(checkbox.id)) siblings = hourlySiblings;
+                        else if (dailySiblings.includes(checkbox.id)) siblings = dailySiblings;
+
+                        siblings.forEach(sId => {
+                            if (sId !== checkbox.id) {
+                                const sCb = document.getElementById(sId);
+                                if (sCb && sCb.checked) {
+                                    sCb.checked = false;
+                                    sCb.dispatchEvent(new Event("change", { bubbles: true }));
+                                }
+                            }
+                        });
+                    }
+
                     if (checkbox.checked !== turnOn) {
                         checkbox.checked = turnOn;
                         checkbox.dispatchEvent(new Event("change", { bubbles: true }));
