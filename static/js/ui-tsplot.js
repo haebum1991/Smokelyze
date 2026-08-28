@@ -11,9 +11,22 @@ function ensureTSplotModalDOM() {
     if (document.getElementById("TSplotModalOverlay")) return;
 
     const modalHTML = `
+<style>
+  #TSplotControls input[type=number]::-webkit-inner-spin-button,
+  #TSplotControls input[type=number]::-webkit-outer-spin-button {
+    opacity: 1 !important;
+  }
+  @media (hover: hover) {
+    #TSplotUpdateBtn[data-is-synced="false"]:hover {
+      background-color: var(--card-shadow) !important;
+      color: var(--color-bg) !important;
+      border-color: var(--card-shadow) !important;
+    }
+  }
+</style>
 <div class="MapPost-modal-overlay" 
      id="TSplotModalOverlay" 
-     style="display:none; z-index: 2000;">
+     style="display:none; z-index: var(--z-highest);">
   <div class="MapPost-modal" 
        style="max-width: 80rem; width: 95%;">
     <div class="MapPost-modal-header">
@@ -35,33 +48,31 @@ function ensureTSplotModalDOM() {
                   margin-bottom:1rem; 
                   gap:1.5rem; 
                   color:var(--text-main); 
-                  font-size:1.3rem;">
+                  font-size:1.4rem;">
         <div style="display:flex; flex-direction:column; gap:0.4rem;">
           <div style="display:flex; align-items:center; gap:0.4rem;">
-            <span style="min-width: 9rem;">Lookback:</span>
+            <span style="min-width: 9.5rem; font-size:1.4rem;">Lookback:</span>
             <input type="number" 
                    id="TSplotLookbackInput" 
-                   class="legend-lookback-input" 
                    min="0" 
                    max="15" 
                    value="4" 
-                   style="width:3.8rem; text-align:center; padding:0.2rem; border-radius:0.3rem;">
-            <span style="color:var(--card-shadow); font-size:1.2rem;">days, from</span>
+                   style="width:4.8rem; text-align:center; padding:0.2rem 0.2rem 0.2rem 0.4rem; border-radius:0.3rem; font-size:1.4rem;">
+            <span style="min-width: 7.5rem; color:var(--text-main); font-size:1.4rem;">days, from</span>
             <span id="TSplotLBDateText" 
-                  style="font-weight:bold; color:var(--text-main); font-size:1.25rem;"></span>
+                  style="font-weight:bold; color:var(--card-shadow); font-size:1.4rem;"></span>
           </div>
           <div style="display:flex; align-items:center; gap:0.4rem;">
-            <span style="min-width: 9rem;">Lookforward:</span>
+            <span style="min-width: 9.5rem; font-size:1.4rem;">Lookforward:</span>
             <input type="number" 
                    id="TSplotLookforwardInput" 
-                   class="legend-lookback-input" 
                    min="0" 
                    max="15" 
                    value="4" 
-                   style="width:3.8rem; text-align:center; padding:0.2rem; border-radius:0.3rem;">
-            <span style="color:var(--card-shadow); font-size:1.2rem;">days, to</span>
+                   style="width:4.8rem; text-align:center; padding:0.2rem 0.2rem 0.2rem 0.4rem; border-radius:0.3rem; font-size:1.4rem;">
+            <span style="min-width: 7.5rem; color:var(--text-main); font-size:1.4rem;">days, to</span>
             <span id="TSplotLFDateText" 
-                  style="font-weight:bold; color:var(--text-main); font-size:1.25rem;"></span>
+                  style="font-weight:bold; color:var(--card-shadow); font-size:1.4rem;"></span>
           </div>
         </div>
         <button id="TSplotUpdateBtn" 
@@ -84,6 +95,19 @@ function ensureTSplotModalDOM() {
                        transition:transform 0.2s ease;">
           <svg width="16" height="16"><use xlink:href="#icon-check" /></svg>
         </button>
+        <div id="TSplotTzToggleGroup" 
+             style="margin-left:auto; display:none; align-items:center; background:var(--color-bg); padding:0.2rem; border-radius:0.4rem; border:0.1rem solid var(--border-soft); gap:0.2rem;">
+          <button id="TSplotTzUtcBtn" 
+                  title="Display in UTC"
+                  style="cursor:pointer; font-size:1.4rem; font-weight:bold; border-radius:0.3rem; border:none; padding:0.4rem 0.8rem; background:var(--card-shadow); color:var(--color-bg); transition:all 0.2s ease;">
+            UTC
+          </button>
+          <button id="TSplotTzLocalBtn" 
+                  title="Display in Site Local Time"
+                  style="cursor:pointer; font-size:1.4rem; font-weight:normal; border-radius:0.3rem; border:none; padding:0.4rem 0.8rem; background:var(--color-bg); color:var(--text-main); transition:all 0.2s ease;">
+            Site Time
+          </button>
+        </div>
       </div>
       <div id="TSplotChartContainer" 
            style="width: 100%; height: 100%; display: none;"></div>
@@ -130,6 +154,9 @@ const lookforwardInput = document.getElementById("TSplotLookforwardInput");
 const updateBtn = document.getElementById("TSplotUpdateBtn");
 const lbDateTextEl = document.getElementById("TSplotLBDateText");
 const lfDateTextEl = document.getElementById("TSplotLFDateText");
+const tzToggleGroup = document.getElementById("TSplotTzToggleGroup");
+const tzUtcBtn = document.getElementById("TSplotTzUtcBtn");
+const tzLocalBtn = document.getElementById("TSplotTzLocalBtn");
 
 // Initialize listeners
 if (closeBtn) {
@@ -140,10 +167,88 @@ const state = {
     pendingLngLat: null,
     currentTSContext: null,
     activeLookback: 4,
-    activeLookforward: 4
+    activeLookforward: 4,
+    selectedTzMode: "UTC", // "UTC" or "LOCAL"
+    cachedProfileArgs: null,
+    siteIanaZone: "UTC",
+    siteTzAbbr: "Local"
 };
 
 let activeChart = null;
+
+/**
+ * Determines the IANA timezone of a site/station from state name/code or coordinates
+ */
+export function getSiteTimezone(lng, lat, stateNameOrCode = "") {
+    const s = String(stateNameOrCode || "").trim().toUpperCase();
+
+    const eastern = ["CT", "DE", "FL", "GA", "IN", "KY", "ME", "MD", "MA", "MI", "NH", "NJ", "NY", "NC", "OH", "PA", "RI", "SC", "VA", "VT", "WV", "DC", "CONNECTICUT", "DELAWARE", "FLORIDA", "GEORGIA", "INDIANA", "KENTUCKY", "MAINE", "MARYLAND", "MASSACHUSETTS", "MICHIGAN", "NEW HAMPSHIRE", "NEW JERSEY", "NEW YORK", "NORTH CAROLINA", "OHIO", "PENNSYLVANIA", "RHODE ISLAND", "SOUTH CAROLINA", "VIRGINIA", "VERMONT", "WEST VIRGINIA"];
+    const central = ["AL", "AR", "IL", "IA", "KS", "LA", "MN", "MS", "MO", "NE", "ND", "OK", "SD", "TN", "TX", "WI", "ALABAMA", "ARKANSAS", "ILLINOIS", "IOWA", "KANSAS", "LOUISIANA", "MINNESOTA", "MISSISSIPPI", "MISSOURI", "NEBRASKA", "NORTH DAKOTA", "OKLAHOMA", "SOUTH DAKOTA", "TENNESSEE", "TEXAS", "WISCONSIN"];
+    const mountain = ["CO", "ID", "MT", "NM", "UT", "WY", "COLORADO", "IDAHO", "MONTANA", "NEW MEXICO", "UTAH", "WYOMING"];
+    const pacific = ["CA", "NV", "OR", "WA", "CALIFORNIA", "NEVADA", "OREGON", "WASHINGTON"];
+
+    if (s === "AZ" || s === "ARIZONA") return "America/Phoenix";
+    if (s === "AK" || s === "ALASKA") return "America/Anchorage";
+    if (s === "HI" || s === "HAWAII") return "Pacific/Honolulu";
+    if (eastern.includes(s)) return "America/New_York";
+    if (central.includes(s)) return "America/Chicago";
+    if (mountain.includes(s)) return "America/Denver";
+    if (pacific.includes(s)) return "America/Los_Angeles";
+
+    if (lng !== undefined && lng !== null) {
+        if (lng < -140) return "America/Anchorage";
+        if (lng < -114) return "America/Los_Angeles";
+        if (lng < -102) return "America/Denver";
+        if (lng < -85) return "America/Chicago";
+        if (lng < -65) return "America/New_York";
+    }
+
+    try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+    } catch {
+        return "UTC";
+    }
+}
+
+function updateTzToggleUI() {
+    if (!tzUtcBtn || !tzLocalBtn) return;
+    if (state.selectedTzMode === "UTC") {
+        tzUtcBtn.style.backgroundColor = "var(--card-shadow)";
+        tzUtcBtn.style.color = "var(--color-bg)";
+        tzUtcBtn.style.fontWeight = "bold";
+        tzLocalBtn.style.backgroundColor = "var(--color-bg)";
+        tzLocalBtn.style.color = "var(--text-main)";
+        tzLocalBtn.style.fontWeight = "normal";
+    } else {
+        tzLocalBtn.style.backgroundColor = "var(--card-shadow)";
+        tzLocalBtn.style.color = "var(--color-bg)";
+        tzLocalBtn.style.fontWeight = "bold";
+        tzUtcBtn.style.backgroundColor = "var(--color-bg)";
+        tzUtcBtn.style.color = "var(--text-main)";
+        tzUtcBtn.style.fontWeight = "normal";
+    }
+}
+
+if (tzUtcBtn) {
+    tzUtcBtn.addEventListener("click", () => {
+        if (state.selectedTzMode === "UTC") return;
+        state.selectedTzMode = "UTC";
+        updateTzToggleUI();
+        if (state.cachedProfileArgs) {
+            renderChart(...state.cachedProfileArgs);
+        }
+    });
+}
+if (tzLocalBtn) {
+    tzLocalBtn.addEventListener("click", () => {
+        if (state.selectedTzMode === "LOCAL") return;
+        state.selectedTzMode = "LOCAL";
+        updateTzToggleUI();
+        if (state.cachedProfileArgs) {
+            renderChart(...state.cachedProfileArgs);
+        }
+    });
+}
 
 /**
  * Calculates start and end dates from a center date string and lookback/lookforward offsets
@@ -222,6 +327,10 @@ if (updateBtn) {
 
     updateBtn.addEventListener("click", () => {
         if (!state.currentTSContext) return;
+        // If already synced, ignore click to prevent redundant queries
+        if (updateBtn.getAttribute("data-is-synced") === "true") {
+            return;
+        }
         const lb = Math.max(0, Math.min(15, parseInt(lookbackInput?.value, 10) || 0));
         const lf = Math.max(0, Math.min(15, parseInt(lookforwardInput?.value, 10) || 0));
         showTSProfile(state.currentTSContext.lng, state.currentTSContext.lat, lb, lf);
@@ -288,7 +397,6 @@ function getActiveLayerConfig() {
     let metric = (typeof activeTmpl.field === "function") ? activeTmpl.field(currentDataset) : activeTmpl.field;
     let title = (typeof activeTmpl.title === "function") ? activeTmpl.title(currentDataset) : activeTmpl.title;
     let dataset = null;
-    let fieldPrefix = null;
 
     // 1. Raster layers (manualLayer = true)
     if (activeTmpl.manualLayer) {
@@ -309,17 +417,14 @@ function getActiveLayerConfig() {
     // 2. AirNow Hourly
     else if (activeTmpl.hourly && activeTmpl.id.startsWith("airnow-")) {
         type = "airnow_hourly";
-        const AIRNOW_HOURLY_PREFIXES = {
-            "airnow-hourly-pm25": "PM2.5_T",
-            "airnow-hourly-ozone": "MDA8O3_T",
-            "airnow-hourly-no2": "NO2_T"
-        };
-        fieldPrefix = AIRNOW_HOURLY_PREFIXES[activeTmpl.id];
+        dataset = "airnow_hourly_geojson";
+        metric = activeTmpl.id === "airnow-hourly-pm25" ? "PM25" : (activeTmpl.id === "airnow-hourly-no2" ? "NO2" : "MDA8O3");
     }
     // 3. AirNow Daily
     else if (activeTmpl.id.startsWith("airnow-daily-")) {
         type = "airnow_daily";
-        metric = activeTmpl.id === "airnow-daily-pm25" ? "PM2.5" : "MDA8O3";
+        dataset = "airnow_date_geojson";
+        metric = activeTmpl.id === "airnow-daily-pm25" ? "PM25" : "MDA8O3";
     }
     // 4. Model Daily Vector (gam-v1, gam-v2, pm-cbsa, epa-ember)
     else {
@@ -333,7 +438,6 @@ function getActiveLayerConfig() {
         productId,
         sourceId,
         mapLayerId,
-        fieldPrefix,
         metric,
         title,
         dataset
@@ -414,10 +518,18 @@ async function showTSProfile(lng, lat, customLookback = null, customLookforward 
         return;
     }
 
-    const selectedDateStr = utils.currentDate();
-    let queryDateStr = selectedDateStr;
+    // Capture coordinate for future refreshes
+    state.pendingLngLat = [lng, lat];
+
+    const modalTitleEl = document.getElementById("TSplotModalTitle");
+    if (modalTitleEl) {
+        modalTitleEl.textContent = `${activeConfig.title} Time-Series`;
+    }
+
+    let selectedDateStr = utils.currentDate();
+    let localSelectedDateStr = selectedDateStr;
     let chartDateStr = selectedDateStr;
-    const localSelectedDateStr = selectedDateStr;
+    let queryDateStr = selectedDateStr;
 
     state.currentTSContext = {
         lng,
@@ -426,25 +538,34 @@ async function showTSProfile(lng, lat, customLookback = null, customLookforward 
         queryDateStr
     };
 
-    const isVectorDaily = (activeConfig.type === "airnow_daily" || activeConfig.type === "daily_vector");
-    const isDaily = isVectorDaily || activeConfig.sourceId.includes("tropomi");
+    const isVectorDaily = (activeConfig.type === "airnow_daily" || activeConfig.type === "daily_vector" || activeConfig.type === "airnow_hourly");
+    const isDaily = (activeConfig.type === "airnow_daily" || activeConfig.type === "daily_vector") || activeConfig.sourceId.includes("tropomi");
+    const isAirnowHourly = (activeConfig.type === "airnow_hourly");
+
     if (controlsEl) {
         controlsEl.style.display = isVectorDaily ? "flex" : "none";
     }
 
-    // Determine target local hour for reference line
+    // Determine target local hour / timestamp for reference line
     let targetX = null;
-    if (activeConfig.type === "hourly_raster" || activeConfig.type === "airnow_hourly") {
+    if (activeConfig.type === "hourly_raster") {
         const timeInput = document.getElementById("timePicker");
-        if (timeInput && timeInput.value) {
-            targetX = timeInput.value;
-        } else {
-            targetX = "12:00";
-        }
+        const val = timeInput?.value || "12";
+        targetX = val.includes(":") ? val : `${val.padStart(2, "0")}:00`;
+    } else if (activeConfig.type === "airnow_hourly") {
+        const timeInput = document.getElementById("timePicker");
+        const localHour = timeInput ? parseInt(timeInput.value, 10) : 12;
+        const [ly, lm, ld] = selectedDateStr.split("-").map(Number);
+        const localDate = new Date(ly, lm - 1, ld, localHour, 0, 0);
+        const utcY = localDate.getUTCFullYear();
+        const utcM = String(localDate.getUTCMonth() + 1).padStart(2, "0");
+        const utcD = String(localDate.getUTCDate()).padStart(2, "0");
+        const utcHour = String(localDate.getUTCHours()).padStart(2, "0");
+        targetX = `${utcY}-${utcM}-${utcD} ${utcHour}:00`;
     }
 
-    // For raster and hourly datasets, compute the corresponding UTC date
-    if (activeConfig.type === "hourly_raster" || activeConfig.type === "airnow_hourly" || activeConfig.type === "raster") {
+    // For raster datasets, compute the corresponding UTC date
+    if (activeConfig.type === "hourly_raster" || activeConfig.type === "raster") {
         const isHourlyRaster = activeConfig.type === "hourly_raster";
         const selectedHour = isHourlyRaster && targetX ? parseInt(targetX.split(":")[0], 10) : 12;
         const [ly, lm, ld] = selectedDateStr.split("-").map(Number);
@@ -458,78 +579,29 @@ async function showTSProfile(lng, lat, customLookback = null, customLookforward 
         chartDateStr = utcIsoDateStr;
 
         if (activeConfig.type === "raster") {
-            // For hourly rasters, we also shift the query date for GCS fetch
             queryDateStr = utcIsoDateStr;
         }
     }
 
     // ==========================================
-    // CASE 1: Airnow Hourly (Instant Local Load)
+    // Server-side API Query (BigQuery / Cloud Run)
     // ==========================================
-    if (activeConfig.type === "airnow_hourly") {
-        loadingTextEl.textContent = `Extracting hourly data locally for ${activeConfig.title}...`;
-
-        const point = map.project(new maplibregl.LngLat(lng, lat));
-        const bbox = [[point.x - 15, point.y - 15], [point.x + 15, point.y + 15]];
-        const features = map.queryRenderedFeatures(bbox, { layers: [activeConfig.mapLayerId] });
-
-        if (features.length === 0) {
-            showError("Could not select AirNow station. Please make sure to click directly on a station marker.");
-            return;
-        }
-
-        const props = features[0].properties;
-        const siteName = props.site_name || props.site || "Unknown Station";
-        const aqs = props.AQS || "Unknown AQS";
-        const stateCode = props.state || "";
-        const stationLabel = stateCode ? `${siteName} (${aqs}), ${stateCode}` : `${siteName} (${aqs})`;
-        const finalData = [];
-
-        for (let h = 0; h < 24; h++) {
-            const hStr = String(h).padStart(2, "0");
-            const field = `${activeConfig.fieldPrefix}${hStr}`;
-            const val = props[field];
-            if (val !== undefined && val !== null && val !== "") {
-                const num = parseFloat(val);
-                if (!isNaN(num)) {
-                    finalData.push({
-                        hour: h,
-                        value: num,
-                        displayValue: num
-                    });
-                }
-            }
-        }
-
-        if (finalData.length === 0) {
-            showError(`Selected station has no active hourly readings for ${localSelectedDateStr}.`);
-            return;
-        }
-
-        loadingEl.style.display = "none";
-        chartContainer.style.display = "block";
-        renderChart(finalData, activeConfig, localSelectedDateStr, chartDateStr, targetX, stationLabel, false, true);
-        return;
-    }
-
-    // ==========================================
-    // CASE 2: Server-side API Query (Options B)
-    // ==========================================
-    loadingTextEl.textContent = `Requesting time-series profile for ${activeConfig.productId}...`;
+    loadingTextEl.textContent = `Requesting time-series profile for ${activeConfig.title || activeConfig.productId}...`;
 
     try {
-        const user = auth.currentUser;
+        const user = auth?.currentUser;
         const idToken = user ? await user.getIdToken() : null;
         const headers = {};
         if (idToken) {
             headers["Authorization"] = `Bearer ${idToken}`;
         }
 
+        let detectedStateCode = "";
         let url = `/api/tsplot?date=${queryDateStr}&product=${activeConfig.productId}&lat=${lat}&lon=${lng}`;
         let locationLabel = `(${lng.toFixed(4)}, ${lat.toFixed(4)})`;
 
-        // Daily vector data (AirNow Daily or Model Predictions) -> Fast BigQuery TSPlot query
-        if (activeConfig.type === "airnow_daily" || activeConfig.type === "daily_vector") {
+        // Vector point stations (AirNow Daily, AirNow Hourly, Model Predictions) -> Fast BigQuery TSPlot query
+        if (activeConfig.type === "airnow_daily" || activeConfig.type === "daily_vector" || activeConfig.type === "airnow_hourly") {
             const point = map.project(new maplibregl.LngLat(lng, lat));
             const bbox = [[point.x - 15, point.y - 15], [point.x + 15, point.y + 15]];
             const features = map.queryRenderedFeatures(bbox, { layers: [activeConfig.mapLayerId] });
@@ -546,11 +618,27 @@ async function showTSProfile(lng, lat, customLookback = null, customLookforward 
             }
 
             const siteName = props.site_name || props.site || "Unknown Station";
-            const stateCode = props.state || "";
-            locationLabel = stateCode ? `${siteName} (${aqs}), ${stateCode}` : `${siteName} (${aqs})`;
+            detectedStateCode = props.state || "";
+            locationLabel = detectedStateCode ? `${siteName} (${aqs}), ${detectedStateCode}` : `${siteName} (${aqs})`;
 
-            const lookback = (customLookback !== null) ? customLookback : (parseInt(lookbackInput?.value, 10) || 4);
-            const lookforward = (customLookforward !== null) ? customLookforward : (parseInt(lookforwardInput?.value, 10) || 4);
+            const isHourly = (activeConfig.type === "airnow_hourly");
+            const defaultVal = isHourly ? 1 : 4;
+
+            let lookback = (customLookback !== null) ? customLookback : null;
+            let lookforward = (customLookforward !== null) ? customLookforward : null;
+
+            if (lookback === null) {
+                if (state.lastLayerType !== activeConfig.type) {
+                    lookback = defaultVal;
+                    lookforward = defaultVal;
+                } else {
+                    lookback = parseInt(lookbackInput?.value, 10);
+                    if (isNaN(lookback)) lookback = defaultVal;
+                    lookforward = parseInt(lookforwardInput?.value, 10);
+                    if (isNaN(lookforward)) lookforward = defaultVal;
+                }
+            }
+            state.lastLayerType = activeConfig.type;
 
             if (lookbackInput) lookbackInput.value = lookback;
             if (lookforwardInput) lookforwardInput.value = lookforward;
@@ -558,9 +646,16 @@ async function showTSProfile(lng, lat, customLookback = null, customLookforward 
             if (lbDateTextEl) lbDateTextEl.textContent = dates.startDateStr;
             if (lfDateTextEl) lfDateTextEl.textContent = dates.endDateStr;
 
-            const bqDataset = activeConfig.dataset || (activeConfig.type === "airnow_daily" ? "airnow_date_geojson" : activeConfig.productId);
-            const bqMetric = activeConfig.metric || (activeConfig.productId === "airnow-daily-pm25" ? "PM25" : "MDA8O3");
-            url = `/api/bg?mode=tsplot&dataset=${encodeURIComponent(bqDataset)}&date=${encodeURIComponent(queryDateStr)}&aqs=${encodeURIComponent(aqs)}&metric=${encodeURIComponent(bqMetric)}&lookback=${lookback}&lookforward=${lookforward}`;
+            const queryParams = new URLSearchParams({
+                mode: "tsplot",
+                dataset: activeConfig.dataset,
+                date: queryDateStr,
+                aqs: aqs,
+                metric: activeConfig.metric,
+                lookback: lookback,
+                lookforward: lookforward
+            });
+            url = `/api/bg?${queryParams.toString()}`;
         }
 
         const response = await fetch(url, { headers });
@@ -587,10 +682,28 @@ async function showTSProfile(lng, lat, customLookback = null, customLookforward 
             displayValue: getDisplayScale(activeConfig.sourceId, d.value)
         }));
 
+        const isHourly = (activeConfig.type === "airnow_hourly" || activeConfig.type === "hourly_raster");
+        if (tzToggleGroup) {
+            tzToggleGroup.style.display = isHourly ? "flex" : "none";
+        }
+        const siteIanaZone = getSiteTimezone(lng, lat, detectedStateCode);
+        const siteTzAbbr = new Intl.DateTimeFormat("en-US", { timeZone: siteIanaZone, timeZoneName: "short" })
+            .formatToParts(new Date())
+            .find(p => p.type === "timeZoneName")?.value || "Local";
+
+        state.siteIanaZone = siteIanaZone;
+        state.siteTzAbbr = siteTzAbbr;
+        if (tzLocalBtn) {
+            tzLocalBtn.textContent = `Site Time (${siteTzAbbr})`;
+        }
+        updateTzToggleUI();
+
+        state.cachedProfileArgs = [finalData, activeConfig, localSelectedDateStr, chartDateStr, targetX, locationLabel, isDaily, isAirnowHourly];
+
         loadingEl.style.display = "none";
         chartContainer.style.display = "block";
 
-        renderChart(finalData, activeConfig, localSelectedDateStr, chartDateStr, targetX, locationLabel, isDaily, false);
+        renderChart(finalData, activeConfig, localSelectedDateStr, chartDateStr, targetX, locationLabel, isDaily, isAirnowHourly);
 
         if (isVectorDaily) {
             state.activeLookback = (customLookback !== null) ? customLookback : (parseInt(lookbackInput?.value, 10) || 4);
@@ -631,54 +744,88 @@ function renderChart(data, activeConfig, localSelectedDateStr, utcDateStr, targe
 
     const { title: yTitle, decimals } = getYAxisTitleAndDecimals(activeConfig.sourceId);
 
-    const xVals = isDaily ? data.map(d => d.date) : data.map(d => `${String(d.hour).padStart(2, "0")}:00`);
-    const yVals = data.map(d => d.displayValue);
+    // Multi-day hourly series vs Single-day (24h) hourly series vs Daily series
+    const isMultiDayHourly = isAirnowHourly && data.length > 24;
+    const isLocalTz = (state.selectedTzMode === "LOCAL" && !isDaily);
+    const effectiveTzName = isLocalTz ? state.siteTzAbbr : "UTC";
 
-    // Calculate local timezone name dynamically (e.g. "PDT", "KST")
-    const tzName = new Intl.DateTimeFormat("en-US", { timeZoneName: "short" })
-        .formatToParts(new Date())
-        .find(part => part.type === "timeZoneName")?.value || "Local";
-
-    const [ly, lm, ld] = localSelectedDateStr.split("-").map(Number);
-    const [qy, qm, qd] = utcDateStr.split("-").map(Number);
-
-    // Generate local timezone x-axis labels matched to UTC hours
-    const localXVals = isDaily ? [] : data.map(item => {
-        const utcDate = new Date(Date.UTC(qy, qm - 1, qd, item.hour));
-        const locHour = utcDate.getHours();
-        const locMin = utcDate.getMinutes();
-        const locHourStr = String(locHour).padStart(2, "0") + ":" + String(locMin).padStart(2, "0");
-
-        // Calculate date boundaries correctly relative to the selected local calendar day
-        const locSelectedStart = Date.UTC(ly, lm - 1, ld);
-        const locDayStart = Date.UTC(utcDate.getFullYear(), utcDate.getMonth(), utcDate.getDate());
-        const diffDays = Math.round((locDayStart - locSelectedStart) / (1000 * 60 * 60 * 24));
-
-        let suffix = "";
-        if (diffDays > 0) {
-            suffix = " (+1d)";
-        } else if (diffDays < 0) {
-            suffix = " (-1d)";
+    // Transform points to site local time if Local mode is selected
+    const transformedData = data.map(d => {
+        let utcDate;
+        if (d.date && d.date.includes(" ")) {
+            const [dStr, tStr] = d.date.split(" ");
+            const [y, m, dt] = dStr.split("-").map(Number);
+            const h = parseInt(tStr.split(":")[0], 10);
+            utcDate = new Date(Date.UTC(y, m - 1, dt, h, 0, 0));
+        } else {
+            const h = d.hour !== undefined ? d.hour : 0;
+            const [qy, qm, qd] = utcDateStr.split("-").map(Number);
+            utcDate = new Date(Date.UTC(qy, qm - 1, qd, h, 0, 0));
         }
-        return `${locHourStr}${suffix}`;
+
+        if (isLocalTz) {
+            const locDate = new Intl.DateTimeFormat("en-CA", { timeZone: state.siteIanaZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(utcDate);
+            const locHStr = new Intl.DateTimeFormat("en-US", { timeZone: state.siteIanaZone, hour: "2-digit", hour12: false }).format(utcDate);
+            const locH = parseInt(locHStr, 10) % 24;
+            const paddedH = String(locH).padStart(2, "0");
+            return {
+                ...d,
+                chartFullStr: `${locDate} ${paddedH}:00`,
+                chartTimeStr: paddedH,
+                chartDateStr: locDate,
+                chartHour: locH
+            };
+        } else {
+            const paddedH = String(d.hour !== undefined ? d.hour : (d.date?.includes(" ") ? parseInt(d.date.split(" ")[1], 10) : 0)).padStart(2, "0");
+            const dPart = d.date?.includes(" ") ? d.date.split(" ")[0] : utcDateStr;
+            return {
+                ...d,
+                chartFullStr: d.date || `${utcDateStr} ${paddedH}:00`,
+                chartTimeStr: paddedH,
+                chartDateStr: dPart,
+                chartHour: parseInt(paddedH, 10)
+            };
+        }
     });
+
+    const xVals = isDaily
+        ? data.map(d => d.date)
+        : transformedData.map(d => d.chartFullStr);
+
+    const yVals = data.map(d => d.displayValue);
 
     const displayName = activeConfig.title || activeConfig.productId;
     const titleText = isDaily
         ? `${displayName} Daily Profile`
         : `${displayName} Time-Series Plot`;
-    const subTitleText = isDaily
+    const subTitleText = isDaily || (isAirnowHourly && data.length > 24)
         ? `Selected: ${localSelectedDateStr} at ${locationLabel}`
         : `${localSelectedDateStr} at ${locationLabel}`;
 
+    // Target reference line
+    let finalTargetX = null;
+    if (isDaily) {
+        finalTargetX = localSelectedDateStr;
+    } else if (isLocalTz) {
+        const fullTarget = targetX.includes(" ") ? targetX : `${utcDateStr} ${targetX}`;
+        const [dStr, tStr] = fullTarget.split(" ");
+        const [y, m, dt] = dStr.split("-").map(Number);
+        const h = parseInt(tStr.split(":")[0], 10);
+        const utcTarget = new Date(Date.UTC(y, m - 1, dt, h, 0, 0));
+        const locTargetDate = new Intl.DateTimeFormat("en-CA", { timeZone: state.siteIanaZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(utcTarget);
+        const locTargetH = String(parseInt(new Intl.DateTimeFormat("en-US", { timeZone: state.siteIanaZone, hour: "numeric", hour12: false }).format(utcTarget), 10) % 24).padStart(2, "0");
+        finalTargetX = `${locTargetDate} ${locTargetH}:00`;
+    } else {
+        finalTargetX = targetX.includes(" ") ? targetX : `${utcDateStr} ${targetX}`;
+    }
+
     const markLineData = [];
-    const finalTargetX = isDaily ? localSelectedDateStr : targetX;
     if (finalTargetX !== null) {
         markLineData.push({
             xAxis: finalTargetX,
             label: {
                 show: true,
-                formatter: isDaily ? "Selected Date" : "Selected Hour",
+                formatter: isDaily ? "Selected Date" : "Selected Time",
                 position: "end",
                 color: "red",
                 fontSize: fontSize * 0.8,
@@ -696,7 +843,7 @@ function renderChart(data, activeConfig, localSelectedDateStr, utcDateStr, targe
         });
     }
 
-    // Configure single x-axis for daily, dual x-axes for hourly (UTC bottom, Local top)
+    // Configure single x-axis: Daily (Date) vs Hourly (Smart Diurnal with Day-boundary at 00:00)
     const xAxisOption = isDaily ? {
         type: "category",
         data: xVals,
@@ -715,41 +862,66 @@ function renderChart(data, activeConfig, localSelectedDateStr, utcDateStr, targe
             fontSize: fontSize * 0.8,
             fontWeight: "bold"
         }
-    } : [
-        {
-            type: "category",
-            data: xVals,
-            position: "bottom",
-            axisLabel: {
-                color: textColor,
-                fontSize: fontSize * 0.8,
-                rotate: -90
-            },
-            axisLine: { lineStyle: { color: gridColor } },
-            axisTick: { alignWithLabel: true },
-            name: `Top: Time (UTC) / Bottom: Time (${tzName})`,
-            nameLocation: "middle",
-            nameGap: 50, // Sitting between the UTC and Local axis labels
-            nameTextStyle: {
-                color: textColor,
-                fontSize: fontSize * 0.8, // Slightly smaller to fit perfectly in the gap
-                fontWeight: "bold"
+    } : {
+        type: "category",
+        data: xVals,
+        axisLabel: {
+            color: textColor,
+            fontSize: fontSize * 0.8,
+            rotate: 0,
+            interval: 0,
+            formatter: function (val, index) {
+                if (!val || typeof val !== "string") return "";
+                const parts = val.split(" ");
+                if (parts.length !== 2) return val;
+                const [dateStr, timeStr] = parts;
+                const hour = parseInt(timeStr.split(":")[0], 10);
+                const step = data.length > 120 ? 12 : (data.length > 30 ? 6 : 3);
+
+                // Date label on midnight (00:00) OR at the very start of the chart (index === 0)
+                if (hour === 0 || index === 0) {
+                    return `${dateStr.slice(5)}
+${String(hour).padStart(2, "0")}`;
+                }
+                // Intermediate diurnal interval hours: Show 2-digit hour number only
+                if (hour % step === 0) {
+                    return String(hour).padStart(2, "0");
+                }
+                return "";
             }
         },
-        {
-            type: "category",
-            data: localXVals,
-            position: "bottom",
-            offset: 75, // Stack below the UTC axis
-            axisLabel: {
-                color: textColor,
-                fontSize: fontSize * 0.8,
-                rotate: -90
+        splitLine: {
+            show: true,
+            interval: function (index, value) {
+                return typeof value === "string" && value.endsWith("00:00");
             },
-            axisLine: { lineStyle: { color: gridColor } },
-            axisTick: { alignWithLabel: true }
+            lineStyle: {
+                color: gridColor,
+                type: "dashed",
+                width: 1
+            }
+        },
+        axisLine: { lineStyle: { color: gridColor } },
+        axisTick: {
+            alignWithLabel: true,
+            interval: function (index, value) {
+                if (typeof value !== "string") return false;
+                const parts = value.split(" ");
+                if (parts.length !== 2) return false;
+                const hour = parseInt(parts[1].split(":")[0], 10);
+                const step = data.length > 120 ? 12 : (data.length > 30 ? 6 : 3);
+                return (hour === 0 || index === 0 || hour % step === 0);
+            }
+        },
+        name: `Time (${effectiveTzName})`,
+        nameLocation: "middle",
+        nameGap: 40,
+        nameTextStyle: {
+            color: textColor,
+            fontSize: fontSize * 0.8,
+            fontWeight: "bold"
         }
-    ];
+    };
 
     const option = {
         backgroundColor: "transparent",
@@ -757,7 +929,7 @@ function renderChart(data, activeConfig, localSelectedDateStr, utcDateStr, targe
             text: titleText,
             subtext: subTitleText,
             left: "center",
-            top: 10, // Bring title down slightly closer to the plot area
+            top: 10,
             textStyle: {
                 color: textColor,
                 fontSize: fontSize,
@@ -778,14 +950,8 @@ function renderChart(data, activeConfig, localSelectedDateStr, utcDateStr, targe
             textStyle: { color: textColor },
             formatter: function (params) {
                 if (!params || params.length === 0) return "";
-                // Show both UTC and Local Time in tooltip
-                let timeHeader = params[0].axisValue;
-                if (!isDaily) {
-                    const idx = params[0].dataIndex;
-                    const localTime = localXVals[idx];
-                    timeHeader = `UTC: ${params[0].axisValue} | ${tzName}: ${localTime}`;
-                }
-                let html = `${timeHeader}<br/>`;
+                const headerLabel = isDaily ? `Date: ${params[0].axisValue}` : `${effectiveTzName}: ${params[0].axisValue}`;
+                let html = `<b>${headerLabel}</b><br/>`;
                 params.forEach(p => {
                     if (p.value !== undefined && p.value !== null) {
                         const formattedVal = Number(p.value).toFixed(decimals);
@@ -799,10 +965,10 @@ function renderChart(data, activeConfig, localSelectedDateStr, utcDateStr, targe
             show: false
         },
         grid: {
-            top: 100, // Top axis is gone, so 80 is enough for both daily and hourly
-            bottom: isDaily ? 70 : 140, // Increased bottom margin for stacked bottom axes
-            left: 55, // Increased from 30 to give room for Y-axis name and ticks
-            right: 40, // Increased from 30 to prevent right overflow
+            top: 100,
+            bottom: isDaily ? 70 : 80,
+            left: 55,
+            right: 40,
             containLabel: true
         },
         xAxis: xAxisOption,

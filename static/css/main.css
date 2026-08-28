@@ -1430,27 +1430,26 @@ body.page-about .sidebar {
   }
 }
 
-/* --- Download & Lookback Button Style --- */
-.export-btn-csv, 
-.legend-lookback-btn {
-    cursor: pointer;
-    font-size: 1.4rem;
-    margin-left: 0.5rem;
-    padding: 0.4rem 0.8rem;
-    border-radius: 0.4rem;
-    font-weight: bold;
-    display: inline-block;
-    vertical-align: middle;
-    color: var(--text-strong);
-    background-color: var(--color-bg);
-    border: 0.1rem solid var(--card-shadow);
-    transition: transform 0.3s ease;
+/* --- Download Button Style --- */
+.export-btn-csv {
+  cursor: pointer;
+  font-size: 1.4rem;
+  margin-left: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 0.4rem;
+  font-weight: bold;
+  display: inline-block;
+  vertical-align: middle;
+  color: var(--text-strong);
+  background-color: var(--color-bg);
+  border: 0.1rem solid var(--card-shadow);
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 @media (hover: hover) {
-  .export-btn-csv:hover, 
-  .legend-lookback-btn:hover {
-    transform: scale(1.05);
+  .export-btn-csv:hover {
+    background-color: var(--card-shadow);
+    color: var(--color-bg);
   }
 }
 

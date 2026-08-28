@@ -12,17 +12,51 @@ import { showAuthOverlay } from "./utils.js";
 
 export const wildfireLookbackMap = {};
 
-// Ensure lookback button stays visible on mobile screens & sync with login state
-if (typeof document !== "undefined") {
-    if (!document.getElementById("legend-lookback-style")) {
-        const styleEl = document.createElement("style");
-        styleEl.id = "legend-lookback-style";
-        styleEl.textContent = `.legend-lookback-btn { display: inline-block !important; }`;
-        document.head.appendChild(styleEl);
+// Self-contained Modular Style injection for Lookback controls
+function ensureLookbackStyles() {
+    if (typeof document === "undefined" || document.getElementById("LookbackModuleStyles")) return;
+    const styleHTML = `
+<style id="LookbackModuleStyles">
+  button[id^="LookBackUpdateBtn"] {
+    cursor: pointer;
+    font-size: 1.4rem;
+    font-weight: bold;
+    border-radius: 0.4rem;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 3.4rem;
+    height: 2.8rem;
+    padding: 0;
+    background-color: var(--color-bg);
+    color: var(--text-strong);
+    border: 0.1rem solid var(--card-shadow);
+    transition: transform 0.2s ease;
+  }
+  button[id^="LookBackUpdateBtn"][data-is-synced="true"] {
+    background-color: #059669 !important;
+    color: #ffffff !important;
+    border-color: #059669 !important;
+  }
+  @media (hover: hover) {
+    button[id^="LookBackUpdateBtn"][data-is-synced="false"]:hover {
+      background-color: var(--card-shadow) !important;
+      color: var(--color-bg) !important;
+      border-color: var(--card-shadow) !important;
     }
+  }
+  input[id^="LookBackInput"]::-webkit-inner-spin-button,
+  input[id^="LookBackInput"]::-webkit-outer-spin-button {
+    opacity: 1 !important;
+  }
+</style>`;
+    document.head.insertAdjacentHTML("beforeend", styleHTML);
+}
+ensureLookbackStyles();
 
+if (typeof document !== "undefined") {
     onAuthStateChanged(auth, (user) => {
-        document.querySelectorAll(".legend-lookback-btn").forEach(btn => {
+        document.querySelectorAll('button[id^="LookBackUpdateBtn"]').forEach(btn => {
             if (user) {
                 btn.classList.remove("disabled-auth");
                 btn.removeAttribute("title");
@@ -75,13 +109,13 @@ const pendingLookbackRequests = new Map();
  */
 export async function fetchLookbackNIFC(sourceKey, isoDate, lookbackDays = 0) {
     if (!map) return null;
-    
+
     // Check login before initiating request
     if (!auth?.currentUser) {
         showAuthOverlay?.();
         return null;
     }
-    
+
     const cleanDate = isoDate || document.getElementById("datePicker")?.value || "LIVE";
     const cacheKey = `${cleanDate}_lookback_${lookbackDays}`;
 
@@ -145,25 +179,37 @@ const SVG_UPDATE = `<svg width="15" height="15"><use xlink:href="#icon-refresh" 
 const SVG_DONE = `<svg width="15" height="15"><use xlink:href="#icon-check" /></svg>`;
 
 /**
+ * Updates button state (data-is-synced, icon, tooltip) cleanly
+ */
+function setLookbackBtnSynced(btn, isSynced, isLoggedIn = true) {
+    if (!btn) return;
+    if (isSynced) {
+        btn.innerHTML = SVG_DONE;
+        btn.setAttribute("data-is-synced", "true");
+        btn.setAttribute("title", "Data is up to date");
+    } else {
+        btn.innerHTML = SVG_UPDATE;
+        btn.setAttribute("data-is-synced", "false");
+        btn.setAttribute("title", isLoggedIn ? "Fetch lookback data" : "Please login to use BigQuery lookback");
+    }
+}
+
+/**
  * Generates HTML string for the Lookback control box in legend drawer with dynamic date range text
  */
 export function renderLookbackBoxHTML(id) {
     const curDays = (wildfireLookbackMap[id] !== undefined) ? wildfireLookbackMap[id] : 0;
     const datePickerVal = document.getElementById("datePicker")?.value || "LIVE";
     const rangeStr = calculateDateRange(datePickerVal, curDays);
-    
+
     const sourceKey = id.replace(/-/g, "_");
     const cacheKey = `${datePickerVal}_lookback_${curDays}`;
     const isSynced = (loadedSources[sourceKey] === cacheKey);
-    
+
     const isLoggedIn = !!auth?.currentUser;
     const authClass = isLoggedIn ? "" : "disabled-auth";
     const authTitle = isLoggedIn ? (isSynced ? "Data is up to date" : "Fetch lookback data") : "Please login to use BigQuery lookback";
-
     const btnIcon = isSynced ? SVG_DONE : SVG_UPDATE;
-    const btnStyle = isSynced
-        ? `background: #059669; color: #ffffff; display: inline-flex !important; align-items: center; justify-content: center; width: 3.2rem; height: 2.6rem; padding: 0;`
-        : `display: inline-flex !important; align-items: center; justify-content: center; width: 3.2rem; height: 2.6rem; padding: 0;`;
 
     // Layer icon preview on the left of Lookback (flame symbol / perimeter swatch)
     const layerDef = LAYER_DEFS?.[id];
@@ -181,10 +227,23 @@ export function renderLookbackBoxHTML(id) {
                     <span>Lookback:</span>
                 </div>
                 <div style="display:flex; align-items:center; gap:0.4rem;">
-                    <input type="number" class="legend-lookback-input" data-layer-id="${id}" min="0" max="15" value="${curDays}" style="width:3.8rem; text-align:center; padding:0.2rem; border-radius:0.3rem;">
+                    <input type="number" 
+                           id="LookBackInput-${id}" 
+                           data-layer-id="${id}" 
+                           min="0" 
+                           max="15" 
+                           value="${curDays}" 
+                           style="width:4.8rem; text-align:center; padding:0.2rem 0.2rem 0.2rem 0.4rem; border-radius:0.3rem; font-size:1.4rem;">
                     <span style="font-size:1.2rem;">days</span>
                 </div>
-                <button class="legend-lookback-btn ${authClass}" title="${authTitle}" aria-label="Update lookback query" data-layer-id="${id}" data-is-synced="${isSynced ? "true" : "false"}" style="${btnStyle}">${btnIcon}</button>
+                <button id="LookBackUpdateBtn-${id}" 
+                        class="${authClass}" 
+                        title="${authTitle}" 
+                        aria-label="Update lookback query" 
+                        data-layer-id="${id}" 
+                        data-is-synced="${isSynced ? "true" : "false"}">
+                    ${btnIcon}
+                </button>
             </div>
             <hr style="margin: 0.5rem 0;">
             <div class="legend-item legend-lookback-range" data-layer-id="${id}" style="justify-content:flex-end; color:var(--card-shadow); font-size:1.2rem;">
@@ -199,7 +258,7 @@ export function bindLookbackEvents(container) {
     if (!container) return;
 
     // Real-time input change updates range text preview & button sync status
-    const inputs = container.querySelectorAll(".legend-lookback-input");
+    const inputs = container.querySelectorAll('input[id^="LookBackInput"]');
     inputs.forEach(input => {
         const updateRangePreview = () => {
             const layerId = input.getAttribute("data-layer-id");
@@ -212,30 +271,15 @@ export function bindLookbackEvents(container) {
             if (rangeSpan) {
                 rangeSpan.textContent = calculateDateRange(datePickerVal, days);
             }
-            
+
             // Toggle Done vs Update based on whether input matches active map state
             const sourceKey = layerId.replace(/-/g, "_");
             const activeDays = (wildfireLookbackMap[layerId] !== undefined) ? wildfireLookbackMap[layerId] : 0;
             const cacheKey = `${datePickerVal}_lookback_${days}`;
             const isSynced = (loadedSources[sourceKey] === cacheKey && days === activeDays);
 
-            const btn = container.querySelector(`.legend-lookback-btn[data-layer-id="${layerId}"]`);
-            if (btn) {
-                const isLoggedIn = !!auth?.currentUser;
-                if (isSynced) {
-                    btn.innerHTML = SVG_DONE;
-                    btn.style.backgroundColor = "#059669";
-                    btn.style.color = "#ffffff";
-                    btn.setAttribute("data-is-synced", "true");
-                    btn.setAttribute("title", "Data is up to date");
-                } else {
-                    btn.innerHTML = SVG_UPDATE;
-                    btn.style.backgroundColor = "";
-                    btn.style.color = "";
-                    btn.setAttribute("data-is-synced", "false");
-                    btn.setAttribute("title", isLoggedIn ? "Fetch lookback data" : "Please login to use BigQuery lookback");
-                }
-            }
+            const btn = document.getElementById(`LookBackUpdateBtn-${layerId}`);
+            setLookbackBtnSynced(btn, isSynced, !!auth?.currentUser);
         };
 
         input.addEventListener("input", updateRangePreview);
@@ -243,36 +287,25 @@ export function bindLookbackEvents(container) {
     });
 
     // Update button click handler
-    const btns = container.querySelectorAll(".legend-lookback-btn");
+    const btns = container.querySelectorAll('button[id^="LookBackUpdateBtn"]');
     btns.forEach(btn => {
-        // Instant press color swap isolated in bq-lookback.js
-        btn.addEventListener("pointerdown", () => {
-            if (btn.getAttribute("data-is-synced") !== "true") {
-                btn.style.color = "var(--color-bg)";
-                btn.style.backgroundColor = "var(--card-shadow)";
-            }
-        });
-        const resetStyle = () => {
-            if (btn.getAttribute("data-is-synced") !== "true") {
-                btn.style.color = "";
-                btn.style.backgroundColor = "";
-            }
-        };
-        btn.addEventListener("pointerup", resetStyle);
-        btn.addEventListener("pointerleave", resetStyle);
-
         btn.addEventListener("click", async (e) => {
             e.stopPropagation();
             e.preventDefault();
-            
+
+            // Guard: If already synced, ignore click to prevent redundant query
+            if (btn.getAttribute("data-is-synced") === "true") {
+                return;
+            }
+
             // Guard: If not logged in, show login overlay and DO NOT change button or state
             if (!auth?.currentUser) {
                 showAuthOverlay?.();
                 return;
             }
-            
+
             const layerId = btn.getAttribute("data-layer-id");
-            const input = container.querySelector(`.legend-lookback-input[data-layer-id="${layerId}"]`);
+            const input = document.getElementById(`LookBackInput-${layerId}`);
             if (!input) return;
 
             let days = parseInt(input.value, 10);
@@ -299,11 +332,7 @@ export function bindLookbackEvents(container) {
             wildfireLookbackMap[layerId] = days;
 
             // Mark button as Done (green) only after successful sync to map
-            btn.innerHTML = SVG_DONE;
-            btn.style.backgroundColor = "#059669";
-            btn.style.color = "#ffffff";
-            btn.setAttribute("data-is-synced", "true");
-            btn.setAttribute("title", "Data is up to date");
+            setLookbackBtnSynced(btn, true, true);
         });
     });
 }
@@ -318,7 +347,7 @@ export function resetLookbackState() {
 
     const datePickerVal = document.getElementById("datePicker")?.value || "LIVE";
 
-    document.querySelectorAll(".legend-lookback-input").forEach(input => {
+    document.querySelectorAll('input[id^="LookBackInput"]').forEach(input => {
         input.value = 0;
     });
 
@@ -326,12 +355,8 @@ export function resetLookbackState() {
         span.textContent = calculateDateRange(datePickerVal, 0);
     });
 
-    document.querySelectorAll(".legend-lookback-btn").forEach(btn => {
-        btn.innerHTML = SVG_UPDATE;
-        btn.style.backgroundColor = "";
-        btn.style.color = "";
-        btn.removeAttribute("data-is-synced");
-        btn.setAttribute("title", "Fetch lookback data");
+    document.querySelectorAll('button[id^="LookBackUpdateBtn"]').forEach(btn => {
+        setLookbackBtnSynced(btn, false, !!auth?.currentUser);
     });
 }
 
