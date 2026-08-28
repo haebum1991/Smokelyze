@@ -231,16 +231,25 @@ function promptMapNavigation(dateStr, hourStr, displayLabel, isDaily) {
 let tsplotNavMarker = null;
 let tsplotMapClickListener = null;
 
-function setTSPlotNavMarker(lng, lat) {
-    if (!map) return;
+export function clearTSPlotNavMarker() {
     if (tsplotNavMarker) {
         tsplotNavMarker.remove();
         tsplotNavMarker = null;
     }
-    if (tsplotMapClickListener) {
+    if (tsplotMapClickListener && map) {
         map.off("click", tsplotMapClickListener);
         tsplotMapClickListener = null;
     }
+}
+
+document.addEventListener("smokelyze-reset-tsplot", () => {
+    clearTSPlotNavMarker();
+    hideTSplotModal();
+});
+
+function setTSPlotNavMarker(lng, lat) {
+    if (!map) return;
+    clearTSPlotNavMarker();
 
     map.flyTo({
         center: [lng, lat],
@@ -253,23 +262,12 @@ function setTSPlotNavMarker(lng, lat) {
             .setLngLat([lng, lat])
             .addTo(map);
 
-        const clearMarker = () => {
-            if (tsplotNavMarker) {
-                tsplotNavMarker.remove();
-                tsplotNavMarker = null;
-            }
-            if (tsplotMapClickListener) {
-                map.off("click", tsplotMapClickListener);
-                tsplotMapClickListener = null;
-            }
-        };
-
         marker.getElement().addEventListener("click", (e) => {
             e.stopPropagation();
-            clearMarker();
+            clearTSPlotNavMarker();
         });
 
-        tsplotMapClickListener = clearMarker;
+        tsplotMapClickListener = clearTSPlotNavMarker;
         setTimeout(() => {
             if (tsplotNavMarker && tsplotMapClickListener) {
                 map.on("click", tsplotMapClickListener);

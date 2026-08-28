@@ -124,10 +124,10 @@ export function resetUIAndData() {
   // Final single refresh for loaders/UI
   updateAllActiveSources?.();
   
-  // 7) Clear HYSPLIT & AERSCREEN from Map (But keep in Storage)
-  // Decoupled via events: No direct import needed
+  // 7) Clear HYSPLIT, AERSCREEN & TSPlot from Map (Decoupled via events)
   document.dispatchEvent(new CustomEvent("smokelyze-reset-hysplit", { detail: { deleteHistory: false } }));
   document.dispatchEvent(new CustomEvent("smokelyze-reset-aerscreen"));
+  document.dispatchEvent(new CustomEvent("smokelyze-reset-tsplot"));
 }
 
 /**
