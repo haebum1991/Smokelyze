@@ -341,13 +341,14 @@ exports.handler = async (event) => {
     }
   }
 
-  // --- CASE C: Hourly Rasters (TEMPO, HRRR, GOES - 24-Hour Diurnal Profile) ---
+  // --- CASE C: Hourly Rasters (TEMPO, HRRR, GOES, GEOS-CF - 24-Hour Diurnal Profile) ---
   if (isNaN(lat) || isNaN(lon)) {
     return { statusCode: 400, headers: corsHeaders, body: "Missing coordinate parameters lat, lon for hourly product" };
   }
 
   let folder = "";
   let hours = [];
+  let subProductFolder = product;
 
   if (product.startsWith("TEMPO_")) {
     folder = "tempo_date_png";
@@ -357,6 +358,10 @@ exports.handler = async (event) => {
     hours = Array.from({ length: 24 }, (_, i) => i);
   } else if (product.startsWith("ABI-")) {
     folder = "goes_date_png";
+    hours = Array.from({ length: 24 }, (_, i) => i);
+  } else if (product.startsWith("GEOS_CF_")) {
+    folder = "geoscf_date_png";
+    subProductFolder = product.replace("GEOS_CF_", "");
     hours = Array.from({ length: 24 }, (_, i) => i);
   } else {
     return { statusCode: 400, headers: corsHeaders, body: "Unsupported product type" };
@@ -368,8 +373,8 @@ exports.handler = async (event) => {
   const promises = hours.map(async (hour) => {
     const formattedHour = String(hour).padStart(2, "0");
     const baseName = `${product}_${date}_${formattedHour}T`;
-    const jsonPath = `${folder}/${product}/${y}/${m}/${d}/${baseName}.json`;
-    const pngPath = `${folder}/${product}/${y}/${m}/${d}/${baseName}.png`;
+    const jsonPath = `${folder}/${subProductFolder}/${y}/${m}/${d}/${baseName}.json`;
+    const pngPath = `${folder}/${subProductFolder}/${y}/${m}/${d}/${baseName}.png`;
 
     try {
       const jsonFile = bucket.file(jsonPath);
