@@ -444,6 +444,7 @@ export const DescData = {
                   "and <b>spatially aggregated to 6-7 km</b> for visualization performance (Original HRRR resolution is 3 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li><b>Display & Threshold Note</b>: Values rounding to 0 at the configured decimal precision (< 0.05 &times; 10<sup>3</sup> &micro;g m<sup>-2</sup>) are rendered transparently on the map and omitted from tooltips.</li>" +
                   "<li>Data Source: <a href='https://console.cloud.google.com/storage/browser/high-resolution-rapid-refresh' target='_blank' rel='noopener noreferrer'>NOAA High-Resolution Rapid Refresh (Google Cloud Storage)</a></li></ul>"
         },
         {
@@ -458,6 +459,7 @@ export const DescData = {
                   "and <b>spatially aggregated to 6-7 km</b> for visualization performance (Original HRRR resolution is 3 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-1. </li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li><b>Display & Threshold Note</b>: Values rounding to 0 at the configured decimal precision (< 0.05 &micro;g m<sup>-3</sup>) are rendered transparently on the map and omitted from tooltips.</li>" +
                   "<li>Data Source: <a href='https://console.cloud.google.com/storage/browser/high-resolution-rapid-refresh' target='_blank' rel='noopener noreferrer'>NOAA High-Resolution Rapid Refresh (Google Cloud Storage)</a></li></ul>"
         },
         {
@@ -469,6 +471,7 @@ export const DescData = {
                   "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-2.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li><b>Display & Threshold Note</b>: Values rounding to 0 at the configured decimal precision (< 0.05 ppb, decimals: 1) are rendered transparently on the map and omitted from tooltips.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
         },
         {
@@ -480,6 +483,7 @@ export const DescData = {
                   "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-2.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li><b>Display & Threshold Note</b>: Values rounding to 0 at the configured integer precision (< 0.5 ppb, decimals: 0) are rendered transparently on the map and omitted from tooltips.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
         },
         {
@@ -491,6 +495,7 @@ export const DescData = {
                   "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-2.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li><b>Display & Threshold Note</b>: Values rounding to 0 at the configured decimal precision (< 0.005 ppb, decimals: 2) are rendered transparently on the map and omitted from tooltips.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
         },
         {
@@ -502,6 +507,7 @@ export const DescData = {
                   "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-2.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li><b>Display & Threshold Note</b>: Values rounding to 0 at the configured decimal precision (< 0.005 ppb, decimals: 2) are rendered transparently on the map and omitted from tooltips.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
         },
         {
@@ -513,6 +519,7 @@ export const DescData = {
                   "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-2.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li><b>Display & Threshold Note</b>: Values rounding to 0 at the configured decimal precision (< 0.05 &micro;g m<sup>-3</sup>, decimals: 1) are rendered transparently on the map and omitted from tooltips.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
         },
         {
@@ -524,6 +531,7 @@ export const DescData = {
                   "<li>In our app, <b>this data is available starting from 2025-08-05 (v2)</b> (Original GEOS-CF resolution is 0.25&deg;, ~28 km).</li>" +
                   "<li>Due to our 24-hour retrospective data acquisition protocol, the dataset maintains a one-day latency, making the most current observations representative of D-2.</li>" +
                   "<li><b>Web Raster Note</b>: Served as <b>8-bit PNG rasters with JSON metadata</b> for fast web loading and visual inspection. Minor numeric discrepancies may exist compared to raw 32-bit float files due to web raster encoding.</li>" +
+                  "<li><b>Display & Threshold Note</b>: Values rounding to 0 at the configured decimal precision (< 0.05 &micro;g m<sup>-3</sup>, decimals: 1) are rendered transparently on the map and omitted from tooltips.</li>" +
                   "<li>Data Source: <a href='https://opendap.nccs.nasa.gov/dods/gmao/geos-cf/v2/ana/chm_tavg_1hr_glo_L1440x721_slv.info' target='_blank' rel='noopener noreferrer'>NASA NCCS OpenDAP (GEOS-CF v2)</a></li></ul>"
         }
     ],

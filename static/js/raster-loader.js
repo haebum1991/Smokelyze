@@ -214,6 +214,29 @@ const TRANSPARENT_1X1 = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAA
 
 
 /**
+ * Single Source of Truth: Determines whether a raster pixel is visible (rendered with color)
+ * and should display tooltip info. Filters out NoData pixels, real zero/sub-threshold values,
+ * and GOES background optical noise consistently across rendering and tooltip.
+ */
+export function isVisibleRasterValue(sourceId, displayValue, tmpl, rawPixel) {
+    const isModel = sourceId.includes("hrrr") || sourceId.includes("geoscf");
+
+    // 1. Satellite observations: raw pixel 0 is NoData (cloud mask/missing)
+    if (rawPixel === 0 && !isModel) return false;
+
+    // 2. Filter out actual zero values (or below display threshold) across all data
+    const decimals = tmpl?.decimals ?? 2;
+    const zeroThreshold = Math.pow(10, -decimals) / 2;
+    if (displayValue < zeroThreshold) return false;
+
+    // 3. GOES AOD: Filter out natural background optical noise
+    if (sourceId.includes("goes") && tmpl?.breaks && displayValue < tmpl.breaks[0]) return false;
+
+    return true;
+}
+
+
+/**
  * Colorizes a grayscale PNG based on metadata and a global value scale.
  */
 function colorizeRasterImage(imgUrl, metadata, source, sourceId) {
@@ -332,42 +355,23 @@ function colorizeRasterImage(imgUrl, metadata, source, sourceId) {
                 };
 
                 if (!isTrueColor) {
-                    
-                    const isHrrr = sourceId.includes("hrrr");
-                    const isGoes = sourceId.includes("goes");
-                    const isGeoscf = sourceId.includes("geoscf");
-                    const isModel = isHrrr || isGeoscf;
-
                     const tmpl = LAYER_TEMPLATES.find(t => t.id === sourceId);
-                    const decimals = tmpl?.decimals !== undefined ? tmpl.decimals : 2;
-                    const zeroThreshold = Math.pow(10, -decimals) / 2;
-                    
+
                     for (let i = 0; i < rawData.length; i += 4) {
                         const px = rawData[i];
-                        if (px === 0 && !isModel) {
+                        const realValue = min_val + (px / 255) * (max_val - min_val);
+                        const displayValue = getDisplayValue(sourceId, realValue);
+
+                        if (!isVisibleRasterValue(sourceId, displayValue, tmpl, px)) {
                             rawData[i + 3] = 0;
-                        } else {
-                            const realValue = min_val + (px / 255) * (max_val - min_val);
-                            const displayValue = getDisplayValue(sourceId, realValue);
-
-                            // 1. Satellite Observations (GOES AOD): Filter out natural background optical noise
-                            if (isGoes && displayValue < breaks[0]) {
-                                rawData[i + 3] = 0;
-                                continue;
-                            }
-
-                            // 2. Model-based Simulations (HRRR & GEOS-CF): Transparent when rounding to 0 at configured decimals
-                            if ((isHrrr || isGeoscf) && displayValue < zeroThreshold) {
-                                rawData[i + 3] = 0;
-                                continue;
-                            }
-
-                            const rgb = getRasterColor(displayValue);
-                            rawData[i] = rgb[0];
-                            rawData[i + 1] = rgb[1];
-                            rawData[i + 2] = rgb[2];
-                            rawData[i + 3] = 220;
+                            continue;
                         }
+
+                        const rgb = getRasterColor(displayValue);
+                        rawData[i] = rgb[0];
+                        rawData[i + 1] = rgb[1];
+                        rawData[i + 2] = rgb[2];
+                        rawData[i + 3] = 220;
                     }
                     processingCtx.putImageData(imageData, 0, 0);
                 }
@@ -499,7 +503,7 @@ export function getRasterTooltipInfo(sourceId, lng, lat) {
     if (pxX < 0 || pxX >= store.imgW || pxY < 0 || pxY >= store.imgH) return null;
 
     const gray = store.grayscale[pxY * store.imgW + pxX];
-    if (gray === null || gray === undefined || gray === 0) return null;
+    if (gray === null || gray === undefined) return null;
 
     const { metadata } = store;
     const realValue = metadata.min_val + (gray / 255) * (metadata.max_val - metadata.min_val);
@@ -511,11 +515,13 @@ export function getRasterTooltipInfo(sourceId, lng, lat) {
     const isGoes = sourceId.includes("goes");
     const isGeoscf = sourceId.includes("geoscf");
     const isHrrrColmd = sourceId.includes("hrrr-colmd");
+    
+    const tmpl = LAYER_TEMPLATES.find(t => t.id === sourceId);
+    if (!isVisibleRasterValue(sourceId, displayValue, tmpl, gray)) return null;
 
     let layerTitle = "";
     let unitHtml = "";
 
-    const tmpl = LAYER_TEMPLATES.find(t => t.id === sourceId);
     if (tmpl) {
         layerTitle = tmpl.title;
         if (tmpl.hourly && !layerTitle.includes(" (hourly)")) {
