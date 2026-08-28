@@ -538,6 +538,11 @@ function uiShowHysplitModal(params = null) {
     // Hide original MapPost context menu
     const ctxMenu = document.getElementById("MapPostContextMenu");
     if (ctxMenu) ctxMenu.style.display = "none";
+    
+    if (!state.currentUser) {
+        utils.showAuthOverlay();
+        return;
+    }
 
     const lngLat = state.pendingLngLat;
     if (!lngLat) return;

@@ -1,4 +1,5 @@
 
+import { updateAuthButton } from "./signin.js";
 import { map } from "./map-init.js";
 import * as utils from "./utils.js";
 import { auth } from "./fb-init.js";
@@ -136,6 +137,48 @@ function ensureTSplotModalDOM() {
                   font-size: 1.6rem;
                   font-weight: bold;">
       </div>
+      <!-- Navigation Confirmation Overlay / Dialog -->
+      <div id="TSplotConfirmOverlay" 
+           style="display:none; 
+                  position:absolute; 
+                  top:0; 
+                  left:0; 
+                  width:100%; 
+                  height:100%; 
+                  background:rgba(0, 0, 0, 0.45); 
+                  backdrop-filter:blur(3px); 
+                  -webkit-backdrop-filter:blur(3px); 
+                  z-index:100; 
+                  align-items:center; 
+                  justify-content:center;">
+        <div id="TSplotConfirmDialog" 
+             style="background:var(--color-bg); 
+                    border:0.1rem solid var(--card-shadow); 
+                    border-radius:0.6rem; 
+                    padding:1.5rem 2.2rem; 
+                    text-align:center; 
+                    max-width:40rem; 
+                    width:90%;">
+          <div id="TSplotConfirmTitle" 
+               style="font-size:1.6rem; font-weight:bold; color:var(--text-strong); margin-bottom:1rem;">
+            Navigate Map
+          </div>
+          <div id="TSplotConfirmMsg" 
+               style="font-size:1.4rem; color:var(--text-main); margin-bottom:1.8rem;">
+            Would you like to navigate the map to this date and time?
+          </div>
+          <div style="display:flex; justify-content:center; gap:1.2rem;">
+            <button id="TSplotConfirmYesBtn" 
+                    style="cursor:pointer; font-size:1.6rem; padding:0.6rem 1.6rem; border-radius:0.4rem; background:#059669; color:#ffffff; border:none;">
+              Yes
+            </button>
+            <button id="TSplotConfirmCancelBtn" 
+                    style="cursor:pointer; font-size:1.6rem; padding:0.6rem 1.6rem; border-radius:0.4rem; background:var(--color-bg); color:var(--text-main); border:0.1rem solid var(--card-shadow);">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>`;
@@ -167,6 +210,124 @@ const tzLocalBtn = document.getElementById("TSplotTzLocalBtn");
 if (closeBtn) {
     closeBtn.addEventListener("click", hideTSplotModal);
 }
+
+let pendingNavTarget = null;
+
+function promptMapNavigation(dateStr, hourStr, displayLabel, isDaily) {
+    const overlay = document.getElementById("TSplotConfirmOverlay");
+    const msgEl = document.getElementById("TSplotConfirmMsg");
+    if (!overlay || !msgEl) return;
+
+    pendingNavTarget = {
+        dateStr,
+        hourStr,
+        isDaily
+    };
+
+    msgEl.innerHTML = `Would you like to navigate the map to<br/><b style="color:var(--card-shadow);">${displayLabel}</b>?`;
+    overlay.style.display = "flex";
+}
+
+let tsplotNavMarker = null;
+let tsplotMapClickListener = null;
+
+function setTSPlotNavMarker(lng, lat) {
+    if (!map) return;
+    if (tsplotNavMarker) {
+        tsplotNavMarker.remove();
+        tsplotNavMarker = null;
+    }
+    if (tsplotMapClickListener) {
+        map.off("click", tsplotMapClickListener);
+        tsplotMapClickListener = null;
+    }
+
+    map.flyTo({
+        center: [lng, lat],
+        zoom: Math.max(map.getZoom(), 8),
+        essential: true
+    });
+
+    if (window.maplibregl?.Marker) {
+        const marker = new window.maplibregl.Marker()
+            .setLngLat([lng, lat])
+            .addTo(map);
+
+        const clearMarker = () => {
+            if (tsplotNavMarker) {
+                tsplotNavMarker.remove();
+                tsplotNavMarker = null;
+            }
+            if (tsplotMapClickListener) {
+                map.off("click", tsplotMapClickListener);
+                tsplotMapClickListener = null;
+            }
+        };
+
+        marker.getElement().addEventListener("click", (e) => {
+            e.stopPropagation();
+            clearMarker();
+        });
+
+        tsplotMapClickListener = clearMarker;
+        setTimeout(() => {
+            if (tsplotNavMarker && tsplotMapClickListener) {
+                map.on("click", tsplotMapClickListener);
+            }
+        }, 300);
+
+        tsplotNavMarker = marker;
+    }
+}
+
+function initNavConfirmDialog() {
+    const overlay = document.getElementById("TSplotConfirmOverlay");
+    const yesBtn = document.getElementById("TSplotConfirmYesBtn");
+    const cancelBtn = document.getElementById("TSplotConfirmCancelBtn");
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (overlay) overlay.style.display = "none";
+            pendingNavTarget = null;
+        });
+    }
+
+    if (yesBtn) {
+        yesBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (overlay) overlay.style.display = "none";
+            if (!pendingNavTarget) return;
+
+            const { dateStr, hourStr, isDaily } = pendingNavTarget;
+            pendingNavTarget = null;
+
+            const targetLng = state.currentTSContext?.lng;
+            const targetLat = state.currentTSContext?.lat;
+
+            const datePicker = document.getElementById("datePicker");
+            if (datePicker && dateStr) {
+                datePicker.value = dateStr;
+                datePicker.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+
+            if (!isDaily && hourStr !== null) {
+                const timePicker = document.getElementById("timePicker");
+                if (timePicker) {
+                    timePicker.value = String(hourStr).padStart(2, "0");
+                    timePicker.dispatchEvent(new Event("change", { bubbles: true }));
+                }
+            }
+
+            hideTSplotModal();
+
+            if (targetLng !== undefined && targetLat !== undefined) {
+                setTSPlotNavMarker(targetLng, targetLat);
+            }
+        });
+    }
+}
+initNavConfirmDialog();
 
 const state = {
     pendingLngLat: null,
@@ -363,6 +524,12 @@ if (tsplotBtn) {
         // Hide context menu
         const ctxMenu = document.getElementById("MapPostContextMenu");
         if (ctxMenu) ctxMenu.style.display = "none";
+        
+        // Prompt login if not authenticated
+        if (!auth.currentUser) {
+            utils.showAuthOverlay();
+            return;
+        }
 
         // Show time-series profile for the clicked coordinate
         if (state.pendingLngLat) {
@@ -371,8 +538,15 @@ if (tsplotBtn) {
     });
 }
 
+document.addEventListener("smokelyzeAuthChanged", (e) => {
+    updateAuthButton("MapPostBtnTSplot", e.detail?.user, "Time-Series Plot");
+});
+
 function hideTSplotModal() {
     if (modal) modal.style.display = "none";
+    const overlay = document.getElementById("TSplotConfirmOverlay");
+    if (overlay) overlay.style.display = "none";
+    pendingNavTarget = null;
     const dom = document.getElementById("TSplotChartContainer");
     if (dom) {
         const chart = echarts.getInstanceByDom(dom);
@@ -612,7 +786,6 @@ async function showTSProfile(lng, lat, customLookback = null, customLookforward 
     let chartDateStr = selectedDateStr;
     let queryDateStr = selectedDateStr;
 
-    const rangeControlsEl = document.getElementById("TSplotRangeControls");
     const isVectorDaily = (activeConfig.type === "airnow_daily" || activeConfig.type === "daily_vector" || activeConfig.type === "airnow_hourly");
     const isHourly = (activeConfig.type === "airnow_hourly" || activeConfig.type === "hourly_raster");
     const isDaily = (activeConfig.type === "airnow_daily" || activeConfig.type === "daily_vector" || activeConfig.type === "raster") || activeConfig.sourceId.includes("tropomi");
@@ -680,7 +853,7 @@ async function showTSProfile(lng, lat, customLookback = null, customLookforward 
             const features = map.queryRenderedFeatures(bbox, { layers: [activeConfig.mapLayerId] });
 
             if (features.length === 0) {
-                showError("Please make sure to click directly on a station marker.");
+                showError("No data point found nearby. Please click on or near a visible data point.");
                 return;
             }
             const props = features[0].properties;
@@ -697,19 +870,13 @@ async function showTSProfile(lng, lat, customLookback = null, customLookforward 
             const isHourly = (activeConfig.type === "airnow_hourly");
             const defaultVal = isHourly ? 1 : 4;
 
-            let lookback = (customLookback !== null) ? customLookback : null;
-            let lookforward = (customLookforward !== null) ? customLookforward : null;
+            let lookback = customLookback;
+            let lookforward = customLookforward;
 
             if (lookback === null) {
-                if (state.lastLayerType !== activeConfig.type) {
-                    lookback = defaultVal;
-                    lookforward = defaultVal;
-                } else {
-                    lookback = parseInt(lookbackInput?.value, 10);
-                    if (isNaN(lookback)) lookback = defaultVal;
-                    lookforward = parseInt(lookforwardInput?.value, 10);
-                    if (isNaN(lookforward)) lookforward = defaultVal;
-                }
+                const isSameType = (state.lastLayerType === activeConfig.type);
+                lookback = isSameType ? (parseInt(lookbackInput?.value, 10) || defaultVal) : defaultVal;
+                lookforward = isSameType ? (parseInt(lookforwardInput?.value, 10) || defaultVal) : defaultVal;
             }
             state.lastLayerType = activeConfig.type;
 
@@ -942,6 +1109,7 @@ function renderChart(data, activeConfig, localSelectedDateStr, utcDateStr, targe
     const xAxisOption = isDaily ? {
         type: "category",
         boundaryGap: false,
+        triggerEvent: true,
         data: xVals,
         axisLabel: {
             color: textColor,
@@ -969,6 +1137,7 @@ function renderChart(data, activeConfig, localSelectedDateStr, utcDateStr, targe
     } : {
         type: "category",
         boundaryGap: false,
+        triggerEvent: true,
         data: xVals,
         axisLabel: {
             color: textColor,
@@ -1065,6 +1234,14 @@ ${String(hour).padStart(2, "0")}`;
                         html += `${p.marker} ${p.seriesName}: <b>${formattedVal}</b><br/>`;
                     }
                 });
+                html += `
+                    <div style="color: var(--card-shadow);
+                                margin-top: 0.6rem;
+                                border-top: 0.2rem solid var(--text-main);
+                                padding-top: 0.4rem;
+                                text-align: center;">
+                        *Click point to navigate map
+                    </div>`;
                 return html;
             }
         },
@@ -1107,6 +1284,7 @@ ${String(hour).padStart(2, "0")}`;
                 data: yVals,
                 symbol: "circle",
                 symbolSize: 8,
+                cursor: "pointer",
                 itemStyle: {
                     color: primaryColor,
                     borderColor: bgColor,
@@ -1125,5 +1303,75 @@ ${String(hour).padStart(2, "0")}`;
     };
 
     chart.setOption(option);
+
+    function handleNavByIndex(ptIndex) {
+        if (ptIndex === undefined || ptIndex === null || ptIndex < 0 || ptIndex >= data.length) return;
+        const rawPt = data[ptIndex];
+        const transPt = transformedData[ptIndex];
+        if (!rawPt) return;
+
+        let targetLocalDateStr = "";
+        let targetLocalHour = null;
+        let displayLabel = "";
+
+        if (isDaily) {
+            targetLocalDateStr = rawPt.date;
+            displayLabel = targetLocalDateStr;
+        } else {
+            // Extract UTC timestamp
+            let utcDate;
+            if (rawPt.date && rawPt.date.includes(" ")) {
+                const [dStr, tStr] = rawPt.date.split(" ");
+                const [y, m, dt] = dStr.split("-").map(Number);
+                const h = parseInt(tStr.split(":")[0], 10);
+                utcDate = new Date(Date.UTC(y, m - 1, dt, h, 0, 0));
+            } else {
+                const h = rawPt.hour !== undefined ? rawPt.hour : 0;
+                const [qy, qm, qd] = utcDateStr.split("-").map(Number);
+                utcDate = new Date(Date.UTC(qy, qm - 1, qd, h, 0, 0));
+            }
+
+            // User browser local date & hour for map datePicker & timePicker
+            const localY = utcDate.getFullYear();
+            const localM = String(utcDate.getMonth() + 1).padStart(2, "0");
+            const localD = String(utcDate.getDate()).padStart(2, "0");
+            const localH = String(utcDate.getHours()).padStart(2, "0");
+            targetLocalDateStr = `${localY}-${localM}-${localD}`;
+            targetLocalHour = localH;
+
+            if (isLocalTz) {
+                displayLabel = `${transPt.chartFullStr} (${state.siteTzAbbr})`;
+            } else {
+                displayLabel = `${transPt.chartFullStr} (UTC)`;
+            }
+        }
+
+        promptMapNavigation(targetLocalDateStr, targetLocalHour, displayLabel, isDaily);
+    }
+
+    // 1. Direct component clicks (series dots, markers, or x-axis labels)
+    chart.on("click", function (params) {
+        if (!params) return;
+        if (params.dataIndex !== undefined) {
+            handleNavByIndex(params.dataIndex);
+        } else if (params.componentType === "xAxis") {
+            const clickedVal = params.value;
+            const idx = xVals.indexOf(clickedVal);
+            if (idx !== -1) handleNavByIndex(idx);
+        }
+    });
+
+    // 2. Click anywhere along the vertical time column in the chart grid area
+    chart.getZr().on("click", function (event) {
+        if (event.target) return; // Handled by chart element click
+        const pointInPixel = [event.offsetX, event.offsetY];
+        if (chart.containPixel("grid", pointInPixel)) {
+            const pointInGrid = chart.convertFromPixel({ seriesIndex: 0 }, pointInPixel);
+            if (pointInGrid && pointInGrid[0] !== undefined) {
+                const ptIndex = Math.round(pointInGrid[0]);
+                handleNavByIndex(ptIndex);
+            }
+        }
+    });
 }
 

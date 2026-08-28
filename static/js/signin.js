@@ -131,13 +131,11 @@ onAuthStateChanged(auth, async (user) => {
         elements: [
             "MapBtnAnalytics",
             "AerscreenToggle",
-            "MapPostBtnAerscreen",
-            "MapPostBtnTSplot"
+            "MapPostBtnAerscreen"
         ],
         drawers: [
             { id: "AnalyticsModalOverlay", close: (el) => el.style.display = "none" },
-            { id: "AerscreenDrawer", close: (el) => el.classList.remove("open") },
-            { id: "TSplotModalOverlay", close: (el) => el.style.display = "none" }
+            { id: "AerscreenDrawer", close: (el) => el.classList.remove("open") }
         ]
     };
     

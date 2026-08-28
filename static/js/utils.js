@@ -521,9 +521,55 @@ export function highlightLocation(coords, p, dataSource, targetZoom = 8) {
       .setLngLat(coords)
       .addTo(mapLocal);
 
-    // Allow clicking the marker itself to clear selection
-    marker.getElement().addEventListener("click", (e) => {
-      e.stopPropagation(); // Prevent map click
+    const markerEl = marker.getElement();
+    markerEl.style.cursor = "pointer";
+    markerEl.insertAdjacentHTML("beforeend", `
+      <button class="marker-context-btn" 
+              title="Quick Actions" 
+              style="position:absolute; 
+                     top:-1.5rem; 
+                     right:-1.5rem; 
+                     width:2.5rem; 
+                     height:2.5rem; 
+                     border-radius:50%; 
+                     background:var(--card-shadow); 
+                     color:var(--color-bg); 
+                     border:0.1rem solid var(--color-bg); 
+                     font-size:2rem; 
+                     display:flex; 
+                     align-items:center; 
+                     justify-content:center; 
+                     cursor:pointer; 
+                     padding:0; 
+                     z-index:5;">
+        +
+      </button>
+    `);
+
+    const btn = markerEl.querySelector(".marker-context-btn");
+    if (btn) {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const lngLat = new window.maplibregl.LngLat(coords[0], coords[1]);
+        const point = mapLocal.project(coords);
+        const rect = mapLocal.getCanvas().getBoundingClientRect();
+
+        mapLocal.fire("contextmenu", {
+          lngLat: lngLat,
+          point: point,
+          preventDefault: () => { },
+          defaultPrevented: false,
+          originalEvent: {
+            clientX: rect.left + point.x + 15,
+            clientY: rect.top + point.y - 15,
+            preventDefault: () => { }
+          }
+        });
+      });
+    }
+
+    markerEl.addEventListener("click", (e) => {
+      e.stopPropagation();
       clearHighlight();
     });
 

@@ -114,13 +114,14 @@ exports.handler = async (event) => {
     return { statusCode: 401, headers: corsHeaders, body: "Invalid Session" };
   }
 
-  // 1b. Validate Role in Firestore (Allow admin & premium)
+  // 1b. Validate Role in Firestore (Allow admin & premium) - Commented out to allow all verified authenticated users
+  /*
   try {
     const db = admin.firestore();
     const userSnap = await db.collection("smokelyze_users").doc(decodedToken.uid).get();
     const role = userSnap.exists ? userSnap.data().role : "";
     const allowedRoles = ["admin", "premium"];
-    
+
     if (!allowedRoles.includes(role)) {
       console.warn(`[SECURITY] Access Blocked: Non-authorized UID ${decodedToken.uid} (role: ${role}) tried to query tsplot API!`);
       return { statusCode: 403, headers: corsHeaders, body: "Access Denied: Paid or Admin role required" };
@@ -129,6 +130,7 @@ exports.handler = async (event) => {
     console.error(`[SECURITY] Firestore Admin/Premium check failed:`, dbError.message);
     return { statusCode: 500, headers: corsHeaders, body: "Internal Server Error" };
   }
+  */
 
   // 2. Parse Query Params
   const qs = event.queryStringParameters || {};
