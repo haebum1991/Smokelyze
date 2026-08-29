@@ -1,4 +1,4 @@
-const CACHE_NAME = "v-20260828-1209"; // R에서 자동으로 생성된 버전
+const CACHE_NAME = "v-20260829-0239"; // R에서 자동으로 생성된 버전
 const OFFLINE_URL = "/offline/";
 
 const requiredFiles = [
@@ -21,7 +21,7 @@ const requiredFiles = [
     // --- JS Files ---
     "/js/aerscreen.js",
     "/js/ai-api.js",
-    "/js/ai-chat.js",
+    "/js/ai-copilot.js",
     "/js/ai-config.js",
     "/js/ai-tools.js",
     "/js/airnow-loader.js",

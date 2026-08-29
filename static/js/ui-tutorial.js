@@ -37,10 +37,10 @@ const TUTORIAL_STEPS = [
         },
     },
     {
-        element: "#AiChatToggle",
+        element: "#AiCopilotToggle",
         popover: {
-            title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-chat"/></svg></span> AI Assistant (Beta)',
-            description: "Got questions? Chat with our AI assistant about wildfire smoke, air quality, or anything on the map. It understands the data you're looking at! (This feature is currently under further development.)",
+            title: '<span class="map-tut-pop-icon-box"><svg class="map-tut-pop-icon"><use xlink:href="#icon-chat"/></svg></span> AI Copilot',
+            description: "Got questions? Ask AI Copilot about wildfire smoke, air quality, or request custom data analyses and interactive plots directly onto your canvas!",
             side: "left",
             align: "start",
         },
@@ -332,10 +332,10 @@ export class MapTutorial {
         if (statsToggle) statsToggle.classList.remove("active");
         document.body.classList.remove("FigurePage-drawer-open");
 
-        // 3. AI Chat Drawer
-        const aiDrawer = document.getElementById("AiChatDrawer");
-        const aiToggle = document.getElementById("AiChatToggle");
-        if (aiDrawer) aiDrawer.classList.add("collapsed");
+        // 3. AI Copilot Modal
+        const aiModal = document.getElementById("AiCopilotModalOverlay");
+        const aiToggle = document.getElementById("AiCopilotToggle");
+        if (aiModal) aiModal.style.display = "none";
         if (aiToggle) aiToggle.classList.remove("active");
 
         // 4. Description Drawer

@@ -144,10 +144,10 @@ export function closeAllDrawersExceptAccordion() {
   setAerscreenDrawer?.(false);
   setAreaStatsDrawer?.(false);
 
-  // 2) AI Chat (Uses different class structure)
-  const aiDrawer = document.getElementById("AiChatDrawer");
-  const aiToggleBtn = document.getElementById("AiChatToggle");
-  if (aiDrawer) aiDrawer.classList.add("collapsed");
+  // 2) AI Copilot Modal
+  const aiModal = document.getElementById("AiCopilotModalOverlay");
+  const aiToggleBtn = document.getElementById("AiCopilotToggle");
+  if (aiModal) aiModal.style.display = "none";
   if (aiToggleBtn) aiToggleBtn.classList.remove("active");
 }
 

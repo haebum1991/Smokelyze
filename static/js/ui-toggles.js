@@ -872,7 +872,7 @@ const KEY_TIPS_MAP = {
     "i": { id: "DescToggle", label: "I" },       // Information (Descriptions)
     "n": { id: "WFnewsToggle", label: "N" },     // News
     "p": { id: "MapPostToggle", label: "P" },    // Post (MapPost)
-    "a": { id: "AiChatToggle", label: "A", fallbackId: "AiChatDrawerClose" },  // AiChat
+    "a": { id: "AiCopilotToggle", label: "A", fallbackId: "AiCopilotModalClose" },  // AI Copilot
     "c": { id: "MapBtnCapture", label: "C" },    // Capture
     "r": { id: "MapBtnReset", label: "R" },      // Reset All
     "t": { id: "MapBtnTutorial", label: "T" },   // Tutorial
@@ -1039,7 +1039,7 @@ const showKeyTips = () => {
         "i": "Layer Descriptions",
         "n": "Wildfire News",
         "p": "MapPost",
-        "a": "AI Chat",
+        "a": "AI Copilot",
         "c": "Map Capture",
         "r": "Reset All",
         "t": "Quick Start",
@@ -1104,7 +1104,7 @@ const handleCommonShortcut = (key) => {
             setAccordionCollapsed(!accordion?.classList.contains("collapsed"));
             break;
         case "a":
-            document.getElementById("AiChatToggle")?.click();
+            document.getElementById("AiCopilotToggle")?.click();
             break;
         case "c":
             document.getElementById("MapBtnCapture")?.click();
