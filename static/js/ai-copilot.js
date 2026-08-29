@@ -242,7 +242,7 @@ function createAiCopilotDOM() {
     pointer-events: none;
     z-index: calc(var(--z-highest) - 1);
   ">
-    <div class="MapPost-modal is-collapsed" id="AiCopilotModalContainer" style="
+    <div class="is-collapsed" id="AiCopilotModalContainer" style="
       position: fixed;
       top: var(--header-height-total);
       bottom: 0;
