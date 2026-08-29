@@ -168,11 +168,12 @@ export function closeAllExcept(activeId, onlyIds = null) {
  * Helper: Add swipe-to-close functionality (Modularized)
  */
 export function addSwipeClose(el, options = {}) {
-    const { direction = "right", threshold = 60, onClose = () => { }, maxWidth = 1024, strictMaxWidth = false } = options;
+    const { direction = "right", threshold = 60, onClose = () => { }, maxWidth = 1024, strictMaxWidth = false, handleSelector = null } = options;
 
     let touchStartX = 0;
     let touchStartY = 0;
     let isDragging = false;
+    let canSwipe = true;
 
     function checkSwipeEnabled() {
         if (strictMaxWidth) {
@@ -185,18 +186,44 @@ export function addSwipeClose(el, options = {}) {
 
     el.addEventListener("touchstart", (e) => {
         if (!checkSwipeEnabled()) return;
+
+        const target = e.target;
+
+        // 1. If handleSelector is specified, only allow dragging when touching the handle
+        if (handleSelector) {
+            canSwipe = !!target.closest(handleSelector);
+        } else {
+            // 2. Prevent swipe if touching inside an active scrollable container that is already scrolled
+            const scrollContainer = target.closest("textarea, input, select, [style*='overflow'], #AiCopilotChatList, .scrollable");
+            if (scrollContainer && scrollContainer !== el && scrollContainer.scrollTop > 0) {
+                canSwipe = false;
+            } else {
+                canSwipe = true;
+            }
+        }
+
+        if (!canSwipe) return;
+
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         isDragging = false;
     }, { passive: true });
 
     el.addEventListener("touchmove", (e) => {
-        if (!checkSwipeEnabled()) return;
+        if (!checkSwipeEnabled() || !canSwipe) return;
 
         const touchMoveX = e.touches[0].clientX;
         const touchMoveY = e.touches[0].clientY;
         const deltaX = touchMoveX - touchStartX;
         const deltaY = touchMoveY - touchStartY;
+
+        // If dragging vertically, ensure we are not scrolling an inner container
+        if (direction === "down") {
+            const scrollContainer = e.target.closest("textarea, input, select, [style*='overflow'], #AiCopilotChatList, .scrollable");
+            if (scrollContainer && scrollContainer !== el && scrollContainer.scrollTop > 0) {
+                return;
+            }
+        }
 
         let isClosingMove = false;
         if (direction === "right" && deltaX > 0) isClosingMove = true;
@@ -205,7 +232,7 @@ export function addSwipeClose(el, options = {}) {
 
         if (isClosingMove) {
             const distance = direction === "down" ? deltaY : Math.abs(deltaX);
-            if (!isDragging && distance > 5) {
+            if (!isDragging && distance > 12) {
                 el.style.transition = "none";
                 isDragging = true;
             }
@@ -218,7 +245,10 @@ export function addSwipeClose(el, options = {}) {
     }, { passive: true });
 
     el.addEventListener("touchend", (e) => {
-        if (!checkSwipeEnabled() || !isDragging) return;
+        if (!checkSwipeEnabled() || !isDragging || !canSwipe) {
+            isDragging = false;
+            return;
+        }
 
         const touchEndX = e.changedTouches[0].clientX;
         const touchEndY = e.changedTouches[0].clientY;
@@ -235,11 +265,8 @@ export function addSwipeClose(el, options = {}) {
 
         if (reachedThreshold) {
             onClose();
-            // Optional: after calling onClose, we might want to keep the transform 
-            // but usually onClose hides the element via classes.
         }
 
-        // Reset transform to original position if not closed, or to ensure clean state
         el.style.removeProperty("transform");
 
         // Cleanup after transition finishes
@@ -250,6 +277,7 @@ export function addSwipeClose(el, options = {}) {
         }, 300);
 
         isDragging = false;
+        canSwipe = true;
     });
 }
 

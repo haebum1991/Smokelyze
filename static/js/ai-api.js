@@ -37,7 +37,7 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
         for (let turn = 0; turn < 15; turn++) {
             console.log(`[AI Network] Sending Turn ${turn + 1} request to backend...`);
             const currentContext = typeof generateContext === "function" ? generateContext() : dashboardContext;
-            const selectedModel = localStorage.getItem("smokelyze_gemini_model");
+            const selectedModel = localStorage.getItem("smokelyze_gemini_model") || "gemini-3.5-flash-lite";
 
             const requestBody = {
                 contents: contents,
