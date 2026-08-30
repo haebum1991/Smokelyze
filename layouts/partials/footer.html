@@ -452,18 +452,19 @@
       <div class="settings-group" style="text-align: left;">
       
         <label style="color: var(--card-shadow); font-size: 1.6rem;">
-          [Google Gemini API] for "Ai Chat"
+          [Google Gemini API] for "AI Analytics Copilot"
         </label>
         <hr>
         
         <label>
           A Google Gemini API Key is required to use the Smokelyze AI Assistant.
-          <strong style="color: var(--card-shadow);">Your key is stored only in your browser</strong>; 
-          it is used for secure transit during analysis but is 
-          <strong style="color: var(--card-shadow);">never stored on the server</strong>.
-          <strong style="color: var(--card-shadow);">Please note that your key is deleted upon logging out</strong>;
-          therefore, you need to log back in and register your key again.
+          <strong style="color: var(--card-shadow);">Your key is stored only in your local browser</strong>; 
+          it is used solely for secure transit during analysis and is 
+          <strong style="color: var(--card-shadow);">never stored on our servers</strong>.
+          API calls follow Google AI Studio's quota and billing terms (the default Free tier is recommended). Smokelyze is not responsible for any third-party API charges.
+          <strong style="color: var(--card-shadow);">Please note that your key is cleared upon logging out</strong> for security reasons.
         </label>
+        
         <div class="profile-group" style="margin-top: 1rem;">
           <input type="password" id="AiApiKey" placeholder="Enter Gemini API Key (AIzaSy...)" class="profile-input"
             style="width: 100%;">
