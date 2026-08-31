@@ -3,12 +3,27 @@ export function shiftDate(days = 0, months = 0, years = 0) {
   const dateInput = document.getElementById("datePicker");
   if (!dateInput) return;
   const parts = (dateInput.value || "").split("-");
-  const yyyy = Number(parts[0]), mm = Number(parts[1]), dd = Number(parts[2]);
+  let yyyy = Number(parts[0]), mm = Number(parts[1]), dd = Number(parts[2]);
   if (!yyyy || !mm || !dd) return;
 
-  const currentDate = new Date(Date.UTC(yyyy, mm - 1, dd));
-  if (years) currentDate.setUTCFullYear(currentDate.getUTCFullYear() + years);
-  if (months) currentDate.setUTCMonth(currentDate.getUTCMonth() + months);
+  if (years) yyyy += years;
+  if (months) {
+    mm += months;
+    while (mm < 1) {
+      mm += 12;
+      yyyy -= 1;
+    }
+    while (mm > 12) {
+      mm -= 12;
+      yyyy += 1;
+    }
+  }
+
+  // Clamp day to max days in target month (e.g. July 31 -> June 30, March 31 -> Feb 28)
+  const maxDaysInTargetMonth = new Date(Date.UTC(yyyy, mm, 0)).getUTCDate();
+  const targetDay = Math.min(dd, maxDaysInTargetMonth);
+
+  const currentDate = new Date(Date.UTC(yyyy, mm - 1, targetDay));
   if (days) currentDate.setUTCDate(currentDate.getUTCDate() + days);
 
   const newY = currentDate.getUTCFullYear();

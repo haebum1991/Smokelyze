@@ -150,6 +150,74 @@ export async function fetchLookbackNIFC(sourceKey, isoDate, lookbackDays = 0) {
 
             const geoJSON = await res.json();
             if (geoJSON?.features) {
+                
+                const stateMap = {
+                    "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas", "CA": "California",
+                    "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware", "DC": "District of Columbia", "FL": "Florida", "GA": "Georgia",
+                    "HI": "Hawaii", "ID": "Idaho", "IL": "Illinois", "IN": "Indiana", "IA": "Iowa",
+                    "KS": "Kansas", "KY": "Kentucky", "LA": "Louisiana", "ME": "Maine", "MD": "Maryland",
+                    "MA": "Massachusetts", "MI": "Michigan", "MN": "Minnesota", "MS": "Mississippi", "MO": "Missouri",
+                    "MT": "Montana", "NE": "Nebraska", "NV": "Nevada", "NH": "New Hampshire", "NJ": "New Jersey",
+                    "NM": "New Mexico", "NY": "New York", "NC": "North Carolina", "ND": "North Dakota", "OH": "Ohio",
+                    "OK": "Oklahoma", "OR": "Oregon", "PA": "Pennsylvania", "RI": "Rhode Island", "SC": "South Carolina",
+                    "SD": "South Dakota", "TN": "Tennessee", "TX": "Texas", "UT": "Utah", "VT": "Vermont",
+                    "VA": "Virginia", "WA": "Washington", "WV": "West Virginia", "WI": "Wisconsin", "WY": "Wyoming"
+                };
+
+                const periOrder = [
+                    "poly_IncidentName", "poly_IRWINID", "poly_CreateDate", "poly_DateCurrent", 
+                    "poly_PolygonDateTime", "poly_GISAcres", "attr_UniqueFireIdentifier", "attr_FireDiscoveryDateTime", 
+                    "attr_FireOutDateTime", "attr_ModifiedOnDateTime_dt", "attr_IncidentTypeCategory", "attr_POOState", 
+                    "attr_POOCounty", "attr_POOCity", "attr_FireCause", "attr_IncidentSize", "attr_PercentContained", 
+                    "attr_EstimatedCostToDate", "state"
+                ];
+
+                const inciOrder = [
+                    "IncidentName", "UniqueFireIdentifier", "IrwinID", "IncidentTypeCategory", 
+                    "POOState", "POOCounty", "POOCity", "FireDiscoveryDateTime", "FireOutDateTime", 
+                    "ModifiedOnDateTime_dt", "PercentContained", "FireCause", "DiscoveryAcres", 
+                    "IncidentSize", "InitialLatitude", "InitialLongitude", "state", "lon", "lat"
+                ];
+
+                const targetOrder = sourceKey.includes("peri") ? periOrder : (sourceKey.includes("inci") ? inciOrder : null);
+
+                geoJSON.features.forEach(f => {
+                    if (!f.properties) return;
+                    delete f.properties.geom;
+                    delete f.properties.geom_wkt;
+                    delete f.properties.uploaded_at;
+                    delete f.properties.rn;
+                    delete f.properties.date;
+
+                    const rawSt = f.properties.attr_POOState || f.properties.POOState;
+                    if (rawSt) {
+                        let s = String(rawSt).trim();
+                        const abbr = s.startsWith("US-") ? s.split("-")[1] : s;
+                        if (stateMap[abbr]) {
+                            f.properties.state = stateMap[abbr];
+                        } else if (!f.properties.state && abbr) {
+                            f.properties.state = abbr;
+                        }
+                    }
+
+                    // Reconstruct properties with exact original GCS key order
+                    if (targetOrder) {
+                        const orderedProps = {};
+                        targetOrder.forEach(k => {
+                            if (f.properties[k] !== undefined) {
+                                orderedProps[k] = f.properties[k];
+                            }
+                        });
+                        // Append any remaining keys
+                        Object.keys(f.properties).forEach(k => {
+                            if (orderedProps[k] === undefined) {
+                                orderedProps[k] = f.properties[k];
+                            }
+                        });
+                        f.properties = orderedProps;
+                    }
+                });
+                
                 loadedGeoJSON[sourceKey] = geoJSON;
                 loadedSources[sourceKey] = cacheKey;
 
