@@ -30,11 +30,13 @@ function ensureModalStyles() {
     style.textContent = `
         .update-modal-overlay {
             position: fixed;
-            top: var(--header-height-total);
+            top: 0;
+            left: 0;
+            right: 0;
             bottom: 0;
             width: 100vw;
-            height: calc(100vh - var(--header-height-total) - var(--footer-height));
-            height: calc(100dvh - var(--header-height-total) - var(--footer-height));
+            height: 100vh;
+            height: 100dvh;
             background: rgba(0, 0, 0, 0.65);
             backdrop-filter: blur(0.6rem);
             -webkit-backdrop-filter: blur(0.6rem);
@@ -42,17 +44,19 @@ function ensureModalStyles() {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 1rem;
+            padding: 1.5rem;
             box-sizing: border-box;
             animation: updateFadeIn 0.25s ease-out;
         }
 
         .update-modal-card {
             background: var(--color-bg);
-            border: 0.1rem solid var(--border-main);
+            border: 0.1rem solid var(--card-shadow, var(--border-main));
             border-radius: var(--border-radius-1p2rem, 1.2rem);
             box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.6);
             width: 50%;
+            max-height: calc(100vh - var(--header-height-total) - var(--footer-height));
+            max-height: calc(100dvh - var(--header-height-total) - var(--footer-height));
             height: 100%;
             display: flex;
             flex-direction: column;

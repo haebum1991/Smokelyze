@@ -279,6 +279,7 @@ function getNextUpdateCountdown(layer) {
 
 /**
  * Calculates dynamic latest data availability string (e.g. "2026-08-23 (D-1)")
+ * Accurately branches between Local calendar date and UTC calendar date based on useLocalTime toggle
  */
 function getCalculatedLatestData(layer) {
     if (!layer) return "-";
@@ -286,12 +287,24 @@ function getCalculatedLatestData(layer) {
     if (layer.daysLag === undefined || layer.daysLag === null) return "As-Available";
 
     const now = new Date();
-    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    d.setUTCDate(d.getUTCDate() - layer.daysLag);
+    let yyyy, mm, dd;
 
-    const yyyy = d.getUTCFullYear();
-    const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-    const dd = String(d.getUTCDate()).padStart(2, "0");
+    if (useLocalTime) {
+        // Local Timezone calculation
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        d.setDate(d.getDate() - layer.daysLag);
+        yyyy = d.getFullYear();
+        mm = String(d.getMonth() + 1).padStart(2, "0");
+        dd = String(d.getDate()).padStart(2, "0");
+    } else {
+        // UTC Timezone calculation
+        const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        d.setUTCDate(d.getUTCDate() - layer.daysLag);
+        yyyy = d.getUTCFullYear();
+        mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+        dd = String(d.getUTCDate()).padStart(2, "0");
+    }
+
     const dateStr = `${yyyy}-${mm}-${dd}`;
 
     if (layer.daysLag === 0) return `${dateStr} (Today)`;
@@ -370,7 +383,7 @@ function renderTimetableContent() {
                         <th style="width: 23%;">Update Frequency</th>
                         <th style="width: 21%;">Scheduled Times (${useLocalTime ? `Local (${tzInfo.tzAbbr})` : "UTC"})</th>
                         <th style="width: 14%;">Next Run</th>
-                        <th style="width: 16%;">Latest Data</th>
+                        <th style="width: 16%;">Latest Data (${useLocalTime ? `Local` : "UTC"})</th>
                     </tr>
                 </thead>
                 <tbody>

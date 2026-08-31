@@ -189,8 +189,8 @@ export function showAiCopilotModal() {
     const chatList = document.getElementById("AiCopilotChatList");
     if (chatList) {
       chatList.insertAdjacentHTML("beforeend", `
-        <div id="AiCopilotApiKeyWarning" style="background: rgba(250, 200, 88, 0.1); border: 0.1rem solid var(--card-shadow); padding: 1rem; border-radius: 0.6rem; font-size: 1.2rem; color: var(--text-main);">
-          API Key is not set yet. Please register your Gemini API key in <strong>[Profiles] &gt; [Settings] &gt; [Google Gemini API]</strong> to activate all real-time features.
+        <div id="AiCopilotApiKeyWarning" class="open-settings-trigger" style="background: rgba(250, 200, 88, 0.12); border: 0.1rem solid var(--card-shadow); padding: 1rem 1.2rem; border-radius: var(--border-radius-0p8rem, 0.8rem); font-size: 1.25rem; color: var(--text-main); line-height: 1.5; cursor: pointer; transition: all 0.2s ease;" title="Click to open Settings">
+          API Key is not set yet. Please register your Gemini API key in <strong style="color: var(--card-shadow); text-decoration: underline; cursor: pointer;">[Profiles] &gt; [Settings] &gt; [Google Gemini API]</strong> to activate all real-time features.
         </div>
       `);
       chatList.scrollTop = chatList.scrollHeight;
@@ -836,8 +836,8 @@ function bindAiCopilotEvents() {
       const list = document.getElementById("AiCopilotChatList");
       if (list) {
         list.insertAdjacentHTML("beforeend", `
-          <div id="AiCopilotApiKeyWarning" style="background: rgba(250, 200, 88, 0.1); border: 0.1rem solid var(--card-shadow); padding: 1rem; border-radius: 0.6rem; font-size: 1.2rem; color: var(--text-main);">
-            API Key is not set yet. Please register your Gemini API key in <strong>[Profiles] &gt; [Settings] &gt; [Google Gemini API]</strong> to activate all real-time features.
+          <div id="AiCopilotApiKeyWarning" class="open-settings-trigger" style="background: rgba(250, 200, 88, 0.12); border: 0.1rem solid var(--card-shadow); padding: 1rem 1.2rem; border-radius: var(--border-radius-0p8rem, 0.8rem); font-size: 1.25rem; color: var(--text-main); line-height: 1.5; cursor: pointer; transition: all 0.2s ease;" title="Click to open Settings">
+            API Key is not set yet. Please register your Gemini API key in <strong style="color: var(--card-shadow); text-decoration: underline; cursor: pointer;">[Profiles] &gt; [Settings] &gt; [Google Gemini API]</strong> to activate all real-time features.
           </div>
         `);
         list.scrollTop = list.scrollHeight;
@@ -875,6 +875,19 @@ function bindAiCopilotEvents() {
 
   // Event Delegation for Action Chips & Chart Links in Chat Feed
   document.getElementById("AiCopilotChatList")?.addEventListener("click", (e) => {
+  
+    const settingsTrigger = e.target.closest(".open-settings-trigger");
+    if (settingsTrigger) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof window.openSettingsModal === "function") {
+        window.openSettingsModal();
+      } else {
+        document.getElementById("ProfileBtnSettings")?.click();
+      }
+      return;
+    }
+    
     const chip = e.target.closest(".copilot-action-chip");
     if (chip) {
       e.preventDefault();

@@ -395,23 +395,31 @@ if (profileCopyUidBtn) {
 }
 
 // Settings Modal
-if (profileSettingsBtn) {
-    profileSettingsBtn.addEventListener("click", async () => {
-        const user = auth.currentUser;
-        if (!user) return;
+export async function openSettingsModal() {
+    const user = auth.currentUser;
+    if (!user) {
+        const authBtn = document.getElementById("HeaderAuthBtn");
+        if (authBtn) authBtn.click();
+        else if (typeof utils?.showAuthOverlay === "function") utils.showAuthOverlay();
+        return;
+    }
 
-        if (settingsModal) settingsModal.style.display = "flex";
-        
-        const aiMsg = document.getElementById("AiMessage");
-        if (aiMsg) aiMsg.innerText = "";
-        
-        try {
-            const snap = await getDoc(doc(db, "smokelyze_users", user.uid));
-            if (snap.exists()) {
-                renderGroupList(snap.data().mygroup || []);
-            }
-        } catch (e) { console.error("Fetch Settings Err:", e); }
-    });
+    if (settingsModal) settingsModal.style.display = "flex";
+    
+    const aiMsg = document.getElementById("AiMessage");
+    if (aiMsg) aiMsg.innerText = "";
+    
+    try {
+        const snap = await getDoc(doc(db, "smokelyze_users", user.uid));
+        if (snap.exists()) {
+            renderGroupList(snap.data().mygroup || []);
+        }
+    } catch (e) { console.error("Fetch Settings Err:", e); }
+}
+window.openSettingsModal = openSettingsModal;
+
+if (profileSettingsBtn) {
+    profileSettingsBtn.addEventListener("click", openSettingsModal);
 }
 
 if (settingsCloseBtn) settingsCloseBtn.addEventListener("click", () => {
