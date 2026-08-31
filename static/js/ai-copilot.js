@@ -72,7 +72,9 @@ let copilotState = {
   plotHistory: [],
   currentPlotIndex: -1,
   persistedDate: null,
-  persistedAqs: null
+  persistedAqs: null,
+  isGenerating: false,
+  abortController: null
 };
 
 export function generateDashboardContext(userInput = "") {
@@ -476,18 +478,8 @@ function createAiCopilotDOM() {
               overflow-y: auto;
             "></textarea>
             <div style="display: flex; flex-direction: column; gap: 0.6rem; position: relative;">
-              <button id="AiCopilotChatSubmitBtn" class="copilot-btn" style="
-                flex: 1;
-                padding: 0.4rem 1.2rem;
-                font-size: 1.4rem;
-                background-color: var(--card-shadow);
-                color: var(--color-bg);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-              ">Send</button>
-
-              <!-- Model Selector Trigger (1:1 Equal Height with Send) -->
+              
+              <!-- Model Selector Trigger (Top) -->
               <button id="AiCopilotModelBtn" class="copilot-btn" style="
                 flex: 1;
                 padding: 0.4rem 1.2rem;
@@ -507,6 +499,18 @@ function createAiCopilotDOM() {
                 <span id="AiCopilotModelLabel">3.5-lite</span>
                 <span style="font-size: 1.2rem;">▾</span>
               </button>
+              
+              <!-- Send Button (Bottom) -->
+              <button id="AiCopilotChatSubmitBtn" class="copilot-btn" style="
+                flex: 1;
+                padding: 0.4rem 1.2rem;
+                font-size: 1.4rem;
+                background-color: var(--card-shadow);
+                color: var(--color-bg);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              ">Send</button>
 
               <!-- Gemini-Style Dark Popup Menu -->
               <div id="AiCopilotModelMenu" style="
@@ -515,7 +519,8 @@ function createAiCopilotDOM() {
                 bottom: 100%;
                 right: 0;
                 margin-bottom: 0.6rem;
-                width: 16rem;
+                min-width: 22rem;
+                width: max-content;
                 background: var(--color-bg);
                 border: 0.1rem solid var(--border-main);
                 border-radius: 0.6rem;
@@ -532,10 +537,11 @@ function createAiCopilotDOM() {
                   display: flex;
                   flex-direction: column;
                   gap: 0.2rem;
+                  white-space: nowrap;
                   transition: background-color 0.3s ease;
                 ">
-                  <div style="font-size: 1.4rem; font-weight: bold; color: var(--card-shadow);">3.5-flash-lite</div>
-                  <div style="font-size: 1.2rem; color: var(--text-main);">Fastest analysis</div>
+                  <div style="font-size: 1.4rem; font-weight: bold; color: var(--card-shadow); white-space: nowrap;">Gemini-3.5-flash-lite</div>
+                  <div style="font-size: 1.2rem; color: var(--text-main); white-space: nowrap;">Ultra-low latency & Tool Calling</div>
                 </div>
                 <div class="copilot-model-item" data-model="gemini-3.1-flash-lite" data-label="3.1-lite" style="
                   padding: 0.6rem 0.8rem;
@@ -544,10 +550,11 @@ function createAiCopilotDOM() {
                   display: flex;
                   flex-direction: column;
                   gap: 0.2rem;
+                  white-space: nowrap;
                   transition: background-color 0.3s ease;
                 ">
-                  <div style="font-size: 1.4rem; font-weight: bold; color: var(--card-shadow);">3.1-flash-lite</div>
-                  <div style="font-size: 1.2rem; color: var(--text-main);">Standard analysis</div>
+                  <div style="font-size: 1.4rem; font-weight: bold; color: var(--card-shadow); white-space: nowrap;">Gemini-3.1-flash-lite</div>
+                  <div style="font-size: 1.2rem; color: var(--text-main); white-space: nowrap;">Lightweight & Fast Response</div>
                 </div>
               </div>
             </div>
@@ -788,8 +795,36 @@ function bindAiCopilotEvents() {
     const nextHeight = Math.min(Math.max(chatInput.scrollHeight, 56), 180);
     chatInput.style.height = (nextHeight / 10) + "rem";
   });
+  
+  // Button State Controller (Send vs Stop)
+  const setSubmitBtnState = (state) => {
+    if (!chatSubmit) return;
+    if (state === "stop") {
+      chatSubmit.innerHTML = "Stop ■";
+      chatSubmit.style.backgroundColor = "#ee6666";
+      chatSubmit.style.borderColor = "#ee6666";
+      chatSubmit.style.color = "#ffffff";
+      chatSubmit.setAttribute("title", "Stop AI response generation");
+    } else {
+      chatSubmit.innerHTML = "Send";
+      chatSubmit.style.backgroundColor = "var(--card-shadow)";
+      chatSubmit.style.borderColor = "var(--card-shadow)";
+      chatSubmit.style.color = "var(--color-bg)";
+      chatSubmit.setAttribute("title", "Send query");
+    }
+  };
 
   const sendCopilotChat = async () => {
+  
+    // 1. If currently generating, clicking the button triggers STOP (Abort)
+    if (copilotState.isGenerating && copilotState.abortController) {
+      console.log("[AI Copilot] Stop ■ button clicked by user. Aborting all ongoing network and analysis operations.");
+      copilotState.abortController.abort();
+      copilotState.isGenerating = false;
+      setSubmitBtnState("send");
+      return;
+    }
+    
     const query = chatInput?.value.trim();
     if (!query) return;
 
@@ -1041,8 +1076,21 @@ async function handleCopilotCustomQuery(userQuery) {
 
   const dashboardContext = generateDashboardContext(userQuery);
 
+  const abortController = new AbortController();
+  copilotState.abortController = abortController;
+  copilotState.isGenerating = true;
+
+  const submitBtn = document.getElementById("AiCopilotChatSubmitBtn");
+  if (submitBtn) {
+    submitBtn.innerHTML = "Stop ■";
+    submitBtn.style.backgroundColor = "#ee6666";
+    submitBtn.style.borderColor = "#ee6666";
+    submitBtn.style.color = "#ffffff";
+    submitBtn.setAttribute("title", "Stop AI response generation");
+  }
+
   try {
-    const res = await fetchGeminiChat(dashboardContext, userQuery);
+    const res = await fetchGeminiChat(dashboardContext, userQuery, abortController.signal);
     const thinkingEl = document.getElementById(thinkingId);
     if (thinkingEl) thinkingEl.remove();
 
@@ -1225,11 +1273,32 @@ async function handleCopilotCustomQuery(userQuery) {
   } catch (err) {
     const thinkingEl = document.getElementById(thinkingId);
     if (thinkingEl) thinkingEl.remove();
-    chatList.insertAdjacentHTML("beforeend", `
-      <div style="background: rgba(255,0,0,0.1); border: 0.1rem solid var(--btn-minus); padding: 0.8rem; border-radius: 0.6rem; font-size: 1.2rem; color: var(--text-main);">
-        [Error] Analytics query failed: ${err.message}
-      </div>
-    `);
+
+    if (err.name === "AbortError" || abortController.signal.aborted) {
+      chatList.insertAdjacentHTML("beforeend", `
+        <div style="background: rgba(250, 200, 88, 0.1); border: 0.1rem solid var(--card-shadow); padding: 0.8rem 1rem; border-radius: 0.6rem; font-size: 1.3rem; color: var(--text-main); display: flex; align-items: center; gap: 0.6rem;">
+          <span>! Analysis generation was stopped by user.</span>
+        </div>
+      `);
+    } else {
+      chatList.insertAdjacentHTML("beforeend", `
+        <div style="background: rgba(255,0,0,0.1); border: 0.1rem solid var(--btn-minus); padding: 0.8rem; border-radius: 0.6rem; font-size: 1.2rem; color: var(--text-main);">
+          [Error] Analytics query failed: ${err.message}
+        </div>
+      `);
+    }
+    chatList.scrollTop = chatList.scrollHeight;
+  } finally {
+    copilotState.isGenerating = false;
+    copilotState.abortController = null;
+    const finalSubmitBtn = document.getElementById("AiCopilotChatSubmitBtn");
+    if (finalSubmitBtn) {
+      finalSubmitBtn.innerHTML = "Send";
+      finalSubmitBtn.style.backgroundColor = "var(--card-shadow)";
+      finalSubmitBtn.style.borderColor = "var(--card-shadow)";
+      finalSubmitBtn.style.color = "var(--color-bg)";
+      finalSubmitBtn.setAttribute("title", "Send query");
+    }
   }
 }
 

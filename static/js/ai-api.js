@@ -17,7 +17,7 @@ export function clearAiChatHistory() {
     sessionHistory = [];
 }
 
-export async function fetchGeminiChat(dashboardContext, userMessage) {
+export async function fetchGeminiChat(dashboardContext, userMessage, signal = null) {
     // 사용자가 입력해둔 자신의 API Key 가져오기
     const apiKey = localStorage.getItem("smokelyze_gemini_key");
 
@@ -35,6 +35,12 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
     try {
         // 최대 15번까지 핑퐁(Function Calling -> 결과 응답 -> 다시 질문)을 반복할 수 있는 에이전트 루프
         for (let turn = 0; turn < 15; turn++) {
+            
+            if (signal?.aborted) {
+                console.warn(`[AI Network] Request aborted by user before Turn ${turn + 1}.`);
+                throw new DOMException("Aborted", "AbortError");
+            }
+            
             console.log(`[AI Network] Sending Turn ${turn + 1} request to backend...`);
             const currentContext = typeof generateContext === "function" ? generateContext() : dashboardContext;
             const selectedModel = localStorage.getItem("smokelyze_gemini_model") || "gemini-3.5-flash-lite";
@@ -51,7 +57,8 @@ export async function fetchGeminiChat(dashboardContext, userMessage) {
                     "Content-Type": "application/json",
                     ...(apiKey ? { "X-API-Key": apiKey } : {})
                 },
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify(requestBody),
+                ...(signal ? { signal } : {})
             });
 
             if (!response.ok) {
