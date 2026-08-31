@@ -316,9 +316,11 @@ function createAiCopilotDOM() {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            position: relative;
             background: var(--color-bg);
           ">
-            <div style="display: flex; align-items: center; gap: 0.8rem;">
+            <!-- Left: Back Button & Canvas Title -->
+            <div style="display: flex; align-items: center; gap: 0.8rem; z-index: 1;">
               <button id="AiCopilotBtnBackToChat" class="copilot-btn" style="
                 display: none;
                 align-items: center;
@@ -328,24 +330,30 @@ function createAiCopilotDOM() {
                 border-radius: 0.4rem;
               " title="Back to Chat Feed">◀ Chat</button>
               <span id="AiCopilotCanvasTitle" style="font-size: 1.6rem; font-weight: bold; color: var(--card-shadow);">Interactive Analysis Canvas</span>
-              
-              <!-- Plot History Pager (◀ 1 / N ▶) -->
-              <div id="AiCopilotPlotPager" style="
-                display: none;
-                align-items: center;
-                gap: 0.4rem;
-                background: var(--color-bg);
-                padding: 0.2rem 0.5rem;
-                border-radius: 0.4rem;
-                border: 0.1rem solid var(--border-main);
-              ">
-                <button id="AiCopilotBtnPrevPlot" class="copilot-btn" style="padding: 0.1rem 0.5rem; font-size: 1.2rem;" title="Previous Plot">◀</button>
-                <span id="AiCopilotPlotIndexBadge" style="font-size: 1.2rem; font-weight: bold; color: var(--text-soft); min-width: 3.8rem; text-align: center;">1 / 1</span>
-                <button id="AiCopilotBtnNextPlot" class="copilot-btn" style="padding: 0.1rem 0.5rem; font-size: 1.2rem;" title="Next Plot">▶</button>
-              </div>
+            </div>
+            
+            <!-- Center: Plot History Pager (◀ 1 / N ▶) Exact Center -->
+            <div id="AiCopilotPlotPager" style="
+              display: none;
+              align-items: center;
+              position: absolute;
+              left: 50%;
+              transform: translateX(-50%);
+              gap: 0.4rem;
+              background: var(--color-bg);
+              padding: 0.2rem 0.6rem;
+              border-radius: 0.6rem;
+              border: 0.1rem solid var(--border-main);
+              box-shadow: 0 0.2rem 0.6rem rgba(0,0,0,0.06);
+              z-index: 2;
+            ">
+              <button id="AiCopilotBtnPrevPlot" class="copilot-btn" style="padding: 0.2rem 0.6rem; font-size: 1.2rem; border-radius: 0.4rem;" title="Previous Plot">◀</button>
+              <span id="AiCopilotPlotIndexBadge" style="font-size: 1.2rem; font-weight: bold; color: var(--text-soft); min-width: 4rem; text-align: center; user-select: none;">1 / 1</span>
+              <button id="AiCopilotBtnNextPlot" class="copilot-btn" style="padding: 0.2rem 0.6rem; font-size: 1.2rem; border-radius: 0.4rem;" title="Next Plot">▶</button>
             </div>
 
-            <div style="display: flex; align-items: center;">
+            <!-- Right: Close Button -->
+            <div style="display: flex; align-items: center; z-index: 1;">
               <button class="ui-btn-close" id="AiCopilotBtnCloseCanvas" title="Close Canvas">
                 <svg width="20" height="20">
                   <use xlink:href="#icon-close" />
@@ -1000,9 +1008,6 @@ function showPlotFromHistory(index) {
 
   showCopilotCanvas();
 
-  const titleEl = document.getElementById("AiCopilotCanvasTitle");
-  if (titleEl) titleEl.textContent = item.title;
-
   renderDynamicCopilotChart(item.option);
   updatePlotHistoryUI();
 }
@@ -1202,8 +1207,6 @@ async function handleCopilotCustomQuery(userQuery) {
     const narrativeText = extractNarrativeText(payload, responseText, finalOption, userQuery);
 
     if (finalOption) {
-      const titleEl = document.getElementById("AiCopilotCanvasTitle");
-      if (titleEl) titleEl.textContent = finalTitle;
       createdPlotIndex = pushPlotToHistory(finalTitle, finalOption, userQuery);
       renderDynamicCopilotChart(finalOption);
     }
@@ -1383,14 +1386,15 @@ function parseMarkdownTableToECharts(text, userQuery, rawDate) {
 }
 
 // ==========================================
-// 8. Core ECharts Rendering Engine
+// 8. Core ECharts Rendering Engine (Zero-Override Pass-Through)
 // ==========================================
 function renderDynamicCopilotChart(option) {
   const dom = document.getElementById("AiCopilotChartContainer");
-  if (!dom) return;
+  if (!dom || !option) return;
 
   if (copilotState.activeChart) {
     copilotState.activeChart.dispose();
+    copilotState.activeChart = null;
   }
 
   const chart = echarts.init(dom);
@@ -1399,116 +1403,84 @@ function renderDynamicCopilotChart(option) {
 
   const theme = getEChartsThemeColors();
 
-  // 1. Global Background & Valid Canvas Typography
+  // 1. Global Background & Base Typography (Preserve backend option)
   option.backgroundColor = option.backgroundColor || "transparent";
-  option.textStyle = {
+  option.textStyle = Object.assign({
     fontFamily: FONT_FAMILY,
-    fontSize: 13,
     color: theme.textColor
-  };
+  }, option.textStyle);
 
-  // 2. Title Styling (Max 1.6rem = 16px bold)
+  // 2. Title (Preserve all backend-assigned positions, margins, and fontSizes)
   if (option.title) {
-    option.title.top = 8;
-    option.title.left = 15;
-    option.title.textStyle = Object.assign({}, option.title.textStyle, {
+    option.title.show = (option.title.show !== false);
+    option.title.textStyle = Object.assign({
       color: theme.cardShadow,
-      fontSize: 16,
-      fontWeight: "bold",
       fontFamily: FONT_FAMILY
-    });
+    }, option.title.textStyle);
   }
 
-  // 3. Legend (Auto-hide for single series, top-right for multi-series)
-  const isMultiSeries = Array.isArray(option.series) && option.series.length > 1;
-  if (!isMultiSeries) {
-    option.legend = { show: false };
-  } else {
-    option.legend = option.legend || {};
-    option.legend.show = true;
-    option.legend.top = 8;
-    option.legend.right = 85;
-    option.legend.textStyle = Object.assign({}, option.legend.textStyle, {
+  // 3. Legend (Preserve all backend-assigned positions e.g. bottom, left, fontSizes)
+  if (option.legend) {
+    option.legend.textStyle = Object.assign({
       color: theme.textColor,
-      fontSize: 13,
-      fontWeight: "bold",
       fontFamily: FONT_FAMILY
-    });
-    option.legend.itemWidth = 22;
-    option.legend.itemHeight = 12;
+    }, option.legend.textStyle);
   }
 
-  // 4. Tooltip (1.3rem = 13px)
+  // 4. Tooltip (Theme styling)
   option.tooltip = option.tooltip || { trigger: "axis" };
-  option.tooltip.backgroundColor = theme.bgColor;
-  option.tooltip.borderColor = theme.cardShadow;
-  option.tooltip.borderWidth = 1.5;
-  option.tooltip.padding = [8, 12];
-  option.tooltip.textStyle = Object.assign({}, option.tooltip.textStyle, {
+  option.tooltip.backgroundColor = option.tooltip.backgroundColor || theme.bgColor;
+  option.tooltip.borderColor = option.tooltip.borderColor || theme.cardShadow;
+  option.tooltip.textStyle = Object.assign({
     color: theme.textColor,
-    fontSize: 13,
-    lineHeight: 20,
     fontFamily: FONT_FAMILY
-  });
+  }, option.tooltip.textStyle);
 
-  // 5. Grid Layout (Generous margins for clear separation between title, axes, and plot)
-  option.grid = option.grid || {};
-  option.grid.containLabel = true;
-  option.grid.left = option.grid.left || "8%";
-  option.grid.right = option.grid.right || "8%";
-  option.grid.bottom = option.grid.bottom || "12%";
-  option.grid.top = option.grid.top || 85; // 85px generous top clearance
+  // 5. Grid Layout (Preserve backend-assigned grid margins)
+  if (option.grid) {
+    option.grid.containLabel = (option.grid.containLabel !== false);
+  }
 
-  // 6. X-Axis & Y-Axis Deep Styling (13px axisLabel, 14px nameTextStyle)
-  const applyAxisStyling = (axList, isYAxis = false) => {
+  // 6. X-Axis & Y-Axis Theme Styling (Preserve all backend-assigned nameGap, nameRotate, nameLocation, fontSizes)
+  const applyAxisTheme = (axList, isYAxis = false) => {
     if (!axList) return;
     const axes = Array.isArray(axList) ? axList : [axList];
     axes.forEach((ax, idx) => {
       if (!ax) return;
 
-      if (ax.axisLabel && ax.axisLabel.textStyle) delete ax.axisLabel.textStyle;
-      if (ax.nameTextStyle && ax.nameTextStyle.textStyle) delete ax.nameTextStyle.textStyle;
-
-      ax.axisLabel = Object.assign({}, ax.axisLabel, {
-        show: true,
-        color: theme.textColor,
-        fontSize: 13,
-        fontWeight: "bold",
-        margin: 10,
-        fontFamily: FONT_FAMILY
-      });
-
-      if (ax.name) {
-        ax.nameTextStyle = Object.assign({}, ax.nameTextStyle, {
-          color: theme.cardShadow,
-          fontSize: 14,
-          fontWeight: "bold",
-          fontFamily: FONT_FAMILY,
-          padding: isYAxis ? [0, 0, 8, 0] : [8, 0, 0, 0]
-        });
+      if (ax.axisLabel) {
+        ax.axisLabel = Object.assign({
+          color: theme.textColor,
+          fontFamily: FONT_FAMILY
+        }, ax.axisLabel);
       }
 
-      ax.axisLine = Object.assign({}, ax.axisLine, {
-        show: true,
-        lineStyle: { color: theme.borderColor, width: 1.5 }
-      });
+      if (ax.name) {
+        ax.nameTextStyle = Object.assign({
+          color: theme.cardShadow,
+          fontFamily: FONT_FAMILY
+        }, ax.nameTextStyle);
+      }
 
-      ax.axisTick = Object.assign({}, ax.axisTick, {
-        show: true,
+      ax.axisLine = Object.assign({
+        lineStyle: { color: theme.borderColor, width: 1.5 }
+      }, ax.axisLine);
+
+      ax.axisTick = Object.assign({
         lineStyle: { color: theme.borderColor, width: 1 }
-      });
+      }, ax.axisTick);
 
       if (isYAxis) {
-        ax.splitLine = Object.assign({}, ax.splitLine, {
+        ax.splitLine = Object.assign({
           show: (idx === 0),
           lineStyle: { color: theme.borderColor, type: "dashed", width: 1 }
-        });
+        }, ax.splitLine);
       }
     });
   };
 
-  applyAxisStyling(option.xAxis, false);
-  applyAxisStyling(option.yAxis, true);
+  applyAxisTheme(option.xAxis, false);
+  applyAxisTheme(option.yAxis, true);
 
   // 7. In-Chart Toolbox (Save PNG, DataView, Reset)
   option.toolbox = option.toolbox || {
@@ -1522,35 +1494,10 @@ function renderDynamicCopilotChart(option) {
       dataView: { title: "Data View", lang: ["Data View", "Close", "Refresh"], readOnly: true },
       restore: { title: "Reset Zoom" }
     },
-    iconStyle: {
-      borderColor: theme.cardShadow
-    }
+    iconStyle: { borderColor: theme.cardShadow }
   };
 
-  // 8. Scientific Linearity & Clean Point Markers
-  if (Array.isArray(option.series)) {
-    option.series.forEach(s => {
-      if (s.label) {
-        s.label = Object.assign({}, s.label, {
-          fontSize: 12,
-          fontWeight: "bold",
-          color: theme.textColor,
-          fontFamily: FONT_FAMILY
-        });
-      }
-      if (s.type === "line") {
-        s.smooth = false;
-        if (s.showSymbol === undefined) s.showSymbol = true;
-        if (!s.symbol) s.symbol = "circle";
-        if (!s.symbolSize) s.symbolSize = 6;
-        s.lineStyle = Object.assign({ width: 2.5 }, s.lineStyle);
-      }
-      if (s.type === "bar") {
-        s.itemStyle = Object.assign({ borderRadius: [4, 4, 0, 0] }, s.itemStyle);
-      }
-    });
-  }
-
+  // 8. Render AI-generated option with 100% fidelity
   chart.setOption(option, true);
   setTimeout(() => chart.resize(), 100);
 }
