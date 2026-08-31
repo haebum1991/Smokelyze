@@ -6,6 +6,7 @@ import { auth } from "./fb-init.js";
 import { getPlotTheme } from "./stats-common.js";
 import { LAYER_TEMPLATES } from "./layers-def.js";
 import { activeLayerStack } from "./layers-state.js";
+import { getRasterTooltipInfo } from "./raster-loader.js";
 
 
 // Self-contained Modular TSPlot Modal DOM injection
@@ -18,11 +19,41 @@ function ensureTSplotModalDOM() {
   #TSplotControls input[type=number]::-webkit-outer-spin-button {
     opacity: 1 !important;
   }
+  .tsplot-layer-option-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    border-radius: var(--border-radius-0p8rem);
+    border: 0.1rem solid var(--card-shadow);
+    background: var(--color-bg);
+    color: var(--text-main);
+    font-size: 1.4rem;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
   @media (hover: hover) {
     #TSplotUpdateBtn[data-is-synced="false"]:hover {
       background-color: var(--card-shadow) !important;
       color: var(--color-bg) !important;
       border-color: var(--card-shadow) !important;
+    }
+    .tsplot-layer-option-btn:hover {
+      background-color: var(--card-shadow) !important;
+      color: var(--color-bg) !important;
+    }
+    .tsplot-layer-option-btn:hover span {
+      color: var(--color-bg) !important;
+    }
+    #TSplotSwitchLayerBtn:hover {
+      background-color: var(--card-shadow) !important;
+      color: var(--color-bg) !important;
+    }
+    #TSplotLayerPickerCancelBtn:hover {
+      background-color: var(--card-shadow) !important;
+      color: var(--color-bg) !important;
     }
   }
 </style>
@@ -31,8 +62,16 @@ function ensureTSplotModalDOM() {
      style="display:none; z-index: var(--z-highest);">
   <div class="MapPost-modal" 
        style="max-width: 80rem; width: 95%;">
-    <div class="MapPost-modal-header">
-      <h3 id="TSplotModalTitle">Time-Series Plot</h3>
+    <div class="MapPost-modal-header" style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+      <div style="display:flex; align-items:center; gap:1rem; flex:1; min-width:0; flex-wrap:wrap;">
+        <h3 id="TSplotModalTitle" style="margin:0; font-size:1.6rem;">Time-Series Plot</h3>
+        <button id="TSplotSwitchLayerBtn" 
+                title="Switch to another active layer"
+                style="display:none; cursor:pointer; font-size:1.2rem; padding:0.4rem 0.8rem; border-radius:var(--border-radius-0p8rem); background:var(--color-bg); color:var(--text-main); border:0.1rem solid var(--card-shadow); align-items:center; gap:0.4rem; transition:background 0.15s ease, color 0.15s ease;">
+          <svg width="14" height="14" style="stroke:currentColor; fill:none;"><use xlink:href="#icon-layers" /></svg>
+          Switch Layer
+        </button>
+      </div>
       <button class="ui-btn-close" id="TSplotModalClose">
         <svg width="20" height="20">
           <use xlink:href="#icon-close" />
@@ -46,7 +85,7 @@ function ensureTSplotModalDOM() {
                   justify-content:flex-start; 
                   flex-wrap:wrap; 
                   padding:0.6rem 1rem; 
-                  border-radius:0.4rem; 
+                  border-radius:var(--border-radius-0p8rem); 
                   margin-bottom:1rem; 
                   gap:1.5rem; 
                   color:var(--text-main); 
@@ -60,7 +99,7 @@ function ensureTSplotModalDOM() {
                      min="0" 
                      max="15" 
                      value="4" 
-                     style="width:4.8rem; text-align:center; padding:0.2rem 0.2rem 0.2rem 0.4rem; border-radius:0.3rem; font-size:1.4rem;">
+                     style="width:4.8rem; text-align:center; padding:0.2rem 0.2rem 0.2rem 0.4rem; border-radius:var(--border-radius-0p8rem); font-size:1.4rem;">
               <span style="min-width: 7.5rem; color:var(--text-main); font-size:1.4rem;">days, from</span>
               <span id="TSplotLBDateText" 
                     style="font-weight:bold; color:var(--card-shadow); font-size:1.4rem;"></span>
@@ -72,7 +111,7 @@ function ensureTSplotModalDOM() {
                      min="0" 
                      max="15" 
                      value="4" 
-                     style="width:4.8rem; text-align:center; padding:0.2rem 0.2rem 0.2rem 0.4rem; border-radius:0.3rem; font-size:1.4rem;">
+                     style="width:4.8rem; text-align:center; padding:0.2rem 0.2rem 0.2rem 0.4rem; border-radius:var(--border-radius-0p8rem); font-size:1.4rem;">
               <span style="min-width: 7.5rem; color:var(--text-main); font-size:1.4rem;">days, to</span>
               <span id="TSplotLFDateText" 
                     style="font-weight:bold; color:var(--card-shadow); font-size:1.4rem;"></span>
@@ -85,7 +124,7 @@ function ensureTSplotModalDOM() {
                   style="cursor:pointer; 
                          font-size:1.4rem; 
                          font-weight:bold; 
-                         border-radius:0.4rem; 
+                         border-radius:var(--border-radius-0p8rem); 
                          display:inline-flex !important; 
                          align-items:center; 
                          justify-content:center; 
@@ -100,15 +139,15 @@ function ensureTSplotModalDOM() {
           </button>
         </div>
         <div id="TSplotTzToggleGroup" 
-             style="margin-left:auto; display:none; align-items:center; background:var(--color-bg); padding:0.2rem; border-radius:0.4rem; border:0.1rem solid var(--border-soft); gap:0.2rem;">
+             style="margin-left:auto; display:none; align-items:center; background:var(--color-bg); padding:0.2rem; border-radius:var(--border-radius-0p8rem); border:0.1rem solid var(--border-soft); gap:0.2rem;">
           <button id="TSplotTzUtcBtn" 
                   title="Display in UTC"
-                  style="cursor:pointer; font-size:1.4rem; font-weight:bold; border-radius:0.3rem; border:none; padding:0.4rem 0.8rem; background:var(--card-shadow); color:var(--color-bg); transition:all 0.2s ease;">
+                  style="cursor:pointer; font-size:1.4rem; font-weight:bold; border-radius:var(--border-radius-0p8rem); border:none; padding:0.4rem 0.8rem; background:var(--card-shadow); color:var(--color-bg); transition:all 0.2s ease;">
             UTC
           </button>
           <button id="TSplotTzLocalBtn" 
                   title="Display in Site Local Time"
-                  style="cursor:pointer; font-size:1.4rem; font-weight:normal; border-radius:0.3rem; border:none; padding:0.4rem 0.8rem; background:var(--color-bg); color:var(--text-main); transition:all 0.2s ease;">
+                  style="cursor:pointer; font-size:1.4rem; border-radius:var(--border-radius-0p8rem); border:none; padding:0.4rem 0.8rem; background:var(--color-bg); color:var(--text-main); transition:all 0.2s ease;">
             Site Time
           </button>
         </div>
@@ -121,8 +160,8 @@ function ensureTSplotModalDOM() {
              style="margin: 0 auto 1.5rem auto; 
                     width: 4rem; 
                     height: 4rem; 
-                    border: 4px solid var(--border-soft); 
-                    border-top: 4px solid var(--card-shadow); 
+                    border: 0.4rem solid var(--border-soft); 
+                    border-top: 0.4rem solid var(--card-shadow); 
                     border-radius: 50%; 
                     animation: spin 1s linear infinite;">
         </div>
@@ -154,13 +193,13 @@ function ensureTSplotModalDOM() {
         <div id="TSplotConfirmDialog" 
              style="background:var(--color-bg); 
                     border:0.1rem solid var(--card-shadow); 
-                    border-radius:0.6rem; 
+                    border-radius:var(--border-radius-0p8rem); 
                     padding:1.5rem 2.2rem; 
                     text-align:center; 
                     max-width:40rem; 
                     width:90%;">
           <div id="TSplotConfirmTitle" 
-               style="font-size:1.6rem; font-weight:bold; color:var(--text-strong); margin-bottom:1rem;">
+               style="font-size:1.6rem; font-weight:bold; color:var(--text-main); margin-bottom:1rem;">
             Navigate Map
           </div>
           <div id="TSplotConfirmMsg" 
@@ -169,15 +208,48 @@ function ensureTSplotModalDOM() {
           </div>
           <div style="display:flex; justify-content:center; gap:1.2rem;">
             <button id="TSplotConfirmYesBtn" 
-                    style="cursor:pointer; font-size:1.6rem; padding:0.6rem 1.6rem; border-radius:0.4rem; background:#059669; color:#ffffff; border:none;">
+                    style="cursor:pointer; font-size:1.6rem; padding:0.6rem 1.6rem; border-radius:var(--border-radius-0p8rem); background:#059669; color:#ffffff; border:none;">
               Yes
             </button>
             <button id="TSplotConfirmCancelBtn" 
-                    style="cursor:pointer; font-size:1.6rem; padding:0.6rem 1.6rem; border-radius:0.4rem; background:var(--color-bg); color:var(--text-main); border:0.1rem solid var(--card-shadow);">
+                    style="cursor:pointer; font-size:1.6rem; padding:0.6rem 1.6rem; border-radius:var(--border-radius-0p8rem); background:var(--color-bg); color:var(--text-main); border:0.1rem solid var(--card-shadow);">
               Cancel
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal: Select Layer for Time-Series Plot (Pre-flight Picker when >= 2 layers active) -->
+<div class="MapPost-modal-overlay" 
+     id="TSplotLayerPickerOverlay" 
+     style="display:none; z-index: var(--z-highest);">
+  <div class="MapPost-modal" 
+       style="max-width: 48rem; width: 92%; height: auto; max-height: calc(100dvh - var(--header-height-total) - var(--footer-height) - 4rem);">
+    <div class="MapPost-modal-header">
+      <div style="display:flex; align-items:center; gap:0.8rem;">
+        <svg width="18" height="18" style="stroke:var(--text-main); fill:none; color:var(--text-main);"><use xlink:href="#icon-layers" /></svg>
+        <h3 style="margin:0; font-size:1.6rem; color:var(--text-main);">Select Layer for Time-Series Plot</h3>
+      </div>
+      <button class="ui-btn-close" id="TSplotLayerPickerClose">
+        <svg width="18" height="18">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
+    </div>
+    <div class="MapPost-modal-body" style="padding: 2rem;">
+      <p style="margin:0 0 1.2rem 0; font-size:1.4rem; color:var(--text-main); line-height: 1.4;">
+        Multiple active layers support time-series profiles at this location. Please choose which dataset to plot:
+      </p>
+      <div id="TSplotLayerPickerList" 
+           style="display:flex; flex-direction:column; gap:0.8rem; max-height: 55vh; overflow-y:auto; padding-right:0.2rem;">
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:1.6rem;">
+        <button id="TSplotLayerPickerCancelBtn" 
+                style="cursor:pointer; font-size:1.4rem; padding:0.6rem 1.4rem; border-radius:var(--border-radius-0p8rem); background:var(--color-bg); color:var(--text-main); border:0.1rem solid var(--card-shadow); transition:background 0.15s ease, color 0.15s ease;">
+          Cancel
+        </button>
       </div>
     </div>
   </div>
@@ -193,6 +265,79 @@ const chartContainer = document.getElementById("TSplotChartContainer");
 const loadingEl = document.getElementById("TSplotLoading");
 const loadingTextEl = document.getElementById("TSplotLoadingText");
 const errorEl = document.getElementById("TSplotError");
+
+// Layer Picker Modal DOM Elements
+const layerPickerOverlay = document.getElementById("TSplotLayerPickerOverlay");
+const layerPickerCloseBtn = document.getElementById("TSplotLayerPickerClose");
+const layerPickerCancelBtn = document.getElementById("TSplotLayerPickerCancelBtn");
+const layerPickerList = document.getElementById("TSplotLayerPickerList");
+
+function hideTSLayerPicker() {
+    if (layerPickerOverlay) {
+        layerPickerOverlay.style.display = "none";
+    }
+}
+
+if (layerPickerCloseBtn) {
+    layerPickerCloseBtn.addEventListener("click", hideTSLayerPicker);
+}
+if (layerPickerCancelBtn) {
+    layerPickerCancelBtn.addEventListener("click", hideTSLayerPicker);
+}
+
+
+function getLayerDatasetName(cfg) {
+    if (!cfg) return "";
+    const id = cfg.sourceId || cfg.productId || "";
+
+    if (id.startsWith("airnow-")) return "AirNow";
+    if (id.startsWith("tempo-")) return "TEMPO";
+    if (id.startsWith("tropomi-")) return "TROPOMI";
+    if (id.startsWith("hrrr-")) return "HRRR";
+    if (id.startsWith("geoscf-")) return "GEOS-CF";
+    if (id.startsWith("goes-")) return "GOES";
+
+    // Model Vector Layers (e.g. GAM-v1, GAM-v2, PM CBSA, EPA EMBER)
+    const dsSelect = document.getElementById("MapDataSelect");
+    if (dsSelect?.selectedOptions?.[0]) {
+        const fullText = dsSelect.selectedOptions[0].text;
+        return fullText.split("(")[0].trim() || fullText;
+    }
+    return "Model Dataset";
+}
+
+function openTSLayerPicker(lng, lat, supportedList) {
+    if (!layerPickerOverlay || !layerPickerList) return;
+
+    layerPickerList.innerHTML = "";
+    supportedList.forEach(cfg => {
+        const itemBtn = document.createElement("button");
+        itemBtn.className = "tsplot-layer-option-btn";
+
+        const isHourly = Boolean(cfg.type && cfg.type.includes("hourly"));
+        const badgeText = isHourly ? "HOURLY" : "DAILY";
+        const subtitle = getLayerDatasetName(cfg);
+
+        itemBtn.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:0.2rem; flex:1; min-width:0;">
+                <span style="font-size:1.4rem; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${cfg.title}</span>
+                <span style="font-size:1.2rem;">${subtitle}</span>
+            </div>
+            <span style="font-size:1.2rem; font-weight:bold; padding:0.2rem 0.6rem; border-radius:var(--border-radius-0p8rem); border:0.1rem solid currentColor; white-space:nowrap;">
+                ${badgeText}
+            </span>
+        `;
+
+        itemBtn.addEventListener("click", () => {
+            hideTSLayerPicker();
+            showTSProfile(lng, lat, null, null, cfg.sourceId);
+        });
+
+        layerPickerList.appendChild(itemBtn);
+    });
+
+    layerPickerOverlay.style.display = "flex";
+}
 
 // TSPlot Controls DOM Elements
 const controlsEl = document.getElementById("TSplotControls");
@@ -245,6 +390,7 @@ export function clearTSPlotNavMarker() {
 document.addEventListener("smokelyze-reset-tsplot", () => {
     clearTSPlotNavMarker();
     hideTSplotModal();
+    hideTSLayerPicker();
 });
 
 function setTSPlotNavMarker(lng, lat) {
@@ -332,6 +478,7 @@ const state = {
     currentTSContext: null,
     activeLookback: 4,
     activeLookforward: 4,
+    lastLayerType: null,
     selectedTzMode: "UTC", // "UTC" or "LOCAL"
     cachedProfileArgs: null,
     siteIanaZone: "UTC",
@@ -382,14 +529,14 @@ function updateTzToggleUI() {
         tzUtcBtn.style.fontWeight = "bold";
         tzLocalBtn.style.backgroundColor = "var(--color-bg)";
         tzLocalBtn.style.color = "var(--text-main)";
-        tzLocalBtn.style.fontWeight = "normal";
+        tzLocalBtn.style.fontWeight = "";
     } else {
         tzLocalBtn.style.backgroundColor = "var(--card-shadow)";
         tzLocalBtn.style.color = "var(--color-bg)";
         tzLocalBtn.style.fontWeight = "bold";
         tzUtcBtn.style.backgroundColor = "var(--color-bg)";
         tzUtcBtn.style.color = "var(--text-main)";
-        tzUtcBtn.style.fontWeight = "normal";
+        tzUtcBtn.style.fontWeight = "";
     }
 }
 
@@ -446,7 +593,7 @@ function setTSPlotBtnSynced(isSynced) {
     } else {
         updateBtn.innerHTML = SVG_UPDATE;
         updateBtn.style.backgroundColor = "var(--color-bg)";
-        updateBtn.style.color = "var(--text-strong)";
+        updateBtn.style.color = "var(--text-main)";
         updateBtn.style.borderColor = "var(--card-shadow)";
         updateBtn.setAttribute("data-is-synced", "false");
         updateBtn.setAttribute("title", "Fetch time-series data");
@@ -481,7 +628,7 @@ if (updateBtn) {
     });
     const resetStyle = () => {
         if (updateBtn.getAttribute("data-is-synced") !== "true") {
-            updateBtn.style.color = "var(--text-strong)";
+            updateBtn.style.color = "var(--text-main)";
             updateBtn.style.backgroundColor = "var(--color-bg)";
             updateBtn.style.borderColor = "var(--card-shadow)";
         }
@@ -497,7 +644,8 @@ if (updateBtn) {
         }
         const lb = Math.max(0, Math.min(15, parseInt(lookbackInput?.value, 10) || 0));
         const lf = Math.max(0, Math.min(15, parseInt(lookforwardInput?.value, 10) || 0));
-        showTSProfile(state.currentTSContext.lng, state.currentTSContext.lat, lb, lf);
+        const currentLayerId = state.currentTSContext.activeConfig?.sourceId;
+        showTSProfile(state.currentTSContext.lng, state.currentTSContext.lat, lb, lf, currentLayerId);
     });
 }
 
@@ -522,7 +670,7 @@ if (tsplotBtn) {
         // Hide context menu
         const ctxMenu = document.getElementById("MapPostContextMenu");
         if (ctxMenu) ctxMenu.style.display = "none";
-        
+
         // Prompt login if not authenticated
         if (!auth.currentUser) {
             utils.showAuthOverlay();
@@ -531,7 +679,19 @@ if (tsplotBtn) {
 
         // Show time-series profile for the clicked coordinate
         if (state.pendingLngLat) {
-            showTSProfile(state.pendingLngLat.lng, state.pendingLngLat.lat);
+            const { lng, lat } = state.pendingLngLat;
+            const { supported } = getActiveLayerContexts({ lng, lat });
+
+            // If 2 or more supported layers are active, open the Layer Picker modal first!
+            if (supported.length >= 2) {
+                openTSLayerPicker(lng, lat, supported);
+            } else if (supported.length === 1) {
+                // Exactly 1 supported layer active -> open TS plot directly
+                showTSProfile(lng, lat, null, null, supported[0].sourceId);
+            } else {
+                // 0 supported layers active -> show guidance in modal
+                showTSProfile(lng, lat);
+            }
         }
     });
 }
@@ -542,6 +702,7 @@ document.addEventListener("smokelyzeAuthChanged", (e) => {
 
 function hideTSplotModal() {
     if (modal) modal.style.display = "none";
+    hideTSLayerPicker();
     const overlay = document.getElementById("TSplotConfirmOverlay");
     if (overlay) overlay.style.display = "none";
     pendingNavTarget = null;
@@ -567,55 +728,37 @@ const UNSUPPORTED_TSPLOT_LAYERS = new Set([
     "hysplit"
 ]);
 
-function getActiveLayerConfig() {
+// Static mapping for raster serverless product IDs
+const RASTER_PRODUCT_MAP = {
+    "tempo-no2": "TEMPO_NO2_L3",
+    "tempo-hcho": "TEMPO_HCHO_L3",
+    "tropomi-no2": "TROPOMI_NO2_L3",
+    "tropomi-hcho": "TROPOMI_HCHO_L3",
+    "hrrr-colmd": "COLMD_entire",
+    "hrrr-massden": "MASSDEN_8m",
+    "goes-aod-east": "ABI-L2-AODC-east",
+    "goes-aod-west": "ABI-L2-AODC-west",
+    "geoscf-o3": "GEOS_CF_o3",
+    "geoscf-co": "GEOS_CF_co",
+    "geoscf-no2": "GEOS_CF_no2",
+    "geoscf-hcho": "GEOS_CF_hcho",
+    "geoscf-pm25": "GEOS_CF_pm25_rh35",
+    "geoscf-pm25oc": "GEOS_CF_pm25oc_rh35"
+};
+
+function getLayerConfigById(activeId) {
+    if (!activeId || UNSUPPORTED_TSPLOT_LAYERS.has(activeId)) return null;
+
+    const activeTmpl = LAYER_TEMPLATES.find(tmpl => tmpl.id === activeId);
+    if (!activeTmpl) return null;
+
     const currentDataset = utils.getEffectiveDataset();
-
-    // 1. Find top-most checked layer in activeLayerStack (in reverse Z-order)
-    let activeId = (activeLayerStack || []).slice().reverse().find(id => {
-        return document.getElementById(`layer-${id}`)?.checked;
-    });
-
-    // Fallback: check any checked layer in the DOM
-    if (!activeId) {
-        const checkedInput = document.querySelector('input[id^="layer-"]:checked');
-        if (checkedInput) {
-            activeId = checkedInput.id.replace("layer-", "");
-        }
-    }
-
-    if (!activeId) return null;
-
-    // Check if explicitly unsupported (AirFuse, Imagery, Wildfire polygons, etc.)
-    if (UNSUPPORTED_TSPLOT_LAYERS.has(activeId)) {
-        return {
-            unsupported: true,
-            id: activeId,
-            productId: activeId,
-            title: "Unsupported Layers for"
-        };
-    }
-
-    const activeTmpl = LAYER_TEMPLATES.find(tmpl => tmpl.id === activeId) || LAYER_TEMPLATES.find(tmpl => {
-        if (tmpl.duration === "daily" && !tmpl.manualLayer && tmpl.datasets && !tmpl.id.startsWith("airnow-")) {
-            if (!tmpl.datasets.includes(currentDataset)) return false;
-        }
-        return document.getElementById(`layer-${tmpl.id}`)?.checked;
-    });
-
-    if (!activeTmpl) {
-        return {
-            unsupported: true,
-            id: activeId,
-            productId: activeId,
-            title: "Unsupported Layers for"
-        };
-    }
-
     let type = "daily_vector";
     let productId = activeTmpl.id;
     let sourceId = activeTmpl.id;
     let mapLayerId = `${activeTmpl.id}-circle`;
-    let metric = (typeof activeTmpl.field === "function") ? activeTmpl.field(currentDataset) : activeTmpl.field;
+    let fieldKey = (typeof activeTmpl.field === "function") ? activeTmpl.field(currentDataset) : activeTmpl.field;
+    let metric = fieldKey;
     let title = (typeof activeTmpl.title === "function") ? activeTmpl.title(currentDataset) : activeTmpl.title;
     let dataset = null;
 
@@ -623,22 +766,6 @@ function getActiveLayerConfig() {
     if (activeTmpl.manualLayer) {
         type = activeTmpl.hourly ? "hourly_raster" : "raster";
         mapLayerId = `${activeTmpl.id}-raster`;
-        const RASTER_PRODUCT_MAP = {
-            "tempo-no2": "TEMPO_NO2_L3",
-            "tempo-hcho": "TEMPO_HCHO_L3",
-            "tropomi-no2": "TROPOMI_NO2_L3",
-            "tropomi-hcho": "TROPOMI_HCHO_L3",
-            "hrrr-colmd": "COLMD_entire",
-            "hrrr-massden": "MASSDEN_8m",
-            "goes-aod-east": "ABI-L2-AODC-east",
-            "goes-aod-west": "ABI-L2-AODC-west",
-            "geoscf-o3": "GEOS_CF_o3",
-            "geoscf-co": "GEOS_CF_co",
-            "geoscf-no2": "GEOS_CF_no2",
-            "geoscf-hcho": "GEOS_CF_hcho",
-            "geoscf-pm25": "GEOS_CF_pm25_rh35",
-            "geoscf-pm25oc": "GEOS_CF_pm25oc_rh35"
-        };
         productId = RASTER_PRODUCT_MAP[activeTmpl.id] || activeTmpl.id;
     }
     // 2. AirNow Hourly
@@ -665,10 +792,100 @@ function getActiveLayerConfig() {
         productId,
         sourceId,
         mapLayerId,
+        fieldKey,
         metric,
         title,
-        dataset
+        dataset,
+        isPoint: !activeTmpl.manualLayer
     };
+}
+
+function getActiveLayerContexts(targetLngLat = null) {
+    const activeIds = [];
+    const seen = new Set();
+
+    // 1. Traverse activeLayerStack in reverse (top-most layer first)
+    if (activeLayerStack && Array.isArray(activeLayerStack)) {
+        for (let i = activeLayerStack.length - 1; i >= 0; i--) {
+            const id = activeLayerStack[i];
+            const checkbox = document.getElementById(`layer-${id}`);
+            if (checkbox && checkbox.checked && !seen.has(id)) {
+                activeIds.push(id);
+                seen.add(id);
+            }
+        }
+    }
+
+    // 2. Also check any other checked layer in DOM not yet captured in stack
+    const checkedInputs = document.querySelectorAll('input[id^="layer-"]:checked');
+    checkedInputs.forEach(input => {
+        const id = input.id.replace("layer-", "");
+        if (!seen.has(id)) {
+            activeIds.push(id);
+            seen.add(id);
+        }
+    });
+
+    const supported = [];
+    const unsupported = [];
+    const coords = targetLngLat || state.pendingLngLat;
+
+    // Find the single closest rendered station feature to the clicked coordinate
+    let closestFeature = null;
+    let minDistanceSq = Infinity;
+
+    if (coords && map) {
+        try {
+            const clickPx = map.project(new maplibregl.LngLat(coords.lng, coords.lat));
+            const hitBbox = [[clickPx.x - 15, clickPx.y - 15], [clickPx.x + 15, clickPx.y + 15]];
+            const pointLayerIds = activeIds
+                .map(id => getLayerConfigById(id))
+                .filter(c => c && c.isPoint)
+                .map(c => c.mapLayerId);
+
+            if (pointLayerIds.length > 0) {
+                const features = map.queryRenderedFeatures(hitBbox, { layers: pointLayerIds });
+                for (const f of features) {
+                    if (f.geometry?.coordinates) {
+                        const featPx = map.project(f.geometry.coordinates);
+                        const distSq = (featPx.x - clickPx.x) ** 2 + (featPx.y - clickPx.y) ** 2;
+                        if (distSq < minDistanceSq) {
+                            minDistanceSq = distSq;
+                            closestFeature = f;
+                        }
+                    }
+                }
+            }
+        } catch {
+            closestFeature = null;
+        }
+    }
+
+    activeIds.forEach(id => {
+        const cfg = getLayerConfigById(id);
+        if (!cfg) {
+            unsupported.push({ id });
+            return;
+        }
+
+        if (coords) {
+            // 1. Point vector layers: closest station must contain a valid value for this metric
+            if (cfg.isPoint) {
+                if (!closestFeature) return;
+                const val = closestFeature.properties?.[cfg.fieldKey];
+                if (val == null || val === "NA" || val === "" || isNaN(val)) return;
+            }
+            // 2. Raster layers: require active raster pixel data (non-NA / visible tooltip) at coordinate
+            else {
+                const rasterInfo = getRasterTooltipInfo?.(cfg.sourceId, coords.lng, coords.lat);
+                if (!rasterInfo) return;
+            }
+        }
+
+        supported.push(cfg);
+    });
+
+    return { supported, unsupported };
 }
 
 function getYAxisTitleAndDecimals(sourceId) {
@@ -732,7 +949,7 @@ function getDisplayScale(sourceId, realValue) {
     return realValue;
 }
 
-async function showTSProfile(lng, lat, customLookback = null, customLookforward = null) {
+async function showTSProfile(lng, lat, customLookback = null, customLookforward = null, targetLayerId = null) {
     if (!modal) return;
 
     modal.style.display = "block";
@@ -741,42 +958,67 @@ async function showTSProfile(lng, lat, customLookback = null, customLookforward 
     loadingEl.style.display = "block";
     loadingTextEl.textContent = "Checking active layer...";
 
-    const activeConfig = getActiveLayerConfig();
-    if (!activeConfig) {
-        showError("Please toggle on a layer first.");
+    const { supported, unsupported, totalActive } = getActiveLayerContexts({ lng, lat });
+
+    // Case 1: No supported layers are active
+    if (!supported || supported.length === 0) {
+        if (controlsEl) controlsEl.style.display = "none";
+
+        if (unsupported.length > 0) {
+            showError(`
+                <div style="margin-bottom: 1.6rem; font-size: 1.6rem; font-weight: bold; color: var(--text-main);">
+                    This layer does not support the Time-Series Plot feature.
+                </div>
+                <div style="color: var(--text-main);
+                            margin: 0 auto;
+                            text-align: left;
+                            background: var(--color-bg);
+                            padding: 1.5rem 2.2rem;
+                            border-radius: var(--border-radius-0p8rem);
+                            border: 0.1rem solid var(--card-shadow);
+                            font-size: 1.4rem;">
+                    <p style="font-weight: bold; margin-bottom: 0.6rem;">Unsupported Layers:</p>
+                    <ul style="margin: 0; padding-left: 1.8rem; line-height: 1.6;">
+                        <li>Wildfire News & MapPost</li>
+                        <li>NIFC: WF incidents, WF perimeters</li>
+                        <li>AirNow: AirFuse O3, AirFuse PM2.5</li>
+                        <li>Satellite-based: HMS-smoke, HMS-fire, GOES-GeoColor, VIIRS-TrueColor, MODIS area burned</li>
+                    </ul>
+                </div>
+            `);
+        } else {
+            showError("Please toggle on a layer first.");
+        }
         return;
+    }
+
+    // Case 2: One or more supported layers found
+    let activeConfig = null;
+    if (targetLayerId) {
+        activeConfig = supported.find(c => c.sourceId === targetLayerId);
+    }
+    if (!activeConfig) {
+        activeConfig = supported[0];
     }
 
     // Capture coordinate for future refreshes
-    state.pendingLngLat = [lng, lat];
+    state.pendingLngLat = { lng, lat };
 
     const modalTitleEl = document.getElementById("TSplotModalTitle");
     if (modalTitleEl) {
-        modalTitleEl.textContent = `${activeConfig.title} Time-Series`;
+        modalTitleEl.textContent = `${activeConfig.title} Time-Series Plot`;
     }
 
-    if (activeConfig.unsupported) {
-        showError(`
-            <div style="margin-bottom: 1.8rem;">
-                This layer does not support the Time-Series Plot feature.
-            </div>
-            <div style="color: var(--text-main);
-                        margin: 0 auto;
-                        text-align: left;
-                        background: var(--color-bg);
-                        padding: 1.5rem 2.2rem;
-                        border-radius: 0.6rem;
-                        border: 0.1rem solid var(--card-shadow);">
-                <p>Unsupported Layers:</p>
-                <ul>
-                    <li>Wildfire News & MapPost</li>
-                    <li>NIFC: WF incidents, WF perimeters</li>
-                    <li>AirNow: AirFuse O3, AirFuse PM2.5</li>
-                    <li>Satellite-based: HMS-smoke, HMS-fire, GOES-GeoColor, VIIRS-TrueColor, MODIS area burned</li>
-                </ul>
-            </div>
-        `);
-        return;
+    const switchLayerBtn = document.getElementById("TSplotSwitchLayerBtn");
+    if (switchLayerBtn) {
+        if (supported.length >= 2) {
+            switchLayerBtn.style.display = "inline-flex";
+            switchLayerBtn.onclick = () => {
+                openTSLayerPicker(lng, lat, supported);
+            };
+        } else {
+            switchLayerBtn.style.display = "none";
+        }
     }
 
     let selectedDateStr = utils.currentDate();
@@ -784,9 +1026,9 @@ async function showTSProfile(lng, lat, customLookback = null, customLookforward 
     let chartDateStr = selectedDateStr;
     let queryDateStr = selectedDateStr;
 
-    const isVectorDaily = (activeConfig.type === "airnow_daily" || activeConfig.type === "daily_vector" || activeConfig.type === "airnow_hourly");
+    const isVectorDaily = activeConfig.isPoint;
     const isHourly = (activeConfig.type === "airnow_hourly" || activeConfig.type === "hourly_raster");
-    const isDaily = (activeConfig.type === "airnow_daily" || activeConfig.type === "daily_vector" || activeConfig.type === "raster") || activeConfig.sourceId.includes("tropomi");
+    const isDaily = !isHourly;
     const isAirnowHourly = (activeConfig.type === "airnow_hourly");
 
     if (controlsEl) {
@@ -801,7 +1043,7 @@ async function showTSProfile(lng, lat, customLookback = null, customLookforward 
 
     // Determine target local hour / timestamp for reference line
     let targetX = null;
-    if (activeConfig.type === "hourly_raster" || activeConfig.type === "airnow_hourly") {
+    if (isHourly) {
         const timeInput = document.getElementById("timePicker");
         const localHour = timeInput ? parseInt(timeInput.value, 10) : 12;
         const [ly, lm, ld] = selectedDateStr.split("-").map(Number);
@@ -845,16 +1087,31 @@ async function showTSProfile(lng, lat, customLookback = null, customLookforward 
         let locationLabel = `(${lng.toFixed(4)}, ${lat.toFixed(4)})`;
 
         // Vector point stations (AirNow Daily, AirNow Hourly, Model Predictions) -> Fast BigQuery TSPlot query
-        if (activeConfig.type === "airnow_daily" || activeConfig.type === "daily_vector" || activeConfig.type === "airnow_hourly") {
-            const point = map.project(new maplibregl.LngLat(lng, lat));
-            const bbox = [[point.x - 15, point.y - 15], [point.x + 15, point.y + 15]];
+        if (activeConfig.isPoint) {
+            const clickPx = map.project(new maplibregl.LngLat(lng, lat));
+            const bbox = [[clickPx.x - 15, clickPx.y - 15], [clickPx.x + 15, clickPx.y + 15]];
             const features = map.queryRenderedFeatures(bbox, { layers: [activeConfig.mapLayerId] });
 
-            if (features.length === 0) {
+            if (!features || features.length === 0) {
                 showError("No data point found nearby. Please click on or near a visible data point.");
                 return;
             }
-            const props = features[0].properties;
+
+            // Find closest station feature to clicked point
+            let closestFeature = features[0];
+            let minDistanceSq = Infinity;
+            for (const f of features) {
+                if (f.geometry?.coordinates) {
+                    const featPx = map.project(f.geometry.coordinates);
+                    const distSq = (featPx.x - clickPx.x) ** 2 + (featPx.y - clickPx.y) ** 2;
+                    if (distSq < minDistanceSq) {
+                        minDistanceSq = distSq;
+                        closestFeature = f;
+                    }
+                }
+            }
+
+            const props = closestFeature.properties;
             const aqs = props.AQS || props.AQS_PM || props.AQS_O3;
             if (!aqs) {
                 showError("AQS identifier not found for the selected station.");
@@ -865,8 +1122,7 @@ async function showTSProfile(lng, lat, customLookback = null, customLookforward 
             detectedStateCode = props.state || "";
             locationLabel = detectedStateCode ? `${siteName} (${aqs}), ${detectedStateCode}` : `${siteName} (${aqs})`;
 
-            const isHourly = (activeConfig.type === "airnow_hourly");
-            const defaultVal = isHourly ? 1 : 4;
+            const defaultVal = isAirnowHourly ? 1 : 4;
 
             let lookback = customLookback;
             let lookforward = customLookforward;
@@ -1245,6 +1501,28 @@ ${String(hour).padStart(2, "0")}`;
         },
         legend: {
             show: false
+        },
+        toolbox: {
+            show: true,
+            right: 20,
+            top: 20,
+            feature: {
+                saveAsImage: {
+                    show: true,
+                    title: "Save Image",
+                    name: `smokelyze_${(activeConfig.productId || "timeseries").replace(/[^a-zA-Z0-9_-]/g, "_")}_${utils.currentDate()}`,
+                    pixelRatio: 2,
+                    backgroundColor: bgColor,
+                    iconStyle: {
+                        borderColor: textColor
+                    },
+                    emphasis: {
+                        iconStyle: {
+                            borderColor: primaryColor
+                        }
+                    }
+                }
+            }
         },
         grid: {
             top: 100,
