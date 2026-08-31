@@ -1,20 +1,116 @@
 
 import { db, doc, getDoc } from "./fb-init.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-    const btn = document.getElementById("MapBtnAnalytics");
+function ensureAnalyticsModalInDOM() {
+    if (document.getElementById("AnalyticsModalOverlay")) return;
+
+    const modalHtml = `
+<style id="AnalyticsModalStyles">
+  .analytics-grid {
+    overflow-y: auto;
+    flex: 1;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2rem;
+    align-content: start;
+  }
+  .chart-span-pie {
+    grid-column: span 2;
+  }
+  .chart-span-bar {
+    grid-column: span 3;
+  }
+  .chart-span-full {
+    grid-column: span 6;
+  }
+  @media (max-width: 1024px) {
+    .analytics-grid {
+      grid-template-columns: 1fr;
+    }
+    .chart-span-pie,
+    .chart-span-bar,
+    .chart-span-full {
+      grid-column: auto;
+    }
+  }
+</style>
+<div class="MapPost-modal-overlay" id="AnalyticsModalOverlay" style="display:none; z-index: var(--z-highest);">
+  <div class="MapPost-modal" style="width: 90vw; display: flex; flex-direction: column;">
+    <div class="MapPost-modal-header">
+      <h3 id="AnalyticsModalTitle">Smokelyze Usage Analytics</h3>
+      <button class="ui-btn-close" id="AnalyticsModalClose" style="cursor: pointer;">
+        <svg width="20" height="20" style="pointer-events: none;">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
+    </div>
+    
+    <div style="padding: 1rem 2rem; background: var(--sidebar-widget-bg); border-bottom: 0.1rem solid var(--border-main); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <span style="font-size: 1.4rem; color: var(--card-shadow);" id="AnalyticsLastUpdated">Loading data...</span>
+      <div id="AnalyticsSummaryStats" style="display: flex; gap: 2rem;">
+        <!-- Summary stats injected via JS -->
+      </div>
+    </div>
+
+    <div class="MapPost-modal-body analytics-grid">
+      <!-- Row 1: 3 Pie Charts -->
+      <div id="AnalyticsChartEvent" class="chart-span-pie"
+        style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
+      </div>
+      <div id="AnalyticsChartRole" class="chart-span-pie"
+        style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
+      </div>
+      <div id="AnalyticsChartDataset" class="chart-span-pie"
+        style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
+      </div>
+
+      <!-- Row 2: 3 Bar Charts -->
+      <div id="AnalyticsChartLayer" class="chart-span-pie"
+        style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
+      </div>
+      <div id="AnalyticsChartState" class="chart-span-pie"
+        style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
+      </div>
+      <div id="AnalyticsChartAqs" class="chart-span-pie"
+        style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
+      </div>
+
+      <!-- Row 3: 1 Full-width Line Chart -->
+      <div id="AnalyticsChartDate" class="chart-span-full"
+        style="min-height: 350px; background: var(--color-bg); border: 0.1rem solid var(--border-main); border-radius: var(--border-radius-0p8rem); padding: 1rem;">
+      </div>
+    </div>
+  </div>
+</div>`;
+
+    document.body.insertAdjacentHTML("beforeend", modalHtml);
+
     const overlay = document.getElementById("AnalyticsModalOverlay");
     const closeBtn = document.getElementById("AnalyticsModalClose");
 
-    if (!btn || !overlay) return;
+    closeBtn?.addEventListener("click", () => {
+        if (overlay) overlay.style.display = "none";
+    });
+}
+
+function initAnalyticsModal() {
+    const btn = document.getElementById("MapBtnAnalytics");
+    if (!btn) return;
 
     btn.addEventListener("click", async () => {
-        overlay.style.display = "flex";
+        ensureAnalyticsModalInDOM();
+        const overlay = document.getElementById("AnalyticsModalOverlay");
+        if (overlay) overlay.style.display = "flex";
         await loadAnalytics();
     });
-
-    closeBtn?.addEventListener("click", () => {
-        overlay.style.display = "none";
+    
+    // Global Event Delegation for Close Button (Works in all environments/local servers)
+    document.addEventListener("click", (e) => {
+        if (e.target.closest("#AnalyticsModalClose")) {
+            const overlay = document.getElementById("AnalyticsModalOverlay");
+            if (overlay) overlay.style.display = "none";
+        }
     });
 
     // Handle window resize for ECharts responsiveness
@@ -25,7 +121,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (chart) chart.resize();
         });
     });
-});
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAnalyticsModal);
+} else {
+    initAnalyticsModal();
+}
 
 const EVENT_MAPPING = {
     "view": "Layer Views",
@@ -88,28 +190,28 @@ const LAYER_NAME_MAPPING = {
     "tempo-hcho": "TEMPO-HCHO",
     "tropomi-no2": "TROPOMI-NO2",
     "tropomi-hcho": "TROPOMI-HCHO",
-    
+
     "goes-aod-east": "GOES-AOD-East",
     "goes-aod-west": "GOES-AOD-West",
     "goes-geocolor-east": "GOES-GeoColor-East",
     "goes-geocolor-west": "GOES-GeoColor-West",
     "viirs-truecolor": "VIIRS-TrueColor",
-    
+
     "traj-backward": "HYSPLIT Traj (bwd)",
     "traj-forward": "HYSPLIT Traj (fwd)",
     "disp-backward": "HYSPLIT Disp (bwd)",
     "disp-forward": "HYSPLIT Disp (fwd)",
-    
+
     // --- AirNow ---
     "airnow-daily-mda8": "AirNow MDA8",
     "airnow-daily-pm25": "AirNow PM2.5",
     "airnow-hourly-ozone": "AirNow O3 (hr)",
     "airnow-hourly-pm25": "AirNow PM2.5 (hr)",
     "airnow-hourly-no2": "AirNow NO2 (hr)",
-    
+
     "airnow_daily": "AirNow daily",
     "airnow_hourly": "AirNow hourly",
-    
+
     // --- Download --- 
     "gam_v2": "UW GAM-v2",
     "gam_v1": "UW GAM-v1",
@@ -153,7 +255,7 @@ async function loadAnalytics() {
 
         const data = docSnap.data();
         if (label) {
-            label.innerHTML = `Data through: <strong>${data.lastProcessedDate || 'Unknown'}</strong> (Last updated: ${data.lastUpdated || 'Unknown'})`;
+            label.innerHTML = `Data through: <strong>${data.lastProcessedDate || "Unknown"}</strong> (Last updated: ${data.lastUpdated || "Unknown"})`;
         }
 
         // --- Summary Stats ---
@@ -161,9 +263,26 @@ async function loadAnalytics() {
             const totalUsers = Object.values(data.key_userRole || {}).reduce((a, b) => a + b, 0);
 
             summaryDiv.innerHTML = `
-                <div class="summary-badge" style="display: flex; flex-direction: column; align-items: center;">
-                    <span style="font-size: 2.2rem; font-weight: 800; color: var(--card-shadow);">${totalUsers.toLocaleString()}</span>
-                    <span style="font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.1rem; opacity: 0.8;">Registered Users</span>
+                <div class="summary-badge"
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                  ">
+                    <span
+                      style="
+                        font-size: 2.2rem;
+                        font-weight: bold;
+                        color: var(--card-shadow);
+                      ">${totalUsers.toLocaleString()}</span>
+                    <span
+                      style="
+                        font-size: 1.2rem;
+                        color: var(--text-main);
+                        text-transform: uppercase;
+                        letter-spacing: 0.1rem;
+                        opacity: 0.8;
+                      ">Registered Users</span>
                 </div>
             `;
         }
@@ -217,7 +336,7 @@ async function loadAnalytics() {
                 if (key !== "N/A" && key !== "null" && key !== "undefined") reqStates[key] = val;
             }
         }
-        
+
         const reqAQS = {};
         if (data.key_aqs) {
             for (const [key, val] of Object.entries(data.key_aqs)) {
@@ -232,7 +351,7 @@ async function loadAnalytics() {
         renderBarChart("AnalyticsChartLayer", "Requested Layers", reqLayers);
         renderBarChart("AnalyticsChartState", "Requested States", reqStates);
         renderBarChart("AnalyticsChartAqs", "Requested AQS", reqAQS);
-        
+
         renderBarTsChart("AnalyticsChartDate", "Requested Dates", data.key_date);
 
     } catch (e) {
@@ -457,7 +576,7 @@ function renderBarTsChart(divId, title, mapObj) {
                     none: "{yyyy}-{MM}-{dd}"
                 }
             },
-            splitLine: { 
+            splitLine: {
                 show: true,
                 lineStyle: {
                     color: borderColor,

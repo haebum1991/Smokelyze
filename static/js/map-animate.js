@@ -71,8 +71,143 @@ function getGifWorkerUrl() {
     return URL.createObjectURL(workerBlob);
 }
 
+function ensureTimelapseModalInDOM() {
+    if (document.getElementById("TimelapseModalOverlay")) return;
+
+    const modalHtml = `
+<div class="MapPost-modal-overlay" id="TimelapseModalOverlay" style="display:none;">
+  <div class="MapPost-modal">
+    <div class="MapPost-modal-header">
+      <h3 id="TimelapseModalTitle">Export Time-lapse</h3>
+      <button class="ui-btn-close" id="TimelapseModalClose" style="cursor: pointer;">
+        <svg width="20" height="20" style="pointer-events: none;">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="MapPost-modal-body">
+      <div class="MapPost-form-group">
+        <label>Time Scale (Step by):</label>
+        <div style="display: flex; gap: 2rem; margin-top: 0.5rem;">
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+            <input type="radio" name="TimelapseScale" value="d" checked> Daily (1D)
+          </label>
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+            <input type="radio" name="TimelapseScale" value="h"> Hourly (1H)
+          </label>
+        </div>
+      </div>
+
+      <div class="MapPost-form-group">
+        <label id="TimelapseStartLabel">Start Date & Time:</label>
+        <div class="MapPost-form-group-row">
+          <input type="date" id="TimelapseStartDate">
+          <select id="TimelapseStartTime">
+            <option value="00">00:00</option>
+            <option value="01">01:00</option>
+            <option value="02">02:00</option>
+            <option value="03">03:00</option>
+            <option value="04">04:00</option>
+            <option value="05">05:00</option>
+            <option value="06">06:00</option>
+            <option value="07">07:00</option>
+            <option value="08">08:00</option>
+            <option value="09">09:00</option>
+            <option value="10">10:00</option>
+            <option value="11">11:00</option>
+            <option value="12">12:00</option>
+            <option value="13">13:00</option>
+            <option value="14">14:00</option>
+            <option value="15">15:00</option>
+            <option value="16">16:00</option>
+            <option value="17">17:00</option>
+            <option value="18">18:00</option>
+            <option value="19">19:00</option>
+            <option value="20">20:00</option>
+            <option value="21">21:00</option>
+            <option value="22">22:00</option>
+            <option value="23">23:00</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="MapPost-form-group">
+        <label id="TimelapseEndLabel">End Date & Time:</label>
+        <div class="MapPost-form-group-row">
+          <input type="date" id="TimelapseEndDate">
+          <select id="TimelapseEndTime">
+            <option value="00">00:00</option>
+            <option value="01">01:00</option>
+            <option value="02">02:00</option>
+            <option value="03">03:00</option>
+            <option value="04">04:00</option>
+            <option value="05">05:00</option>
+            <option value="06">06:00</option>
+            <option value="07">07:00</option>
+            <option value="08">08:00</option>
+            <option value="09">09:00</option>
+            <option value="10">10:00</option>
+            <option value="11">11:00</option>
+            <option value="12">12:00</option>
+            <option value="13">13:00</option>
+            <option value="14">14:00</option>
+            <option value="15">15:00</option>
+            <option value="16">16:00</option>
+            <option value="17">17:00</option>
+            <option value="18">18:00</option>
+            <option value="19">19:00</option>
+            <option value="20">20:00</option>
+            <option value="21">21:00</option>
+            <option value="22">22:00</option>
+            <option value="23">23:00</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="MapPost-form-group">
+        <label for="TimelapseFormSpeed">Playback Speed:</label>
+        <select id="TimelapseFormSpeed"
+          style="width: 100%; padding: 0.8rem; border-radius: var(--border-radius-0p8rem); border: 0.1rem solid var(--card-shadow); font-size: 1.4rem;">
+          <option value="1000">Slow (1 sec / frame)</option>
+          <option value="500" selected>Normal (0.5 sec / frame)</option>
+          <option value="200">Fast (0.2 sec / frame)</option>
+        </select>
+      </div>
+
+      <hr style="margin-top: 0; margin-bottom: 0;">
+      <b style="color: var(--card-shadow);">How to use:</b>
+      <ul style="margin-top: 0.5rem; color: var(--text-main); font-size: 1.3rem; line-height: 1.6;">
+        <li>Select at least one data <b style="color: var(--text-heading);">layer</b> on the map before generating.</li>
+        <li>Choose <b style="color: var(--card-shadow);">Hourly</b> (max 12 frames (hours)) or <b
+            style="color: var(--card-shadow);">Daily</b> (max 14 frames (days)).</li>
+        <li>Set the start/end date range and playback speed, then click <b style="color: var(--text-heading);">Generate GIF</b>.</li>
+        <li>Do not interact with the map while capturing. Use the <b style="color: var(--text-heading);">Cancel</b> button to abort.</li>
+        <li>This is not supported on mobile devices.</li>
+      </ul>
+    </div>
+
+    <div class="MapPost-modal-footer">
+      <div class="reply-btn-wrapper">
+        <button class="reply-btn-submit" id="TimelapseBtnSubmit"
+          style="background-color: var(--map-accordion-gradient-start); color: var(--color-white); border: none;">Generate
+          GIF</button>
+        <button class="reply-btn-cancel" id="TimelapseBtnCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+
+    document.body.insertAdjacentHTML("beforeend", modalHtml);
+}
+
 export function initMapAnimate() {
     const btnOpener = document.getElementById("MapBtnAnimate");
+    
+    if (!btnOpener) return;
+
+    ensureTimelapseModalInDOM();
+    
     const modal = document.getElementById("TimelapseModalOverlay");
     const btnSubmit = document.getElementById("TimelapseBtnSubmit");
     const btnCancel = document.getElementById("TimelapseBtnCancel");
@@ -87,7 +222,7 @@ export function initMapAnimate() {
     const mapDatePicker = document.getElementById("datePicker");
     const mapTimePicker = document.getElementById("timePicker");
 
-    if (!btnOpener || !modal || !btnSubmit) return;
+    if (!modal || !btnSubmit) return;
 
     // Toggle time pickers visibility based on Daily vs Hourly
     const timeScaleRadios = document.querySelectorAll('input[name="TimelapseScale"]');

@@ -36,10 +36,182 @@ const FRAME_INTERVAL = 1000 / TARGET_FPS;
 const RAINBOW_COLORS = ["#007cff", "#ff4d4d", "#2ecc71", "#e67e22", "#9b59b6", "#1abc9c", "#f1c40f"];
 const LAYER_SUFFIXES = ["wall", "line", "points", "vispoints", "point", "heatmap"];
 
+function ensureHysplitModalInDOM() {
+    if (document.getElementById("HysplitModalOverlay")) return;
+
+    const modalHtml = `
+<div class="MapPost-modal-overlay" id="HysplitModalOverlay" style="display:none;">
+  <div class="MapPost-modal">
+    <div class="MapPost-modal-header">
+      <h3 id="HysplitModalTitle">HYSPLIT Simulation</h3>
+      <button class="ui-btn-close" id="HysplitModalClose" style="cursor: pointer;">
+        <svg width="20" height="20" style="pointer-events: none;">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="MapPost-modal-body">
+      <div class="MapPost-form-group">
+        <label>Location (lon, lat):</label>
+        <div id="InputHysplitLocation"
+          style="padding: 0.8rem; background: var(--color-bg-alt); color: var(--card-shadow); font-weight: bold; border-radius: var(--border-radius-0p8rem); font-family: monospace;">
+        </div>
+      </div>
+
+      <div class="MapPost-form-group-row">
+        <div class="MapPost-form-group">
+          <label for="InputHysplitDate">Input Date:</label>
+          <input type="date" id="InputHysplitDate">
+        </div>
+
+        <div class="MapPost-form-group">
+          <label for="InputHysplitTime">Input Time (UTC):</label>
+          <select id="InputHysplitTime">
+            <option value="00">00:00</option>
+            <option value="01">01:00</option>
+            <option value="02">02:00</option>
+            <option value="03">03:00</option>
+            <option value="04">04:00</option>
+            <option value="05">05:00</option>
+            <option value="06">06:00</option>
+            <option value="07">07:00</option>
+            <option value="08">08:00</option>
+            <option value="09">09:00</option>
+            <option value="10">10:00</option>
+            <option value="11">11:00</option>
+            <option value="12">12:00</option>
+            <option value="13">13:00</option>
+            <option value="14">14:00</option>
+            <option value="15">15:00</option>
+            <option value="16">16:00</option>
+            <option value="17">17:00</option>
+            <option value="18">18:00</option>
+            <option value="19">19:00</option>
+            <option value="20">20:00</option>
+            <option value="21">21:00</option>
+            <option value="22">22:00</option>
+            <option value="23">23:00</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="MapPost-form-group-row">
+        <div class="MapPost-form-group">
+          <div id="DivHysplitDuration" style="display: flex; align-items: center; justify-content: space-between;">
+            <label for="InputHysplitDuration">Duration (hr):</label>
+          </div>
+          <input type="number" id="InputHysplitDuration" value="24" min="1" max="240">
+        </div>
+
+        <div class="MapPost-form-group">
+          <div id="DivHysplitHeight" style="display: flex; align-items: center; justify-content: space-between;">
+            <label for="InputHysplitHeight">Height (AGL) (m):</label>
+          </div>
+          <input type="number" id="InputHysplitHeight" value="500" min="10" max="10000">
+        </div>
+      </div>
+
+      <div class="MapPost-form-group-row">
+        <div class="MapPost-form-group">
+          <label for="InputHysplitType">Run Type:</label>
+          <select id="InputHysplitType" class="MapPost-select">
+            <option value="trajectory" selected>Trajectory</option>
+            <option value="dispersion">Dispersion</option>
+          </select>
+        </div>
+
+        <div class="MapPost-form-group">
+          <label>Direction:</label>
+          <div style="display: flex; gap: 2rem; padding: 1rem 0; justify-content: center;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="radio" name="HysplitDirection" value="backward" checked> BWD
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="radio" name="HysplitDirection" value="forward"> FWD
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dispersion specific settings (hidden by default) -->
+      <div id="HysplitDispersionGroup"
+        style="display: none; padding: 1rem; background: var(--color-bg-alt); border-radius: var(--border-radius-0p8rem); margin-top: 1rem; border: 0.1rem solid var(--border-main);">
+        <h4 style="margin: 0 0 1rem 0; font-size: 1.6rem; color: var(--card-shadow);">Dispersion Parameters:</h4>
+
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <div id="DivHysplitReleaseRate" style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="InputHysplitRate">Release Rate (kg hr-1):</label>
+            </div>
+            <input type="number" id="InputHysplitRate" value="5" min="0.1" step="0.1">
+          </div>
+          <div class="MapPost-form-group">
+            <div id="DivHysplitReleaseDuration"
+              style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="InputHysplitReleaseDuration">Release Duration (hr):</label>
+            </div>
+            <input type="number" id="InputHysplitReleaseDuration" value="1" min="1">
+          </div>
+        </div>
+
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <div id="DivHysplitPdiam" style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="InputHysplitPdiam">Ptcl Dia. (μm):</label>
+            </div>
+            <input type="number" id="InputHysplitPdiam" value="2.5" min="0.1" step="0.1">
+          </div>
+          <div class="MapPost-form-group">
+            <div id="DivHysplitPdensity" style="display: flex; align-items: center; justify-content: space-between;">
+              <label for="InputHysplitPdensity">Ptcl Density (g cm-3):</label>
+            </div>
+            <input type="number" id="InputHysplitPdensity" value="1.2" min="0.1" step="0.1">
+          </div>
+        </div>
+      </div>
+
+      <div
+        style="margin-top: 1.5rem; font-size: 1.4rem; color: var(--text-main); border-top: 0.1rem solid var(--border-main); padding-top: 0.8rem;">
+        * Note: Simulations use <b style="color: var(--card-shadow);">NAM 12km</b> meteorological data by default.
+        For locations outside the NAM12 domain (e.g., Alaska, Hawaii), the model automatically switches to <b
+          style="color: var(--card-shadow);">GDAS1 (1°)</b>.
+        For NAM12 trajectories exceeding 72 hours, GDAS1 data is additionally used as backup to prevent domain boundary
+        truncation.
+        The vertical motion uses the default option (i.e., <b style="color: var(--card-shadow);">Model vertical
+          velocity</b>).
+        Dispersion modeling is conducted with
+        <b style="color: var(--card-shadow);">minimal physical parameters</b>
+        (e.g., release rate, release duration, particle diameter and density)
+        due to server resource constraints.
+        <b style="color: var(--card-shadow);">Use results for screening purposes only</b>.
+        For detailed scientific analysis, please visit the official website:
+        <a href="https://www.ready.noaa.gov/hypub-bin/trajtype.pl" target="_blank"
+          style="color: var(--card-shadow); text-decoration: underline;">NOAA READY (trajectory)</a> or
+        <a href="https://www.ready.noaa.gov/hypub-bin/dispasrc.pl" target="_blank"
+          style="color: var(--card-shadow); text-decoration: underline;">NOAA READY (dispersion)</a>.
+      </div>
+    </div>
+
+    <div class="MapPost-modal-footer">
+      <div class="reply-btn-wrapper">
+        <button class="reply-btn-submit" id="HysplitBtnSubmit">Run Simulation</button>
+        <button class="reply-btn-cancel" id="HysplitBtnCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+
+    document.body.insertAdjacentHTML("beforeend", modalHtml);
+}
+
+
 // --- Initialization ---
 export function initHysplit() {
     console.log("[HYSPLIT] Full Init Starting...");
     if (!map) return;
+    
+    ensureHysplitModalInDOM();
 
     // Listen for reset events from ui-reset.js (Decoupled Reset)
     document.addEventListener("smokelyze-reset-hysplit", (e) => {
@@ -534,6 +706,8 @@ export function handleHysplitModeToggle(force) {
 
 // --- UI Logic ---
 function uiShowHysplitModal(params = null) {
+
+    ensureHysplitModalInDOM();
 
     // Hide original MapPost context menu
     const ctxMenu = document.getElementById("MapPostContextMenu");
@@ -1669,8 +1843,201 @@ let DispersionDrawerState = {
     data: null
 };
 
+function ensureDispersionDrawerInDOM() {
+    if (document.getElementById("DispersionDrawer")) return;
+
+    const drawerHtml = `
+<style id="DispersionDrawerStyles">
+  #DispersionDrawer {
+    z-index: calc(var(--z-highest) - 1);
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    transform: none;
+    top: calc(var(--header-height-total) + var(--toolbar-date-height));
+    right: 10rem;
+  }
+  #DispersionDrawer.collapsed {
+    opacity: 0;
+    visibility: hidden;
+    transform: none;
+    pointer-events: none;
+  }
+  #DispersionDrawer:not(.collapsed) {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  #DispersionDrawer .accordion-header {
+    cursor: move;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  #DispersionDrawerHeaderDraggable .accordion-title {
+    flex: 1;
+    white-space: nowrap;
+  }
+  #DispersionDrawerHeaderDraggable:hover .ui-handle-draggable {
+    opacity: 0.8;
+  }
+  .ui-handle-draggable {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.4;
+    transition: opacity 0.3s;
+    padding: 0 1rem;
+    cursor: grab;
+  }
+  .ui-handle-draggable:active {
+    cursor: grabbing;
+  }
+  #DispersionDrawer .accordion {
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.3);
+    border-radius: var(--border-radius-0p8rem);
+    position: relative;
+    overflow: hidden;
+    max-height: calc(100vh - var(--header-height-total) - var(--footer-height));
+    height: max-content;
+    min-height: max-content;
+  }
+  #DispersionDrawerBody {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.2rem;
+    overflow-y: auto;
+  }
+  #DispersionDrawerControls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  #DispersionDrawerPlayBtn {
+    background: var(--map-accordion-gradient-start);
+    color: var(--color-white);
+    border: none;
+    border-radius: 50%;
+    width: 3.6rem;
+    height: 3.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  #DispersionDrawerPlayBtn:hover {
+    transform: scale(1.1);
+  }
+  #DispersionDrawerPlayBtn:active {
+    transform: scale(0.95);
+  }
+  #DispersionDrawerStepDisplay {
+    font-size: 1.4rem;
+    color: var(--text-main);
+    margin-bottom: 0.2rem;
+  }
+  #DispersionDrawerTimeDisplay {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: var(--text-heading);
+  }
+  #DispersionDrawerMassDisplay {
+    font-size: 1.4rem;
+    margin-top: 0.2rem;
+  }
+  #DispersionDrawerMeta {
+    font-size: 1.3rem; 
+    margin-top: 0.4rem; 
+    padding-top: 0.4rem; 
+    border-top: 0.1rem solid var(--border-main);
+  }
+  #DispersionDrawerSlider {
+    flex: 1;
+    cursor: pointer;
+  }
+  @media (max-width: 1024px) {
+    #DispersionDrawer {
+      top: auto !important;
+      bottom: 0 !important;
+      right: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      transition: transform 0.3s ease-out;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    #DispersionDrawer.collapsed {
+      transform: translateY(100%);
+    }
+    #DispersionDrawer:not(.collapsed) {
+      transform: translateY(0);
+    }
+    #DispersionDrawer .accordion-header {
+      cursor: default;
+    }
+    #DispersionDrawer .accordion {
+      resize: none;
+      width: 100%;
+      border-radius: var(--border-radius-0p8rem) var(--border-radius-0p8rem) 0 0;
+      box-shadow: 0 -0.5rem 2rem rgba(0, 0, 0, 0.2);
+    }
+    .ui-handle-draggable {
+      display: none;
+    }
+  }
+</style>
+<div class="accordion-page collapsed" id="DispersionDrawer">
+  <div class="accordion">
+    <div class="accordion-header" id="DispersionDrawerHeaderDraggable">
+      <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <svg width="20" height="20" style="color: var(--text-main); pointer-events: none;">
+          <use xlink:href="#icon-hysplit" />
+        </svg>
+        <span class="accordion-title">Dispersion Animator</span>
+      </div>
+      <div class="ui-handle-draggable">
+        <svg width="20" height="20" style="color: var(--text-main); pointer-events: none;">
+          <use xlink:href="#icon-drag-handle" />
+        </svg>
+      </div>
+      <button id="DispersionDrawerClose" class="ui-btn-close" style="cursor: pointer;">
+        <svg width="20" height="20" style="pointer-events: none;">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
+    </div>
+    <div id="DispersionDrawerBody">
+      <div id="DispersionDrawerInfo">
+        <div id="DispersionDrawerStepDisplay">Step: 0 / 0</div>
+        <div id="DispersionDrawerTimeDisplay">Current: ...</div>
+        <div id="DispersionDrawerMassDisplay"></div>
+        <div id="DispersionDrawerMeta"></div>
+      </div>
+      <div id="DispersionDrawerControls">
+        <button id="DispersionDrawerPlayBtn" title="Play/Pause">
+          <svg width="24" height="24" fill="currentColor" style="pointer-events: none;">
+            <path id="DispersionDrawerPlayIcon" d="M8 5v14l11-7z" />
+          </svg>
+        </button>
+        <input type="range" id="DispersionDrawerSlider" min="0" max="0" value="0" step="1">
+      </div>
+    </div>
+  </div>
+</div>`;
+
+    document.body.insertAdjacentHTML("beforeend", drawerHtml);
+}
+
 function initDispersionDrawer() {
     if (window._dispersionInitialized) return;
+    
+    ensureDispersionDrawerInDOM();
+    
     const playBtn = document.getElementById("DispersionDrawerPlayBtn");
     const slider = document.getElementById("DispersionDrawerSlider");
     const closeBtn = document.getElementById("DispersionDrawerClose");
@@ -1682,18 +2049,24 @@ function initDispersionDrawer() {
     });
     if (closeBtn) closeBtn.addEventListener("click", hideDispersionDrawer);
 
-    makeDraggable(document.getElementById("DispersionDrawer"), document.getElementById("DispersionDrawerHeaderDraggable"));
- 
-    // Use swipe to close from ui-toggles
-    addSwipeClose(document.getElementById("DispersionDrawer"), {
-        direction: "down",
-        onClose: hideDispersionDrawer
-    });
+    const drawer = document.getElementById("DispersionDrawer");
+    const header = document.getElementById("DispersionDrawerHeaderDraggable");
+
+    if (drawer && header) {
+        makeDraggable(drawer, header);
+        addSwipeClose(drawer, {
+            direction: "down",
+            onClose: hideDispersionDrawer
+        });
+    }
 
     window._dispersionInitialized = true;
 }
 
 function showDispersionDrawer(runId) {
+
+    ensureDispersionDrawerInDOM();
+    initDispersionDrawer();
 
     // If another run was already open in the drawer, clean up its map state first
     if (DispersionDrawerState.runId && DispersionDrawerState.runId !== runId) {
@@ -1876,7 +2249,7 @@ function updateDispersionFrame(index) {
                 const [mantissa, exponent] = expStr.split("e");
                 const formattedExponent = exponent.replace("+", "");
                 const formattedMass = `${utils.ESML(mantissa)} &times; 10<sup>${utils.ESML(formattedExponent)}</sup>`;
-                massEl.innerHTML = `<span style="color: var(--text-main);">Total Mass:</span> <b style="color: var(--card-shadow);">${formattedMass}</b> kg`;
+                massEl.innerHTML = `<span style="color: var(--text-main);">Total Mass:</span> <b style="color: var(--card-shadow);">${formattedMass}</b> <span style="color: var(--text-main);">kg</span>`;
                 massEl.style.display = "block";
             } else {
                 massEl.style.display = "none";

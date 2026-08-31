@@ -186,32 +186,116 @@ function renderLikeButton(id, likes, isSmall = false) {
     // Inline styles for small/big version
     const boxStyle = isSmall
         ? "background: none; border: none; padding: 0; margin-right: 1.5rem; display: flex; align-items: center; cursor: pointer; color: var(--text-main);"
-        : "text-align: center; cursor: pointer; min-width: 4rem;";
+        : "text-align: center; cursor: pointer; min-width: 4rem; color: var(--text-main);";
 
     const svgFill = isLiked ? "var(--btn-minus)" : "none";
-    const svgStroke = isLiked ? "var(--btn-minus)" : "currentColor";
+    const svgStroke = isLiked ? "var(--btn-minus)" : "var(--text-main)";
     const svgStrokeWidth = isLiked ? "0" : "2";
 
-    const svgHtml = `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${svgFill}" stroke="${svgStroke}" stroke-width="${svgStrokeWidth}"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+    const svgHtml = `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="${svgFill}" stroke="${svgStroke}" stroke-width="${svgStrokeWidth}" style="pointer-events: none;"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
 
     if (isSmall) {
         return `
             <button class="${boxClass}" data-id="${utils.ESML(id)}" style="${boxStyle}">
                 <span style="display: flex; align-items: center; margin-right: 0.3rem;">${svgHtml}</span>
-                <span style="font-size: 1.2rem;">${count}</span>
+                <span style="font-size: 1.2rem; color: var(--text-main);">${count}</span>
             </button>
         `;
     } else {
         return `
             <div class="${boxClass}" data-id="${utils.ESML(id)}" style="${boxStyle}">
                 <div class="post-like-icon" style="font-size: ${iconSize}; line-height: 1;">${svgHtml}</div>
-                <div class="post-like-count" style="font-size: 1.2rem; color: var(--text-main);">${count}</div>
+                <div class="post-like-count" style="font-size: 1.2rem; color: var(--text-main); margin-top: 0.2rem;">${count}</div>
             </div>
         `;
     }
 }
 
+
+function ensureMapPostModalInDOM() {
+    if (document.getElementById("MapPostModalOverlay")) return;
+
+    const modalHtml = `
+<div class="MapPost-modal-overlay" id="MapPostModalOverlay" style="display:none;">
+  <div class="MapPost-modal">
+    <div class="MapPost-modal-header">
+      <h3 id="MapPostModalTitle">New MapPost</h3>
+      <button class="ui-btn-close" id="MapPostModalClose" style="cursor: pointer;">
+        <svg width="20" height="20" style="pointer-events: none;">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- View Mode Content -->
+    <div id="MapPostModalViewBody" style="display:flex; flex:1; flex-direction:column;">
+      <!-- Injected via JS -->
+    </div>
+
+    <!-- Edit/Create Mode Content -->
+    <div id="MapPostModalEditBody" style="display:flex; flex:1; flex-direction:column;">
+      <div class="MapPost-modal-body">
+        <div class="MapPost-form-group">
+          <label for="MapPostFormTitle">Title: <small id="MapPostTitleCounter"
+              style="float: right;">0/100</small></label>
+          <input type="text" id="MapPostFormTitle" placeholder="Enter title...">
+        </div>
+
+        <div class="MapPost-form-group">
+          <label>Visibility:</label>
+          <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 0.3rem;">
+              <input type="radio" name="MapPostVisibility" value="public" checked> Public
+            </label>
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 0.3rem;">
+              <input type="radio" name="MapPostVisibility" value="private"> Private
+            </label>
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 0.3rem;">
+              <input type="radio" name="MapPostVisibility" value="group"> Group
+            </label>
+          </div>
+        </div>
+
+        <div class="MapPost-form-group">
+          <label for="MapPostFormContent">Content: <small id="MapPostContentCounter"
+              style="float: right;">0/2000</small></label>
+          <textarea id="MapPostFormContent" placeholder="Enter your opinion..."></textarea>
+        </div>
+      </div>
+      <div class="MapPost-modal-footer">
+        <div class="reply-btn-wrapper">
+          <button class="reply-btn-submit" id="MapPostBtnSubmit">Submit</button>
+          <button class="reply-btn-cancel" id="MapPostBtnCancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`;
+
+    document.body.insertAdjacentHTML("beforeend", modalHtml);
+
+    // Bind listeners to dynamic modal elements
+    const titleIn = document.getElementById("MapPostFormTitle");
+    if (titleIn) titleIn.addEventListener("input", () => updateCounter("MapPostFormTitle", "MapPostTitleCounter", 100));
+
+    const contentIn = document.getElementById("MapPostFormContent");
+    if (contentIn) contentIn.addEventListener("input", () => updateCounter("MapPostFormContent", "MapPostContentCounter", 2000));
+
+    const submitMainBtn = document.getElementById("MapPostBtnSubmit");
+    if (submitMainBtn) submitMainBtn.addEventListener("click", (e) => { e.preventDefault(); clickOnSubmitMain(); });
+
+    const cancelMainBtn = document.getElementById("MapPostBtnCancel");
+    if (cancelMainBtn) cancelMainBtn.addEventListener("click", () => state.editingDocId ? renderMapPostDetail(state.editingDocId) : uiHideModal());
+
+    const closeModalBtn = document.getElementById("MapPostModalClose");
+    if (closeModalBtn) closeModalBtn.addEventListener("click", uiHideModal);
+}
+
+
+// --- 5. UI Logic (Modal & Context Menu) ---
 function uiShowModal(editData = null) {
+
+    ensureMapPostModalInDOM();
     
     if (!state.currentUser) {
         utils.showAuthOverlay();
@@ -321,6 +405,9 @@ function uiHideContextMenu() {
 // --- 6. Rendering Logic (Prefix: render) ---
 
 function renderMapPostDetail(id) {
+    
+    ensureMapPostModalInDOM();
+    
     const p = state.MapPostData[id];
     if (!p) return;
 
@@ -776,25 +863,6 @@ if (writeBtn) writeBtn.addEventListener("click", () => uiShowModal());
 const closeCtxBtn = document.getElementById("MapPostBtnClose");
 if (closeCtxBtn) closeCtxBtn.addEventListener("click", uiHideContextMenu);
 
-const submitMainBtn = document.getElementById("MapPostBtnSubmit");
-if (submitMainBtn) submitMainBtn.addEventListener("click", (e) => { e.preventDefault(); clickOnSubmitMain(); });
-
-const cancelMainBtn = document.getElementById("MapPostBtnCancel");
-if (cancelMainBtn) cancelMainBtn.addEventListener("click", () => state.editingDocId ? renderMapPostDetail(state.editingDocId) : uiHideModal());
-
-const closeModalBtn = document.getElementById("MapPostModalClose");
-if (closeModalBtn) closeModalBtn.addEventListener("click", uiHideModal);
-
-const overlay = document.getElementById("MapPostModalOverlay");
-// 창 밖에 마우스 클릭시 자동으로 닫히는 기능 (비활성화)
-// if (overlay) overlay.addEventListener("click", (e) => { if (e.target.id === "MapPostModalOverlay") uiHideModal(); });
-
-// Real-time counter listeners
-const titleIn = document.getElementById("MapPostFormTitle");
-if (titleIn) titleIn.addEventListener("input", () => updateCounter("MapPostFormTitle", "MapPostTitleCounter", 100));
-
-const contentIn = document.getElementById("MapPostFormContent");
-if (contentIn) contentIn.addEventListener("input", () => updateCounter("MapPostFormContent", "MapPostContentCounter", 2000));
 
 // Event delegation for dynamic reply counters
 document.body.addEventListener("input", (e) => {

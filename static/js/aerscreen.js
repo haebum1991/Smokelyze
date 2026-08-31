@@ -1011,10 +1011,402 @@ function fmtConc(val) {
     return val.toFixed(0);
 }
 
+function ensureAerscreenModalInDOM() {
+    if (document.getElementById("AerscreenModalOverlay")) return;
+
+    const modalHtml = `
+<div class="MapPost-modal-overlay" id="AerscreenModalOverlay" style="display:none;">
+  <div class="MapPost-modal">
+    <div class="MapPost-modal-header">
+      <h3 id="AerscreenModalTitle">Dispersion Screening</h3>
+      <button class="ui-btn-close" id="AerscreenModalClose" style="cursor: pointer;">
+        <svg width="20" height="20" style="pointer-events: none;">
+          <use xlink:href="#icon-close" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="MapPost-modal-body">
+      <div class="MapPost-form-group">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <label style="margin-bottom: 0;">Location (lon, lat):</label>
+          <button id="AerscreenBtnViewResult" class="reply-btn-submit" style="display: none;">
+            Results
+          </button>
+        </div>
+
+        <div id="InputAerscreenLocation"
+          style="padding: 0.8rem; background: var(--color-bg-alt); color: var(--card-shadow); font-weight: bold; border-radius: var(--border-radius-0p8rem); font-family: monospace;">
+        </div>
+        <input type="hidden" id="AerscreenSourceLon">
+        <input type="hidden" id="AerscreenSourceLat">
+      </div>
+
+      <div class="MapPost-form-group-row">
+        <div class="MapPost-form-group">
+          <label for="AerscreenMode">Simulation Mode:</label>
+          <select id="AerscreenMode" class="MapPost-select">
+            <option value="simplified" selected>Simplified Gaussian Plume Model</option>
+            <option value="aerscreen">EPA AERSCREEN</option>
+          </select>
+        </div>
+        <div class="MapPost-form-group">
+          <label for="AerscreenPreset">Preset Scenario:</label>
+          <select id="AerscreenPreset" class="MapPost-select">
+            <option value="smallFire">Small Fire (~100 acres)</option>
+            <option value="mediumFire" selected>Medium Fire (~1,000 acres)</option>
+            <option value="largeFire">Large Fire (~10,000 acres)</option>
+            <option value="majorFire">Major Fire (~100,000+ acres)</option>
+            <option value="custom">Custom (Manual Input)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SHARED INPUTS -->
+      <div id="AerscreenSharedParams">
+        <hr style="margin-top: 0; margin-bottom: 0;">
+        <h4 style="color: var(--card-shadow);">Emission Data:</h4>
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label for="AerscreenEmissionRate">Emission Rate (kg hr-1):</label>
+            <input type="number" id="AerscreenEmissionRate" value="1800" min="0" step="100">
+          </div>
+          <div class="MapPost-form-group">
+            <label for="AerscreenEffHeight">Stack / Plume Height (m):</label>
+            <input type="number" id="AerscreenEffHeight" value="800" min="0" step="50">
+          </div>
+        </div>
+
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label for="AerscreenTerrain">Terrain:</label>
+            <select id="AerscreenTerrain" class="MapPost-select" style="width: 100%;">
+              <option value="rural" selected>Rural</option>
+              <option value="urban">Urban</option>
+            </select>
+          </div>
+          <div class="MapPost-form-group" id="AerscreenPopulationGroup" style="display: none;">
+            <label>Urban Population:</label>
+            <input type="number" id="AerscreenPopulation" value="2000000" min="0" step="10000" style="width: 100%;">
+          </div>
+        </div>
+      </div>
+
+      <!-- SIMPLIFIED GAUSSIAN PLUME SPECIFIC INPUTS -->
+      <div id="AerscreenSimplifiedParams">
+        <hr style="margin-top: 0; margin-bottom: 0;">
+        <h4 style="color: var(--card-shadow);">Meteorological Data:</h4>
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label for="AerscreenWindSpeed">Wind Speed (m s-1):</label>
+            <input type="number" id="AerscreenWindSpeed" value="5" min="0.5" max="30" step="0.5">
+          </div>
+          <div class="MapPost-form-group">
+            <label for="AerscreenWindDir">Wind Direction (°):</label>
+            <input type="number" id="AerscreenWindDir" value="270" min="0" max="360" step="5">
+          </div>
+        </div>
+
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label for="AerscreenStability">Stability Class:</label>
+            <select id="AerscreenStability" class="MapPost-select">
+              <option value="A">A: Very Unstable</option>
+              <option value="B">B: Unstable</option>
+              <option value="C">C: Slightly Unstable</option>
+              <option value="D" selected>D: Neutral</option>
+              <option value="E">E: Slightly Stable</option>
+              <option value="F">F: Stable</option>
+            </select>
+          </div>
+          <div class="MapPost-form-group">
+          </div>
+        </div>
+      </div>
+
+      <!-- EPA AERSCREEN SPECIFIC INPUTS -->
+      <div id="AerscreenParams" style="display: none;">
+        <hr style="margin-top: 0; margin-bottom: 0;">
+        <h4 style="color: var(--card-shadow);">Advanced Stack Data:</h4>
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Stack Diameter (m):</label>
+            <input type="number" id="AerscreenStackDiameter" value="5.0" step="0.1">
+          </div>
+          <div class="MapPost-form-group">
+            <label>Stack Temp (K):</label>
+            <input type="number" id="AerscreenStackTemp" value="500.0" step="1">
+          </div>
+        </div>
+
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Stack Velocity (m s-1):</label>
+            <input type="number" id="AerscreenStackVelocity" value="5.0" step="0.1">
+          </div>
+          <div class="MapPost-form-group">
+            <label>Ambient Dist (m):</label>
+            <input type="number" id="AerscreenAmbientDistance" value="1.0" step="1">
+          </div>
+        </div>
+
+        <hr style="margin-top: 0; margin-bottom: 0;">
+        <h4 style="color: var(--card-shadow);">Chemistry Data (NOx):</h4>
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>NO2 Chemistry:</label>
+            <select id="AerscreenNo2Option" class="MapPost-select">
+              <option value="1" selected>1) No chemistry / Not NO2</option>
+              <option value="2">2) Ozone Limiting (OLM)</option>
+              <option value="3">3) Plume Volume Molar Ratio (PVMRM)</option>
+            </select>
+          </div>
+          <div class="MapPost-form-group"></div>
+        </div>
+
+        <div id="AerscreenNo2Details" style="display: none;">
+          <div class="MapPost-form-group-row">
+            <div class="MapPost-form-group">
+              <label>In-stack NO2/NOx Ratio:</label>
+              <input type="number" id="AerscreenNo2StackRatio" value="0.1" step="0.01" min="0" max="1">
+            </div>
+            <div class="MapPost-form-group">
+              <label>Ozone Units:</label>
+              <select id="AerscreenOzoneUnits" class="MapPost-select">
+                <option value="1">ug/m3</option>
+                <option value="2">ppm</option>
+                <option value="3" selected>ppb</option>
+              </select>
+            </div>
+          </div>
+          <div class="MapPost-form-group-row">
+            <div class="MapPost-form-group">
+              <label>Ozone Concentration:</label>
+              <input type="number" id="AerscreenOzoneValue" value="40" step="0.1">
+            </div>
+            <div class="MapPost-form-group"></div>
+          </div>
+        </div>
+
+        <hr style="margin-top: 0; margin-bottom: 0;">
+        <h4 style="color: var(--card-shadow);">MAKEMET Data:</h4>
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Min Amb Temp (K):</label>
+            <input type="number" id="AerscreenMinAmbTemp" value="250.0" step="1">
+          </div>
+          <div class="MapPost-form-group">
+            <label>Max Amb Temp (K):</label>
+            <input type="number" id="AerscreenMaxAmbTemp" value="315.0" step="1">
+          </div>
+        </div>
+
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Min Wind (m s-1):</label>
+            <input type="number" id="AerscreenMinWindSpeed" value="0.5" step="0.1">
+          </div>
+          <div class="MapPost-form-group">
+            <label>Surface Albedo:</label>
+            <input type="number" id="AerscreenAlbedo" value="0.20" step="0.01">
+          </div>
+        </div>
+
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Bowen Ratio:</label>
+            <input type="number" id="AerscreenBowen" value="1.0" step="0.1">
+          </div>
+          <div class="MapPost-form-group">
+            <label>Roughness (m):</label>
+            <input type="number" id="AerscreenRoughness" value="0.10" step="0.01">
+          </div>
+        </div>
+
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Anemometer Ht (m):</label>
+            <input type="number" id="AerscreenAnemometerHt" value="10.0" step="0.1">
+          </div>
+          <div class="MapPost-form-group">
+          </div>
+        </div>
+
+        <hr style="margin-top: 0; margin-bottom: 0;">
+        <h4 style="color: var(--card-shadow);">Building Data:</h4>
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Downwash:</label>
+            <select id="AerscreenBldDownwash" class="MapPost-select">
+              <option value="N" selected>No</option>
+              <option value="Y">Yes</option>
+            </select>
+          </div>
+          <div class="MapPost-form-group"></div>
+        </div>
+
+        <div id="AerscreenBldDetails" style="display: none;">
+
+          <div class="MapPost-form-group-row">
+            <div class="MapPost-form-group">
+              <label>Height (m):</label>
+              <input type="number" id="AerscreenBldHeight" value="10.0" step="0.1">
+            </div>
+            <div class="MapPost-form-group">
+              <label>Min Dimension (m):</label>
+              <input type="number" id="AerscreenBldMinDim" value="10.0" step="0.1">
+            </div>
+          </div>
+
+          <div class="MapPost-form-group-row">
+            <div class="MapPost-form-group">
+              <label>Max Dimension (m):</label>
+              <input type="number" id="AerscreenBldMaxDim" value="20.0" step="0.1">
+            </div>
+            <div class="MapPost-form-group">
+              <label>Bld Orientation (0-360°):</label>
+              <input type="number" id="AerscreenBldAngle" value="0.0" step="1">
+            </div>
+          </div>
+
+          <div class="MapPost-form-group-row">
+            <div class="MapPost-form-group">
+              <label>Stack Dir. (0-360°):</label>
+              <input type="number" id="AerscreenBldSangle" value="0.0" step="1">
+            </div>
+            <div class="MapPost-form-group">
+              <label>Stack Dist. (m):</label>
+              <input type="number" id="AerscreenBldSdist" value="0.0" step="0.1">
+            </div>
+          </div>
+
+        </div>
+
+        <hr style="margin-top: 0; margin-bottom: 0;">
+        <h4 style="color: var(--card-shadow);">Receptor Data:</h4>
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Use Flagpole:</label>
+            <select id="AerscreenUseFlagpole" class="MapPost-select">
+              <option value="N" selected>No</option>
+              <option value="Y">Yes</option>
+            </select>
+          </div>
+          <div class="MapPost-form-group" id="AerscreenFlagpoleGroup" style="display: none;">
+            <label>Flagpole Height (m):</label>
+            <input type="number" id="AerscreenFlagpoleHeight" value="10" step="0.1">
+          </div>
+        </div>
+
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Discrete Rec.:</label>
+            <select id="AerscreenUseDiscreteRec" class="MapPost-select">
+              <option value="N" selected>No</option>
+              <option value="Y">Yes</option>
+            </select>
+          </div>
+          <div class="MapPost-form-group" id="AerscreenDiscreteGroup" style="display: none;">
+            <label>Distances (m, max 10):</label>
+            <input type="text" id="AerscreenDiscreteDistances" placeholder="e.g. 100, 250, 500">
+          </div>
+        </div>
+
+        <hr style="margin-top: 0; margin-bottom: 0;">
+        <h4 style="color: var(--card-shadow);">Fumigation Data:</h4>
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Fumigation:</label>
+            <select id="AerscreenUseFumigation" class="MapPost-select">
+              <option value="N" selected>No</option>
+              <option value="Y">Yes (Shoreline)</option>
+            </select>
+          </div>
+          <div class="MapPost-form-group"></div>
+        </div>
+
+        <!-- Building Data와 동일한 정석 구조: 컨테이너 안에 Row 배치 -->
+        <div id="AerscreenShorelineGroup" style="display: none;">
+          <div class="MapPost-form-group-row">
+            <div class="MapPost-form-group">
+              <label>Dist to Shore (m):</label>
+              <input type="number" id="AerscreenShorelineDist" value="1000" step="100" style="width: 100%;">
+            </div>
+            <div class="MapPost-form-group">
+              <label>Shore Dir. (0-360°):</label>
+              <input type="number" id="AerscreenShorelineDir" value="0" step="1" style="width: 100%;">
+            </div>
+          </div>
+        </div>
+
+        <hr style="margin-top: 0; margin-bottom: 0;">
+        <h4 style="color: var(--card-shadow);">Terrain Output:</h4>
+        <div class="MapPost-form-group-row">
+          <div class="MapPost-form-group">
+            <label>Use Terrain:</label>
+            <select id="AerscreenUseTerrain" class="MapPost-select">
+              <option value="N" selected>No</option>
+              <option value="Y">Yes</option>
+            </select>
+          </div>
+          <div class="MapPost-form-group" id="AerscreenRunAermapRow" style="display: none;">
+            <label>Run AERMAP:</label>
+            <select id="AerscreenRunAermap" class="MapPost-select">
+              <option value="N" selected>No</option>
+              <option value="Y">Yes</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="MapPost-form-group-row" id="AerscreenUtmRow" style="display: none;">
+          <div class="MapPost-form-group">
+            <label>UTM Zone (0=Auto):</label>
+            <input type="number" id="AerscreenUtmZone" value="0" min="0" max="60">
+          </div>
+          <div class="MapPost-form-group">
+            <label>Probe Dist (m):</label>
+            <input type="number" id="AerscreenProbeDistance" value="5000" step="100">
+          </div>
+        </div>
+
+        <div class="MapPost-form-group-row" id="AerscreenManualElevRow" style="display: none;">
+          <div class="MapPost-form-group">
+            <label>Source Elev (m):</label>
+            <input type="number" id="AerscreenSourceElevation" value="0.0" step="0.1">
+          </div>
+          <div class="MapPost-form-group">
+            <label>Profile Base (m):</label>
+            <input type="number" id="AerscreenProfBase" value="0.0" step="0.1">
+          </div>
+        </div>
+      </div>
+
+      <div
+        style="margin-top: 1.5rem; font-size: 1.3rem; color: var(--text-main); border-top: 0.1rem solid var(--border-main); padding-top: 0.8rem;">
+        <strong>Screening Level Analysis</strong>: Uses simplified Gaussian plume or EPA AERSCREEN model. Results do
+        not replace full AERMOD regulatory modeling for permit applications.
+      </div>
+    </div>
+
+    <div class="MapPost-modal-footer">
+      <div class="reply-btn-wrapper">
+        <button class="reply-btn-submit" id="AerscreenBtnRun">Run Simulation</button>
+        <button class="reply-btn-cancel" id="AerscreenBtnCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+
+    document.body.insertAdjacentHTML("beforeend", modalHtml);
+}
+
 /**
  * Binds all event listeners for the external HTML modal and drawer.
  */
 function bindEvents() {
+    
+    ensureAerscreenModalInDOM();
+    
     // Drawer buttons
     const btnNew = document.getElementById("AerscreenBtnNew");
     if (btnNew) btnNew.addEventListener("click", () => {
@@ -1584,6 +1976,9 @@ function removeRun(runId) {
 
 /** Programmatically open modal with pre-filled source location */
 export function openDispersionAt(lon, lat) {
+
+    ensureAerscreenModalInDOM();
+    
     const modal = document.getElementById("AerscreenModalOverlay");
     if (!modal) return;
 

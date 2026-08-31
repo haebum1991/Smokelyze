@@ -1,6 +1,19 @@
 
-import { savePatch, read, initStateShadingToggle, initPointLayersToggle, initNaShadingToggle, saveGlobalMapStyle, readGlobalMapStyle } from "./ui-state.js";
-import { onDescDrawerOpen, appendDrawerHelpIcon, appendAllLayerHelpIcons, appendGenericHelpIcon } from "./ui-param-desc.js";
+import { 
+    savePatch, 
+    read, 
+    initStateShadingToggle, 
+    initPointLayersToggle, 
+    initNaShadingToggle, 
+    saveGlobalMapStyle, 
+    readGlobalMapStyle 
+} from "./ui-state.js";
+import { 
+    onDescDrawerOpen, 
+    appendDrawerHelpIcon, 
+    appendAllLayerHelpIcons, 
+    appendGenericHelpIcon 
+} from "./ui-param-desc.js";
 import { MAP_STYLES, map } from "./map-init.js";
 import {
     clearHighlight,
