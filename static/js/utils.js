@@ -472,7 +472,9 @@ export function highlightLocation(coords, p, dataSource, targetZoom = 8) {
     else if (p.AQS_O3) { idKey = "AQS_O3"; idVal = p.AQS_O3; }
     else if (p.AQS_PM) { idKey = "AQS_PM"; idVal = p.AQS_PM; }
     else if (p.ID) { idKey = "ID"; idVal = p.ID; }
-    else if (p.IrwinID || p.poly_IRWINID) { idKey = p.IrwinID ? "IrwinID" : "poly_IRWINID"; idVal = p.IrwinID || p.poly_IRWINID; }
+    else if (p.IrwinID || p.poly_IRWINID || p.attr_IRWINID) { idKey = p.IrwinID ? "IrwinID" : (p.poly_IRWINID ? "poly_IRWINID" : "attr_IRWINID"); idVal = p.IrwinID || p.poly_IRWINID || p.attr_IRWINID; }
+    else if (p.poly_IncidentName || p.IncidentName) { idKey = p.poly_IncidentName ? "poly_IncidentName" : "IncidentName"; idVal = p.poly_IncidentName || p.IncidentName; }
+    else if (p.attr_UniqueFireIdentifier || p.UniqueFireIdentifier) { idKey = p.attr_UniqueFireIdentifier ? "attr_UniqueFireIdentifier" : "UniqueFireIdentifier"; idVal = p.attr_UniqueFireIdentifier || p.UniqueFireIdentifier; }
     else if (p.site_name) { idKey = "site_name"; idVal = p.site_name; }
     else if (p.link) { idKey = "link"; idVal = p.link; }
     else if (p.docId) { idKey = "docId"; idVal = p.docId; }

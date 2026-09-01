@@ -210,8 +210,10 @@ export async function handleAiToolCall(functionName, args) {
                     if (lower.includes("burn")) return "burn";
                     if (lower.includes("hourly") || lower.includes("airnow_hourly")) return "airnow_hourly";
                     if (lower.includes("airnow") || lower.includes("airnow_daily") || lower.includes("airnow_date")) return "airnow_daily";
+                    if (lower.includes("gam_v2_pred")) return "gam_v2_pred";
                     if (lower.includes("gam_v2")) return "gam_v2";
                     if (lower.includes("gam_v1")) return "gam_v1";
+                    if (lower.includes("pm_cbsa_pred")) return "pm_cbsa_pred";
                     if (lower.includes("pm_cbsa")) return "pm_cbsa";
                     if (lower.includes("ember")) return "epa_ember";
                     if (lower.includes("hysplit")) return "hysplit";
@@ -248,7 +250,18 @@ export async function handleAiToolCall(functionName, args) {
                                 if (!data || !data.features) continue;
 
                                 // 1. ID/Name match (Best & most accurate)
-                                const idKeys = ["AQS", "AQS_O3", "AQS_PM", "site_name"];
+                                const idKeys = [
+                                    "AQS",
+                                    "AQS_O3",
+                                    "AQS_PM",
+                                    "site_name",
+                                    "poly_IncidentName",
+                                    "IncidentName",
+                                    "attr_UniqueFireIdentifier",
+                                    "UniqueFireIdentifier",
+                                    "poly_IRWINID",
+                                    "IrwinID"
+                                ];
                                 for (const key of idKeys) {
                                     if (props[key]) {
                                         const match = data.features.find(f => {
