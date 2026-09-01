@@ -120,9 +120,7 @@ onAuthStateChanged(auth, async (user) => {
             "AdminSettingsSection",
             "BoardBtnWrite",
             "BoardBtnEmail",
-            "TelemetryPanel",
-            "AdminTestSectionAirfuse",
-            "AdminTestSectionGeoscf"
+            "TelemetryPanel"
         ],
         drawers: []
     };
@@ -131,7 +129,8 @@ onAuthStateChanged(auth, async (user) => {
         elements: [
             "MapBtnAnalytics",
             "AerscreenToggle",
-            "MapPostBtnAerscreen"
+            "MapPostBtnAerscreen",
+            "AdminTestSectionAirfuse"
         ],
         drawers: [
             { id: "AnalyticsModalOverlay", close: (el) => el.style.display = "none" },
