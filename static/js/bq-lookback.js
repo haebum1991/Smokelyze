@@ -62,7 +62,7 @@ if (typeof document !== "undefined") {
                 btn.removeAttribute("title");
             } else {
                 btn.classList.add("disabled-auth");
-                btn.title = "Please login to use BigQuery lookback";
+                btn.title = "Please login to use lookback";
             }
         });
     });
@@ -131,7 +131,7 @@ export async function fetchLookbackNIFC(sourceKey, isoDate, lookbackDays = 0) {
         return pendingLookbackRequests.get(cacheKey);
     }
 
-    toggleSpinner(true, `Querying BigQuery ${lookbackDays}-day lookback for ${sourceKey}...`);
+    toggleSpinner(true, `Querying ${lookbackDays}-day lookback for ${sourceKey}...`);
 
     const fetchPromise = (async () => {
         try {
@@ -230,7 +230,7 @@ export async function fetchLookbackNIFC(sourceKey, isoDate, lookbackDays = 0) {
             return geoJSON;
         } catch (err) {
             console.error("[BQ-LOOKBACK Failed]:", err);
-            alert(`Failed to query BigQuery lookback data: ${err.message}`);
+            alert(`Failed to query lookback data: ${err.message}`);
             return null;
         } finally {
             toggleSpinner(false);
@@ -258,7 +258,7 @@ function setLookbackBtnSynced(btn, isSynced, isLoggedIn = true) {
     } else {
         btn.innerHTML = SVG_UPDATE;
         btn.setAttribute("data-is-synced", "false");
-        btn.setAttribute("title", isLoggedIn ? "Fetch lookback data" : "Please login to use BigQuery lookback");
+        btn.setAttribute("title", isLoggedIn ? "Fetch lookback data" : "Please login to use lookback");
     }
 }
 
@@ -276,7 +276,7 @@ export function renderLookbackBoxHTML(id) {
 
     const isLoggedIn = !!auth?.currentUser;
     const authClass = isLoggedIn ? "" : "disabled-auth";
-    const authTitle = isLoggedIn ? (isSynced ? "Data is up to date" : "Fetch lookback data") : "Please login to use BigQuery lookback";
+    const authTitle = isLoggedIn ? (isSynced ? "Data is up to date" : "Fetch lookback data") : "Please login to use lookback";
     const btnIcon = isSynced ? SVG_DONE : SVG_UPDATE;
 
     // Layer icon preview on the left of Lookback (flame symbol / perimeter swatch)
