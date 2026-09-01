@@ -450,7 +450,11 @@ function createAiCopilotDOM() {
               color: var(--text-main);
             ">
               <strong style="color: var(--card-shadow); font-size: 1.4rem;">AI Analytics Copilot Ready:</strong><br>
-              I can execute BigQuery analytics on the fly, synthesize multi-year datasets, and render interactive custom plots directly onto your canvas.<br><br>
+              I can analyze air quality and wildfire smoke patterns, synthesize multi-year atmospheric datasets, and render interactive custom plots directly onto your canvas.<br>
+              <div style="font-size: 1.2rem; color: var(--card-shadow);">
+                * Note: This tool is provided for exploration convenience. AI-generated insights are for reference only—always verify results against the original raw data.
+              </div>
+              <br>
               <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.4rem;">
                 <button class="copilot-quick-prompt copilot-action-chip" data-query="Go to date 2021-05-10.">Go to 2021-05-10</button>
                 <button class="copilot-quick-prompt copilot-action-chip" data-query="Set the date to 2023-06-10, and turn on the HMS smoke layer.">2023-06-10 & HMS Smoke</button>
@@ -481,7 +485,7 @@ function createAiCopilotDOM() {
               border: 0.1rem solid var(--card-shadow);
               background: var(--color-bg);
               color: var(--text-main);
-              font-size: 1.6rem;
+              font-size: 1.4rem;
               resize: none;
               overflow-y: auto;
             "></textarea>
@@ -968,7 +972,11 @@ function bindAiCopilotEvents() {
       list.innerHTML = `
         <div style="background: var(--color-bg); padding: 1.4rem; border-radius: 0.6rem; border: 0.1rem solid var(--border-main); font-size: 1.4rem; color: var(--text-main);">
           <strong style="color: var(--card-shadow); font-size: 1.4rem;">AI Analytics Copilot Ready:</strong><br>
-          Conversation cleared. Ask any new query or choose a sample below:<br><br>
+          I can analyze air quality and wildfire smoke patterns, synthesize multi-year atmospheric datasets, and render interactive custom plots directly onto your canvas.<br>
+          <div style="font-size: 1.2rem; color: var(--card-shadow);">
+            * Note: This tool is provided for exploration convenience. AI-generated insights are for reference only—always verify results against the original raw data.
+          </div>
+          <br>
           <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.4rem;">
             <button class="copilot-quick-prompt copilot-action-chip" data-query="Go to date 2021-05-10.">Go to 2021-05-10</button>
             <button class="copilot-quick-prompt copilot-action-chip" data-query="Set the date to 2023-06-10, and turn on the HMS smoke layer.">2023-06-10 & HMS Smoke</button>
@@ -1258,12 +1266,33 @@ async function handleCopilotCustomQuery(userQuery) {
     const formatNarrativeMarkdown = (raw) => {
       if (!raw) return "";
       let html = utils.ESML(raw);
+      // Markdown Tables (| col1 | col2 |)
+      html = html.replace(/(?:(?:^|\n)\|[^\n]+\|\n\|(?:\s*[-:]+[-| :]*)\|\n(?:\|[^\n]+\|\n?)+)/gm, (match) => {
+        const rows = match.trim().split("\n").map(r => r.trim()).filter(Boolean);
+        if (rows.length < 2) return match;
+        const parseRow = (rowStr, isHeader = false) => {
+          const cells = rowStr.split("|").slice(1, -1).map(c => {
+            let content = c.trim();
+            return content.replace(/\*\*(.*?)\*\*/g, "<strong style='color: var(--card-shadow);'>$1</strong>");
+          });
+          const tag = isHeader ? "th" : "td";
+          const cellStyles = isHeader 
+            ? "padding: 0.6rem 0.8rem; border: 0.1rem solid var(--border-main); background: rgba(255,255,255,0.05); color: var(--card-shadow); font-weight: bold; text-align: left;"
+            : "padding: 0.5rem 0.8rem; border: 0.1rem solid var(--border-main);";
+          return `<tr>${cells.map(c => `<${tag} style="${cellStyles}">${c}</${tag}>`).join("")}</tr>`;
+        };
+        const headerHtml = parseRow(rows[0], true);
+        const bodyRows = rows.slice(2).map(r => parseRow(r, false)).join("");
+        return `<div style="overflow-x: auto; margin: 0.8rem 0;"><table style="width: 100%; border-collapse: collapse; font-size: 1.3rem; border: 0.1rem solid var(--border-main);"><thead>${headerHtml}</thead><tbody>${bodyRows}</tbody></table></div>`;
+      });
       // Bold: **text** -> <strong>text</strong>
       html = html.replace(/\*\*(.*?)\*\*/g, "<strong style='color: var(--card-shadow);'>$1</strong>");
       // Bullet points: • or - -> indented bullet item
       html = html.replace(/^[•\-]\s+(.*)$/gm, "<div style='margin-left: 0.8rem; margin-bottom: 0.4rem;'>• $1</div>");
       // Citations / Italics
       html = html.replace(/\*(.*?)\*/g, "<em style='opacity: 0.9;'>$1</em>");
+      // Strip redundant newlines directly after div tags
+      html = html.replace(/(<\/div>)\n+/g, "$1");
       // Line breaks & paragraph spacing
       html = html.replace(/\n\n+/g, "<div style='margin-bottom: 0.8rem;'></div>");
       html = html.replace(/\n/g, "<br>");
@@ -1482,7 +1511,7 @@ function renderDynamicCopilotChart(option) {
   applyAxisTheme(option.xAxis, false);
   applyAxisTheme(option.yAxis, true);
 
-  // 7. In-Chart Toolbox (Save PNG, DataView, Reset)
+  // 7. In-Chart Toolbox (Save PNG)
   option.toolbox = option.toolbox || {
     show: true,
     right: 15,
@@ -1490,9 +1519,7 @@ function renderDynamicCopilotChart(option) {
     itemSize: 16,
     itemGap: 12,
     feature: {
-      saveAsImage: { title: "Save PNG", pixelRatio: 2 },
-      dataView: { title: "Data View", lang: ["Data View", "Close", "Refresh"], readOnly: true },
-      restore: { title: "Reset Zoom" }
+      saveAsImage: { title: "Save PNG", pixelRatio: 2 }
     },
     iconStyle: { borderColor: theme.cardShadow }
   };
