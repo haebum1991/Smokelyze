@@ -129,8 +129,7 @@ onAuthStateChanged(auth, async (user) => {
         elements: [
             "MapBtnAnalytics",
             "AerscreenToggle",
-            "MapPostBtnAerscreen",
-            "AdminTestSectionAirfuse"
+            "MapPostBtnAerscreen"
         ],
         drawers: [
             { id: "AnalyticsModalOverlay", close: (el) => el.style.display = "none" },
