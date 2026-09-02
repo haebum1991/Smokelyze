@@ -581,16 +581,16 @@ export const DescData = {
             title: "Research for smoke contribution to O3 using GAM in the US",
             desc: "<ul><li><b>[UW GAM-v2]</b>, data period: Apr-Oct, 2019-2024, study area: CONUS + AK + HI<ul>" +
                   "<li>EPA data for O3 and PM2.5 (pre-generated data) were downloaded as of 2024-11-19.</li>" +
-                  "<li>Lee, H. and Jaffe, D. A.: " +
-                  "Impact of Wildfires on O3 and Air Quality Across the United States for 2019–2024 Using Generalized Additive Models, " +
-                  "<em>J. Geophys. Res. Atmos.</em>, 130, e2025JD044088, 2025. " +
+                  "<li>Lee, H., and Jaffe, D. A. (2025). " +
+                  "Impact of Wildfires on O3 and Air Quality Across the United States for 2019–2024 Using Generalized Additive Models. " +
+                  "<em>J. Geophys. Res.: Atmos.</em>, 130, e2025JD044088. " +
                   "<a href='https://doi.org/10.1029/2025JD044088' target='_blank'>https://doi.org/10.1029/2025JD044088</a></li></ul></li>" +
                   
                   "<li><b>[UW GAM-v1]</b>, data period: May-Sep, 2018-2023, study area: CONUS<ul>" +
                   "<li>EPA data for O3 and PM2.5 (pre-generated data) were downloaded as of 2023-10-26.</li>" +
-                  "<li>Lee, H. and Jaffe, D. A.: " + 
-                  "Wildfire impacts on O3 in the continental United States using PM2.5 and a generalized additive model (2018–2023), " +
-                  "<em>Environ. Sci. Technol.</em>, 58, 14764–14774, 2024. " +
+                  "<li>Lee, H., and Jaffe, D. A. (2024). " + 
+                  "Wildfire Impacts on O3 in the Continental United States Using PM2.5 and a Generalized Additive Model (2018–2023). " +
+                  "<em>Environ. Sci. Technol.</em>, 58(33), 14764–14774. " +
                   "<a href='https://doi.org/10.1021/acs.est.4c05870' target='_blank'>https://doi.org/10.1021/acs.est.4c05870</a></li></ul></li></ul>"
         },
         {
@@ -598,18 +598,18 @@ export const DescData = {
             title: "Research for smoke contribution to PM2.5 in the US",
             desc: "<ul><li><b>[UW Smoke PM2.5]</b>, data period: Jan-Dec, 2019-2024, study area: CONUS + AK + HI<ul>" +
                   "<li>EPA data for O3 and PM2.5 (pre-generated data) were downloaded as of 2024-11-19.</li>" +
-                  "<li>Jaffe, D., Lee, H., Magzamen, S., Goldberg, D., and O'Dell, K.: " + 
-                  "Health and Regulatory Impacts of PM2.5 from Wildland Fires for 2019–2024 in the US, " +
-                  "<em>GeoHealth</em>, 10, e2025GH001576, 2026. " + 
+                  "<li>Jaffe, D. A., Lee, H., Magzamen, S., Goldberg, D., and O'Dell, K. (2026). " + 
+                  "Health and Regulatory Impacts of PM2.5 from Wildland Fires for 2019–2024 in the U.S. " +
+                  "<em>GeoHealth</em>, 10, e2025GH001576. " + 
                   "<a href='https://doi.org/10.1029/2025GH001576' target='_blank'>https://doi.org/10.1029/2025GH001576</a></li></ul></li></ul>"
         },
         {
             id: "research-o3-ember",
             title: "Research for smoke contribution to O3 using EMBER in the US",
             desc: "<ul><li><b>[EPA EMBER]</b>, data period: Apr-Sep, 2021-2025, study area: CONUS<ul>" +
-                  "<li>Simon, H. Beidler, J., Baker, K. R., Henderson, B. H., Fox, L., Misenis, C., Campbell, P., Vukovich, J., Possiel, N., and Eyth, A.: " +
-                  "Expedited modeling of burn events results (EMBER): A screening-level dataset of 2023 ozone fire impacts in the US, " + 
-                  "<em>Data in Brief</em>, 58, 111208, 2024. " +
+                  "<li>Simon, H., Beidler, J., Baker, K. R., Henderson, B. H., Fox, L., Misenis, C., Campbell, P., Vukovich, J., Possiel, N., and Eyth, A. (2024). " +
+                  "Expedited Modeling of Burn Events Results (EMBER): A Screening-Level Dataset of 2023 Ozone Fire Impacts in the US. " + 
+                  "<em>Data in Brief</em>, 57, 111208. " +
                   "<a href='https://doi.org/10.1016/j.dib.2024.111208' target='_blank'>https://doi.org/10.1016/j.dib.2024.111208</a></li></ul></li></ul>"
         }
     ],
@@ -617,9 +617,9 @@ export const DescData = {
         {
             id: "citation",
             title: "Citation",
-            desc: "Lee, H. and Jaffe, D. A.: " +
-                  "Impact of Wildfires on O3 and Air Quality Across the United States for 2019–2024 Using Generalized Additive Models, " +
-                  "<em>J. Geophys. Res.: Atmos.</em>, 130, e2025JD044088, 2025. " +
+            desc: "Lee, H., and Jaffe, D. A. (2025). " +
+                  "Impact of Wildfires on O3 and Air Quality Across the United States for 2019–2024 Using Generalized Additive Models. " +
+                  "<em>J. Geophys. Res.: Atmos.</em>, 130, e2025JD044088. " +
                   "<a href='https://doi.org/10.1029/2025JD044088' target='_blank'>https://doi.org/10.1029/2025JD044088</a>"
         },
         { id: "mda8-obs", title: "Obs MDA8", desc: "Daily maximum 8-hour average O3 concentration (MDA8) observed at AQS monitoring sites" },
@@ -646,9 +646,9 @@ export const DescData = {
         {
           id: "citation",
           title: "Citation",
-          desc: "Lee, H. and Jaffe, D. A.: " +
-                "Wildfire impacts on O3 in the continental United States using PM2.5 and a generalized additive model (2018–2023), " +
-                "<em>Environ. Sci. Technol.</em>, 58, 14764–14774, 2024. " +
+          desc: "Lee, H., and Jaffe, D. A. (2024). " +
+                "Wildfire Impacts on O3 in the Continental United States Using PM2.5 and a Generalized Additive Model (2018–2023). " +
+                "<em>Environ. Sci. Technol.</em>, 58(33), 14764–14774. " +
                 "<a href='https://doi.org/10.1021/acs.est.4c05870' target='_blank'>https://doi.org/10.1021/acs.est.4c05870</a>"
         },
         { id: "mda8-obs", title: "Obs MDA8", desc: "Daily maximum 8-hour average O3 concentration (MDA8) observed at AQS monitoring sites" },
@@ -669,9 +669,9 @@ export const DescData = {
         {
           id: "citation",
           title: "Citation",
-          desc: "Jaffe, D., Lee, H., Magzamen, S., Goldberg, D., and O'Dell, K.: " +
-                "Health and Regulatory Impacts of PM2.5 from Wildland Fires for 2019–2024 in the US, " +
-                "<em>GeoHealth</em>, 10, e2025GH001576, 2026.<br> " +
+          desc: "Jaffe, D. A., Lee, H., Magzamen, S., Goldberg, D., and O'Dell, K. (2026). " +
+                "Health and Regulatory Impacts of PM2.5 from Wildland Fires for 2019–2024 in the U.S. " +
+                "<em>GeoHealth</em>, 10, e2025GH001576.<br> " +
                 "<a href='https://doi.org/10.1029/2025GH001576' target='_blank'>https://doi.org/10.1029/2025GH001576</a>"
         },
         { id: "pm25-obs", title: "Obs PM2.5", desc: "Daily average PM2.5 concentration observed at AQS monitoring sites" },
@@ -689,9 +689,9 @@ export const DescData = {
         {
           id: "citation",
           title: "Citation",
-          desc: "Simon, H. Beidler, J., Baker, K. R., Henderson, B. H., Fox, L., Misenis, C., Campbell, P., Vukovich, J., Possiel, N., and Eyth, A.: " +
-                "Expediated modeling of burn events results (EMBER): A screening-level dataset of 2023 ozone fire impacts in the US, " +
-                "<em>Data in Brief</em>, 58, 111208, 2024. " +
+          desc: "Simon, H., Beidler, J., Baker, K. R., Henderson, B. H., Fox, L., Misenis, C., Campbell, P., Vukovich, J., Possiel, N., and Eyth, A. (2024). " +
+                "Expedited Modeling of Burn Events Results (EMBER): A Screening-Level Dataset of 2023 Ozone Fire Impacts in the US. " +
+                "<em>Data in Brief</em>, 57, 111208. " +
                 "<a href='https://doi.org/10.1016/j.dib.2024.111208' target='_blank'>https://doi.org/10.1016/j.dib.2024.111208</a><br><br>" +
                 "<b>Note</b>: Since variable names in this dataset have been renamed to fit our application (Smokelyze), for the original dataset, " +
                 "please see the detailed information: <a href='https://www.epa.gov/air-quality-analysis/expedited-modeling-burn-events-results-ember' target='_blank'>https://www.epa.gov/air-quality-analysis/expedited-modeling-burn-events-results-ember</a>"
