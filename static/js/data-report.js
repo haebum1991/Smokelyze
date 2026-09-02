@@ -906,7 +906,6 @@ async function downloadAllReportsCSV() {
         logUserAction("download", {
             dataset: datasetId,
             state: state,
-            period: period,
             filename: fileName
         });
 

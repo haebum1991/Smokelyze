@@ -7,6 +7,7 @@ import { getPlotTheme } from "./stats-common.js";
 import { LAYER_TEMPLATES } from "./layers-def.js";
 import { activeLayerStack } from "./layers-state.js";
 import { getRasterTooltipInfo } from "./raster-loader.js";
+import { logUserAction } from "./fb-logging.js";
 
 
 // Self-contained Modular TSPlot Modal DOM injection
@@ -1204,6 +1205,14 @@ async function showTSProfile(lng, lat, customLookback = null, customLookforward 
             state.activeLookforward = (customLookforward !== null) ? customLookforward : (parseInt(lookforwardInput?.value, 10) || 4);
             setTSPlotBtnSynced(true);
         }
+
+        logUserAction("view", {
+            dataset: "tsplot",
+            layer: activeConfig?.sourceId || "",
+            filename: `lon:${lng.toFixed(3)}_lat:${lat.toFixed(3)}`,
+            lookback: isVectorDaily ? state.activeLookback : "",
+            lookforward: isVectorDaily ? state.activeLookforward : ""
+        });
 
     } catch (err) {
         console.error("Time-series profile fetch failed:", err);

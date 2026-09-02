@@ -531,7 +531,7 @@ export function initMapAnimate() {
                 logUserAction("download", { 
                     dataset: "map_animate", 
                     date: startDateInput.value,
-                    key_date_end: endDateInput.value,
+                    date_end: endDateInput.value,
                     filename: `smokelyze_timelapse_${startDateInput.value}_to_${endDateInput.value}.gif`
                 });
                 

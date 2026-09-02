@@ -5,6 +5,7 @@ import { LAYER_TEMPLATES, DATASET_SOURCE_MAP } from "./layers-def.js";
 import { pointInGeometry } from "./geo-utils.js";
 import { getActiveModelLayers } from "./stats-common.js";
 import { setAreaStatsDrawer } from "./ui-toggles.js";
+import { logUserAction } from "./fb-logging.js";
 import {
     rasterDataStore,
     TEMPO_CONFIG,
@@ -531,6 +532,17 @@ export function initMapDrawStats() {
         hideBanner();
         bringDrawLayersToFront();
         updateAverages();
+        
+        const shape = e.features?.[0];
+        const bbox = shape?.geometry ? getPolygonBBox(shape.geometry) : null;
+        const extentStr = bbox
+            ? `extent_[${bbox.minLng.toFixed(2)},${bbox.minLat.toFixed(2)},${bbox.maxLng.toFixed(2)},${bbox.maxLat.toFixed(2)}]`
+            : "";
+
+        logUserAction("view", {
+            dataset: "draw_area_stats",
+            filename: extentStr
+        });
     });
 
     map.on("draw.update", () => {

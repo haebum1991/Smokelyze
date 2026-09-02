@@ -42,7 +42,11 @@ export async function openLayerTableModal(datasetId, options = {}) {
             records
         });
 
-        logUserAction("view_layer_table", { dataset: datasetId, date, rows: records.length });
+        logUserAction("view_layer_table", {
+            dataset: datasetId,
+            date: date,
+            count: records.length
+        });
 
     } catch (err) {
         console.error("Failed to open layer table modal:", err);

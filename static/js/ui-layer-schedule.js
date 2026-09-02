@@ -20,6 +20,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "6h",
                 utcHours: [0, 6, 12, 18],
                 cycleLabel: "Every 6 hours (0, 6, 12, 18 UTC)",
+                startDate: "2018-01-01",
                 daysLag: 0
             },
             {
@@ -28,6 +29,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "realtime",
                 utcHours: Array.from({ length: 24 }, (_, i) => i),
                 cycleLabel: "Real-time sync",
+                startDate: "Real-time",
                 daysLag: 0
             },
             {
@@ -36,6 +38,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "hourly",
                 utcHours: Array.from({ length: 24 }, (_, i) => i),
                 cycleLabel: "Every hour",
+                startDate: "Current (Live)",
                 daysLag: 0
             },
             {
@@ -44,6 +47,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "6h",
                 utcHours: [0, 6, 12, 18],
                 cycleLabel: "Every 6 hours (0, 6, 12, 18 UTC)",
+                startDate: "2018-01-01",
                 daysLag: 0
             }
         ]
@@ -60,6 +64,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "daily",
                 utcHours: [9],
                 cycleLabel: "Daily @ 09:00 UTC",
+                startDate: "2018-07-18",
                 daysLag: 1
             },
             {
@@ -68,6 +73,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "6h",
                 utcHours: [3, 9, 15, 21],
                 cycleLabel: "Every 6 hours (3, 9, 15, 21 UTC)",
+                startDate: "2019-07-01",
                 daysLag: 0
             },
             {
@@ -76,6 +82,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "6h",
                 utcHours: [3, 9, 15, 21],
                 cycleLabel: "Every 6 hours (3, 9, 15, 21 UTC)",
+                startDate: "2024-03-01",
                 daysLag: 1
             }
         ]
@@ -92,6 +99,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "twice-daily",
                 utcHours: [13, 18],
                 cycleLabel: "Twice Daily (13:00, 18:00 UTC)",
+                startDate: "2018-01-01",
                 daysLag: 0
             },
             {
@@ -100,6 +108,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "daily",
                 utcHours: [12],
                 cycleLabel: "Daily @ 12:00 UTC",
+                startDate: "2023-08-02",
                 daysLag: 1
             },
             {
@@ -108,6 +117,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "daily",
                 utcHours: [16],
                 cycleLabel: "Daily @ 16:00 UTC",
+                startDate: "2018-05-01",
                 daysLag: 14
             },
             {
@@ -116,6 +126,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "daily",
                 utcHours: [12],
                 cycleLabel: "Daily @ 12:00 UTC",
+                startDate: "2018-01-01",
                 daysLag: 1
             },
             {
@@ -124,6 +135,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "daily",
                 utcHours: [12],
                 cycleLabel: "Daily @ 12:00 UTC",
+                startDate: "2023-02-10",
                 daysLag: 1
             },
             {
@@ -132,6 +144,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "As-Available",
                 utcHours: [],
                 cycleLabel: "As-Available",
+                startDate: "2018-01-01",
                 daysLag: null
             }
         ]
@@ -148,6 +161,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "daily",
                 utcHours: [12],
                 cycleLabel: "Daily @ 12:00 UTC",
+                startDate: "2021-01-01",
                 daysLag: 1
             },
             {
@@ -156,6 +170,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "daily",
                 utcHours: [12],
                 cycleLabel: "Daily @ 12:00 UTC",
+                startDate: "2025-08-05",
                 daysLag: 2
             }
         ]
@@ -172,6 +187,7 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "daily",
                 utcHours: [17],
                 cycleLabel: "Daily @ 17:00 UTC",
+                startDate: "2025-01-01",
                 daysLag: 3
             },
             {
@@ -180,11 +196,53 @@ export const LAYER_SCHEDULE_REGISTRY = [
                 cycleType: "daily",
                 utcHours: [17],
                 cycleLabel: "Daily @ 17:00 UTC",
+                startDate: "2025-04-01",
                 daysLag: 62
+            },
+            {
+                id: "gam-v2",
+                title: "UW GAM-v2 (Lee and Jaffe, 2025)",
+                cycleType: "As-Available",
+                utcHours: [],
+                cycleLabel: "-",
+                startDate: "2019-04-01",
+                latestDataText: "2024-10-31",
+                daysLag: null
+            },
+            {
+                id: "gam-v1",
+                title: "UW GAM-v1 (Lee and Jaffe, 2024)",
+                cycleType: "As-Available",
+                utcHours: [],
+                cycleLabel: "-",
+                startDate: "2018-05-01",
+                latestDataText: "2023-09-30",
+                daysLag: null
+            },
+            {
+                id: "pm-cbsa",
+                title: "UW Smoke PM2.5 (Jaffe et al., 2026)",
+                cycleType: "As-Available",
+                utcHours: [],
+                cycleLabel: "-",
+                startDate: "2019-01-01",
+                latestDataText: "2024-12-31",
+                daysLag: null
+            },
+            {
+                id: "epa-ember",
+                title: "EPA EMBER (Simon et al., 2024)",
+                cycleType: "As-Available",
+                utcHours: [],
+                cycleLabel: "-",
+                startDate: "2021-04-11",
+                latestDataText: "2025-09-30",
+                daysLag: null
             }
         ]
     }
 ];
+
 
 let useLocalTime = true;
 let timerInterval = null;
@@ -283,6 +341,7 @@ function getNextUpdateCountdown(layer) {
  */
 function getCalculatedLatestData(layer) {
     if (!layer) return "-";
+    if (layer.latestDataText) return layer.latestDataText;
     if (layer.cycleType === "realtime") return "Live (Today)";
     if (layer.daysLag === undefined || layer.daysLag === null) return "As-Available";
 
@@ -379,11 +438,12 @@ function renderTimetableContent() {
             <table class="schedule-detail-table">
                 <thead>
                     <tr>
-                        <th style="width: 26%;">Data Source / Layer</th>
-                        <th style="width: 23%;">Update Frequency</th>
-                        <th style="width: 21%;">Scheduled Times (${useLocalTime ? `Local (${tzInfo.tzAbbr})` : "UTC"})</th>
-                        <th style="width: 14%;">Next Run</th>
-                        <th style="width: 16%;">Latest Data (${useLocalTime ? `Local` : "UTC"})</th>
+                        <th style="width: 22%;">Data Source / Layer</th>
+                        <th style="width: 20%;">Update Frequency</th>
+                        <th style="width: 18%;">Scheduled Times (${useLocalTime ? `Local (${tzInfo.tzAbbr})` : "UTC"})</th>
+                        <th style="width: 13%;">Next Run</th>
+                        <th style="width: 13%;">Available From</th>
+                        <th style="width: 14%;">Latest Data (${useLocalTime ? `Local` : "UTC"})</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -394,10 +454,10 @@ function renderTimetableContent() {
 
         tableHtml += `
             <tr class="schedule-table-cat-row">
-                <td colspan="5" style="background: var(--map-toolbar-bg); padding: 0.6rem 1.2rem; border-top: 0.1rem solid var(--border-light); border-bottom: 0.1rem solid var(--border-light);">
+                <td colspan="6" style="background: var(--map-toolbar-bg); padding: 0.6rem 1.2rem; border-top: 0.1rem solid var(--border-light); border-bottom: 0.1rem solid var(--border-light);">
                     <div style="display: flex; align-items: center; gap: 0.6rem;">
                         <span class="schedule-cat-dot" style="background-color: ${group.categoryColor};"></span>
-                        <span style="font-weight: 700; font-size: 1.2rem; color: var(--card-shadow); text-transform: uppercase; letter-spacing: 0.05em;">${group.category}</span>
+                        <span style="font-weight: bold; font-size: 1.2rem; color: var(--card-shadow); text-transform: uppercase; letter-spacing: 0.05em;">${group.category}</span>
                     </div>
                 </td>
             </tr>
@@ -431,7 +491,7 @@ function renderTimetableContent() {
                         <strong style="color: var(--text-main); font-size: 1.3rem;">${layer.title}</strong>
                     </td>
                     <td>
-                        <span style="font-size: 1.25rem; color: var(--text-main); font-weight: 500;">${layer.cycleLabel}</span>
+                        <span style="font-size: 1.25rem; color: var(--text-main); font-weight: bold;">${layer.cycleLabel}</span>
                     </td>
                     <td>
                         <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
@@ -442,7 +502,10 @@ function renderTimetableContent() {
                         <span class="schedule-pill ${nextBadgeClass}">${nextInfo.text}</span>
                     </td>
                     <td>
-                        <span style="font-size: 1.2rem; font-weight: 600; color: var(--card-shadow);">${getCalculatedLatestData(layer)}</span>
+                        <span style="font-size: 1.2rem; font-weight: bold; color: var(--text-main);">${layer.startDate || "-"}</span>
+                    </td>
+                    <td>
+                        <span style="font-size: 1.2rem; font-weight: bold; color: var(--card-shadow);">${getCalculatedLatestData(layer)}</span>
                     </td>
                 </tr>
             `;
@@ -545,7 +608,7 @@ export function openLayerScheduleModal() {
                     background: var(--map-toolbar-bg);
                     border-bottom: 0.1rem solid var(--border-light);
                     font-size: 1.15rem;
-                    font-weight: 700;
+                    font-weight: bold;
                     color: var(--text-main);
                     min-width: 780px;
                 }
@@ -565,7 +628,7 @@ export function openLayerScheduleModal() {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     font-size: 1.25rem;
-                    font-weight: 500;
+                    font-weight: bold;
                     color: var(--text-main);
                 }
                 .schedule-cat-dot {
@@ -596,7 +659,7 @@ export function openLayerScheduleModal() {
                     padding: 0.35rem 1rem;
                     background: var(--map-toolbar-bg);
                     font-size: 1.15rem;
-                    font-weight: 700;
+                    font-weight: bold;
                     color: var(--card-shadow);
                     text-transform: uppercase;
                     letter-spacing: 0.05em;
@@ -643,6 +706,7 @@ export function openLayerScheduleModal() {
                 }
                 .schedule-detail-table {
                     width: 100%;
+                    min-width: 820px;
                     border-collapse: collapse;
                     text-align: left;
                 }
@@ -650,7 +714,7 @@ export function openLayerScheduleModal() {
                     background: var(--map-toolbar-bg);
                     padding: 0.9rem 1.2rem;
                     font-size: 1.25rem;
-                    font-weight: 700;
+                    font-weight: bold;
                     color: var(--text-main);
                     border-bottom: 0.1rem solid var(--border-light);
                 }
@@ -669,7 +733,7 @@ export function openLayerScheduleModal() {
                     padding: 0.2rem 0.6rem;
                     border-radius: 0.4rem;
                     font-size: 1.15rem;
-                    font-weight: 600;
+                    font-weight: bold;
                 }
                 .pill-time {
                     background: rgba(59, 130, 246, 0.12);

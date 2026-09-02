@@ -103,8 +103,7 @@ export async function airnowLoadData(isoDate, localHour) {
         logUserAction("view", {
             dataset: "airnow_hourly",
             layer: activeLayerIds.join(", "),
-            date: isoDate,
-            key_hour: utcHour
+            date: isoDate
         });
 
         // 4. Refresh global state shading

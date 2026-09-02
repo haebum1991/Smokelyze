@@ -225,7 +225,13 @@ export async function fetchLookbackNIFC(sourceKey, isoDate, lookbackDays = 0) {
                 map.getSource(sourceId)?.setData(geoJSON);
 
                 console.log(`[BQ-LOOKBACK] Loaded ${geoJSON.features.length} features for ${sourceKey} over ${lookbackDays} days.`);
-                logUserAction("query_lookback", { dataset: sourceKey, date: cleanDate, lookback: lookbackDays, count: geoJSON.features.length });
+                logUserAction("view", {
+                    dataset: sourceKey,
+                    layer: sourceKey,
+                    date: cleanDate,
+                    lookback: lookbackDays,
+                    count: geoJSON.features.length
+                });
             }
             return geoJSON;
         } catch (err) {

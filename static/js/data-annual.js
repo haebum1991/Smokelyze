@@ -177,7 +177,10 @@ function downloadReport(filename) {
     window.location.href = path;
     
     // [Report to Brain]
-    logUserAction("download", { dataset: "annual_reports", filename });
+    logUserAction("download", {
+        dataset: "annual_reports",
+        filename: filename
+    });
 }
 window.downloadReport = downloadReport;
 

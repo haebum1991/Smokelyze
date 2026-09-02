@@ -10,6 +10,7 @@ import * as utils from "./utils.js";
 import { setAerscreenDrawer } from "./ui-toggles.js";
 import { downloadFile } from "./ui-download.js";
 import { updateAuthButton } from "./signin.js";
+import { logUserAction } from "./fb-logging.js";
 
 const AERSCREEN_CONFIG = {
     API_URL: "https://fetch-aerscreen-go-service-1068523865415.us-central1.run.app/api/dispersion/aerscreen"
@@ -184,6 +185,13 @@ export const AerscreenTool = {
 
             task.update("Simulation complete!", "success");
             this.handleSuccess(result, params);
+            
+            logUserAction("view", {
+                dataset: "aerscreen",
+                layer: "aerscreen",
+                filename: `lon:${params.lon.toFixed(3)}_lat:${params.lat.toFixed(3)}`
+            });
+            
         } catch (error) {
             if (error.name === "AbortError") {
                 console.log("AERSCREEN: Analysis aborted by user.");
@@ -1887,6 +1895,13 @@ function handleManualRun() {
         AerscreenTool.updateVisibility();
 
         task.update("Simulation complete!", "success");
+        
+        logUserAction("view", {
+            dataset: "aerscreen",
+            layer: "gaussian",
+            filename: `lon:${params.lon.toFixed(3)}_lat:${params.lat.toFixed(3)}`
+        });
+        
     } catch (err) {
         console.error("Dispersion Screening failed:", err);
         task.update(`Failed: ${err.message}`, "error");

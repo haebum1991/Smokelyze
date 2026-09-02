@@ -65,7 +65,13 @@ export async function logUserAction(type, payload = {}) {
         key_state: String(payload.state || ""),
         key_filename: String(payload.filename || ""),
         key_report_type: String(payload.report_type || ""),
-        key_date: String(resolvedDate)
+        key_date: String(resolvedDate),
+
+        // Extended Parameters (Normalized to Strings)
+        key_date_end: String(payload.date_end || ""),
+        key_lookback: String(payload.lookback !== undefined ? payload.lookback : ""),
+        key_lookforward: String(payload.lookforward !== undefined ? payload.lookforward : ""),
+        key_count: String(payload.count !== undefined ? payload.count : "")
     };
 
     console.log(`[FB-LOG] ${type}:`, logEntry);

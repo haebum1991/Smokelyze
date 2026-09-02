@@ -132,7 +132,9 @@ if (document.readyState === "loading") {
 const EVENT_MAPPING = {
     "view": "Layer Views",
     "click_point": "Point Clicks",
-    "download": "Data Downloads"
+    "download": "Data Downloads",
+    "view_layer_table": "Table Views",
+    "chat": "AI Copilot Chats"
 };
 
 const DATASET_MAPPING = {
@@ -175,6 +177,10 @@ const LAYER_NAME_MAPPING = {
     "ExcDays-edm": "ExcDay (EDM)",
     "ExcDays-m0p5m": "ExcDay m0p5m",
     "ExcDays-m1p0m": "ExcDay m1p0m",
+    
+    // --- Screening & Dispersion ---
+    "aerscreen": "AERSCREEN",
+    "gaussian": "AERSCREEN (Gaussian)",
 
     // --- Satellite & Model data ---
     "smoke": "HMS-smoke",
@@ -183,6 +189,8 @@ const LAYER_NAME_MAPPING = {
     "wildfire-news": "WF-news",
     "wildfire-inci": "WF-incidents",
     "wildfire-peri": "WF-perimeters",
+    "wildfire-inci-curr": "WF-incidents (Live)",
+    "wildfire-peri-curr": "WF-perimeters (Live)",
     "MapPost": "MapPost",
     "hrrr-colmd": "HRRR-SmokeVCD",
     "hrrr-massden": "HRRR-Smoke8m",
@@ -190,6 +198,18 @@ const LAYER_NAME_MAPPING = {
     "tempo-hcho": "TEMPO-HCHO",
     "tropomi-no2": "TROPOMI-NO2",
     "tropomi-hcho": "TROPOMI-HCHO",
+    
+    // --- GEOS-CF ---
+    "geoscf-o3": "GEOS-CF O3",
+    "geoscf-co": "GEOS-CF CO",
+    "geoscf-no2": "GEOS-CF NO2",
+    "geoscf-hcho": "GEOS-CF HCHO",
+    "geoscf-pm25": "GEOS-CF PM2.5",
+    "geoscf-pm25oc": "GEOS-CF PM2.5OC",
+
+    // --- AirFuse ---
+    "airfuse-o3": "AirFuse O3",
+    "airfuse-pm25": "AirFuse PM2.5",
 
     "goes-aod-east": "GOES-AOD-East",
     "goes-aod-west": "GOES-AOD-West",
@@ -211,6 +231,20 @@ const LAYER_NAME_MAPPING = {
 
     "airnow_daily": "AirNow daily",
     "airnow_hourly": "AirNow hourly",
+    
+    // --- MapPost Interactions ---
+    "create_post": "MapPost Create",
+    "view_post": "MapPost View",
+    "edit_post": "MapPost Edit",
+    "delete_post": "MapPost Delete",
+    "like_post": "MapPost Like",
+    "unlike_post": "MapPost Unlike",
+    "create_reply": "Reply Create",
+    "edit_reply": "Reply Edit",
+    "delete_reply": "Reply Delete",
+    "like_reply": "Reply Like",
+    "unlike_reply": "Reply Unlike",
+    "restore_map_state": "Restore Map State",
 
     // --- Download --- 
     "gam_v2": "UW GAM-v2",
