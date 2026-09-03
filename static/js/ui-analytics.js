@@ -177,9 +177,10 @@ const LAYER_NAME_MAPPING = {
     "ExcDays-m0p5m": "ExcDay m0p5m",
     "ExcDays-m1p0m": "ExcDay m1p0m",
     
-    // --- Screening & Dispersion ---
+    // --- Screening & Dispersion & Tools ---
     "aerscreen": "AERSCREEN",
     "gaussian": "AERSCREEN (Gaussian)",
+    "draw_area_stats": "Area Stats",
 
     // --- Satellite & Model data ---
     "smoke": "HMS-smoke",

@@ -284,6 +284,12 @@ const DrawRectangle = {
             state.startPoint = [e.lngLat.lng, e.lngLat.lat];
         } else {
             this.updateUIClasses({ mouse: "pointer" });
+            const feature = this.getFeature(state.rectangleId);
+            if (map && feature) {
+                map.fire("draw.create", {
+                    features: [feature.toGeoJSON()]
+                });
+            }
             this.changeMode("simple_select", { featureIds: [state.rectangleId] });
         }
     },
@@ -541,6 +547,7 @@ export function initMapDrawStats() {
 
         logUserAction("view", {
             dataset: "draw_area_stats",
+            layer: "draw_area_stats",
             filename: extentStr
         });
     });
