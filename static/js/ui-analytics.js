@@ -133,7 +133,6 @@ const EVENT_MAPPING = {
     "view": "Layer Views",
     "click_point": "Point Clicks",
     "download": "Data Downloads",
-    "view_layer_table": "Table Views",
     "chat": "AI Copilot Chats"
 };
 

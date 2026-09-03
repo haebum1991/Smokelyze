@@ -42,8 +42,9 @@ export async function openLayerTableModal(datasetId, options = {}) {
             records
         });
 
-        logUserAction("view_layer_table", {
-            dataset: datasetId,
+        logUserAction("view", {
+            dataset: "layer_table",
+            layer: cleanId,
             date: date,
             count: records.length
         });
