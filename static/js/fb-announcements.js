@@ -173,7 +173,7 @@ function renderAnnouncementList() {
         const createdVal = a.createdAt;
         const dateStr = createdVal ? utils.formatDate(createdVal.toDate ? createdVal.toDate() : new Date(createdVal)) : "Just now";
         html += `
-            <div class="board-post-card" data-id="${a.id}" style="cursor: pointer;">
+            <div class="board-post-card" data-id="${utils.ESML(a.id)}" style="cursor: pointer;">
                 <div class="board-post-title">${utils.ESML(a.title)}</div>
                 <div class="board-post-meta">Posted: ${utils.ESML(dateStr)}</div>
             </div>
@@ -207,8 +207,8 @@ function renderAnnouncementDetail(id) {
         ${state.isAdmin ? `
             <div class="MapPost-modal-footer" style="flex-shrink: 0; padding: 1.2rem 2rem; border-top: 0.1rem solid var(--border-main); background: var(--sidebar-widget-bg, var(--color-bg));">
                 <div class="reply-btn-wrapper" style="display: flex; gap: 1rem; justify-content: flex-end;">
-                    <button class="reply-btn-submit reply-btn-edit-detail" data-id="${id}">Edit</button>
-                    <button class="reply-btn-cancel reply-btn-delete-detail" data-id="${id}">Delete</button>
+                    <button class="reply-btn-submit reply-btn-edit-detail" data-id="${utils.ESML(id)}">Edit</button>
+                    <button class="reply-btn-cancel reply-btn-delete-detail" data-id="${utils.ESML(id)}">Delete</button>
                 </div>
             </div>
         ` : ""}

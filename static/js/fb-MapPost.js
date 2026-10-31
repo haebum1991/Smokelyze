@@ -600,7 +600,7 @@ function renderMapPostList() {
             const firstPosted = createdVal ? utils.formatDate(typeof createdVal.toDate === "function" ? createdVal.toDate() : new Date(createdVal)) : "Just now";
 
             html += `
-                        <div class="MapPost-item clickOnShowDetail" style="cursor: pointer;" data-id="${c.id}">
+                        <div class="MapPost-item clickOnShowDetail" style="cursor: pointer;" data-id="${utils.ESML(c.id)}">
                             <div class="MapPost-item-title" style="font-size: 1.5rem;">${utils.ESML(c.title || "No Title")}</div>
                             <div class="MapPost-item-meta" style="font-size: 1.2rem;">
                                 Author: ${utils.ESML(c.userName || "Anonymous")} | Target date: ${utils.ESML(c.date)} 
@@ -612,7 +612,7 @@ function renderMapPostList() {
                                 <div style="display: flex; align-items: center; gap: 1rem; color: var(--text-main); font-size: 1.4rem; font-weight: bold;">
                                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
                                     <span>${repliesCount}</span>
-                                    <button class="MapPost-item-link clickOnLocation" data-id="${c.id}" data-lon="${c.lon}" data-lat="${c.lat}">Location</button>
+                                    <button class="MapPost-item-link clickOnLocation" data-id="${utils.ESML(c.id)}" data-lon="${Number(c.lon) || 0}" data-lat="${Number(c.lat) || 0}">Location</button>
                                     <button class="MapPost-item-link" style="margin-left: 0.4rem;">Read</button>
                                 </div>
                             </div>
@@ -738,9 +738,12 @@ async function clickOnSubmitMain() {
                 dataSource: dataSource
             };
 
+            // 지도를 옆으로 돌리면 lng가 ±180을 넘을 수 있으므로 정규화
+            const savedLngLat = typeof state.pendingLngLat.wrap === "function" ? state.pendingLngLat.wrap() : state.pendingLngLat;
+
             const docData = {
                 title, text, type: "MapPost", date,
-                lon: state.pendingLngLat.lng, lat: state.pendingLngLat.lat,
+                lon: savedLngLat.lng, lat: savedLngLat.lat,
                 uid: state.currentUser.uid, userName: userName || "Anonymous",
                 mapState: currentMapState,
                 dataSource: dataSource,
