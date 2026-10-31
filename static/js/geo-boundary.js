@@ -39,14 +39,9 @@ export async function loadBoundaries() {
             // Decompress gzip
             const ds = new DecompressionStream("gzip");
             const decompressedStream = response.body.pipeThrough(ds);
-            const reader = decompressedStream.getReader();
 
-            let text = "";
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                text += new TextDecoder().decode(value);
-            }
+            // 조각별 디코딩 시 멀티바이트 문자(ñ, ó 등)가 경계에서 깨지므로 한 번에 디코딩
+            const text = await new Response(decompressedStream).text();
 
             // Parse JSON
             boundaryGeoJSON = JSON.parse(text);
