@@ -43,7 +43,7 @@ The platform utilizes a serverless cloud architecture maximized for high-speed s
 Data analyzed within Smokelyze is curated from authoritative federal agencies and academic repositories:
 
 - **U.S. EPA**: Air Quality System (AQS) regulatory data and AirNow real-time observations.
-- **NOAA**: Hazard Mapping System (HMS) fire/smoke products, High-Resolution Rapid Refresh (HRRR-Smoke), GOES-AOD, and HYSPLIT meteorological data (NAM12 / GDAS1).
+- **NOAA**: Hazard Mapping System (HMS) fire/smoke products, High-Resolution Rapid Refresh (HRRR-Smoke), GOES-AOD, and HYSPLIT meteorological data (GDAS1 by default; NAM12 selectable for CONUS up to 2026-11-02, retired by NOAA on 2026-11-03).
 - **NASA**: TEMPO ($\mathrm{NO_2}$, $\mathrm{HCHO}$ VCD) via Langley ASDC DAAC.
 - **ESA / Copernicus**: TROPOMI on Sentinel-5P ($\mathrm{NO_2}$, $\mathrm{HCHO}$ VCD) via S5P-PAL data portal.
 

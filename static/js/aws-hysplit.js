@@ -15,6 +15,113 @@ import { convertToCSV, downloadFile } from "./ui-download.js";
 // --- Configuration & State ---
 const HYSPLIT_API_URL = "https://tiwczmnrwbmsonuap4r2fzpnsm0fqnyp.lambda-url.us-east-1.on.aws/hysplit";
 const STORAGE_KEY = "smokelyze_hysplit_history";
+// NOAA retired NAM on 2026-11-03 (SCN 26-47). Last NAM12 ARL file on NOAA S3 is 20261102.
+const NAM12_LAST_DATE = "2026-11-02";
+
+/**
+ * Computes the UTC end date ("YYYY-MM-DD") of a HYSPLIT simulation window.
+ */
+function getHysplitWindowEndDate(date, time, duration, direction) {
+    const [y, m, d] = date.split("-").map(Number);
+    const hour = parseInt(time, 10) || 0;
+    const startMs = Date.UTC(y, m - 1, d, hour);
+    const endMs = (direction === "backward")
+        ? startMs
+        : startMs + Math.abs(duration) * 3600 * 1000;
+    return new Date(endMs).toISOString().slice(0, 10);
+}
+
+/**
+ * Resolves the effective meteorological dataset and any fallback reason.
+ */
+function resolveHysplitMet({ requested, lon, lat, date, time, duration, direction }) {
+    const req = (requested === "nam12") ? "nam12" : "gdas1";
+    if (req === "gdas1") {
+        return { effective: "gdas1", reason: null };
+    }
+    const outOfDomain = lon < -152 || lon > -49 || lat > 61 || lat < 12;
+    if (outOfDomain) {
+        return { effective: "gdas1", reason: "out_of_domain" };
+    }
+    const windowEndDate = getHysplitWindowEndDate(date, time, duration, direction);
+    if (windowEndDate > NAM12_LAST_DATE) {
+        return { effective: "gdas1", reason: "nam12_retired" };
+    }
+    return { effective: "nam12", reason: null };
+}
+
+/**
+ * Shows a confirmation modal when NAM12 falls back to GDAS1.
+ * @param {"nam12_retired" | "out_of_domain"} reason
+ * @returns {Promise<boolean>}
+ */
+function confirmHysplitMetFallback(reason) {
+    const messages = {
+        nam12_retired: {
+            title: "NAM12 no longer available",
+            body: "NOAA retired NAM12 on Nov 3, 2026. This simulation covers dates after Nov 2, 2026, so it will run with GDAS1 (1°) instead."
+        },
+        out_of_domain: {
+            title: "Outside NAM12 domain",
+            body: "This location is outside the NAM12 domain (e.g., Alaska, Hawaii). The simulation will run with GDAS1 (1°) instead."
+        }
+    };
+    const copy = messages[reason] || messages.nam12_retired;
+
+    return new Promise((resolve) => {
+        const existing = document.getElementById("HysplitMetFallbackOverlay");
+        if (existing) existing.remove();
+
+        const overlay = document.createElement("div");
+        overlay.id = "HysplitMetFallbackOverlay";
+        overlay.className = "MapPost-modal-overlay";
+        overlay.style.display = "flex";
+        overlay.style.zIndex = "10010";
+
+        overlay.innerHTML = `
+<div class="MapPost-modal" style="position: relative; top: auto; bottom: auto; left: auto; transform: none; animation: none; width: min(92vw, 44rem); height: auto; min-height: 0; max-height: 90vh;">
+  <div class="MapPost-modal-header">
+    <h3 id="HysplitMetFallbackTitle"></h3>
+    <button class="ui-btn-close" id="HysplitMetFallbackClose" style="cursor: pointer;">
+      <svg width="20" height="20" style="pointer-events: none;">
+        <use xlink:href="#icon-close" />
+      </svg>
+    </button>
+  </div>
+  <div class="MapPost-modal-body" style="flex: 0 0 auto; height: auto; min-height: 0;">
+    <p id="HysplitMetFallbackBody" style="margin: 0; font-size: 1.4rem; line-height: 1.5; color: var(--text-main);"></p>
+  </div>
+  <div class="MapPost-modal-footer">
+    <div class="reply-btn-wrapper">
+      <button class="reply-btn-submit" id="HysplitMetFallbackContinue">Continue with GDAS1</button>
+      <button class="reply-btn-cancel" id="HysplitMetFallbackCancel">Cancel</button>
+    </div>
+  </div>
+</div>`;
+
+        document.body.appendChild(overlay);
+        document.getElementById("HysplitMetFallbackTitle").textContent = copy.title;
+        document.getElementById("HysplitMetFallbackBody").textContent = copy.body;
+
+        const cleanup = (result) => {
+            document.removeEventListener("keydown", onKeyDown);
+            overlay.remove();
+            resolve(result);
+        };
+
+        const onKeyDown = (e) => {
+            if (e.key === "Escape") cleanup(false);
+        };
+
+        document.addEventListener("keydown", onKeyDown);
+        overlay.addEventListener("click", (e) => {
+            if (e.target === overlay) cleanup(false);
+        });
+        document.getElementById("HysplitMetFallbackClose").addEventListener("click", () => cleanup(false));
+        document.getElementById("HysplitMetFallbackCancel").addEventListener("click", () => cleanup(false));
+        document.getElementById("HysplitMetFallbackContinue").addEventListener("click", () => cleanup(true));
+    });
+}
 
 const state = {
     pendingLngLat: null,
@@ -114,13 +221,27 @@ function ensureHysplitModalInDOM() {
 
       <div class="MapPost-form-group-row">
         <div class="MapPost-form-group">
-          <label for="InputHysplitType">Run Type:</label>
+          <div id="DivHysplitType" style="display: flex; align-items: center; justify-content: space-between; min-height: 2.4rem;">
+            <label for="InputHysplitType">Run Type:</label>
+          </div>
           <select id="InputHysplitType" class="MapPost-select">
             <option value="trajectory" selected>Trajectory</option>
             <option value="dispersion">Dispersion</option>
           </select>
         </div>
 
+        <div class="MapPost-form-group">
+          <div id="DivHysplitMet" style="display: flex; align-items: center; justify-content: space-between; min-height: 2.4rem;">
+            <label for="InputHysplitMet">Met Type:</label>
+          </div>
+          <select id="InputHysplitMet" class="MapPost-select">
+            <option value="gdas1" selected>GDAS1 (1°, global)</option>
+            <option value="nam12">NAM12 (12 km, CONUS, until 2026-11-02)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="MapPost-form-group-row">
         <div class="MapPost-form-group">
           <label>Direction:</label>
           <div style="display: flex; gap: 2rem; padding: 1rem 0; justify-content: center;">
@@ -132,6 +253,7 @@ function ensureHysplitModalInDOM() {
             </label>
           </div>
         </div>
+        <div class="MapPost-form-group"></div>
       </div>
 
       <!-- Dispersion specific settings (hidden by default) -->
@@ -173,9 +295,21 @@ function ensureHysplitModalInDOM() {
 
       <div
         style="margin-top: 1.5rem; font-size: 1.4rem; color: var(--text-main); border-top: 0.1rem solid var(--border-main); padding-top: 0.8rem;">
-        * Note: Simulations use <b style="color: var(--card-shadow);">NAM 12km</b> meteorological data by default.
-        For locations outside the NAM12 domain (e.g., Alaska, Hawaii), the model automatically switches to <b
-          style="color: var(--card-shadow);">GDAS1 (1°)</b>.
+        * Note: Effective <b style="color: var(--card-shadow);">Nov 17, 2026</b>, the default meteorological dataset has
+        been changed from <b style="color: var(--card-shadow);">NAM12</b> to <b
+          style="color: var(--card-shadow);">GDAS1 (1°)</b> because NOAA retired NAM on Nov 3, 2026
+        (replaced by RRFS at NOAA, not supported here; see
+        <a href="https://www.weather.gov/media/notification/pdf_2026/scn26-47_Retirement_of_NAM_SREF_HREF_HiresW_NAM_MOS.pdf"
+          target="_blank" rel="noopener noreferrer" style="color: var(--card-shadow); text-decoration: underline;">NWS SCN 26-47</a>,
+        <a href="https://www.weather.gov/media/notification/pdf_2026/scn26-048_Updated_RRFS_and_REFS_Implementation.aaf.pdf"
+          target="_blank" rel="noopener noreferrer" style="color: var(--card-shadow); text-decoration: underline;">NWS SCN 26-48</a>,
+        and <a href="https://www.ready.noaa.gov/READYnews.php"
+          target="_blank" rel="noopener noreferrer" style="color: var(--card-shadow); text-decoration: underline;">NOAA ARL READY News</a>).
+        <b style="color: var(--card-shadow);">NAM12 (12 km)</b> remains selectable for the contiguous U.S. for dates up
+        to <b style="color: var(--card-shadow);">Nov 2, 2026</b> (the last available
+        <a href="https://noaa-oar-arl-hysplit-pds.s3.amazonaws.com/index.html#nam12/2026/11/"
+          target="_blank" rel="noopener noreferrer" style="color: var(--card-shadow); text-decoration: underline;">NAM12 archive</a>).
+        If NAM12 is selected outside its domain or period, GDAS1 is used instead.
         For NAM12 trajectories exceeding 72 hours, GDAS1 data is additionally used as backup to prevent domain boundary
         truncation.
         The vertical motion uses the default option (i.e., <b style="color: var(--card-shadow);">Model vertical
@@ -488,6 +622,7 @@ export function initHysplit() {
     // 5. Parameter help icons
     appendGenericHelpIcon("DivHysplitDuration", "InputHysplitDuration");
     appendGenericHelpIcon("DivHysplitHeight", "InputHysplitHeight");
+    appendGenericHelpIcon("DivHysplitMet", "InputHysplitMet");
     appendGenericHelpIcon("DivHysplitReleaseRate", "InputHysplitRate");
     appendGenericHelpIcon("DivHysplitReleaseDuration", "InputHysplitReleaseDuration");
     appendGenericHelpIcon("DivHysplitPdiam", "InputHysplitPdiam");
@@ -761,12 +896,20 @@ function uiShowHysplitModal(params = null) {
             if (group) group.style.display = (typeEl.value === "dispersion") ? "block" : "none";
         }
 
+        const metEl = document.getElementById("InputHysplitMet");
+        if (metEl) {
+            metEl.value = params.met_requested || params.met_type || "gdas1";
+        }
+
         if (params.run_type === "dispersion") {
             if (document.getElementById("InputHysplitRate")) document.getElementById("InputHysplitRate").value = params.species_rate || 5;
             if (document.getElementById("InputHysplitPdiam")) document.getElementById("InputHysplitPdiam").value = params.species_pdiam || 2.5;
             if (document.getElementById("InputHysplitPdensity")) document.getElementById("InputHysplitPdensity").value = params.species_density || 1.2;
             if (document.getElementById("InputHysplitReleaseDuration")) document.getElementById("InputHysplitReleaseDuration").value = params.species_duration || 1;
         }
+    } else {
+        const metEl = document.getElementById("InputHysplitMet");
+        if (metEl) metEl.value = "gdas1";
     }
 
     // Set base params for change detection
@@ -793,6 +936,7 @@ function checkHysplitDuplicate() {
         const height = parseFloat(document.getElementById("InputHysplitHeight").value);
         const date = document.getElementById("InputHysplitDate").value;
         const run_type = document.getElementById("InputHysplitType").value;
+        const metRequested = document.getElementById("InputHysplitMet")?.value || "gdas1";
 
         const b = state.modalBaseParams;
         isSame = (
@@ -801,7 +945,8 @@ function checkHysplitDuplicate() {
             direction === b.direction &&
             duration === b.duration &&
             height === b.height &&
-            run_type === (b.run_type || "trajectory")
+            run_type === (b.run_type || "trajectory") &&
+            metRequested === (b.met_requested || "gdas1")
         );
 
         // If dispersion, check extra params
@@ -890,6 +1035,7 @@ async function clickOnSubmitHysplit() {
     const date = document.getElementById("InputHysplitDate").value;
     const lngLat = state.pendingLngLat;
     const runType = document.getElementById("InputHysplitType").value;
+    const metRequested = document.getElementById("InputHysplitMet")?.value || "gdas1";
     
     // Check for identical duplicate submission
     if (state.modalBaseParams) {
@@ -900,7 +1046,8 @@ async function clickOnSubmitHysplit() {
             direction === b.direction &&
             duration === b.duration &&
             height === b.height &&
-            runType === (b.run_type || "trajectory")
+            runType === (b.run_type || "trajectory") &&
+            metRequested === (b.met_requested || "gdas1")
         );
 
         if (isSame && runType === "dispersion") {
@@ -920,12 +1067,29 @@ async function clickOnSubmitHysplit() {
     
     if (!lngLat || !date) return alert("Missing location or date.");
     
-    // Date Guard: Met data availability depends on location (NAM12 vs GDAS1)
     const lon = lngLat.lng;
     const lat = lngLat.lat;
-    const isGDAS = lon < -152 || lon > -49 || lat > 61 || lat < 12;
-    const requiredLag = isGDAS ? 8 : 2;
-    const metLabel = isGDAS ? "GDAS1" : "NAM12";
+    const { effective, reason } = resolveHysplitMet({
+        requested: metRequested,
+        lon,
+        lat,
+        date,
+        time,
+        duration,
+        direction
+    });
+
+    if (metRequested === "nam12" && reason !== null) {
+        const proceed = await confirmHysplitMetFallback(reason);
+        if (!proceed) return;
+    }
+
+    // Date Guard: Met data availability depends on effective met (GDAS1 vs NAM12)
+    let requiredLag = (effective === "gdas1") ? 8 : 2;
+    if (direction === "forward") {
+        requiredLag += Math.ceil(duration / 24);
+    }
+    const metLabel = (effective === "gdas1") ? "GDAS1" : "NAM12";
 
     const selectedDate = new Date(date + "T00:00:00");
     const today = new Date();
@@ -966,7 +1130,7 @@ async function clickOnSubmitHysplit() {
         dataset: "hysplit",
         layer: `${layerType}-${direction}`,
         date: date,
-        filename: `lon:${lngLat.lng.toFixed(3)}_lat:${lngLat.lat.toFixed(3)}_h:${height}m_d:${duration}h`
+        filename: `lon:${lngLat.lng.toFixed(3)}_lat:${lngLat.lat.toFixed(3)}_h:${height}m_d:${duration}h_met:${effective}`
     });
     
     const task = showTaskNotification("HYSPLIT Simulation", "Requesting trajectory from AWS...");
@@ -983,7 +1147,8 @@ async function clickOnSubmitHysplit() {
             direction: direction,
             duration: duration,
             height: height,
-            run_type: runType
+            run_type: runType,
+            met_type: effective
         };
 
         // Add dispersion params if needed
@@ -1024,7 +1189,11 @@ async function clickOnSubmitHysplit() {
             throw new Error(`Unexpected result from serverless backend: ${resultData.status}`);
         }
 
-        const currentParams = baseParams;
+        const currentParams = {
+            ...baseParams,
+            met_requested: metRequested,
+            met_type: resultData.met_type || effective
+        };
 
         task.update("Rendering trajectory...", "running");
         renderHysplitTrajectory(finalData, direction, null, false, currentParams);
@@ -1145,6 +1314,7 @@ function updateHysplitDrawerList() {
                     <div>
                         <b style="color: var(--card-shadow);">Mode: ${utils.ESML(p.run_type || "trajectory")}</b><br>
                         Dir: ${utils.ESML(p.direction)} | Dur: ${utils.ESML(p.duration)}h | AGL: ${utils.ESML(p.height)}m <br>
+                        Met: ${utils.ESML((p.met_type || "nam12").toUpperCase())}<br>
                         Loc: ${parseFloat(p.lon).toFixed(3)}, ${parseFloat(p.lat).toFixed(3)}
                     </div>
                     <button class="export-btn-csv" data-run-id="${item.runId}" data-original-label="⬇ .CSV">

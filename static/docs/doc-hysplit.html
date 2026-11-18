@@ -1,6 +1,6 @@
 
 <h2>NOAA HYSPLIT Trajectory</h2>
-<p>Last Updated: 2026-07-23</p>
+<p>Last Updated: 2026-11-17</p>
 <hr>
 
 <section id="hysplit">
@@ -12,7 +12,8 @@
     <ul>
         <li><strong>Purpose:</strong> Compute 12-hour backward trajectory statistics (transport distance, height,
             direction) for use as GAM-v2 predictor variables.</li>
-        <li><strong>Meteorology:</strong> Uses NAM12 Met. data.</li>
+        <li><strong>Meteorology:</strong> Uses GDAS1 (1°) meteorological data by default; NAM12 (12 km) is selectable
+            for CONUS dates up to 2026-11-02 (NOAA retired NAM on 2026-11-03).</li>
         <li><strong>Heights:</strong> Trajectories initiated at 500m above ground level.</li>
         <li><strong>Output:</strong> Statistical summaries (Haversine distance, bearing, transport speed) for each
             site and date.</li>
@@ -21,7 +22,7 @@
     <h3>2. Main Workflow</h3>
     <div class="doc-flow">
         <div class="doc-flow-step"><span class="doc-step-num">1</span><strong>Met-Data Sync:</strong> Downloads
-            required NAM12 meteorological files from ARL/NOAA servers.</div>
+            required GDAS1 / NAM12 meteorological files from ARL/NOAA servers.</div>
         <div class="doc-flow-step"><span class="doc-step-num">2</span><strong>Execution:</strong> Spawns HYSPLIT
             processes (<code>hyts_std</code>) for each AQS monitor at multiple receptor heights.</div>
         <div class="doc-flow-step"><span class="doc-step-num">3</span><strong>Distance Calculation:</strong> Computes
@@ -44,9 +45,10 @@ library(googleCloudStorageR)</code></pre>
 
     <h3>4. Technical Implementation</h3>
     <h4>- Meteorological Data Synchronization</h4>
-    <p>Ensures required NAM12 weather modeling data is available locally by checking existing files and downloading
-        missing ones from NOAA ARL servers.</p>
-    <pre><code># Check and download met files
+    <p>Ensures required GDAS1 / NAM12 weather modeling data is available locally by checking existing files and
+        downloading missing ones from NOAA ARL servers. Interactive simulations default to <code>gdas1</code>; the
+        code snippets below illustrate historical <code>nam12</code> usage (available through 2026-11-02).</p>
+    <pre><code># Check and download met files (historical NAM12 example; default is now "gdas1")
 met_files <- get_met_files(
   start_year = year,
   start_month = month,
@@ -79,5 +81,22 @@ dist_haversine <- function(p1, p2, r = 6378137) {
   a <- sin(dLat/2)^2 + cos(p1[,2]) * cos(p2[,2]) * sin(dLon/2)^2
   return(r * (2 * atan2(sqrt(a), sqrt(1 - a)))) # Result in meters
 }</code></pre>
+
+    <h3>5. References (Meteorological Data Update)</h3>
+    <p>Effective Nov 17, 2026, the default meteorological dataset in Smokelyze changed from NAM12 to GDAS1 (1°) following
+        NOAA's retirement of NAM on Nov 3, 2026 (replaced by RRFS at NOAA, though RRFS is not currently supported in
+        Smokelyze; the last NAM12 archive file on NOAA S3 is <code>20261102_nam12</code>):
+    </p>
+    <ul>
+        <li><a href="https://www.weather.gov/media/notification/pdf_2026/scn26-47_Retirement_of_NAM_SREF_HREF_HiresW_NAM_MOS.pdf"
+                target="_blank" rel="noopener noreferrer">NWS SCN 26-47: Retirement of NAM, SREF, HREF, HiresW, and NAM
+                MOS</a></li>
+        <li><a href="https://www.weather.gov/media/notification/pdf_2026/scn26-048_Updated_RRFS_and_REFS_Implementation.aaf.pdf"
+                target="_blank" rel="noopener noreferrer">NWS SCN 26-048: Updated RRFS and REFS Implementation</a></li>
+        <li><a href="https://www.ready.noaa.gov/READYnews.php" target="_blank" rel="noopener noreferrer">NOAA ARL READY
+                News</a></li>
+        <li><a href="https://noaa-oar-arl-hysplit-pds.s3.amazonaws.com/index.html#nam12/2026/11/" target="_blank"
+                rel="noopener noreferrer">NOAA HYSPLIT Public S3 Archive (nam12/2026/11)</a></li>
+    </ul>
 </section>
 

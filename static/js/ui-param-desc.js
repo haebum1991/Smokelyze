@@ -52,6 +52,19 @@ export const DescData = {
                 "<li>For <b>Dispersion</b>: It represents the source release height from emission sources something like that. In HYSPLIT READY, this is equivalent to the <b>Release Top</b> parameter.</li></ul>"
         },
         {
+            id: "InputHysplitMet",
+            title: "Met Type",
+            desc: "Meteorological data used to drive HYSPLIT (effective <b>Nov 17, 2026</b>, the default changed from NAM12 to <b>GDAS1</b>).<br><ul>" +
+                "<li><b>GDAS1</b> (default): Global, 1° (~100 km) resolution. Available worldwide with about an 8-day delay.</li>" +
+                "<li><b>NAM12</b>: Contiguous U.S. (12°N–61°N, 152°W–49°W), 12 km resolution. NOAA retired NAM on Nov 3, 2026 (replaced by RRFS at NOAA, not supported here), so NAM12 is available only for dates up to <b>Nov 2, 2026</b>. For NAM12 runs exceeding 72 hours, GDAS1 is additionally used as backup to prevent domain boundary truncation.</li></ul>" +
+                "If NAM12 is selected outside its domain or period, you will be prompted to run with GDAS1 instead.<br>" +
+                "<i>References:</i> " +
+                "<a href='https://www.weather.gov/media/notification/pdf_2026/scn26-47_Retirement_of_NAM_SREF_HREF_HiresW_NAM_MOS.pdf' target='_blank' rel='noopener noreferrer'>NWS SCN 26-47</a>, " +
+                "<a href='https://www.weather.gov/media/notification/pdf_2026/scn26-048_Updated_RRFS_and_REFS_Implementation.aaf.pdf' target='_blank' rel='noopener noreferrer'>NWS SCN 26-48</a>, " +
+                "<a href='https://www.ready.noaa.gov/READYnews.php' target='_blank' rel='noopener noreferrer'>NOAA ARL READY News</a>, " +
+                "<a href='https://noaa-oar-arl-hysplit-pds.s3.amazonaws.com/index.html#nam12/2026/11/' target='_blank' rel='noopener noreferrer'>NAM12 Archive</a>."
+        },
+        {
             id: "InputHysplitRate",
             title: "Release Rate (kg hr-1)",
             desc: "Rate of mass emission of the pollutant per hour. <br><i>* Note</i>: In HYSPLIT READY, this is equivalent to the <b>Release Quantity (kg)</b> divided by the <b>Release Duration (hr)</b>."
