@@ -1,6 +1,6 @@
 
 <h2>UW GAM-v2 Prediction Pipeline</h2>
-<p>Last Updated: 2026-07-23</p>
+<p>Last Updated: 2026-11-18</p>
 <hr>
 
 <section id="pred-gam-v2">
@@ -89,6 +89,15 @@ shp_smoke <- sf::st_read(hms_geojson_path, quiet = TRUE)
 shp_smoke_uni <- sf::st_union(shp_smoke)
 over_result <- sp::over(station_points, sf::as_Spatial(shp_smoke_uni))
 hms_flag <- ifelse(is.na(over_result), 0, 1)</code></pre>
+
+    <h3>5. Meteorological Input Transition (Nov 2026+)</h3>
+    <div class="doc-callout">
+        Following NOAA's retirement of NAM12 on November 3, 2026 (NWS SCN 26-47), HYSPLIT trajectory predictors
+        (<code>TrajDir</code>, <code>TrajDist</code>, <code>TrajH2O</code>, <code>TrajDepth</code>) entering UW GAM-v2
+        switch from NAM12 to uncalibrated <strong>GDAS1 (1°)</strong> beginning <strong>November 1, 2026</strong>.
+        For the full 2025 ozone-season cross-evaluation and interpretation notes, see
+        <a href="?doc=doc-nam12-gdas1-comp" data-doc="doc-nam12-gdas1-comp" style="font-weight: bold;">NAM12 vs. GDAS1 Evaluation</a>.
+    </div>
 </section>
 
 <br>

@@ -1,0 +1,253 @@
+
+<h2>Meteorological Input Transition for UW GAM-v2: NAM12 vs. GDAS1 Evaluation</h2>
+<p>Last Updated: 2026-11-18</p>
+<hr>
+
+<section id="nam12-retirement">
+    <h3>1. Background: NOAA NAM12 Retirement and Pipeline Transition</h3>
+    <p>
+        On <strong>November 3, 2026</strong>, the NOAA National Centers for Environmental Prediction (NCEP) officially
+        retired the North American Mesoscale (<strong>NAM</strong>) forecast system—including the 12 km CONUS
+        (<code>NAM12</code>) product—and transitioned operational regional forecasting to the Rapid Refresh Forecast
+        System (RRFS) (<a
+            href="https://www.weather.gov/media/notification/pdf_2026/scn26-47_Retirement_of_NAM_SREF_HREF_HiresW_NAM_MOS.pdf"
+            target="_blank" rel="noopener noreferrer">NWS SCN 26-47</a>;
+        <a href="https://www.weather.gov/media/notification/pdf_2026/scn26-048_Updated_RRFS_and_REFS_Implementation.aaf.pdf"
+            target="_blank" rel="noopener noreferrer">NWS SCN 26-048</a>). On the NOAA Air Resources Laboratory (ARL)
+        HYSPLIT public archive (<a href="https://noaa-oar-arl-hysplit-pds.s3.amazonaws.com/index.html#nam12/2026/11/"
+            target="_blank" rel="noopener noreferrer"><code>noaa-oar-arl-hysplit-pds</code></a>; see also
+        <a href="https://www.ready.noaa.gov/READYnews.php" target="_blank" rel="noopener noreferrer">NOAA ARL READY
+            News</a>), the final available NAM12 meteorological file is <code>2026-11-02</code>, and no subsequent
+        NAM12 files are produced.
+    </p>
+    <p>
+        The pre-trained <strong>UW GAM-v2</strong> models (<a href="https://doi.org/10.1029/2025JD044088"
+            target="_blank" rel="noopener noreferrer">Lee and Jaffe, 2025</a>) were trained on 2019–2024 ozone-season
+        (Apr–Oct) data using four 12-hour backward HYSPLIT trajectory predictors originally derived from NAM12:
+        trajectory direction (<code>TrajDir</code>), transport distance (<code>TrajDist</code>), water vapor mixing
+        ratio (<code>TrajH2O</code>), and mixing depth (<code>TrajDepth</code>). To ensure continuous operational
+        predictions without interruption, the Smokelyze HYSPLIT batch pipeline switches from NAM12 to
+        <strong>GDAS1 (1°, global)</strong> beginning <strong>November 1, 2026</strong> (cutoff
+        <code>2026-10-31</code>). Consequently, all UW GAM-v2 predictions from
+        <strong>November 1, 2026 onward</strong>—including the <strong>2027+ ozone seasons</strong>—are driven by
+        GDAS1-derived trajectory predictors alongside the unchanged MERRA-2 and TROPOMI inputs.
+    </p>
+</section>
+
+<section id="gdas1-validation">
+    <h3>2. 2025 Ozone Season Cross-Evaluation (NAM12 vs. GDAS1)</h3>
+    <p>
+        Before finalizing the operational transition, we evaluated how replacing NAM12 (12 km) with uncalibrated GDAS1
+        (1°, ~100 km) affects downstream UW GAM-v2 outputs using an independent out-of-sample ozone season
+        (<strong>April 1 – October 31, 2025</strong>) across <strong>748 CONUS AQS O<sub>3</sub> sites</strong>
+        (<strong>N = 151,590</strong> valid paired daily predictions out of 151,875 merged records, including
+        <strong>117,030</strong> non-smoke days and <strong>26,911</strong> smoke days). Both runs used the exact same
+        2019–2024 pre-trained GAM-v2 models,
+        MERRA-2 meteorology, TROPOMI satellite columns, and HMS smoke flags, differing <em>only</em> in the HYSPLIT
+        meteorological input (NAM12 vs. GDAS1).
+    </p>
+
+    <figure style="margin: 2rem 0; text-align: center;">
+        <img src="/images/gam_v2_nam12_vs_gdas1_2025.webp"
+            alt="Cross-evaluation of UW GAM-v2 predictions driven by NAM12 vs. uncalibrated GDAS1 for Apr-Oct 2025"
+            style="max-width: 100%; border-radius: var(--border-radius-0p8rem); border: 0.1rem solid var(--border-main);">
+        <figcaption style="margin-top: 0.8rem; font-size: 1.4rem; color: var(--text-muted); line-height: 1.6;">
+            <strong>Figure 1.</strong> Evaluation of UW GAM-v2 outputs driven by NAM12 vs. uncalibrated GDAS1 for
+            Apr–Oct 2025 (748 AQS sites, N = 151,590 daily pairs). <strong>(a)</strong> Predicted MDA8 O<sub>3</sub>
+            across all ozone-season days. <strong>(b)</strong> Smoke O<sub>3</sub> (SMO = Obs − Pred) on smoke days
+            (N = 26,911). <strong>(c)</strong> Site-level RMSE against observed MDA8 O<sub>3</sub> on non-smoke days
+            (NAM12 median = 6.60 ppb vs. GDAS1 median = 6.73 ppb). <strong>(d)</strong> Spatial distribution of
+            site-level prediction bias (GDAS1 − NAM12) across CONUS.
+        </figcaption>
+    </figure>
+
+    <h4>Table 1. Model Performance Against Observed MDA8 O<sub>3</sub> on Non-Smoke Days (<code>smoke == 0</code>, N =
+        117,030)</h4>
+    <div style="overflow-x: auto;">
+        <table class="doc-table">
+            <thead>
+                <tr>
+                    <th>Model Input</th>
+                    <th>R<sup>2</sup></th>
+                    <th>RMSE (ppb)</th>
+                    <th>MAE (ppb)</th>
+                    <th>Bias (Pred &minus; Obs, ppb)</th>
+                    <th>Site Median RMSE (ppb)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>NAM12</strong> (<code>MDA8O3_pred</code>)</td>
+                    <td>0.649</td>
+                    <td>6.90</td>
+                    <td>5.34</td>
+                    <td>+0.27</td>
+                    <td>6.60</td>
+                </tr>
+                <tr>
+                    <td><strong>GDAS1</strong> (<code>MDA8O3_pred</code>)</td>
+                    <td>0.641</td>
+                    <td>7.02</td>
+                    <td>5.45</td>
+                    <td>+1.09</td>
+                    <td>6.73</td>
+                </tr>
+                <tr>
+                    <td><strong>NAM12</strong> (<code>edm_MDA8O3_pred</code>)</td>
+                    <td>0.630</td>
+                    <td>7.45</td>
+                    <td>5.75</td>
+                    <td>+0.23</td>
+                    <td>&mdash;</td>
+                </tr>
+                <tr>
+                    <td><strong>GDAS1</strong> (<code>edm_MDA8O3_pred</code>)</td>
+                    <td>0.617</td>
+                    <td>7.60</td>
+                    <td>5.87</td>
+                    <td>+1.22</td>
+                    <td>&mdash;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h4>Table 2. Direct Comparison Between GDAS1 and NAM12 Outputs (Apr–Oct 2025)</h4>
+    <div style="overflow-x: auto;">
+        <table class="doc-table">
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Subset (N)</th>
+                    <th>R<sup>2</sup></th>
+                    <th>RMSE (ppb)</th>
+                    <th>Bias / Count (GDAS1 vs. NAM12)</th>
+                    <th>F1 Score (Agreement)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>MDA8O3_pred</code></td>
+                    <td>All Apr–Oct (151,590)</td>
+                    <td>0.950</td>
+                    <td>2.49</td>
+                    <td>+0.92 ppb</td>
+                    <td>&mdash;</td>
+                </tr>
+                <tr>
+                    <td><code>edm_MDA8O3_pred</code></td>
+                    <td>All Apr–Oct (151,590)</td>
+                    <td>0.939</td>
+                    <td>3.12</td>
+                    <td>+1.11 ppb</td>
+                    <td>&mdash;</td>
+                </tr>
+                <tr>
+                    <td><code>SMO</code></td>
+                    <td>Smoke days (26,911)</td>
+                    <td>0.909</td>
+                    <td>2.73</td>
+                    <td>&minus;1.29 ppb</td>
+                    <td>&mdash;</td>
+                </tr>
+                <tr>
+                    <td><code>edm_SMO</code></td>
+                    <td>Smoke days (26,911)</td>
+                    <td>0.865</td>
+                    <td>3.51</td>
+                    <td>&minus;1.59 ppb</td>
+                    <td>&mdash;</td>
+                </tr>
+                <tr>
+                    <td><code>smoke_p975</code></td>
+                    <td>All (151,154)</td>
+                    <td>&mdash;</td>
+                    <td>&mdash;</td>
+                    <td>4,849 &rarr; 3,875 days (&minus;20.1%)</td>
+                    <td><strong>0.822</strong> (98.97%)</td>
+                </tr>
+                <tr>
+                    <td><code>edm_smoke_p975</code></td>
+                    <td>All (151,176)</td>
+                    <td>&mdash;</td>
+                    <td>&mdash;</td>
+                    <td>3,883 &rarr; 3,018 days (&minus;22.3%)</td>
+                    <td><strong>0.786</strong> (99.02%)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section id="gdas1-policy">
+    <h3>3. Operational Decision (No Post-Hoc Calibration) and Interpretation Notes</h3>
+    <p>
+        As shown in Table 1 and Figure 1(c), substituting GDAS1 for NAM12 produces a negligible change in model
+        accuracy against ground-truth observed MDA8 O<sub>3</sub>: overall non-smoke RMSE shifts from
+        <strong>6.90 ppb to 7.02 ppb</strong> (+0.12 ppb), and site-level median RMSE shifts from
+        <strong>6.60 ppb to 6.73 ppb</strong> (+0.13 ppb). Direct agreement between NAM12- and GDAS1-driven
+        predictions remains high across CONUS (R<sup>2</sup> = 0.950 for <code>MDA8O3_pred</code>; R<sup>2</sup> =
+        0.909 for <code>SMO</code>).
+    </p>
+    <p>
+        Based on this evaluation, Smokelyze adopts <strong>uncalibrated standard GDAS1 trajectory inputs</strong>
+        starting November 1, 2026, rather than introducing an additional post-hoc trajectory calibration layer.
+        Stacking site-specific trajectory regression adjustments on top of GAM and EDM carries risks of overfitting,
+        variance compression during extreme meteorological conditions, and reduced transparency and reproducibility.
+        Instead, we preserve the standard meteorological inputs and document the exact transition characteristics
+        below so users can interpret post-2026 results accurately.
+    </p>
+
+    <div class="doc-callout">
+        <strong>Key Interpretation Notes for Post-Nov 2026 (GDAS1-Driven) GAM-v2 Predictions:</strong><br>
+        &bull; <strong>National &amp; Regional Prediction Bias:</strong> Nationally, GDAS1-driven
+        <code>MDA8O3_pred</code> has a mean bias of <strong>+0.92 ppb</strong> (<code>edm_MDA8O3_pred</code>:
+        <strong>+1.11 ppb</strong>) relative to NAM12, with positive bias across most Eastern and Southern U.S. sites
+        (Figure 1d). Locally, coarser 1° resolution produces larger deviations in complex coastal and mountain terrain,
+        including approximately <strong>+3 ppb</strong> in the Houston area and <strong>&minus;3 to &minus;4
+            ppb</strong>
+        in inland Southern California.<br>
+        &bull; <strong>Smoke O<sub>3</sub> (<code>SMO</code>) Estimates:</strong> Because background predictions are
+        slightly higher on average, GDAS1-driven <code>SMO</code> on smoke days is estimated
+        <strong>1.29 ppb lower on average</strong> (<code>edm_SMO</code>: <strong>1.59 ppb lower</strong>) than
+        NAM12-driven estimates.<br>
+        &bull; <strong>Smoke-Influenced Day Classification (<code>smoke_p975</code>):</strong> Because the
+        <code>p975</code> thresholds were derived from NAM12-based training residuals, GDAS1-driven runs flag
+        <strong>~20% fewer smoke-influenced days</strong> (<code>smoke_p975</code>: 4,849 &rarr; 3,875 days,
+        F1 = 0.822; <code>edm_smoke_p975</code>: 3,883 &rarr; 3,018 days, F1 = 0.786), which may slightly raise the
+        <strong>4th-highest MDA8 O<sub>3</sub> excluding smoke days</strong>.
+    </div>
+</section>
+
+<br>
+<hr>
+<p class="doc-footer-text">
+    Lee, H., and Jaffe, D. A. (2025). Impact of Wildfires on O<sub>3</sub> and Air Quality Across the United States for
+    2019–2024 Using Generalized Additive Models. <em>J. Geophys. Res.: Atmos.</em>, 130, e2025JD044088.
+    <a href="https://doi.org/10.1029/2025JD044088" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1029/2025JD044088</a>
+    <br><br>
+    Lee, H., and Jaffe, D. A. (2026). Smokelyze.org: Advanced Spatiotemporal Analytics for Wildfire Smoke and Air
+    Quality. <em>Bull. Amer. Meteor. Soc.</em>
+    <a href="https://doi.org/10.1175/BAMS-D-26-0133.1" target="_blank"
+        rel="noopener noreferrer">https://doi.org/10.1175/BAMS-D-26-0133.1</a>
+    <br><br>
+    NOAA National Weather Service (2026). Service Change Notice 26-47: Retirement of NAM, SREF, HREF, HiresW, and NAM
+    MOS.
+    <a href="https://www.weather.gov/media/notification/pdf_2026/scn26-47_Retirement_of_NAM_SREF_HREF_HiresW_NAM_MOS.pdf"
+        target="_blank" rel="noopener noreferrer">NWS SCN 26-47</a>
+    <br><br>
+    NOAA National Weather Service (2026). Service Change Notice 26-048: Updated RRFS and REFS Implementation.
+    <a href="https://www.weather.gov/media/notification/pdf_2026/scn26-048_Updated_RRFS_and_REFS_Implementation.aaf.pdf"
+        target="_blank" rel="noopener noreferrer">NWS SCN 26-048</a>
+    <br><br>
+    NOAA Air Resources Laboratory (ARL). READY Meteorological Data &amp; Model News.
+    <a href="https://www.ready.noaa.gov/READYnews.php" target="_blank"
+        rel="noopener noreferrer">https://www.ready.noaa.gov/READYnews.php</a>
+    <br><br>
+    NOAA Air Resources Laboratory (ARL). HYSPLIT Public Meteorological Archive (AWS S3, <code>nam12/2026/11</code>).
+    <a href="https://noaa-oar-arl-hysplit-pds.s3.amazonaws.com/index.html#nam12/2026/11/" target="_blank"
+        rel="noopener noreferrer">https://noaa-oar-arl-hysplit-pds.s3.amazonaws.com/index.html#nam12/2026/11/</a>
+</p>
+<br>
+
