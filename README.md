@@ -59,9 +59,10 @@ This software is released under the **GNU Affero General Public License v3.0 (AG
 
 ## Citation
 
-If you utilize the Smokelyze platform, its data products, or underlying methodologies in your research or regulatory demonstrations, please cite the primary BAMS paper:
+If you utilize the Smokelyze platform, its data products, or underlying methodologies in your research or regulatory demonstrations, please cite both the BAMS paper and the software:
 
-- **Lee, H., & Jaffe, D. A. (2026)**. Smokelyze.org: Advanced Spatiotemporal Analytics for Wildfire Smoke and Air Quality. *Bulletin of the American Meteorological Society*, Under Review.
+- **Paper: Lee, H., & Jaffe, D. A. (2026)**. Smokelyze.org: Advanced Spatiotemporal Analytics for Wildfire Smoke and Air Quality. *Bulletin of the American Meteorological Society*. [https://doi.org/10.1175/BAMS-D-26-0133.1](https://doi.org/10.1175/BAMS-D-26-0133.1)
+- **Software: Lee, H., & Jaffe, D. A. (2026)**. Smokelyze.org: Advanced Spatiotemporal Analytics for Wildfire Smoke and Air Quality (v1.0.0) [Software]. University of Washington. [https://doi.org/10.5281/zenodo.22239823](https://doi.org/10.5281/zenodo.22239823) (Accessed from [https://smokelyze.org/](https://smokelyze.org/) on [Date]).
 
 ### Primary Scientific References
 
