@@ -213,7 +213,7 @@ export function getActiveModelLayers() {
  * Groups columns logically and uses rowspans/colspans for a clean look.
  */
 export function rebuildStatsHeader(thead, activeModelLayers) {
-    thead.innerHTML = "";
+    thead.replaceChildren();
 
     const tr1 = document.createElement("tr");
     const tr2 = document.createElement("tr");
@@ -371,7 +371,7 @@ export function renderStatsTable(regionIDs, burnStats, smokeStats, fireStats, ta
     if (tableWrapper) tableWrapper.style.display = "block";
     if (msgBox) {
         msgBox.style.display = "none";
-        msgBox.innerHTML = "";
+        msgBox.replaceChildren();
     }
 
 
@@ -589,8 +589,8 @@ function bindEventsStats() {
             selectedRegionsByMetric = {};
             if (onCurrentPlotHide) onCurrentPlotHide();
 
-            document.getElementById("StatsRegionBodyDate").innerHTML = "";
-            document.getElementById("StatsRegionBodyYear").innerHTML = "";
+            document.getElementById("StatsRegionBodyDate").replaceChildren();
+            document.getElementById("StatsRegionBodyYear").replaceChildren();
 
             const val = utils.currentDate();
             const allMonth = document.querySelector(".stats-tab-month-main .stats-tab-month-sub[stats-table-month='all']");

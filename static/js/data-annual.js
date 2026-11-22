@@ -103,7 +103,7 @@ function renderTypeTable(type, reportsByYear, tableBody) {
 
     const sortedYears = Object.keys(reports).sort((a, b) => b - a);
 
-    tableBody.innerHTML = "";
+    tableBody.replaceChildren();
     sortedYears.forEach(year => {
         const records = reports[year];
         records.sort((a, b) => new Date(a.asOfDate) - new Date(b.asOfDate));

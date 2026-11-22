@@ -361,7 +361,7 @@ function renderDataTable() {
     }
     
     if (currentFeatures.length === 0) {
-        head.innerHTML = "";
+        head.replaceChildren();
         body.innerHTML = "<tr><td>No data available</td></tr>";
         pagination.style.display = "none";
         return;
@@ -624,7 +624,7 @@ async function initLocationMap() {
         const errorDiv = document.createElement("div");
         errorDiv.className = "ui-center-message";
         errorDiv.textContent = "Failed to load map library. Please refresh the page.";
-        mapContainer.innerHTML = "";
+        mapContainer.replaceChildren();
         mapContainer.appendChild(errorDiv);
         return;
     }
@@ -652,14 +652,14 @@ async function initLocationMap() {
     loadingDiv.className = "ui-center-loading";
     loadingSpan.textContent = "Loading map...";
     loadingDiv.appendChild(loadingSpan);
-    mapContainer.innerHTML = "";
+    mapContainer.replaceChildren();
     mapContainer.appendChild(loadingDiv);
     
     // Small delay to ensure container is visible
     await new Promise(resolve => setTimeout(resolve, 50));
 
     // Clear container
-    mapContainer.innerHTML = "";
+    mapContainer.replaceChildren();
 
     // Initialize map
     locationMap = new maplibregl.Map({

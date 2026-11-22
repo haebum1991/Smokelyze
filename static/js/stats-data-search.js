@@ -80,7 +80,7 @@ function createSearchUIElement(id, labelText, placeholder) {
  * Generic result renderer
  */
 function renderSearchResults(matches, query, listElement, onSelect) {
-    listElement.innerHTML = "";
+    listElement.replaceChildren();
     if (matches.length === 0) {
         listElement.style.display = "none";
         return;
@@ -156,6 +156,8 @@ function setupKeyboardNavigation(input, listElement) {
             items[currentIndex].style.backgroundColor = "Yellow";
             items[currentIndex].scrollIntoView({ block: "nearest" });
         } else if (e.key === "Enter") {
+            // IME: Enter while composing confirms the character; do not pick an item yet.
+            if (e.isComposing || e.keyCode === 229) return;
             if (currentIndex !== -1) {
                 e.preventDefault();
                 items[currentIndex].click();

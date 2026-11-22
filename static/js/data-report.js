@@ -262,7 +262,7 @@ function updateYears() {
         dateEndInput.value = `${maxYear}-09-30`;
     }
 
-    container.innerHTML = "";
+    container.replaceChildren();
     years.forEach(yr => {
         const label = document.createElement("label");
         label.innerHTML = `<input type="checkbox" name="ReportYear" value="${yr}" checked> ${yr}`;

@@ -570,15 +570,25 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
   .gm-scroll {
     overflow-y: auto;
     padding-right: 1rem;
+    /* Standard scrollbar styling (thumb, track) */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-main) transparent;
   }
 
-  .gm-scroll::-webkit-scrollbar {
-    width: 0.6rem;
-  }
+  /* Legacy fallback for browsers without scrollbar-color */
+  @supports not (scrollbar-color: auto) {
+    .gm-scroll {
+      scrollbar-width: auto;
+    }
 
-  .gm-scroll::-webkit-scrollbar-thumb {
-    background: var(--border-main);
-    border-radius: var(--border-radius-0p8rem);
+    .gm-scroll::-webkit-scrollbar {
+      width: 0.6rem;
+    }
+
+    .gm-scroll::-webkit-scrollbar-thumb {
+      background: var(--border-main);
+      border-radius: var(--border-radius-0p8rem);
+    }
   }
 
   .gm-row {
@@ -1061,7 +1071,7 @@ mgcv::plot.gam(gam_result$gam_model, pages = 1, residuals = TRUE, scale = 0, sha
     };
 
     function renderRegistry() {
-      refs.yTarget.innerHTML = "";
+      refs.yTarget.replaceChildren();
       refs.splitCol.innerHTML = '<option value="None">Full Dataset</option>';
 
       let isFirstY = true;

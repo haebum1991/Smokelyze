@@ -68,7 +68,7 @@ function addLayerIfMissing(layerSpec, sourceId) {
 const layerDataMap = {}; // Tracks { layerId: dataSource } for global interaction
 
 export function getTopSpatialLayer(lng, lat) {
-    return (activeLayerStack || []).slice().reverse().find(id => {
+    return (activeLayerStack || []).findLast(id => {
         if (closedLegendIds?.has(id)) return false;
         if (ExcludeLayerGroups.pngLayers.includes(id)) {
             const mapLayerId = `${id}-raster`;
@@ -202,8 +202,7 @@ function bindClick(layerId, dataSource) {
             } else if (e.lngLat) {
                 // Raster layer fallback: iterate visible raster layers from top to bottom
                 const rasterStack = (activeLayerStack || [])
-                    .slice()
-                    .reverse()
+                    .toReversed()
                     .filter(id => {
                         if (!ExcludeLayerGroups.pngLayers.includes(id)) return false;
                         if (closedLegendIds && closedLegendIds.has(id)) return false;

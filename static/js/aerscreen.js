@@ -694,7 +694,7 @@ function generateContourGeoJSON(gridResult, sourceLon, sourceLat, levels) {
 function convexHull(points) {
     if (points.length < 3) return points.slice();
 
-    const sorted = points.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const sorted = points.toSorted((a, b) => a[0] - b[0] || a[1] - b[1]);
 
     const cross = (O, A, B) => (A[0] - O[0]) * (B[1] - O[1]) - (A[1] - O[1]) * (B[0] - O[0]);
 

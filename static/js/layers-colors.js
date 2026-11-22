@@ -53,7 +53,7 @@ export function updateLegend(activeStack = activeLayerStack) {
     });
 
     // 현재 켜진 범례들 중에서, 실제 지도상 가장 윗단(Top)에 있는 레이어 ID를 찾아 아코디언을 열어줍니다.
-    const topLegendLayerId = [...activeStack].reverse().find(id => legendLayers.includes(id));
+    const topLegendLayerId = activeStack.findLast(id => legendLayers.includes(id));
 
     let finalHtml = "";
 

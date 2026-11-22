@@ -710,8 +710,7 @@ function initRasterHover() {
 
         // Find visible raster layers in top-to-bottom order (filtering out closed/hidden layers)
         const visibleRasterStack = (activeLayerStack || [])
-            .slice()
-            .reverse()
+            .toReversed()
             .filter(id => {
                 if (!ExcludeLayerGroups.pngLayers.includes(id)) return false;
                 if (closedLegendIds && closedLegendIds.has(id)) return false;

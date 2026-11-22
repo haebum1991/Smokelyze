@@ -16,6 +16,7 @@ Smokelyze.Rproj
 node_modules/
 *.json
 !package.json
+!package-lock.json
 !composer.json
 !plugin.json
 !manifest.json

@@ -310,7 +310,7 @@ function getLayerDatasetName(cfg) {
 function openTSLayerPicker(lng, lat, supportedList) {
     if (!layerPickerOverlay || !layerPickerList) return;
 
-    layerPickerList.innerHTML = "";
+    layerPickerList.replaceChildren();
     supportedList.forEach(cfg => {
         const itemBtn = document.createElement("button");
         itemBtn.className = "tsplot-layer-option-btn";

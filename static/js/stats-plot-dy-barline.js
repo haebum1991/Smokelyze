@@ -417,7 +417,7 @@ export function renderDailyBarLine(containerId) {
       trace.hovertemplate = `<b>${l_title_1}: %{text}</b><extra></extra>`;
       trace.offsetgroup = key;
 
-      const trace2 = JSON.parse(JSON.stringify(trace));
+      const trace2 = structuredClone(trace);
       trace2.y = valBySmoke;
       trace2.text = valBySmoke.map(String);
       trace2.name = l_title_2;

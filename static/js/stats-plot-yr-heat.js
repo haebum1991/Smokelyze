@@ -16,7 +16,7 @@ import { yearStatsCache } from "./stats-yearly.js";
 export function renderHeatmap(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    container.innerHTML = "";
+    container.replaceChildren();
 
     const yearEl = document.getElementById("StatsInputYear");
     const year = yearEl?.dataset.yearValue

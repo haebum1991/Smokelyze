@@ -70,7 +70,7 @@ onAuthStateChanged(auth, async (user) => {
             const currentPhoto = profileUserBtn.querySelector("img")?.src;
             if (user.photoURL) {
                 if (currentPhoto !== user.photoURL) {
-                    profileUserBtn.innerHTML = ""; // Clear existing
+                    profileUserBtn.replaceChildren(); // Clear existing
                     const img = document.createElement("img");
                     img.src = user.photoURL;
                     img.alt = "Profile";
@@ -80,7 +80,7 @@ onAuthStateChanged(auth, async (user) => {
                     // Handle 429 or other load errors
                     img.onerror = () => {
                         console.warn("Profile image load failed, falling back to initials");
-                        profileUserBtn.innerHTML = "";
+                        profileUserBtn.replaceChildren();
                         const avatarDiv = document.createElement("div");
                         avatarDiv.className = "profile-avatar";
                         avatarDiv.innerHTML = `<span style="font-size: 1.2rem; font-weight: bold;">${utils.ESML(getInitials(user.displayName)) || "U"}</span>`;
@@ -89,7 +89,7 @@ onAuthStateChanged(auth, async (user) => {
                     profileUserBtn.appendChild(img);
                 }
             } else {
-                profileUserBtn.innerHTML = "";
+                profileUserBtn.replaceChildren();
                 const avatarDiv = document.createElement("div");
                 avatarDiv.className = "profile-avatar";
                 avatarDiv.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
@@ -431,7 +431,7 @@ const groupAddBtn = document.getElementById("SettingsGroupAdd");
 
 function renderGroupList(group) {
     if (!groupListEl) return;
-    groupListEl.innerHTML = "";
+    groupListEl.replaceChildren();
     if (!group || group.length === 0) {
         groupListEl.innerHTML = `<li style="padding: 0.5rem; text-align: center; color: var(--text-main);">No group members yet.</li>`;
         return;

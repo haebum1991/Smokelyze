@@ -16,13 +16,13 @@ import { yearStatsCache } from "./stats-yearly.js";
 export function currentPlotHide(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    container.innerHTML = "";
+    container.replaceChildren();
 }
 
 export function renderLinePlot(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    container.innerHTML = "";
+    container.replaceChildren();
 
     const byMetric = selectedRegionsByMetric;
     const metrics = Object.keys(byMetric).filter(m => Array.isArray(byMetric[m]) && byMetric[m].length);
@@ -96,7 +96,7 @@ export function renderLinePlot(containerId) {
     const filename = `line_${currentDate()}`;
     const config = getPlotlyConfig(filename);
 
-    container.innerHTML = "";
+    container.replaceChildren();
 
     metrics.forEach((metric, idx) => {
         // Validate data availability

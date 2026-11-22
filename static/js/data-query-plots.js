@@ -184,7 +184,7 @@ function renderDailyTimeSeriesPlot(theme, dsId, aqs, tableData) {
     let yTitle = dsId === "pm-cbsa" ? "Concentration (ug m⁻³)" : "MDA8 and SMO (ppb)";
     let plotTitle = dsId === "pm-cbsa" ? `Daily time-series<br>(AQS PM: ${aqs})` : `Daily time-series<br>(AQS O3: ${aqs})`;
 
-    const sortedData = [...tableData].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const sortedData = tableData.toSorted((a, b) => new Date(a.date) - new Date(b.date));
     const dates = sortedData.map(d => d.date);
 
     if (dsId === "pm-cbsa") {

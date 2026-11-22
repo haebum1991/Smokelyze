@@ -306,7 +306,7 @@ function getNextUpdateCountdown(layer) {
         return { text: `in ${minsLeft}m`, nextDate: null };
     }
 
-    const sorted = [...utcHours].sort((a, b) => a - b);
+    const sorted = utcHours.toSorted((a, b) => a - b);
     let nextUtcHour = sorted.find(h => h > currentUtcHour || (h === currentUtcHour && currentUtcMin === 0));
     let daysAhead = 0;
 

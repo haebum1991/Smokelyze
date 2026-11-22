@@ -802,7 +802,16 @@ function bindAiCopilotEvents() {
   const chatInput = document.getElementById("AiCopilotChatInput");
   const chatSubmit = document.getElementById("AiCopilotChatSubmitBtn");
 
+  // Auto-grow: use CSS field-sizing where supported (min/max height stay from inline style),
+  // otherwise fall back to the scrollHeight calculation below.
+  const supportsFieldSizing = !!window.CSS?.supports?.("field-sizing", "content");
+  if (supportsFieldSizing && chatInput) {
+    chatInput.style.fieldSizing = "content";
+    chatInput.style.height = "auto";
+  }
+
   chatInput?.addEventListener("input", () => {
+    if (supportsFieldSizing) return;
     chatInput.style.height = "5.6rem";
     const nextHeight = Math.min(Math.max(chatInput.scrollHeight, 56), 180);
     chatInput.style.height = (nextHeight / 10) + "rem";
@@ -858,7 +867,7 @@ function bindAiCopilotEvents() {
     }
 
     chatInput.value = "";
-    chatInput.style.height = "5.6rem";
+    if (!supportsFieldSizing) chatInput.style.height = "5.6rem";
     await handleCopilotCustomQuery(query);
   };
 
@@ -866,6 +875,9 @@ function bindAiCopilotEvents() {
   chatInput?.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      // IME (Korean/Japanese/Chinese): Enter confirms the composing character, so do not send yet.
+      // keyCode 229 covers Safari, which resets isComposing before this keydown runs.
+      if (e.isComposing || e.keyCode === 229) return;
       sendCopilotChat();
     }
   });
@@ -957,7 +969,7 @@ function bindAiCopilotEvents() {
     const historyDeckEl = document.getElementById("AiCopilotPlotHistoryDeck");
     if (historyDeckEl) {
       historyDeckEl.style.display = "none";
-      historyDeckEl.innerHTML = "";
+      historyDeckEl.replaceChildren();
     }
 
     const chartDom = document.getElementById("AiCopilotChartContainer");

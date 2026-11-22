@@ -1007,7 +1007,7 @@ function loadFromStorage() {
         const existingRunIds = state.history.map(h => String(h.runId));
 
         // Render in reverse to maintain original unshift order
-        [...history].reverse().forEach(item => {
+        history.toReversed().forEach(item => {
             if (!existingRunIds.includes(String(item.runId))) {
                 renderHysplitTrajectory(item.data, item.params.direction, item.runId, true, item.params, item.color);
             }
@@ -1244,14 +1244,16 @@ export function clearHysplitTrajectory(clearHistory = true) {
 
     updateHysplitDrawerList();
 
+    // Style is undefined until the map style loads (e.g. logged-out page load).
+    // Nothing to remove in that case.
     // Remove all layers starting with hysplit-
-    if (style.layers) {
+    if (style?.layers) {
         style.layers
             .filter(l => l.id.startsWith("hysplit-"))
             .forEach(l => map.removeLayer(l.id));
     }
     // Remove all sources starting with hysplit-
-    if (style.sources) {
+    if (style?.sources) {
         Object.keys(style.sources)
             .filter(id => id.startsWith("hysplit-"))
             .forEach(id => map.removeSource(id));
@@ -2296,7 +2298,7 @@ function showDispersionDrawer(runId) {
     
     const meta = document.getElementById("DispersionDrawerMeta");
     const massEl = document.getElementById("DispersionDrawerMassDisplay");
-    if (massEl) massEl.innerHTML = "";
+    if (massEl) massEl.replaceChildren();
     if (meta) {
         const p = item.params;
         const dirLabel = p.direction === "backward" ? "Backward" : "Forward";
